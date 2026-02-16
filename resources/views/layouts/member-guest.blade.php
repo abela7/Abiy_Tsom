@@ -17,6 +17,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="theme-color" content="#0a6286">
     @include('partials.favicon')
+    @include('partials.seo-meta')
     <title>@yield('title', __('app.app_name'))</title>
     <script>
         (function(){var t=localStorage.getItem('theme');if(t!=='light')document.documentElement.classList.add('dark');})();

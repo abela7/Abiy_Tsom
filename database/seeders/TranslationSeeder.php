@@ -15,34 +15,43 @@ class TranslationSeeder extends Seeder
 {
     /**
      * Keys per page/group for organized translation.
+     * Every key in lang/en/app.php must appear here.
      *
      * @return array<string, array<int, string>>
      */
     private function getKeysByPage(): array
     {
         return [
+            /* ── User-facing pages ── */
             'onboarding' => [
-                'app_name', 'tagline', 'onboarding_title', 'onboarding_subtitle',
-                'baptism_name', 'baptism_name_placeholder', 'start_journey', 'already_registered',
+                'app_name', 'tagline', 'meta_description', 'og_title', 'og_description',
+                'onboarding_title', 'onboarding_subtitle',
+                'baptism_name', 'baptism_name_placeholder', 'baptism_name_saved',
+                'start_journey', 'already_registered',
             ],
             'navigation' => [
                 'nav_home', 'nav_calendar', 'nav_progress', 'nav_settings',
+                'footer_branding',
             ],
             'home' => [
-                'easter_countdown', 'easter_countdown_subtitle', 'days', 'hours', 'minutes', 'seconds',
-                'welcome', 'today', 'day_of', 'day_page_title', 'week', 'this_week', 'no_content_today',
-                'checklist', 'mark_complete', 'christ_is_risen',
-                'view_today', 'view_recommended_day', 'well_done',
+                'welcome', 'easter_countdown', 'easter_countdown_subtitle',
+                'days', 'hours', 'minutes', 'seconds',
+                'easter_countdown_remaining', 'easter_countdown_tz',
+                'today', 'view_today', 'view_recommended_day',
+                'day_of', 'day_page_title', 'week', 'this_week', 'no_content_today',
+                'checklist', 'mark_complete', 'christ_is_risen', 'well_done',
             ],
             'content_sections' => [
                 'bible_reading', 'read', 'mezmur', 'sinksar', 'spiritual_book', 'reflection',
-                'listen', 'watch', 'open_in_youtube', 'open_externally', 'read_more',
-                'references', 'reference_name', 'reference_url', 'add_reference', 'close',
-                'weekly_theme', 'gospel_reference', 'epistles_reference',
+                'listen', 'watch', 'open_in_youtube', 'open_externally',
+                'read_more', 'show_less', 'tap_for_details', 'tap_to_collapse',
+                'references', 'reference_name', 'reference_url', 'add_reference',
+                'close', 'weekly_theme', 'gospel_reference', 'epistles_reference',
+                'video_player',
             ],
             'calendar' => [
                 'calendar_title', 'no_calendar_content', 'completed', 'not_started',
-                'in_progress', 'past', 'future', 'today',
+                'in_progress', 'past', 'future',
                 'calendar_passed', 'calendar_upcoming', 'check_back_soon',
                 'week_one', 'week_two', 'week_three', 'week_four',
                 'week_five', 'week_six', 'week_seven', 'week_eight',
@@ -54,45 +63,106 @@ class TranslationSeeder extends Seeder
                 'great_job', 'no_data', 'start_tracking_hint',
                 'day_streak', 'consecutive_days', 'best_day', 'needs_work',
                 'period_daily', 'period_weekly', 'period_monthly', 'period_all',
-                'season_heatmap', 'heatmap_hint',
+                'report_scope', 'jump_to_day', 'jump_to_week', 'view_day_content',
+                'season_heatmap', 'heatmap_hint', 'day_x_rate',
             ],
             'settings' => [
                 'settings_title', 'language', 'theme', 'theme_light', 'theme_dark',
-                'lang_en', 'lang_am', 'custom_activities', 'custom_activities_desc',
+                'lang_en', 'lang_am',
+                'custom_activities', 'custom_activities_desc',
                 'custom_activity_placeholder', 'custom_activity_added', 'custom_activity_deleted',
-                'no_custom_activities', 'add', 'passcode_lock', 'passcode_enable', 'passcode_disable',
+                'no_custom_activities', 'add',
+                'passcode_lock', 'lock_app', 'passcode_enable', 'passcode_disable',
                 'set_passcode', 'passcode_saved', 'passcode_enabled', 'incorrect_passcode',
                 'enter_passcode', 'passcode_title', 'passcode_subtitle', 'unlock',
+                'data_management', 'data_management_desc',
+                'export_data', 'export_data_desc',
+                'import_data', 'import_data_desc',
+                'clear_data', 'clear_data_desc',
+                'export', 'import', 'reset',
+                'export_success', 'import_invalid_format', 'import_no_season',
+                'import_failed', 'import_success',
+                'data_cleared', 'clear_confirm_label', 'clear_confirm_placeholder',
+                'are_you_sure', 'failed_to_add', 'failed_to_clear',
+                'failed_to_save', 'failed', 'export_failed',
             ],
             'general' => [
-                'save', 'cancel', 'edit', 'delete', 'create', 'back', 'yes', 'no',
-                'search', 'submit', 'confirm', 'loading',
+                'loading', 'save', 'cancel', 'edit', 'delete', 'create', 'back',
+                'yes', 'no', 'search', 'submit', 'confirm',
+                'amharic', 'english', 'amharic_default', 'english_fallback',
+                'name', 'remove',
             ],
+
+            /* ── Admin pages ── */
             'admin_login' => [
                 'admin_login', 'email', 'password', 'remember_me', 'login', 'logout',
+                'username', 'username_placeholder',
             ],
             'admin_dashboard' => [
-                'dashboard', 'active_season', 'none', 'create_one', 'published_days',
-                'total_members', 'quick_actions', 'add_daily_content', 'add_activity',
-                'manage_translations',
+                'admin', 'dashboard', 'toggle_menu', 'toggle_theme',
+                'active_season', 'none', 'create_one', 'published_days',
+                'total_members', 'quick_actions',
+                'add_daily_content', 'add_activity', 'manage_translations',
             ],
             'admin_daily' => [
-                'edit_day', 'create_daily_content', 'day_number_label', 'date_label',
-                'weekly_theme_label', 'select_placeholder', 'day_title_optional',
+                'edit_day', 'create_daily_content',
+                'step_x_of_y', 'next', 'saving', 'saved', 'finish',
+                'review_and_publish',
+                'step_day_info', 'step_bible_reading', 'step_mezmur',
+                'step_sinksar', 'step_spiritual_book',
+                'step_reflection_refs', 'step_review_publish',
+                'step_saved_continue',
+                'day_number_label', 'date_label', 'weekly_theme_label',
+                'select_placeholder', 'day_title_optional',
                 'bible_reading_label', 'reference_placeholder', 'summary_label',
                 'bible_text_en_label', 'bible_text_en_placeholder', 'shown_when_english',
                 'bible_text_am_label', 'bible_text_am_placeholder', 'shown_when_amharic',
                 'mezmur_label', 'title_label', 'url_label', 'description_label',
                 'sinksar_label', 'url_video_label', 'spiritual_book_label',
                 'references_legend', 'references_help', 'reflection_label', 'publish_label',
+                'add_mezmur_hint', 'name_amharic_label', 'name_english_label',
+                'url_placeholder', 'day_label', 'week_label',
+                'no_active_season', 'create_one_first',
+                'no_daily_content_yet', 'scaffold_55_days', 'scaffold_confirm',
+                'title', 'bible', 'start', 'end',
             ],
             'admin_other' => [
                 'seasons', 'themes', 'daily_content', 'announcements', 'announcement',
-                'photo', 'no_announcements', 'show_action_button', 'button_label', 'button_url',
-                'current_photo', 'announcement_created', 'announcement_updated', 'announcement_deleted',
-                'actions', 'announcements_section',
-                'activities', 'translations',
-                'members', 'published', 'draft', 'active', 'inactive',
+                'photo', 'no_announcements', 'show_action_button',
+                'button_label', 'button_url', 'button_label_placeholder',
+                'youtube_url', 'youtube_url_placeholder',
+                'youtube_position', 'youtube_position_top', 'youtube_position_end',
+                'current_photo', 'announcement_created', 'announcement_updated',
+                'announcement_deleted', 'actions', 'announcements_section',
+                'activities', 'translations', 'members',
+                'published', 'draft', 'active', 'inactive',
+                'manage_admins', 'add_admin', 'edit_admin', 'view_admin', 'view',
+                'admin_created', 'admin_updated', 'admin_deleted', 'confirm_delete_admin',
+                'email_optional', 'editor', 'role', 'super_admin',
+                'password_leave_blank', 'password_confirmation',
+                'confirm_delete_activity', 'edit_activity', 'create_activity',
+                'activity_name', 'description_optional', 'sort_order',
+                'activity_placeholder', 'no_activities_yet',
+                'created', 'count', 'order', 'status',
+                'no_registrations_yet', 'no_data_short',
+                'edit_season', 'create_season', 'no_seasons_yet',
+                'year', 'total_days', 'start_date', 'end_date_easter',
+                'set_as_active_season', 'regenerate_8_weeks',
+                'edit_theme', 'create_theme', 'no_weekly_themes_yet',
+                'week_num', 'week_number_1_8',
+                'name_english', 'name_geez', 'name_amharic',
+                'meaning', 'theme_summary',
+                'week_start_date', 'week_end_date', 'liturgy_anaphora',
+                'theme_name_en_placeholder', 'theme_name_geez_placeholder',
+                'reference_placeholder_short', 'epistles_placeholder',
+                'psalm_placeholder', 'liturgy_placeholder', 'meaning_placeholder',
+                'psalm_reference', 'key_placeholder', 'passcode_placeholder',
+                // Member tracking stats
+                'members_tracking', 'members_tracking_subtitle',
+                'registrations_by_day', 'first_registration', 'last_registration',
+                'new_last_7_days', 'new_last_30_days',
+                'locale_distribution', 'theme_distribution', 'passcode_users',
+                'total_completions', 'engaged_members',
             ],
             'admin_translations' => [
                 'add_key', 'no_translation_groups', 'group_label', 'key_label',
@@ -109,69 +179,16 @@ class TranslationSeeder extends Seeder
     }
 
     /**
+     * All translatable strings. The lang/en/app.php file is the
+     * single source of truth — no extra duplicates needed.
+     *
      * @return array<string, string>
      */
     private function getAllStrings(): array
     {
         $en = require base_path('lang/en/app.php');
-        if (! is_array($en)) {
-            return [];
-        }
 
-        $extra = [
-            'add_key' => '+ Add Key',
-            'no_translation_groups' => 'No translation groups yet. Add one below.',
-            'group_label' => 'Group',
-            'key_label' => 'Key',
-            'english_label' => 'English',
-            'amharic_label' => 'Amharic',
-            'translations_saved' => 'Translations saved.',
-            'translation_added' => 'Translation key added.',
-            'no_translations_in_group' => 'No translations in this group yet.',
-            'sync_translations' => 'Sync from Files',
-            'sync_translations_help' => 'Import all strings from language files into the database. Run this first to populate the list for Amharic translation.',
-            'section_user' => 'User (Member)',
-            'section_admin' => 'Admin',
-            'active_season' => 'Active Season',
-            'none' => 'None',
-            'create_one' => 'Create one',
-            'published_days' => 'Published Days',
-            'total_members' => 'Total Members',
-            'quick_actions' => 'Quick Actions',
-            'add_daily_content' => 'Add Daily Content',
-            'add_activity' => 'Add Activity',
-            'manage_translations' => 'Manage Translations',
-            'edit_day' => 'Edit Day :day',
-            'create_daily_content' => 'Create Daily Content',
-            'day_number_label' => 'Day Number (1-55)',
-            'date_label' => 'Date',
-            'weekly_theme_label' => 'Weekly Theme',
-            'select_placeholder' => 'Select...',
-            'day_title_optional' => 'Day Title (optional)',
-            'bible_reading_label' => 'Bible Reading',
-            'reference_placeholder' => 'Reference (e.g. John 3:1-16)',
-            'summary_label' => 'Summary',
-            'bible_text_en_label' => 'Bible Text (English)',
-            'bible_text_en_placeholder' => 'Full reading text in English (optional)',
-            'shown_when_english' => 'Shown when user language is English',
-            'bible_text_am_label' => 'Bible Text (Amharic)',
-            'bible_text_am_placeholder' => 'Full reading text in Amharic (optional)',
-            'shown_when_amharic' => 'Shown when user language is Amharic',
-            'mezmur_label' => 'Mezmur (Spiritual Music)',
-            'title_label' => 'Title',
-            'url_label' => 'URL (YouTube / Audio link)',
-            'description_label' => 'Description',
-            'sinksar_label' => 'Sinksar (Synaxarium)',
-            'url_video_label' => 'URL (YouTube or video link)',
-            'spiritual_book_label' => 'Spiritual Book',
-            'references_legend' => 'References (know more about the week or day)',
-            'references_help' => 'Add links for members to learn more. Each needs a name and URL.',
-            'reflection_label' => 'Daily Reflection / Message',
-            'publish_label' => 'Publish (visible to members)',
-            'passcode_enabled' => 'Passcode is enabled.',
-        ];
-
-        return array_merge($en, $extra);
+        return is_array($en) ? $en : [];
     }
 
     /**
@@ -193,17 +210,15 @@ class TranslationSeeder extends Seeder
 
     /**
      * Infer group for keys not in predefined mapping.
-     * Uncategorized keys go to 'general' (user) or 'admin_other' (admin UI).
+     * Safety net — ideally every key is in getKeysByPage().
      */
     private function inferGroup(string $key): string
     {
-        $adminKeys = [
-            'admin_login', 'email', 'password', 'remember_me', 'login', 'logout',
-            'dashboard', 'seasons', 'themes', 'daily_content', 'activities', 'translations',
-            'members', 'published', 'draft', 'active', 'inactive',
-        ];
-        if (in_array($key, $adminKeys, true) || str_starts_with($key, 'admin_')) {
+        if (str_starts_with($key, 'admin_') || str_starts_with($key, 'group_')) {
             return 'admin_other';
+        }
+        if (str_starts_with($key, 'step_')) {
+            return 'admin_daily';
         }
 
         return 'general';

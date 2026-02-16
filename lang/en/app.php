@@ -5,7 +5,10 @@ declare(strict_types=1);
 return [
     // General
     'app_name' => 'Abiy Tsom',
-    'tagline' => 'Your Great Lent Companion',
+    'tagline' => 'Daily Bible readings, mezmur, Sinksar & spiritual books through Great Lent',
+    'meta_description' => 'Get your daily dose of faith during Great Lent: Bible readings, mezmur, Sinksar, and spiritual books every day until Easter. Stay engaged and keep Lent meaningfully.',
+    'og_title' => 'Abiy Tsom — Daily Faith Content for Great Lent',
+    'og_description' => 'Bible readings, mezmur, Sinksar & spiritual books delivered daily. Stay engaged and do Lent properly—one day at a time until Easter.',
     'welcome' => 'Welcome',
     'loading' => 'Loading...',
     'save' => 'Save',
@@ -335,7 +338,7 @@ return [
     'admin_pages_label' => 'Admin Pages',
 
     // Footer / branding
-    'footer_branding' => ':name · Great Lent Companion',
+    'footer_branding' => ':name · Daily Bible, mezmur, Sinksar & spiritual books through Lent',
 
     // Member Settings JS strings
     'are_you_sure' => 'Are you sure?',
