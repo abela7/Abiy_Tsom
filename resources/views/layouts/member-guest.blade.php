@@ -20,20 +20,8 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen font-sans antialiased">
-    <div class="min-h-screen flex flex-col lg:flex-row">
-        {{-- Left: Quote image (hidden on mobile, shown as background) --}}
-        <div class="hidden lg:flex lg:w-[45%] xl:w-[50%] relative overflow-hidden shrink-0">
-            <img src="{{ asset('images/login-quote.jpg') }}" alt=""
-                 class="absolute inset-0 w-full h-full object-cover object-center">
-            <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
-            <div class="relative z-10 flex flex-col justify-end p-8 xl:p-12 text-white">
-                <p class="text-sm font-medium opacity-90 tracking-wide">{{ __('app.app_name') }}</p>
-                <p class="text-xs opacity-75 mt-1">{{ __('app.tagline') }}</p>
-            </div>
-        </div>
-
-        {{-- Right: Form content --}}
-        <div class="flex-1 flex flex-col justify-center p-4 sm:p-6 lg:p-12 relative min-h-[100dvh] lg:min-h-0 bg-surface">
+    <div class="min-h-screen flex flex-col justify-center">
+        <div class="flex flex-col justify-center p-4 sm:p-6 lg:p-12 relative min-h-[100dvh] lg:min-h-0 bg-surface">
             {{-- Mobile: background image with soft gradient overlay --}}
             <div class="fixed inset-0 -z-10 lg:hidden">
                 <img src="{{ asset('images/login-quote.jpg') }}" alt="" class="absolute inset-0 w-full h-full object-cover object-center">
