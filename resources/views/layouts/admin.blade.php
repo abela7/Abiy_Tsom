@@ -97,7 +97,7 @@
 
     <div class="flex">
         {{-- Sidebar --}}
-        <aside class="fixed inset-y-0 left-0 z-40 w-64 bg-card shadow-xl transform transition-transform duration-200 lg:translate-x-0 lg:static lg:shadow-none border-r border-border pt-14 lg:pt-0"
+        <aside class="fixed inset-y-0 left-0 z-40 w-64 bg-card shadow-xl transform transition-transform duration-200 lg:translate-x-0 lg:top-14 lg:shadow-none border-r border-border pt-14 lg:pt-4"
                :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
             <div class="py-4">
                 <nav class="space-y-1 px-3">
@@ -133,7 +133,7 @@
              class="fixed inset-0 bg-overlay z-30 lg:hidden" x-transition.opacity></div>
 
         {{-- Main content --}}
-        <main class="flex-1 p-4 lg:p-6 min-h-[calc(100vh-3.5rem)] overflow-x-hidden">
+        <main class="flex-1 p-4 lg:p-6 lg:ml-64 min-h-[calc(100vh-3.5rem)] overflow-x-hidden">
             {{-- Flash messages --}}
             @if(session('success'))
                 <div class="mb-4 p-3 bg-success-bg border border-success text-success rounded-lg text-sm"
