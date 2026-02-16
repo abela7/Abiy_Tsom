@@ -92,6 +92,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/daily/create', [Admin\DailyContentController::class, 'create'])->name('daily.create');
     Route::post('/daily', [Admin\DailyContentController::class, 'store'])->name('daily.store');
     Route::get('/daily/{daily}/edit', [Admin\DailyContentController::class, 'edit'])->name('daily.edit');
+    Route::patch('/daily/{daily}', [Admin\DailyContentController::class, 'patch'])->name('daily.patch');
     Route::put('/daily/{daily}', [Admin\DailyContentController::class, 'update'])->name('daily.update');
 
     // Announcements

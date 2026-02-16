@@ -1,247 +1,749 @@
 @extends('layouts.admin')
-@section('title', (isset($daily) && $daily->exists) ? __('app.edit_day', ['day' => $daily->day_number]) : __('app.create_daily_content'))
+
+@php
+    $isEdit = isset($daily) && $daily->exists;
+    $totalSteps = 7;
+    $currentStep = max(1, min($totalSteps, (int) ($initialStep ?? 1)));
+
+    $initialMezmurs = old(
+        'mezmurs',
+        $isEdit
+            ? $daily->mezmurs
+                ->map(fn ($m) => [
+                    'title_en' => $m->title_en ?? '',
+                    'title_am' => $m->title_am ?? '',
+                    'url' => $m->url ?? '',
+                    'description_en' => $m->description_en ?? '',
+                    'description_am' => $m->description_am ?? '',
+                ])
+                ->values()
+                ->toArray()
+            : [[
+                'title_en' => '',
+                'title_am' => '',
+                'url' => '',
+                'description_en' => '',
+                'description_am' => '',
+            ]]
+    );
+
+    $initialReferences = old(
+        'references',
+        $isEdit
+            ? $daily->references
+                ->map(fn ($r) => [
+                    'name_en' => $r->name_en ?? '',
+                    'name_am' => $r->name_am ?? '',
+                    'url' => $r->url ?? '',
+                ])
+                ->values()
+                ->toArray()
+            : [[
+                'name_en' => '',
+                'name_am' => '',
+                'url' => '',
+            ]]
+    );
+
+    $themesByWeek = $themes
+        ->keyBy('week_number')
+        ->map(fn ($theme) => [
+            'id' => $theme->id,
+            'name_en' => $theme->name_en,
+        ])
+        ->toArray();
+
+    $wizardState = [
+        'lent_season_id' => old('lent_season_id', $daily->lent_season_id ?? $season?->id),
+        'weekly_theme_id' => old('weekly_theme_id', $daily->weekly_theme_id ?? ''),
+        'day_number' => old('day_number', $daily->day_number ?? ''),
+        'date' => old('date', $isEdit && $daily->date ? $daily->date->format('Y-m-d') : ''),
+        'day_title_am' => old('day_title_am', $daily->day_title_am ?? ''),
+        'day_title_en' => old('day_title_en', $daily->day_title_en ?? ''),
+        'bible_reference_am' => old('bible_reference_am', $daily->bible_reference_am ?? ''),
+        'bible_reference_en' => old('bible_reference_en', $daily->bible_reference_en ?? ''),
+        'bible_summary_am' => old('bible_summary_am', $daily->bible_summary_am ?? ''),
+        'bible_summary_en' => old('bible_summary_en', $daily->bible_summary_en ?? ''),
+        'bible_text_am' => old('bible_text_am', $daily->bible_text_am ?? ''),
+        'bible_text_en' => old('bible_text_en', $daily->bible_text_en ?? ''),
+        'sinksar_title_am' => old('sinksar_title_am', $daily->sinksar_title_am ?? ''),
+        'sinksar_title_en' => old('sinksar_title_en', $daily->sinksar_title_en ?? ''),
+        'sinksar_url' => old('sinksar_url', $daily->sinksar_url ?? ''),
+        'sinksar_description_am' => old('sinksar_description_am', $daily->sinksar_description_am ?? ''),
+        'sinksar_description_en' => old('sinksar_description_en', $daily->sinksar_description_en ?? ''),
+        'book_title_am' => old('book_title_am', $daily->book_title_am ?? ''),
+        'book_title_en' => old('book_title_en', $daily->book_title_en ?? ''),
+        'book_url' => old('book_url', $daily->book_url ?? ''),
+        'book_description_am' => old('book_description_am', $daily->book_description_am ?? ''),
+        'book_description_en' => old('book_description_en', $daily->book_description_en ?? ''),
+        'reflection_am' => old('reflection_am', $daily->reflection_am ?? ''),
+        'reflection_en' => old('reflection_en', $daily->reflection_en ?? ''),
+        'is_published' => (bool) old('is_published', $daily->is_published ?? false),
+        'mezmurs' => $initialMezmurs,
+        'references' => $initialReferences,
+    ];
+
+    $stepLabels = [
+        1 => __('app.step_day_info'),
+        2 => __('app.step_bible_reading'),
+        3 => __('app.step_mezmur'),
+        4 => __('app.step_sinksar'),
+        5 => __('app.step_spiritual_book'),
+        6 => __('app.step_reflection_refs'),
+        7 => __('app.step_review_publish'),
+    ];
+@endphp
+
+@section('title', $isEdit ? __('app.edit_day', ['day' => $daily->day_number]) : __('app.create_daily_content'))
 
 @section('content')
-<div class="max-w-3xl">
-    <h1 class="text-2xl font-bold text-primary mb-6">{{ (isset($daily) && $daily->exists) ? __('app.edit_day', ['day' => $daily->day_number]) : __('app.create_daily_content') }}</h1>
-
-    <form method="POST" action="{{ (isset($daily) && $daily->exists) ? route('admin.daily.update', $daily) : route('admin.daily.store') }}"
-          class="bg-card rounded-xl shadow-sm border border-border p-6 space-y-5">
-        @csrf
-        @if(isset($daily) && $daily->exists) @method('PUT') @endif
-
-        <input type="hidden" name="lent_season_id" value="{{ $season?->id }}">
-
-        @php
-            $dayRangesByWeek = $dayRangesByWeek ?? [];
-        @endphp
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" x-data="{
-            seasonStart: '{{ $season?->start_date?->format('Y-m-d') ?? '' }}',
-            themesByWeek: {{ json_encode($themes?->keyBy('week_number') ?? []) }},
-            dayRangesByWeek: {{ json_encode($dayRangesByWeek) }},
-            resolvedInfo: null,
-            syncFromDay() {
-                const day = parseInt(this.$refs?.dayNumber?.value || 0, 10);
-                if (!day || day < 1 || day > 55 || !this.seasonStart) {
-                    this.resolvedInfo = null;
-                    return;
+    @if (! $season)
+        <div class="max-w-3xl mx-auto bg-card rounded-xl shadow-sm border border-border p-6">
+            <p class="text-muted-text">
+                {{ __('app.no_active_season') }}
+                <a href="{{ route('admin.seasons.create') }}" class="text-accent hover:underline">
+                    {{ __('app.create_one_first') }}
+                </a>
+            </p>
+        </div>
+    @else
+        <div
+            class="max-w-3xl mx-auto space-y-4"
+            x-data="dailyWizard({
+                currentStep: @js($currentStep),
+                totalSteps: @js($totalSteps),
+                isEdit: @js($isEdit),
+                dailyId: @js($isEdit ? (int) $daily->id : null),
+                seasonStart: @js($season?->start_date?->format('Y-m-d') ?? ''),
+                dayRangesByWeek: @js($dayRangesByWeek ?? []),
+                themesByWeek: @js($themesByWeek),
+                stepLabels: @js($stepLabels),
+                state: @js($wizardState),
+                urls: {
+                    create: @js(route('admin.daily.store')),
+                    patchTemplate: @js(route('admin.daily.patch', ['daily' => '__DAILY_ID__'])),
+                    editTemplate: @js(route('admin.daily.edit', ['daily' => '__DAILY_ID__'])),
+                    index: @js(route('admin.daily.index'))
+                },
+                messages: {
+                    stepTemplate: @js(__('app.step_x_of_y', ['current' => ':current', 'total' => ':total'])),
+                    next: @js(__('app.next')),
+                    back: @js(__('app.back')),
+                    saving: @js(__('app.saving')),
+                    saved: @js(__('app.saved')),
+                    finish: @js(__('app.finish')),
+                    failed: @js(__('app.failed'))
                 }
-                const d = new Date(this.seasonStart);
-                d.setDate(d.getDate() + day - 1);
-                const dateStr = d.toISOString().slice(0, 10);
-                if (this.$refs?.dateInput) this.$refs.dateInput.value = dateStr;
-                let info = null;
-                for (const [w, range] of Object.entries(this.dayRangesByWeek || {})) {
-                    const [start, end] = range;
-                    if (day >= start && day <= end) {
-                        const theme = this.themesByWeek[w];
-                        const dayOfWeek = day - start + 1;
-                        info = { week: parseInt(w, 10), themeName: theme?.name_en ?? 'Week ' + w, dayOfWeek, dayStart: start, dayEnd: end };
-                        if (theme && this.$refs?.themeSelect) this.$refs.themeSelect.value = theme.id;
-                        break;
-                    }
-                }
-                this.resolvedInfo = info;
-            }
-        }" x-init="$nextTick(() => { syncFromDay(); $watch('$refs.dayNumber?.value', () => syncFromDay()); })">
-            <div>
-                <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.day_number_label') }}</label>
-                <input type="number" name="day_number" min="1" max="55" value="{{ old('day_number', $daily->day_number ?? '') }}" required
-                       x-ref="dayNumber" @input="syncFromDay()"
-                       class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.date_label') }}</label>
-                <input type="date" name="date" x-ref="dateInput" value="{{ old('date', (isset($daily) && $daily->exists) ? $daily->date->format('Y-m-d') : '') }}" required
-                       class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.weekly_theme_label') }}</label>
-                <select name="weekly_theme_id" x-ref="themeSelect" required class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
-                    <option value="">{{ __('app.select_placeholder') }}</option>
-                    @foreach($themes as $theme)
-                        <option value="{{ $theme->id }}" {{ old('weekly_theme_id', $daily->weekly_theme_id ?? '') == $theme->id ? 'selected' : '' }}>
-                            @php $range = \App\Services\AbiyTsomStructure::getDayRangeForWeek($theme->week_number); @endphp
-                            Week {{ $theme->week_number }} - {{ $theme->name_en }} (Days {{ $range[0] }}-{{ $range[1] }})
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-        </div>
+            })"
+            x-init="init()"
+        >
+            <div class="bg-card rounded-xl shadow-sm border border-border p-4 sm:p-5">
+                <div class="flex items-center justify-between gap-3 mb-4">
+                    <h1 class="text-xl sm:text-2xl font-bold text-primary">
+                        {{ $isEdit ? __('app.edit_day', ['day' => $daily->day_number]) : __('app.create_daily_content') }}
+                    </h1>
+                    <span class="text-xs sm:text-sm text-muted-text font-medium" x-text="stepText()"></span>
+                </div>
 
-        <div x-show="resolvedInfo" x-transition class="flex items-center gap-2 px-3 py-2 rounded-lg bg-accent/10 border border-accent/20 text-sm">
-            <span class="font-semibold text-accent" x-text="resolvedInfo ? 'Week ' + resolvedInfo.week + ' (' + resolvedInfo.themeName + ')' : ''"></span>
-            <span class="text-muted-text">—</span>
-            <span x-text="resolvedInfo ? 'Day ' + resolvedInfo.dayOfWeek + ' of week (Days ' + resolvedInfo.dayStart + '-' + resolvedInfo.dayEnd + ')' : ''"></span>
-        </div>
+                <div class="overflow-x-auto pb-1">
+                    <div class="flex items-center gap-2 min-w-max">
+                        <template x-for="stepNumber in totalSteps" :key="'step-indicator-' + stepNumber">
+                            <div class="flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    @click="jumpToStep(stepNumber)"
+                                    :disabled="!isStepUnlocked(stepNumber) || isSaving"
+                                    class="w-8 h-8 rounded-full text-xs font-semibold border transition disabled:opacity-40 disabled:cursor-not-allowed"
+                                    :class="step === stepNumber
+                                        ? 'bg-accent text-on-accent border-accent'
+                                        : (isStepUnlocked(stepNumber)
+                                            ? 'bg-muted text-secondary border-border hover:bg-border'
+                                            : 'bg-muted/40 text-muted-text border-border')"
+                                    :aria-label="stepLabel(stepNumber)"
+                                >
+                                    <span x-text="stepNumber"></span>
+                                </button>
+                                <div
+                                    x-show="stepNumber < totalSteps"
+                                    class="w-6 sm:w-10 h-0.5"
+                                    :class="stepNumber < step ? 'bg-accent' : 'bg-border'"
+                                ></div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
 
-        <div class="space-y-2">
-            <label class="block text-sm font-medium text-secondary">{{ __('app.day_title_optional') }}</label>
-            <div>
-                <span class="text-xs text-muted-text">{{ __('app.amharic_default') }}</span>
-                <input type="text" name="day_title_am" value="{{ old('day_title_am', $daily->day_title_am ?? '') }}"
-                       class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none mt-0.5">
+                <p class="text-sm text-secondary mt-3" x-text="stepLabel(step)"></p>
             </div>
-            <div>
-                <span class="text-xs text-muted-text">{{ __('app.english_fallback') }}</span>
-                <input type="text" name="day_title_en" value="{{ old('day_title_en', $daily->day_title_en ?? '') }}"
-                       class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none mt-0.5">
-            </div>
-        </div>
 
-        {{-- Bible Reading --}}
-        <fieldset class="border border-border rounded-lg p-4 space-y-3">
-            <legend class="text-sm font-semibold text-accent px-2">{{ __('app.bible_reading_label') }}</legend>
-            <div class="space-y-2">
-                <label class="block text-sm font-medium text-secondary">{{ __('app.reference_placeholder') }}</label>
-                <input type="text" name="bible_reference_am" value="{{ old('bible_reference_am', $daily->bible_reference_am ?? '') }}"
-                       class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none" placeholder="{{ __('app.amharic') }}">
-                <input type="text" name="bible_reference_en" value="{{ old('bible_reference_en', $daily->bible_reference_en ?? '') }}"
-                       class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none" placeholder="{{ __('app.english') }}">
-            </div>
-            <div class="space-y-2">
-                <label class="block text-sm font-medium text-secondary">{{ __('app.summary_label') }}</label>
-                <textarea name="bible_summary_am" rows="2" class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none" placeholder="{{ __('app.amharic') }}">{{ old('bible_summary_am', $daily->bible_summary_am ?? '') }}</textarea>
-                <textarea name="bible_summary_en" rows="2" class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none" placeholder="{{ __('app.english') }}">{{ old('bible_summary_en', $daily->bible_summary_en ?? '') }}</textarea>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.bible_text_en_label') }}</label>
-                <textarea name="bible_text_en" rows="6" class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none" placeholder="{{ __('app.bible_text_en_placeholder') }}">{{ old('bible_text_en', $daily->bible_text_en ?? '') }}</textarea>
-                <p class="text-xs text-muted-text mt-1">{{ __('app.shown_when_english') }}</p>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.bible_text_am_label') }}</label>
-                <textarea name="bible_text_am" rows="6" class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none" placeholder="{{ __('app.bible_text_am_placeholder') }}">{{ old('bible_text_am', $daily->bible_text_am ?? '') }}</textarea>
-                <p class="text-xs text-muted-text mt-1">{{ __('app.shown_when_amharic') }}</p>
-            </div>
-        </fieldset>
+            <div class="bg-card rounded-xl shadow-sm border border-border p-4 sm:p-6 space-y-4">
+                <div x-show="errorMessage" x-cloak class="p-3 rounded-lg border border-error bg-error-bg text-error text-sm" x-text="errorMessage"></div>
 
-        {{-- Mezmur (multiple) — add 2 or more as needed --}}
-        <fieldset class="border border-border rounded-lg p-4 space-y-3"
-                 x-data="{
-                     mezmurs: {{ json_encode(old('mezmurs', isset($daily) && $daily->exists ? $daily->mezmurs->map(fn($m) => ['title_en' => $m->title_en ?? '', 'title_am' => $m->title_am ?? '', 'url' => $m->url ?? '', 'description_en' => $m->description_en ?? '', 'description_am' => $m->description_am ?? ''])->values()->toArray() : [['title_en' => '', 'title_am' => '', 'url' => '', 'description_en' => '', 'description_am' => '']])) }},
-                     addMezmur() { this.mezmurs.push({ title_en: '', title_am: '', url: '', description_en: '', description_am: '' }); },
-                     removeMezmur(i) { this.mezmurs.splice(i, 1); }
-                 }">
-            <legend class="text-sm font-semibold text-accent-secondary px-2">{{ __('app.mezmur_label') }}</legend>
-            <p class="text-xs text-muted-text">{{ __('app.add_mezmur_hint') }}</p>
-            <template x-for="(m, i) in mezmurs" :key="i">
-                <div class="p-3 rounded-lg bg-accent-secondary/5 border border-accent-secondary/20 space-y-2">
-                    <div class="flex justify-between items-center">
-                        <span class="text-xs font-medium text-accent-secondary" x-text="'Mezmur ' + (i + 1)"></span>
-                        <button type="button" @click="removeMezmur(i)" class="p-1 text-muted-text hover:text-error transition" title="{{ __('app.remove') }}">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                {{-- Step 1: Day info --}}
+                <section x-show="step === 1" x-cloak class="space-y-4">
+                    <input type="hidden" x-model="form.lent_season_id">
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.day_number_label') }}</label>
+                            <input
+                                type="number"
+                                min="1"
+                                max="55"
+                                x-model="form.day_number"
+                                @input="syncFromDayNumber()"
+                                class="w-full min-h-11 px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none"
+                            >
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.date_label') }}</label>
+                            <input
+                                type="date"
+                                x-model="form.date"
+                                class="w-full min-h-11 px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none"
+                            >
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.weekly_theme_label') }}</label>
+                            <select
+                                x-model="form.weekly_theme_id"
+                                class="w-full min-h-11 px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none"
+                            >
+                                <option value="">{{ __('app.select_placeholder') }}</option>
+                                @foreach($themes as $theme)
+                                    @php($range = \App\Services\AbiyTsomStructure::getDayRangeForWeek($theme->week_number))
+                                    <option value="{{ $theme->id }}">
+                                        {{ __('app.week_label') }} {{ $theme->week_number }} - {{ $theme->name_en }} ({{ __('app.day_label') }}s {{ $range[0] }}-{{ $range[1] }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <div x-show="resolvedInfo" x-cloak class="flex flex-wrap items-center gap-2 px-3 py-2 rounded-lg bg-accent/10 border border-accent/20 text-sm">
+                        <span class="font-semibold text-accent">{{ __('app.week_label') }}:</span>
+                        <span class="text-secondary" x-text="resolvedInfo ? resolvedInfo.week : ''"></span>
+                        <span class="text-muted-text">|</span>
+                        <span class="font-semibold text-accent">{{ __('app.day_label') }}:</span>
+                        <span class="text-secondary" x-text="resolvedInfo ? resolvedInfo.dayOfWeek : ''"></span>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-secondary">{{ __('app.day_title_optional') }}</label>
+                        <input
+                            type="text"
+                            x-model="form.day_title_am"
+                            placeholder="{{ __('app.amharic_default') }}"
+                            class="w-full min-h-11 px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none"
+                        >
+                        <input
+                            type="text"
+                            x-model="form.day_title_en"
+                            placeholder="{{ __('app.english_fallback') }}"
+                            class="w-full min-h-11 px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none"
+                        >
+                    </div>
+                </section>
+
+                {{-- Step 2: Bible reading --}}
+                <section x-show="step === 2" x-cloak class="space-y-4">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-secondary">{{ __('app.reference_placeholder') }}</label>
+                        <input type="text" x-model="form.bible_reference_am" placeholder="{{ __('app.amharic') }}" class="w-full min-h-11 px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
+                        <input type="text" x-model="form.bible_reference_en" placeholder="{{ __('app.english') }}" class="w-full min-h-11 px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-secondary">{{ __('app.summary_label') }}</label>
+                        <textarea x-model="form.bible_summary_am" rows="3" placeholder="{{ __('app.amharic') }}" class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none"></textarea>
+                        <textarea x-model="form.bible_summary_en" rows="3" placeholder="{{ __('app.english') }}" class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none"></textarea>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-secondary">{{ __('app.bible_text_am_label') }}</label>
+                        <textarea x-model="form.bible_text_am" rows="6" placeholder="{{ __('app.bible_text_am_placeholder') }}" class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none"></textarea>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-secondary">{{ __('app.bible_text_en_label') }}</label>
+                        <textarea x-model="form.bible_text_en" rows="6" placeholder="{{ __('app.bible_text_en_placeholder') }}" class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none"></textarea>
+                    </div>
+                </section>
+
+                {{-- Step 3: Mezmur --}}
+                <section x-show="step === 3" x-cloak class="space-y-3">
+                    <p class="text-xs text-muted-text">{{ __('app.add_mezmur_hint') }}</p>
+                    <template x-for="(mezmur, index) in form.mezmurs" :key="'mezmur-' + index">
+                        <div class="p-3 rounded-lg bg-accent-secondary/5 border border-accent-secondary/20 space-y-2">
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="text-xs font-medium text-accent-secondary" x-text="'{{ __('app.mezmur_label') }} ' + (index + 1)"></span>
+                                <button
+                                    type="button"
+                                    @click="removeMezmur(index)"
+                                    class="min-h-10 min-w-10 px-2 py-2 text-muted-text hover:text-error transition rounded-lg"
+                                    :disabled="form.mezmurs.length === 1"
+                                >
+                                    {{ __('app.remove') }}
+                                </button>
+                            </div>
+                            <input type="text" x-model="mezmur.title_am" placeholder="{{ __('app.name_amharic_label') }}" class="w-full min-h-11 px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none text-sm">
+                            <input type="text" x-model="mezmur.title_en" placeholder="{{ __('app.name_english_label') }}" class="w-full min-h-11 px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none text-sm">
+                            <input type="url" x-model="mezmur.url" placeholder="{{ __('app.url_placeholder') }}" class="w-full min-h-11 px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none text-sm">
+                            <textarea x-model="mezmur.description_am" rows="2" placeholder="{{ __('app.description_label') }} ({{ __('app.amharic') }})" class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none text-sm"></textarea>
+                            <textarea x-model="mezmur.description_en" rows="2" placeholder="{{ __('app.description_label') }} ({{ __('app.english') }})" class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none text-sm"></textarea>
+                        </div>
+                    </template>
+                    <button type="button" @click="addMezmur()" class="w-full min-h-11 py-2 border border-dashed border-accent-secondary/40 rounded-lg text-sm text-accent-secondary hover:bg-accent-secondary/10 transition">
+                        + {{ __('app.mezmur_label') }}
+                    </button>
+                </section>
+
+                {{-- Step 4: Sinksar --}}
+                <section x-show="step === 4" x-cloak class="space-y-4">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-secondary">{{ __('app.title_label') }}</label>
+                        <input type="text" x-model="form.sinksar_title_am" placeholder="{{ __('app.amharic') }}" class="w-full min-h-11 px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
+                        <input type="text" x-model="form.sinksar_title_en" placeholder="{{ __('app.english') }}" class="w-full min-h-11 px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.url_video_label') }}</label>
+                        <input type="url" x-model="form.sinksar_url" placeholder="{{ __('app.youtube_url_placeholder') }}" class="w-full min-h-11 px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-secondary">{{ __('app.description_label') }}</label>
+                        <textarea x-model="form.sinksar_description_am" rows="3" placeholder="{{ __('app.amharic') }}" class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none"></textarea>
+                        <textarea x-model="form.sinksar_description_en" rows="3" placeholder="{{ __('app.english') }}" class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none"></textarea>
+                    </div>
+                </section>
+
+                {{-- Step 5: Spiritual book --}}
+                <section x-show="step === 5" x-cloak class="space-y-4">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-secondary">{{ __('app.title_label') }}</label>
+                        <input type="text" x-model="form.book_title_am" placeholder="{{ __('app.amharic') }}" class="w-full min-h-11 px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
+                        <input type="text" x-model="form.book_title_en" placeholder="{{ __('app.english') }}" class="w-full min-h-11 px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.url_label') }}</label>
+                        <input type="url" x-model="form.book_url" placeholder="{{ __('app.url_placeholder') }}" class="w-full min-h-11 px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-secondary">{{ __('app.description_label') }}</label>
+                        <textarea x-model="form.book_description_am" rows="3" placeholder="{{ __('app.amharic') }}" class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none"></textarea>
+                        <textarea x-model="form.book_description_en" rows="3" placeholder="{{ __('app.english') }}" class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none"></textarea>
+                    </div>
+                </section>
+
+                {{-- Step 6: Reflection and references --}}
+                <section x-show="step === 6" x-cloak class="space-y-4">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-secondary">{{ __('app.reflection_label') }}</label>
+                        <textarea x-model="form.reflection_am" rows="4" placeholder="{{ __('app.amharic_default') }}" class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none"></textarea>
+                        <textarea x-model="form.reflection_en" rows="4" placeholder="{{ __('app.english_fallback') }}" class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none"></textarea>
+                    </div>
+
+                    <div class="space-y-3">
+                        <p class="text-sm font-medium text-secondary">{{ __('app.references_legend') }}</p>
+                        <template x-for="(reference, index) in form.references" :key="'reference-' + index">
+                            <div class="p-3 rounded-lg bg-muted/50 border border-border space-y-2">
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="text-xs text-muted-text">{{ __('app.reference_name') }}</span>
+                                    <button
+                                        type="button"
+                                        @click="removeReference(index)"
+                                        class="min-h-10 min-w-10 px-2 py-2 text-muted-text hover:text-error transition rounded-lg"
+                                        :disabled="form.references.length === 1"
+                                    >
+                                        {{ __('app.remove') }}
+                                    </button>
+                                </div>
+                                <input type="text" x-model="reference.name_am" placeholder="{{ __('app.name_amharic_label') }}" class="w-full min-h-11 px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none text-sm">
+                                <input type="text" x-model="reference.name_en" placeholder="{{ __('app.name_english_label') }}" class="w-full min-h-11 px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none text-sm">
+                                <input type="url" x-model="reference.url" placeholder="{{ __('app.url_placeholder') }}" class="w-full min-h-11 px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none text-sm">
+                            </div>
+                        </template>
+                        <button type="button" @click="addReference()" class="w-full min-h-11 py-2 border border-dashed border-border rounded-lg text-sm text-muted-text hover:text-accent hover:border-accent transition">
+                            + {{ __('app.add_reference') }}
                         </button>
                     </div>
-                    <input :name="'mezmurs[' + i + '][title_am]'" x-model="m.title_am" type="text" placeholder="{{ __('app.name_amharic_label') }}"
-                           class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none text-sm">
-                    <input :name="'mezmurs[' + i + '][title_en]'" x-model="m.title_en" type="text" placeholder="{{ __('app.name_english_label') }}"
-                           class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none text-sm">
-                    <input :name="'mezmurs[' + i + '][url]'" x-model="m.url" type="url" placeholder="{{ __('app.url_placeholder') }}"
-                           class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none text-sm">
-                    <textarea :name="'mezmurs[' + i + '][description_am]'" x-model="m.description_am" rows="2" placeholder="{{ __('app.description_label') }} ({{ __('app.amharic') }})"
-                              class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none text-sm"></textarea>
-                    <textarea :name="'mezmurs[' + i + '][description_en]'" x-model="m.description_en" rows="2" placeholder="{{ __('app.description_label') }} ({{ __('app.english') }})"
-                              class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none text-sm"></textarea>
-                </div>
-            </template>
-            <button type="button" @click="addMezmur()"
-                    class="w-full py-2 border border-dashed border-accent-secondary/30 rounded-lg text-sm text-accent-secondary hover:bg-accent-secondary/10 transition">
-                + {{ __('app.mezmur_label') }}
-            </button>
-        </fieldset>
+                </section>
 
-        {{-- Sinksar (Synaxarium) — YouTube/video link like Mezmur --}}
-        <fieldset class="border border-border rounded-lg p-4 space-y-3">
-            <legend class="text-sm font-semibold text-sinksar px-2">{{ __('app.sinksar_label') }}</legend>
-            <div class="space-y-2">
-                <label class="block text-sm font-medium text-secondary">{{ __('app.title_label') }}</label>
-                <input type="text" name="sinksar_title_am" value="{{ old('sinksar_title_am', $daily->sinksar_title_am ?? '') }}" placeholder="{{ __('app.amharic') }}"
-                       class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
-                <input type="text" name="sinksar_title_en" value="{{ old('sinksar_title_en', $daily->sinksar_title_en ?? '') }}" placeholder="{{ __('app.english') }}"
-                       class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.url_video_label') }}</label>
-                <input type="url" name="sinksar_url" value="{{ old('sinksar_url', $daily->sinksar_url ?? '') }}" placeholder="{{ __('app.youtube_url_placeholder') }}"
-                       class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
-            </div>
-            <div class="space-y-2">
-                <label class="block text-sm font-medium text-secondary">{{ __('app.description_label') }}</label>
-                <textarea name="sinksar_description_am" rows="2" class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none" placeholder="{{ __('app.amharic') }}">{{ old('sinksar_description_am', $daily->sinksar_description_am ?? '') }}</textarea>
-                <textarea name="sinksar_description_en" rows="2" class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none" placeholder="{{ __('app.english') }}">{{ old('sinksar_description_en', $daily->sinksar_description_en ?? '') }}</textarea>
-            </div>
-        </fieldset>
+                {{-- Step 7: Review and publish --}}
+                <section x-show="step === 7" x-cloak class="space-y-4">
+                    <h2 class="text-lg font-semibold text-primary">{{ __('app.review_and_publish') }}</h2>
 
-        {{-- Spiritual Book --}}
-        <fieldset class="border border-border rounded-lg p-4 space-y-3">
-            <legend class="text-sm font-semibold text-book px-2">{{ __('app.spiritual_book_label') }}</legend>
-            <div class="space-y-2">
-                <label class="block text-sm font-medium text-secondary">{{ __('app.title_label') }}</label>
-                <input type="text" name="book_title_am" value="{{ old('book_title_am', $daily->book_title_am ?? '') }}" placeholder="{{ __('app.amharic') }}"
-                       class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
-                <input type="text" name="book_title_en" value="{{ old('book_title_en', $daily->book_title_en ?? '') }}" placeholder="{{ __('app.english') }}"
-                       class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.url_label') }}</label>
-                <input type="url" name="book_url" value="{{ old('book_url', $daily->book_url ?? '') }}" placeholder="{{ __('app.url_placeholder') }}"
-                       class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
-            </div>
-            <div class="space-y-2">
-                <label class="block text-sm font-medium text-secondary">{{ __('app.description_label') }}</label>
-                <textarea name="book_description_am" rows="2" class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none" placeholder="{{ __('app.amharic') }}">{{ old('book_description_am', $daily->book_description_am ?? '') }}</textarea>
-                <textarea name="book_description_en" rows="2" class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none" placeholder="{{ __('app.english') }}">{{ old('book_description_en', $daily->book_description_en ?? '') }}</textarea>
-            </div>
-        </fieldset>
-
-        {{-- References (know more about week/day) — add as many as needed --}}
-        <fieldset class="border border-border rounded-lg p-4 space-y-3"
-                 x-data="{
-                     refs: {{ json_encode(old('references', isset($daily) && $daily->exists ? $daily->references->map(fn($r) => ['name_en' => $r->name_en ?? '', 'name_am' => $r->name_am ?? '', 'url' => $r->url])->values()->toArray() : [['name_en' => '', 'name_am' => '', 'url' => '']])) }},
-                     addRef() { this.refs.push({ name_en: '', name_am: '', url: '' }); },
-                     removeRef(i) { this.refs.splice(i, 1); }
-                 }">
-            <legend class="text-sm font-semibold text-accent px-2">{{ __('app.references_legend') }}</legend>
-            <p class="text-xs text-muted-text">{{ __('app.references_help') }}</p>
-            <template x-for="(ref, i) in refs" :key="i">
-                <div class="flex gap-2 items-start p-2 rounded-lg bg-muted/50">
-                    <div class="flex-1 space-y-2">
-                        <input :name="'references[' + i + '][name_am]'" x-model="ref.name_am" type="text" placeholder="{{ __('app.name_amharic_label') }}"
-                               class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none text-sm">
-                        <input :name="'references[' + i + '][name_en]'" x-model="ref.name_en" type="text" placeholder="{{ __('app.name_english_label') }}"
-                               class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none text-sm">
-                        <input :name="'references[' + i + '][url]'" x-model="ref.url" type="url" placeholder="{{ __('app.url_placeholder') }}"
-                               class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none text-sm">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div class="p-3 rounded-lg border border-border bg-muted/40">
+                            <p class="text-xs text-muted-text mb-1">{{ __('app.day_label') }}</p>
+                            <p class="text-sm font-medium text-primary" x-text="form.day_number || '-'"></p>
+                        </div>
+                        <div class="p-3 rounded-lg border border-border bg-muted/40">
+                            <p class="text-xs text-muted-text mb-1">{{ __('app.date_label') }}</p>
+                            <p class="text-sm font-medium text-primary" x-text="form.date || '-'"></p>
+                        </div>
+                        <div class="p-3 rounded-lg border border-border bg-muted/40">
+                            <p class="text-xs text-muted-text mb-1">{{ __('app.weekly_theme_label') }}</p>
+                            <p class="text-sm font-medium text-primary" x-text="selectedThemeName()"></p>
+                        </div>
+                        <div class="p-3 rounded-lg border border-border bg-muted/40">
+                            <p class="text-xs text-muted-text mb-1">{{ __('app.bible_reading_label') }}</p>
+                            <p class="text-sm font-medium text-primary" x-text="form.bible_reference_am || form.bible_reference_en || '-'"></p>
+                        </div>
                     </div>
-                    <button type="button" @click="removeRef(i)" class="p-2 text-muted-text hover:text-error transition shrink-0" title="{{ __('app.remove') }}">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+
+                    <div class="p-3 rounded-lg border border-border bg-muted/40">
+                        <p class="text-xs text-muted-text mb-1">{{ __('app.mezmur_label') }}</p>
+                        <p class="text-sm font-medium text-primary" x-text="activeMezmurCount()"></p>
+                    </div>
+
+                    <label class="flex items-center gap-3 p-3 rounded-lg border border-border">
+                        <input type="checkbox" x-model="form.is_published" class="rounded border-border text-accent focus:ring-accent">
+                        <span class="text-sm text-secondary">{{ __('app.publish_label') }}</span>
+                    </label>
+                </section>
+            </div>
+
+            <div class="sticky bottom-2 z-30">
+                <div class="bg-card/95 backdrop-blur border border-border shadow-sm rounded-xl p-3 flex items-center justify-between gap-3">
+                    <button
+                        type="button"
+                        @click="backStep()"
+                        :disabled="step === 1 || isSaving"
+                        class="min-h-11 px-4 py-2 rounded-lg bg-muted text-secondary font-medium hover:bg-border transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {{ __('app.back') }}
+                    </button>
+
+                    <div class="flex-1 text-center text-xs">
+                        <span x-show="isSaving" x-cloak class="text-muted-text">{{ __('app.saving') }}</span>
+                        <span x-show="!isSaving && saveNotice" x-cloak class="text-success" x-text="saveNotice"></span>
+                    </div>
+
+                    <button
+                        type="button"
+                        @click="nextStep()"
+                        :disabled="!canProceed() || isSaving"
+                        class="min-h-11 px-5 py-2 rounded-lg bg-accent text-on-accent font-medium hover:bg-accent-hover transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <span x-text="nextButtonText()"></span>
                     </button>
                 </div>
-            </template>
-            <button type="button" @click="addRef()"
-                    class="w-full py-2 border border-dashed border-border rounded-lg text-sm text-muted-text hover:text-accent hover:border-accent transition">
-                + {{ __('app.add_reference') }}
-            </button>
-        </fieldset>
-
-        {{-- Reflection --}}
-        <div class="space-y-2">
-            <label class="block text-sm font-medium text-secondary">{{ __('app.reflection_label') }}</label>
-            <textarea name="reflection_am" rows="3" class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none" placeholder="{{ __('app.amharic_default') }}">{{ old('reflection_am', $daily->reflection_am ?? '') }}</textarea>
-            <textarea name="reflection_en" rows="3" class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none" placeholder="{{ __('app.english_fallback') }}">{{ old('reflection_en', $daily->reflection_en ?? '') }}</textarea>
+            </div>
         </div>
 
-        <label class="flex items-center gap-2 text-sm">
-            <input type="checkbox" name="is_published" value="1" {{ old('is_published', $daily->is_published ?? false) ? 'checked' : '' }}
-                   class="rounded border-border text-accent focus:ring-accent">
-            <span class="text-secondary">{{ __('app.publish_label') }}</span>
-        </label>
+        <script>
+            function dailyWizard(config) {
+                return {
+                    step: Number(config.currentStep || 1),
+                    totalSteps: Number(config.totalSteps || 7),
+                    maxUnlockedStep: config.isEdit ? Number(config.totalSteps || 7) : Number(config.currentStep || 1),
+                    isEdit: Boolean(config.isEdit),
+                    dailyId: config.dailyId ? Number(config.dailyId) : null,
+                    isSaving: false,
+                    saveNotice: '',
+                    errorMessage: '',
+                    seasonStart: config.seasonStart || '',
+                    dayRangesByWeek: config.dayRangesByWeek || {},
+                    themesByWeek: config.themesByWeek || {},
+                    stepLabels: config.stepLabels || {},
+                    urls: config.urls || {},
+                    messages: config.messages || {},
+                    resolvedInfo: null,
+                    form: config.state || {},
 
-        <div class="flex gap-3 pt-2">
-            <button type="submit" class="px-6 py-2.5 bg-accent text-on-accent rounded-lg font-medium hover:bg-accent-hover transition">{{ __('app.save') }}</button>
-            <a href="{{ route('admin.daily.index') }}" class="px-6 py-2.5 bg-muted text-secondary rounded-lg font-medium hover:bg-border transition">{{ __('app.cancel') }}</a>
-        </div>
-    </form>
-</div>
+                    init() {
+                        if (!Array.isArray(this.form.mezmurs) || this.form.mezmurs.length === 0) {
+                            this.form.mezmurs = [{ title_en: '', title_am: '', url: '', description_en: '', description_am: '' }];
+                        }
+                        if (!Array.isArray(this.form.references) || this.form.references.length === 0) {
+                            this.form.references = [{ name_en: '', name_am: '', url: '' }];
+                        }
+                        this.syncFromDayNumber();
+                    },
+
+                    stepText() {
+                        return (this.messages.stepTemplate || 'Step :current of :total')
+                            .replace(':current', String(this.step))
+                            .replace(':total', String(this.totalSteps));
+                    },
+
+                    stepLabel(stepNumber) {
+                        return this.stepLabels[String(stepNumber)] || this.stepLabels[stepNumber] || '';
+                    },
+
+                    isStepUnlocked(stepNumber) {
+                        return stepNumber <= this.maxUnlockedStep;
+                    },
+
+                    jumpToStep(stepNumber) {
+                        if (!this.isStepUnlocked(stepNumber) || this.isSaving) {
+                            return;
+                        }
+                        this.step = stepNumber;
+                        this.errorMessage = '';
+                    },
+
+                    addMezmur() {
+                        this.form.mezmurs.push({
+                            title_en: '',
+                            title_am: '',
+                            url: '',
+                            description_en: '',
+                            description_am: '',
+                        });
+                    },
+
+                    removeMezmur(index) {
+                        if (this.form.mezmurs.length === 1) {
+                            this.form.mezmurs[0] = {
+                                title_en: '',
+                                title_am: '',
+                                url: '',
+                                description_en: '',
+                                description_am: '',
+                            };
+                            return;
+                        }
+                        this.form.mezmurs.splice(index, 1);
+                    },
+
+                    addReference() {
+                        this.form.references.push({
+                            name_en: '',
+                            name_am: '',
+                            url: '',
+                        });
+                    },
+
+                    removeReference(index) {
+                        if (this.form.references.length === 1) {
+                            this.form.references[0] = { name_en: '', name_am: '', url: '' };
+                            return;
+                        }
+                        this.form.references.splice(index, 1);
+                    },
+
+                    canProceed() {
+                        if (this.step !== 1) {
+                            return true;
+                        }
+
+                        return Boolean(
+                            this.form.lent_season_id &&
+                            this.form.weekly_theme_id &&
+                            this.form.day_number &&
+                            this.form.date
+                        );
+                    },
+
+                    nextButtonText() {
+                        if (this.step === this.totalSteps) {
+                            return this.messages.finish || 'Finish';
+                        }
+                        return this.messages.next || 'Next';
+                    },
+
+                    backStep() {
+                        if (this.step > 1 && !this.isSaving) {
+                            this.step -= 1;
+                        }
+                    },
+
+                    async nextStep() {
+                        if (this.isSaving || !this.canProceed()) {
+                            return;
+                        }
+
+                        if (this.step === this.totalSteps) {
+                            await this.saveStep({ finish: true });
+                            return;
+                        }
+
+                        await this.saveStep({ advance: true });
+                    },
+
+                    syncFromDayNumber() {
+                        const day = Number(this.form.day_number || 0);
+                        if (!day || day < 1 || day > 55 || !this.seasonStart) {
+                            this.resolvedInfo = null;
+                            return;
+                        }
+
+                        const seasonParts = this.seasonStart.split('-').map(Number);
+                        if (seasonParts.length === 3) {
+                            const dateObj = new Date(seasonParts[0], seasonParts[1] - 1, seasonParts[2]);
+                            dateObj.setDate(dateObj.getDate() + day - 1);
+                            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                            const date = String(dateObj.getDate()).padStart(2, '0');
+                            this.form.date = dateObj.getFullYear() + '-' + month + '-' + date;
+                        }
+
+                        let resolved = null;
+                        Object.entries(this.dayRangesByWeek || {}).forEach(([week, range]) => {
+                            if (!Array.isArray(range) || range.length !== 2 || resolved) {
+                                return;
+                            }
+                            const start = Number(range[0]);
+                            const end = Number(range[1]);
+                            if (day >= start && day <= end) {
+                                const theme = this.themesByWeek[week];
+                                if (theme?.id) {
+                                    this.form.weekly_theme_id = String(theme.id);
+                                }
+                                resolved = {
+                                    week: Number(week),
+                                    dayOfWeek: day - start + 1,
+                                };
+                            }
+                        });
+
+                        this.resolvedInfo = resolved;
+                    },
+
+                    selectedThemeName() {
+                        const selectedId = Number(this.form.weekly_theme_id || 0);
+                        const themeEntry = Object.values(this.themesByWeek || {}).find((theme) => Number(theme.id) === selectedId);
+                        return themeEntry?.name_en || '-';
+                    },
+
+                    activeMezmurCount() {
+                        const active = (this.form.mezmurs || []).filter((item) => {
+                            return Boolean((item.title_en || '').trim() || (item.title_am || '').trim());
+                        });
+                        return String(active.length);
+                    },
+
+                    serializeStepPayload() {
+                        const step = this.step;
+                        const payload = { step };
+
+                        if (step === 1) {
+                            payload.lent_season_id = this.form.lent_season_id;
+                            payload.weekly_theme_id = this.form.weekly_theme_id;
+                            payload.day_number = this.form.day_number;
+                            payload.date = this.form.date;
+                            payload.day_title_am = this.form.day_title_am;
+                            payload.day_title_en = this.form.day_title_en;
+                        } else if (step === 2) {
+                            payload.bible_reference_am = this.form.bible_reference_am;
+                            payload.bible_reference_en = this.form.bible_reference_en;
+                            payload.bible_summary_am = this.form.bible_summary_am;
+                            payload.bible_summary_en = this.form.bible_summary_en;
+                            payload.bible_text_am = this.form.bible_text_am;
+                            payload.bible_text_en = this.form.bible_text_en;
+                        } else if (step === 3) {
+                            payload.mezmurs = (this.form.mezmurs || []).map((item) => ({
+                                title_en: item.title_en || '',
+                                title_am: item.title_am || '',
+                                url: item.url || '',
+                                description_en: item.description_en || '',
+                                description_am: item.description_am || '',
+                            }));
+                        } else if (step === 4) {
+                            payload.sinksar_title_am = this.form.sinksar_title_am;
+                            payload.sinksar_title_en = this.form.sinksar_title_en;
+                            payload.sinksar_url = this.form.sinksar_url;
+                            payload.sinksar_description_am = this.form.sinksar_description_am;
+                            payload.sinksar_description_en = this.form.sinksar_description_en;
+                        } else if (step === 5) {
+                            payload.book_title_am = this.form.book_title_am;
+                            payload.book_title_en = this.form.book_title_en;
+                            payload.book_url = this.form.book_url;
+                            payload.book_description_am = this.form.book_description_am;
+                            payload.book_description_en = this.form.book_description_en;
+                        } else if (step === 6) {
+                            payload.reflection_am = this.form.reflection_am;
+                            payload.reflection_en = this.form.reflection_en;
+                            payload.references = (this.form.references || []).map((item) => ({
+                                name_en: item.name_en || '',
+                                name_am: item.name_am || '',
+                                url: item.url || '',
+                            }));
+                        } else if (step === 7) {
+                            payload.is_published = Boolean(this.form.is_published);
+                        }
+
+                        return payload;
+                    },
+
+                    async apiRequest(url, method, payload) {
+                        const response = await fetch(url, {
+                            method,
+                            credentials: 'same-origin',
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name=\"csrf-token\"]')?.getAttribute('content') || '',
+                            },
+                            body: JSON.stringify(payload),
+                        });
+
+                        let data = {};
+                        try {
+                            data = await response.json();
+                        } catch (_error) {
+                            data = {};
+                        }
+
+                        if (!response.ok) {
+                            const validationMessage = data?.errors ? this.extractValidationMessage(data.errors) : '';
+                            throw new Error(validationMessage || data?.message || this.messages.failed || 'Failed');
+                        }
+
+                        return data;
+                    },
+
+                    extractValidationMessage(errors) {
+                        const values = Object.values(errors || {});
+                        if (!values.length) {
+                            return '';
+                        }
+                        if (Array.isArray(values[0]) && values[0].length) {
+                            return values[0][0];
+                        }
+                        return '';
+                    },
+
+                    async saveStep({ advance = false, finish = false } = {}) {
+                        this.isSaving = true;
+                        this.errorMessage = '';
+                        this.saveNotice = this.messages.saving || 'Saving...';
+
+                        try {
+                            const payload = this.serializeStepPayload();
+                            if (this.step === 1 && !this.isEdit) {
+                                const createData = await this.apiRequest(this.urls.create, 'POST', payload);
+                                this.isEdit = true;
+                                this.dailyId = Number(createData.daily_id);
+                                if (createData.edit_url) {
+                                    window.history.replaceState({}, '', createData.edit_url);
+                                } else if (this.urls.editTemplate) {
+                                    window.history.replaceState({}, '', this.urls.editTemplate.replace('__DAILY_ID__', String(this.dailyId)));
+                                }
+                            } else {
+                                const patchUrl = this.urls.patchTemplate.replace('__DAILY_ID__', String(this.dailyId));
+                                await this.apiRequest(patchUrl, 'PATCH', payload);
+                            }
+
+                            this.saveNotice = this.messages.saved || 'Saved';
+
+                            if (advance) {
+                                this.step = Math.min(this.step + 1, this.totalSteps);
+                                this.maxUnlockedStep = Math.max(this.maxUnlockedStep, this.step);
+                            }
+
+                            if (finish) {
+                                window.location.href = this.urls.index;
+                            }
+                        } catch (error) {
+                            this.errorMessage = error.message || this.messages.failed || 'Failed';
+                            this.saveNotice = '';
+                        } finally {
+                            this.isSaving = false;
+                        }
+                    },
+                };
+            }
+        </script>
+    @endif
 @endsection

@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\DailyContent;
 use App\Models\LentSeason;
 use App\Services\AbiyTsomStructure;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -67,24 +68,47 @@ class DailyContentController extends Controller
         $themes = $season ? $season->weeklyThemes()->orderBy('week_number')->get() : collect();
         $dayRangesByWeek = $this->getDayRangesByWeek();
         $daily = new DailyContent;
+        $initialStep = max(1, min(7, $this->normalizeStep(request())));
 
-        return view('admin.daily.form', compact('season', 'themes', 'dayRangesByWeek', 'daily'));
+        return view('admin.daily.form', compact('season', 'themes', 'dayRangesByWeek', 'daily', 'initialStep'));
     }
 
-    public function store(Request $request): RedirectResponse
+    /**
+     * Store step-1 data and create a draft daily record.
+     */
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
-        $validated = $this->validateContent($request);
+        $validated = $request->validate([
+            'lent_season_id' => ['required', 'exists:lent_seasons,id'],
+            'weekly_theme_id' => ['required', 'exists:weekly_themes,id'],
+            'day_number' => [
+                'required',
+                'integer',
+                'min:1',
+                'max:55',
+                "unique:daily_contents,day_number,NULL,id,lent_season_id,{$request->input('lent_season_id')}",
+            ],
+            'date' => ['required', 'date'],
+            'day_title_en' => ['nullable', 'string', 'max:255'],
+            'day_title_am' => ['nullable', 'string', 'max:255'],
+        ]);
         $validated['is_published'] = $request->boolean('is_published');
 
-        $mezmurs = $this->parseMezmurs($request);
-        $references = $this->parseReferences($request);
-        unset($validated['mezmurs'], $validated['references']);
-
         $daily = DailyContent::create($validated);
-        $this->syncMezmurs($daily, $mezmurs);
-        $this->syncReferences($daily, $references);
 
-        return redirect('/admin/daily')->with('success', 'Daily content created.');
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Step saved.',
+                'daily_id' => $daily->id,
+                'next_step' => 2,
+                'edit_url' => route('admin.daily.edit', ['daily' => $daily, 'step' => 2]),
+            ]);
+        }
+
+        return redirect()
+            ->route('admin.daily.edit', ['daily' => $daily, 'step' => 2])
+            ->with('success', 'Step saved. Continue with the next section.');
     }
 
     public function edit(DailyContent $daily): View
@@ -92,8 +116,9 @@ class DailyContentController extends Controller
         $season = LentSeason::active();
         $themes = $season ? $season->weeklyThemes()->orderBy('week_number')->get() : collect();
         $dayRangesByWeek = $this->getDayRangesByWeek();
+        $initialStep = max(1, min(7, $this->normalizeStep(request())));
 
-        return view('admin.daily.form', compact('season', 'themes', 'daily', 'dayRangesByWeek'));
+        return view('admin.daily.form', compact('season', 'themes', 'daily', 'dayRangesByWeek', 'initialStep'));
     }
 
     public function update(Request $request, DailyContent $daily): RedirectResponse
@@ -110,6 +135,117 @@ class DailyContentController extends Controller
         $this->syncReferences($daily, $references);
 
         return redirect('/admin/daily')->with('success', 'Daily content updated.');
+    }
+
+    /**
+     * Save one wizard step at a time.
+     */
+    public function patch(Request $request, DailyContent $daily): JsonResponse
+    {
+        $step = $this->normalizeStep($request);
+        $updates = [];
+
+        switch ($step) {
+            case 1:
+                $updates = $request->validate([
+                    'lent_season_id' => ['required', 'exists:lent_seasons,id'],
+                    'weekly_theme_id' => ['required', 'exists:weekly_themes,id'],
+                    'day_number' => [
+                        'required',
+                        'integer',
+                        'min:1',
+                        'max:55',
+                        "unique:daily_contents,day_number,{$daily->id},id,lent_season_id,{$request->input('lent_season_id', $daily->lent_season_id)}",
+                    ],
+                    'date' => ['required', 'date'],
+                    'day_title_en' => ['nullable', 'string', 'max:255'],
+                    'day_title_am' => ['nullable', 'string', 'max:255'],
+                ]);
+                break;
+
+            case 2:
+                $updates = $request->validate([
+                    'bible_reference_en' => ['nullable', 'string', 'max:255'],
+                    'bible_reference_am' => ['nullable', 'string', 'max:255'],
+                    'bible_summary_en' => ['nullable', 'string'],
+                    'bible_summary_am' => ['nullable', 'string'],
+                    'bible_text_en' => ['nullable', 'string'],
+                    'bible_text_am' => ['nullable', 'string'],
+                ]);
+                break;
+
+            case 3:
+                $request->validate([
+                    'mezmurs' => ['nullable', 'array'],
+                    'mezmurs.*.title_en' => ['nullable', 'string', 'max:255'],
+                    'mezmurs.*.title_am' => ['nullable', 'string', 'max:255'],
+                    'mezmurs.*.url' => ['nullable', 'url', 'max:500'],
+                    'mezmurs.*.description_en' => ['nullable', 'string'],
+                    'mezmurs.*.description_am' => ['nullable', 'string'],
+                ]);
+                $this->syncMezmurs($daily, $this->parseMezmurs($request));
+                break;
+
+            case 4:
+                $updates = $request->validate([
+                    'sinksar_title_en' => ['nullable', 'string', 'max:255'],
+                    'sinksar_title_am' => ['nullable', 'string', 'max:255'],
+                    'sinksar_url' => ['nullable', 'url', 'max:500'],
+                    'sinksar_description_en' => ['nullable', 'string'],
+                    'sinksar_description_am' => ['nullable', 'string'],
+                ]);
+                break;
+
+            case 5:
+                $updates = $request->validate([
+                    'book_title_en' => ['nullable', 'string', 'max:255'],
+                    'book_title_am' => ['nullable', 'string', 'max:255'],
+                    'book_url' => ['nullable', 'url', 'max:500'],
+                    'book_description_en' => ['nullable', 'string'],
+                    'book_description_am' => ['nullable', 'string'],
+                ]);
+                break;
+
+            case 6:
+                $request->validate([
+                    'reflection_en' => ['nullable', 'string'],
+                    'reflection_am' => ['nullable', 'string'],
+                    'references' => ['nullable', 'array'],
+                    'references.*.name_en' => ['nullable', 'string', 'max:255'],
+                    'references.*.name_am' => ['nullable', 'string', 'max:255'],
+                    'references.*.url' => ['nullable', 'url', 'max:500'],
+                ]);
+                $updates = [
+                    'reflection_en' => $request->input('reflection_en'),
+                    'reflection_am' => $request->input('reflection_am'),
+                ];
+                $this->syncReferences($daily, $this->parseReferences($request));
+                break;
+
+            case 7:
+                $updates = $request->validate([
+                    'is_published' => ['required', 'boolean'],
+                ]);
+                break;
+
+            default:
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unsupported step.',
+                ], 422);
+        }
+
+        if (! empty($updates)) {
+            $daily->update($updates);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Step saved.',
+            'step' => $step,
+            'daily_id' => $daily->id,
+            'next_step' => min($step + 1, 7),
+        ]);
     }
 
     /**
@@ -260,5 +396,13 @@ class DailyContentController extends Controller
                 'sort_order' => $i,
             ]);
         }
+    }
+
+    /**
+     * Normalize incoming wizard step number.
+     */
+    private function normalizeStep(Request $request): int
+    {
+        return (int) ($request->integer('step', 1));
     }
 }
