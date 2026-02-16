@@ -1,7 +1,7 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/$USER/Abiy_Tsom
+    - export DEPLOYPATH=/home/abunetdg/abiytsom.abuneteklehaymanot.org
     - /bin/cp -R $DEPLOYPATH/ $DEPLOYPATH/
     - cd $DEPLOYPATH && /usr/local/bin/php artisan down --retry=30
     - cd $DEPLOYPATH && /usr/local/bin/composer install --no-dev --optimize-autoloader --no-interaction
