@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}"
       x-data="{
-        darkMode: localStorage.getItem('theme') === 'dark',
+        darkMode: localStorage.getItem('theme') !== 'light',
         toggleTheme() {
           this.darkMode = !this.darkMode;
           const theme = this.darkMode ? 'dark' : 'light';
@@ -10,14 +10,14 @@
         }
       }"
       :class="{ 'dark': darkMode }"
-      x-init="darkMode = localStorage.getItem('theme') === 'dark'">
+      x-init="if (!localStorage.getItem('theme')) { localStorage.setItem('theme', 'dark'); darkMode = true; }">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="theme-color" content="#0a6286">
     <script>
-        (function(){var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.classList.add('dark');})();
+        (function(){var t=localStorage.getItem('theme');if(t!=='light')document.documentElement.classList.add('dark');})();
     </script>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">

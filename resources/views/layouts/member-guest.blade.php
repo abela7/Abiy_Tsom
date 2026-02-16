@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
-      x-data="{ darkMode: localStorage.getItem('theme') === 'dark' }"
+      x-data="{ darkMode: localStorage.getItem('theme') !== 'light' }"
       x-effect="document.documentElement.classList.toggle('dark', darkMode)"
       :class="{ 'dark': darkMode }"
-      x-init="darkMode = localStorage.getItem('theme') === 'dark'">
+      x-init="if (!localStorage.getItem('theme')) { localStorage.setItem('theme', 'dark'); darkMode = true; }">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,7 +12,7 @@
     @include('partials.favicon')
     <title>@yield('title', __('app.app_name'))</title>
     <script>
-        (function(){var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.classList.add('dark');})();
+        (function(){var t=localStorage.getItem('theme');if(t!=='light')document.documentElement.classList.add('dark');})();
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

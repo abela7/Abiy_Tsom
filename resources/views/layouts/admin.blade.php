@@ -7,7 +7,7 @@
     @include('partials.favicon')
     <title>@yield('title', __('app.admin')) - {{ __('app.app_name') }}</title>
     <script>
-        (function(){var t=localStorage.getItem('admin_theme');if(t==='dark')document.documentElement.classList.add('dark');})();
+        (function(){var t=localStorage.getItem('admin_theme');if(t!=='light')document.documentElement.classList.add('dark');})();
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,7 +16,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-surface text-primary font-sans"
-      x-data="{ sidebarOpen: false, darkMode: localStorage.getItem('admin_theme') === 'dark' }"
+      x-data="{ sidebarOpen: false, darkMode: localStorage.getItem('admin_theme') !== 'light' }"
       x-effect="document.documentElement.classList.toggle('dark', darkMode)">
 
     {{-- Top bar --}}
