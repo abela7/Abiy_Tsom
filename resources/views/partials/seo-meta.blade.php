@@ -10,7 +10,7 @@
     $twitterCard = seo('twitter_card', 'summary_large_image') ?? 'summary_large_image';
 
     $storedOgImage = seo('og_image');
-    $ogImageUrl = $ogImage
+    $ogImageUrl = ($ogImage ?? null)
         ?? ($storedOgImage
             ? \Illuminate\Support\Facades\Storage::disk('public')->url($storedOgImage)
             : asset('images/og-cover.png'));
