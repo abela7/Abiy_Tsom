@@ -17,16 +17,33 @@
 </head>
 <body class="min-h-screen bg-surface text-primary font-sans"
       x-data="{
-        sidebarOpen: false,
+        sidebarOpen: window.innerWidth >= 1024 ? (localStorage.getItem('admin_sidebar') !== 'closed') : false,
         darkMode: localStorage.getItem('admin_theme') !== 'light',
         locale: '{{ app()->getLocale() }}',
+        isDesktop: window.innerWidth >= 1024,
+        toggleSidebar() {
+          this.sidebarOpen = !this.sidebarOpen;
+          if (this.isDesktop) {
+            localStorage.setItem('admin_sidebar', this.sidebarOpen ? 'open' : 'closed');
+          }
+        },
         setLocale(lang) {
           this.locale = lang;
           const url = new URL(window.location.href);
           url.searchParams.set('lang', lang);
           window.location.href = url.toString();
+        },
+        handleResize() {
+          const wasDesktop = this.isDesktop;
+          this.isDesktop = window.innerWidth >= 1024;
+          if (!wasDesktop && this.isDesktop) {
+            this.sidebarOpen = localStorage.getItem('admin_sidebar') !== 'closed';
+          } else if (wasDesktop && !this.isDesktop) {
+            this.sidebarOpen = false;
+          }
         }
       }"
+      x-init="window.addEventListener('resize', () => handleResize())"
       x-effect="document.documentElement.classList.toggle('dark', darkMode)">
     @php
         $currentAdmin = auth()->user();
@@ -37,8 +54,9 @@
     <header class="bg-accent text-on-accent shadow-lg sticky top-0 z-50">
         <div class="flex items-center justify-between px-4 h-14">
             <div class="flex items-center gap-3">
-                <button type="button" @click="sidebarOpen = !sidebarOpen" class="lg:hidden p-1" aria-label="{{ __('app.toggle_menu') }}">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                <button type="button" @click="toggleSidebar()" class="p-1 rounded-lg hover:bg-accent-overlay transition" aria-label="{{ __('app.toggle_menu') }}">
+                    <svg x-show="!sidebarOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    <svg x-show="sidebarOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" x-cloak><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
                 <a href="{{ $adminHomeUrl }}" class="font-bold text-lg">{{ __('app.app_name') }} <span class="text-accent-secondary">{{ __('app.admin') }}</span></a>
             </div>
@@ -95,10 +113,11 @@
         </div>
     </header>
 
-    <div class="flex">
+    <div class="relative">
         {{-- Sidebar --}}
-        <aside class="fixed inset-y-0 left-0 z-40 w-64 bg-card shadow-xl transform transition-transform duration-200 lg:translate-x-0 lg:top-14 lg:shadow-none border-r border-border pt-14 lg:pt-4"
-               :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
+        <aside class="fixed top-14 left-0 bottom-0 z-40 w-64 bg-card border-r border-border transform transition-transform duration-200 ease-in-out overflow-y-auto"
+               :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+               style="scrollbar-width: thin;">
             <div class="py-4">
                 <nav class="space-y-1 px-3">
                     @php
@@ -129,11 +148,12 @@
         </aside>
 
         {{-- Overlay for mobile sidebar --}}
-        <div x-show="sidebarOpen" @click="sidebarOpen = false"
-             class="fixed inset-0 bg-overlay z-30 lg:hidden" x-transition.opacity></div>
+        <div x-show="sidebarOpen && !isDesktop" @click="toggleSidebar()"
+             class="fixed inset-0 top-14 bg-black/40 z-30" x-transition.opacity></div>
 
-        {{-- Main content --}}
-        <main class="flex-1 p-4 lg:p-6 lg:ml-64 min-h-[calc(100vh-3.5rem)] overflow-x-hidden">
+        {{-- Main content: pushed right on desktop when sidebar is open --}}
+        <main class="min-h-[calc(100vh-3.5rem)] overflow-x-hidden p-4 lg:p-6 transition-[margin-left] duration-200 ease-in-out"
+              :class="sidebarOpen && isDesktop ? 'lg:ml-64' : 'ml-0'">
             {{-- Flash messages --}}
             @if(session('success'))
                 <div class="mb-4 p-3 bg-success-bg border border-success text-success rounded-lg text-sm"
