@@ -1,15 +1,14 @@
 @extends('layouts.admin')
-@php($isEdit = isset($daily) && $daily->exists)
-@section('title', $isEdit ? __('app.edit_day', ['day' => $daily->day_number]) : __('app.create_daily_content'))
+@section('title', (isset($daily) && $daily->exists) ? __('app.edit_day', ['day' => $daily->day_number]) : __('app.create_daily_content'))
 
 @section('content')
 <div class="max-w-3xl">
-    <h1 class="text-2xl font-bold text-primary mb-6">{{ $isEdit ? __('app.edit_day', ['day' => $daily->day_number]) : __('app.create_daily_content') }}</h1>
+    <h1 class="text-2xl font-bold text-primary mb-6">{{ (isset($daily) && $daily->exists) ? __('app.edit_day', ['day' => $daily->day_number]) : __('app.create_daily_content') }}</h1>
 
-    <form method="POST" action="{{ $isEdit ? route('admin.daily.update', $daily) : route('admin.daily.store') }}"
+    <form method="POST" action="{{ (isset($daily) && $daily->exists) ? route('admin.daily.update', $daily) : route('admin.daily.store') }}"
           class="bg-card rounded-xl shadow-sm border border-border p-6 space-y-5">
         @csrf
-        @if($isEdit) @method('PUT') @endif
+        @if(isset($daily) && $daily->exists) @method('PUT') @endif
 
         <input type="hidden" name="lent_season_id" value="{{ $season?->id }}">
 
@@ -53,7 +52,7 @@
             </div>
             <div>
                 <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.date_label') }}</label>
-                <input type="date" name="date" x-ref="dateInput" value="{{ old('date', $isEdit ? $daily->date->format('Y-m-d') : '') }}" required
+                <input type="date" name="date" x-ref="dateInput" value="{{ old('date', (isset($daily) && $daily->exists) ? $daily->date->format('Y-m-d') : '') }}" required
                        class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
             </div>
             <div>
