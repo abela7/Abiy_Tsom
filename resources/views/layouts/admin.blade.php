@@ -81,7 +81,7 @@
              class="fixed inset-0 bg-overlay z-30 lg:hidden" x-transition.opacity></div>
 
         {{-- Main content --}}
-        <main class="flex-1 p-4 lg:p-6 min-h-[calc(100vh-3.5rem)]">
+        <main class="flex-1 p-4 lg:p-6 min-h-[calc(100vh-3.5rem)] overflow-x-hidden">
             {{-- Flash messages --}}
             @if(session('success'))
                 <div class="mb-4 p-3 bg-success-bg border border-success text-success rounded-lg text-sm"
