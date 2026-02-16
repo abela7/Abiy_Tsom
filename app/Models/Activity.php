@@ -21,6 +21,8 @@ class Activity extends Model
         'description',
         'sort_order',
         'is_active',
+        'created_by_id',
+        'updated_by_id',
     ];
 
     /** @return array<string, string> */
@@ -45,5 +47,21 @@ class Activity extends Model
     public function checklists(): HasMany
     {
         return $this->hasMany(MemberChecklist::class);
+    }
+
+    /**
+     * Admin user who created this activity.
+     */
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by_id');
+    }
+
+    /**
+     * Admin user who last updated this activity.
+     */
+    public function updatedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'updated_by_id');
     }
 }

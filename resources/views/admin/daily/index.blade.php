@@ -28,6 +28,7 @@
                     <th class="text-left px-4 py-3 font-semibold text-secondary">{{ __('app.title') }}</th>
                     <th class="text-left px-4 py-3 font-semibold text-secondary">{{ __('app.bible') }}</th>
                     <th class="text-left px-4 py-3 font-semibold text-secondary">{{ __('app.status') }}</th>
+                    <th class="text-left px-4 py-3 font-semibold text-secondary">{{ __('app.writer') }}</th>
                     <th class="text-left px-4 py-3 font-semibold text-secondary">{{ __('app.actions') }}</th>
                 </tr>
             </thead>
@@ -44,12 +45,16 @@
                                 {{ $content->is_published ? __('app.published') : __('app.draft') }}
                             </span>
                         </td>
+                        <td class="px-4 py-3 text-xs text-secondary">
+                            <div>{{ __('app.created_by') }}: {{ $content->createdBy?->name ?? '—' }}</div>
+                            <div class="text-muted-text">{{ __('app.updated_by') }}: {{ $content->updatedBy?->name ?? '—' }}</div>
+                        </td>
                         <td class="px-4 py-3">
                             <a href="{{ route('admin.daily.edit', $content) }}" class="text-accent hover:underline">{{ __('app.edit') }}</a>
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="7" class="px-4 py-8 text-center text-muted-text">{{ __('app.no_daily_content_yet') }}</td></tr>
+                    <tr><td colspan="8" class="px-4 py-8 text-center text-muted-text">{{ __('app.no_daily_content_yet') }}</td></tr>
                 @endforelse
             </tbody>
         </table>

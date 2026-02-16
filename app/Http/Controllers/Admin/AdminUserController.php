@@ -48,7 +48,7 @@ class AdminUserController extends Controller
             'username' => ['required', 'string', 'max:64', 'unique:users,username'],
             'email' => ['nullable', 'email', 'max:255'],
             'password' => ['required', 'confirmed', Password::defaults()],
-            'role' => ['required', 'in:admin,editor'],
+            'role' => ['required', 'in:admin,editor,writer'],
         ]);
 
         $data['password'] = Hash::make($data['password']);
@@ -92,7 +92,7 @@ class AdminUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:64', 'unique:users,username,' . $admin->id],
             'email' => ['nullable', 'email', 'max:255'],
-            'role' => ['required', 'in:admin,editor'],
+            'role' => ['required', 'in:admin,editor,writer'],
         ];
 
         if ($request->filled('password')) {

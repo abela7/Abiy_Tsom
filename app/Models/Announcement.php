@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -22,6 +23,8 @@ class Announcement extends Model
         'button_label',
         'button_url',
         'button_enabled',
+        'created_by_id',
+        'updated_by_id',
     ];
 
     /** @var array<string, string> */
@@ -90,5 +93,21 @@ class Announcement extends Model
     public function getYoutubePositionAttribute($value): string
     {
         return in_array($value, ['top', 'end'], true) ? $value : 'end';
+    }
+
+    /**
+     * Admin user who created this announcement.
+     */
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by_id');
+    }
+
+    /**
+     * Admin user who last updated this announcement.
+     */
+    public function updatedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'updated_by_id');
     }
 }

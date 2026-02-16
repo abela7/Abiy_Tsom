@@ -49,6 +49,10 @@ class AuthController extends Controller
         Auth::login($user, $request->boolean('remember'));
         $request->session()->regenerate();
 
+        if ($user->isWriter()) {
+            return redirect()->route('admin.daily.index');
+        }
+
         return redirect()->intended('/admin/dashboard');
     }
 

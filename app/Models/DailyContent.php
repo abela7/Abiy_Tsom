@@ -40,6 +40,8 @@ class DailyContent extends Model
         'reflection_en',
         'reflection_am',
         'is_published',
+        'created_by_id',
+        'updated_by_id',
     ];
 
     /** @return array<string, string> */
@@ -89,5 +91,21 @@ class DailyContent extends Model
     public function references(): HasMany
     {
         return $this->hasMany(DailyContentReference::class)->orderBy('sort_order');
+    }
+
+    /**
+     * Admin user who created this day entry.
+     */
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by_id');
+    }
+
+    /**
+     * Admin user who last updated this day entry.
+     */
+    public function updatedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'updated_by_id');
     }
 }

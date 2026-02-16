@@ -18,7 +18,9 @@ class AnnouncementController extends Controller
 {
     public function index(): View
     {
-        $announcements = Announcement::orderByDesc('created_at')->get();
+        $announcements = Announcement::with(['createdBy', 'updatedBy'])
+            ->orderByDesc('created_at')
+            ->get();
 
         return view('admin.announcements.index', compact('announcements'));
     }
@@ -44,6 +46,8 @@ class AnnouncementController extends Controller
         ]);
 
         $validated['button_enabled'] = $request->boolean('button_enabled');
+        $validated['created_by_id'] = auth()->id();
+        $validated['updated_by_id'] = auth()->id();
 
         if ($request->hasFile('photo')) {
             $validated['photo'] = $request->file('photo')
@@ -76,6 +80,7 @@ class AnnouncementController extends Controller
         ]);
 
         $validated['button_enabled'] = $request->boolean('button_enabled');
+        $validated['updated_by_id'] = auth()->id();
 
         if ($request->hasFile('photo')) {
             if ($announcement->photo) {

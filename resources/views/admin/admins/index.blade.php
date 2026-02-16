@@ -33,7 +33,7 @@
                     </td>
                     <td class="px-4 py-3">{{ $user->name }}</td>
                     <td class="px-4 py-3 text-muted-text">{{ $user->email ?? '—' }}</td>
-                    <td class="px-4 py-3 capitalize">{{ $user->role }}</td>
+                    <td class="px-4 py-3">{{ __('app.' . $user->role) }}</td>
                     <td class="px-4 py-3 flex flex-wrap gap-3">
                         <a href="{{ route('admin.admins.show', $user) }}" class="text-accent hover:underline">{{ __('app.view') }}</a>
                         <a href="{{ route('admin.admins.edit', $user) }}" class="text-accent hover:underline">{{ __('app.edit') }}</a>

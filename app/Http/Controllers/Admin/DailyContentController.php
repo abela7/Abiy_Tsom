@@ -45,6 +45,8 @@ class DailyContentController extends Controller
                 'day_number' => $meta['day_number'],
                 'date' => $meta['date'],
                 'is_published' => false,
+                'created_by_id' => auth()->id(),
+                'updated_by_id' => auth()->id(),
             ]);
             $created++;
         }
@@ -56,7 +58,7 @@ class DailyContentController extends Controller
     {
         $season = LentSeason::active();
         $contents = $season
-            ? $season->dailyContents()->with('weeklyTheme')->orderBy('day_number')->get()
+            ? $season->dailyContents()->with(['weeklyTheme', 'createdBy', 'updatedBy'])->orderBy('day_number')->get()
             : collect();
 
         return view('admin.daily.index', compact('season', 'contents'));
@@ -93,6 +95,8 @@ class DailyContentController extends Controller
             'day_title_am' => ['nullable', 'string', 'max:255'],
         ]);
         $validated['is_published'] = $request->boolean('is_published');
+        $validated['created_by_id'] = auth()->id();
+        $validated['updated_by_id'] = auth()->id();
 
         $daily = DailyContent::create($validated);
 
@@ -125,6 +129,7 @@ class DailyContentController extends Controller
     {
         $validated = $this->validateContent($request, $daily);
         $validated['is_published'] = $request->boolean('is_published');
+        $validated['updated_by_id'] = auth()->id();
 
         $mezmurs = $this->parseMezmurs($request);
         $references = $this->parseReferences($request);
@@ -234,6 +239,8 @@ class DailyContentController extends Controller
                     'message' => 'Unsupported step.',
                 ], 422);
         }
+
+        $updates['updated_by_id'] = auth()->id();
 
         if (! empty($updates)) {
             $daily->update($updates);

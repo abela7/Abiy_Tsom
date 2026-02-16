@@ -55,6 +55,7 @@
             <select name="role" class="w-full px-3 py-2 border border-border rounded-lg bg-card text-primary focus:ring-2 focus:ring-accent outline-none">
                 <option value="admin" {{ old('role', $user->role ?? 'admin') === 'admin' ? 'selected' : '' }}>{{ __('app.admin') }}</option>
                 <option value="editor" {{ old('role', $user->role ?? '') === 'editor' ? 'selected' : '' }}>{{ __('app.editor') }}</option>
+                <option value="writer" {{ old('role', $user->role ?? '') === 'writer' ? 'selected' : '' }}>{{ __('app.writer') }}</option>
             </select>
         </div>
         @endif

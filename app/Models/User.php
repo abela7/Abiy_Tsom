@@ -47,7 +47,15 @@ class User extends Authenticatable
      */
     public function isAdmin(): bool
     {
-        return $this->role === 'admin' || $this->role === 'editor';
+        return in_array($this->role, ['admin', 'editor', 'writer'], true);
+    }
+
+    /**
+     * Check if the user is a writer.
+     */
+    public function isWriter(): bool
+    {
+        return $this->role === 'writer';
     }
 
     /**

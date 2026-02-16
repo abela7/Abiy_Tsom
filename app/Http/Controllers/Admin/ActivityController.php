@@ -43,6 +43,8 @@ class ActivityController extends Controller
         ]);
 
         $validated['is_active'] = $request->boolean('is_active', true);
+        $validated['created_by_id'] = auth()->id();
+        $validated['updated_by_id'] = auth()->id();
         Activity::create($validated);
 
         return redirect('/admin/activities')->with('success', 'Activity created.');
@@ -64,6 +66,7 @@ class ActivityController extends Controller
         ]);
 
         $validated['is_active'] = $request->boolean('is_active', true);
+        $validated['updated_by_id'] = auth()->id();
         $activity->update($validated);
 
         return redirect('/admin/activities')->with('success', 'Activity updated.');

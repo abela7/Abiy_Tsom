@@ -30,7 +30,7 @@
                 @if($admin->is_super_admin)
                     <span class="px-2 py-0.5 rounded-full text-sm font-medium bg-accent-secondary/20 text-accent-secondary">{{ __('app.super_admin') }}</span>
                 @else
-                    {{ $admin->role }}
+                    {{ __('app.' . $admin->role) }}
                 @endif
             </p>
         </div>

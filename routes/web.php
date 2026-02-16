@@ -68,49 +68,55 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
 // Admin protected routes
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
-    // Dashboard
-    Route::get('/dashboard', [Admin\DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/members', [Admin\MembersController::class, 'index'])->name('members.index');
+    // Writer/editor/admin routes
+    Route::middleware('admin_role:writer,editor,admin')->group(function () {
+        // Daily content
+        Route::get('/daily', [Admin\DailyContentController::class, 'index'])->name('daily.index');
+        Route::post('/daily/scaffold', [Admin\DailyContentController::class, 'scaffold'])->name('daily.scaffold');
+        Route::get('/daily/create', [Admin\DailyContentController::class, 'create'])->name('daily.create');
+        Route::post('/daily', [Admin\DailyContentController::class, 'store'])->name('daily.store');
+        Route::get('/daily/{daily}/edit', [Admin\DailyContentController::class, 'edit'])->name('daily.edit');
+        Route::patch('/daily/{daily}', [Admin\DailyContentController::class, 'patch'])->name('daily.patch');
+        Route::put('/daily/{daily}', [Admin\DailyContentController::class, 'update'])->name('daily.update');
 
-    // Seasons
-    Route::get('/seasons', [Admin\LentSeasonController::class, 'index'])->name('seasons.index');
-    Route::get('/seasons/create', [Admin\LentSeasonController::class, 'create'])->name('seasons.create');
-    Route::post('/seasons', [Admin\LentSeasonController::class, 'store'])->name('seasons.store');
-    Route::get('/seasons/{season}/edit', [Admin\LentSeasonController::class, 'edit'])->name('seasons.edit');
-    Route::put('/seasons/{season}', [Admin\LentSeasonController::class, 'update'])->name('seasons.update');
+        // Announcements
+        Route::resource('announcements', Admin\AnnouncementController::class)->except(['show']);
 
-    // Weekly themes
-    Route::get('/themes', [Admin\WeeklyThemeController::class, 'index'])->name('themes.index');
-    Route::get('/themes/create', [Admin\WeeklyThemeController::class, 'create'])->name('themes.create');
-    Route::post('/themes', [Admin\WeeklyThemeController::class, 'store'])->name('themes.store');
-    Route::get('/themes/{theme}/edit', [Admin\WeeklyThemeController::class, 'edit'])->name('themes.edit');
-    Route::put('/themes/{theme}', [Admin\WeeklyThemeController::class, 'update'])->name('themes.update');
+        // Activities
+        Route::get('/activities', [Admin\ActivityController::class, 'index'])->name('activities.index');
+        Route::get('/activities/create', [Admin\ActivityController::class, 'create'])->name('activities.create');
+        Route::post('/activities', [Admin\ActivityController::class, 'store'])->name('activities.store');
+        Route::get('/activities/{activity}/edit', [Admin\ActivityController::class, 'edit'])->name('activities.edit');
+        Route::put('/activities/{activity}', [Admin\ActivityController::class, 'update'])->name('activities.update');
+        Route::delete('/activities/{activity}', [Admin\ActivityController::class, 'destroy'])->name('activities.destroy');
+    });
 
-    // Daily content
-    Route::get('/daily', [Admin\DailyContentController::class, 'index'])->name('daily.index');
-    Route::post('/daily/scaffold', [Admin\DailyContentController::class, 'scaffold'])->name('daily.scaffold');
-    Route::get('/daily/create', [Admin\DailyContentController::class, 'create'])->name('daily.create');
-    Route::post('/daily', [Admin\DailyContentController::class, 'store'])->name('daily.store');
-    Route::get('/daily/{daily}/edit', [Admin\DailyContentController::class, 'edit'])->name('daily.edit');
-    Route::patch('/daily/{daily}', [Admin\DailyContentController::class, 'patch'])->name('daily.patch');
-    Route::put('/daily/{daily}', [Admin\DailyContentController::class, 'update'])->name('daily.update');
+    // Editor/admin routes
+    Route::middleware('admin_role:editor,admin')->group(function () {
+        // Dashboard
+        Route::get('/dashboard', [Admin\DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/members', [Admin\MembersController::class, 'index'])->name('members.index');
 
-    // Announcements
-    Route::resource('announcements', Admin\AnnouncementController::class)->except(['show']);
+        // Seasons
+        Route::get('/seasons', [Admin\LentSeasonController::class, 'index'])->name('seasons.index');
+        Route::get('/seasons/create', [Admin\LentSeasonController::class, 'create'])->name('seasons.create');
+        Route::post('/seasons', [Admin\LentSeasonController::class, 'store'])->name('seasons.store');
+        Route::get('/seasons/{season}/edit', [Admin\LentSeasonController::class, 'edit'])->name('seasons.edit');
+        Route::put('/seasons/{season}', [Admin\LentSeasonController::class, 'update'])->name('seasons.update');
 
-    // Activities
-    Route::get('/activities', [Admin\ActivityController::class, 'index'])->name('activities.index');
-    Route::get('/activities/create', [Admin\ActivityController::class, 'create'])->name('activities.create');
-    Route::post('/activities', [Admin\ActivityController::class, 'store'])->name('activities.store');
-    Route::get('/activities/{activity}/edit', [Admin\ActivityController::class, 'edit'])->name('activities.edit');
-    Route::put('/activities/{activity}', [Admin\ActivityController::class, 'update'])->name('activities.update');
-    Route::delete('/activities/{activity}', [Admin\ActivityController::class, 'destroy'])->name('activities.destroy');
+        // Weekly themes
+        Route::get('/themes', [Admin\WeeklyThemeController::class, 'index'])->name('themes.index');
+        Route::get('/themes/create', [Admin\WeeklyThemeController::class, 'create'])->name('themes.create');
+        Route::post('/themes', [Admin\WeeklyThemeController::class, 'store'])->name('themes.store');
+        Route::get('/themes/{theme}/edit', [Admin\WeeklyThemeController::class, 'edit'])->name('themes.edit');
+        Route::put('/themes/{theme}', [Admin\WeeklyThemeController::class, 'update'])->name('themes.update');
 
-    // Translations
-    Route::get('/translations', [Admin\TranslationController::class, 'index'])->name('translations.index');
-    Route::post('/translations', [Admin\TranslationController::class, 'store'])->name('translations.store');
-    Route::put('/translations', [Admin\TranslationController::class, 'update'])->name('translations.update');
-    Route::post('/translations/sync', [Admin\TranslationController::class, 'sync'])->name('translations.sync');
+        // Translations
+        Route::get('/translations', [Admin\TranslationController::class, 'index'])->name('translations.index');
+        Route::post('/translations', [Admin\TranslationController::class, 'store'])->name('translations.store');
+        Route::put('/translations', [Admin\TranslationController::class, 'update'])->name('translations.update');
+        Route::post('/translations/sync', [Admin\TranslationController::class, 'sync'])->name('translations.sync');
+    });
 
     // Admin users (super admin only)
     Route::middleware('super_admin')->prefix('admins')->name('admins.')->group(function () {
