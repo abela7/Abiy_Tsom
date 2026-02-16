@@ -16,7 +16,17 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-surface text-primary font-sans"
-      x-data="{ sidebarOpen: false, darkMode: localStorage.getItem('admin_theme') !== 'light' }"
+      x-data="{
+        sidebarOpen: false,
+        darkMode: localStorage.getItem('admin_theme') !== 'light',
+        locale: '{{ app()->getLocale() }}',
+        setLocale(lang) {
+          this.locale = lang;
+          const url = new URL(window.location.href);
+          url.searchParams.set('lang', lang);
+          window.location.href = url.toString();
+        }
+      }"
       x-effect="document.documentElement.classList.toggle('dark', darkMode)">
     @php
         $currentAdmin = auth()->user();
@@ -32,24 +42,51 @@
                 </button>
                 <a href="{{ $adminHomeUrl }}" class="font-bold text-lg">{{ __('app.app_name') }} <span class="text-accent-secondary">{{ __('app.admin') }}</span></a>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-1">
                 <button type="button" @click="darkMode = !darkMode; localStorage.setItem('admin_theme', darkMode ? 'dark' : 'light')"
                         class="p-1.5 rounded-lg hover:bg-accent-overlay transition" aria-label="{{ __('app.toggle_theme') }}"
                         title="{{ __('app.theme') }}">
                     <svg x-show="!darkMode" class="w-5 h-5 text-accent-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
                     <svg x-show="darkMode" class="w-5 h-5 text-accent-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24" x-cloak><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
                 </button>
-                <div class="flex rounded-lg overflow-hidden border border-accent-secondary/40">
-                    <a href="{{ url()->current() . '?' . http_build_query(array_merge(request()->query(), ['lang' => 'en'])) }}"
-                       class="px-2.5 py-1 text-xs font-medium transition {{ app()->getLocale() === 'en' ? 'bg-accent-secondary/30 text-on-accent' : 'text-accent-secondary hover:bg-accent-overlay' }}">
-                        {{ __('app.lang_en') }}
-                    </a>
-                    <a href="{{ url()->current() . '?' . http_build_query(array_merge(request()->query(), ['lang' => 'am'])) }}"
-                       class="px-2.5 py-1 text-xs font-medium transition {{ app()->getLocale() === 'am' ? 'bg-accent-secondary/30 text-on-accent' : 'text-accent-secondary hover:bg-accent-overlay' }}">
-                        {{ __('app.lang_am') }}
-                    </a>
+                <div class="relative" x-data="{ open: false }" @click.away="open = false">
+                    <button type="button"
+                            @click="open = !open"
+                            class="p-1.5 rounded-lg hover:bg-accent-overlay transition"
+                            aria-label="{{ __('app.language') }}">
+                        <svg class="w-5 h-5 text-accent-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
+                        </svg>
+                    </button>
+                    <div x-show="open"
+                         x-transition:enter="transition ease-out duration-100"
+                         x-transition:enter-start="opacity-0 scale-95"
+                         x-transition:enter-end="opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="opacity-100 scale-100"
+                         x-transition:leave-end="opacity-0 scale-95"
+                         @click.away="open = false"
+                         class="absolute right-0 mt-2 w-44 bg-card border border-border rounded-xl shadow-2xl overflow-hidden"
+                         style="display: none; z-index: 9999;">
+                        <button @click="setLocale('en'); open = false"
+                                class="w-full px-4 py-3 text-left text-sm hover:bg-muted transition flex items-center justify-between"
+                                :class="locale === 'en' ? 'bg-accent/10 text-accent font-medium' : 'text-primary'">
+                            <span>English</span>
+                            <svg x-show="locale === 'en'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </button>
+                        <button @click="setLocale('am'); open = false"
+                                class="w-full px-4 py-3 text-left text-sm hover:bg-muted transition flex items-center justify-between"
+                                :class="locale === 'am' ? 'bg-accent/10 text-accent font-medium' : 'text-primary'">
+                            <span>አማርኛ</span>
+                            <svg x-show="locale === 'am'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
-                <span class="text-sm opacity-80 hidden sm:inline">{{ auth()->user()?->name }}</span>
+                <span class="text-sm opacity-80 hidden sm:inline ml-2">{{ auth()->user()?->name }}</span>
                 <form method="POST" action="{{ route('admin.logout') }}">
                     @csrf
                     <button type="submit" class="text-sm bg-accent-overlay hover:bg-accent-overlay-hover px-3 py-1.5 rounded transition">{{ __('app.logout') }}</button>
