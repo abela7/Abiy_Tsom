@@ -13,7 +13,7 @@
     $ogImageUrl = $ogImage
         ?? ($storedOgImage
             ? \Illuminate\Support\Facades\Storage::disk('public')->url($storedOgImage)
-            : asset('images/login-quote.jpg'));
+            : asset('images/og-cover.png'));
 
     $ogImageUrl = str_starts_with($ogImageUrl, 'http')
         ? $ogImageUrl

@@ -34,7 +34,7 @@
         <div class="flex flex-col justify-center p-4 sm:p-6 lg:p-12 relative min-h-[100dvh] lg:min-h-0 bg-surface">
             {{-- Mobile: background image with soft gradient overlay --}}
             <div class="fixed inset-0 -z-10 lg:hidden">
-                <img src="{{ asset('images/login-quote.jpg') }}" alt="" class="absolute inset-0 w-full h-full object-cover object-center">
+                <img src="{{ asset('images/og-cover.png') }}" alt="" class="absolute inset-0 w-full h-full object-cover object-center">
                 <div class="absolute inset-0 bg-gradient-to-b from-surface/70 via-surface/50 to-surface/90"></div>
             </div>
 
@@ -93,8 +93,8 @@
 
                 {{-- Quote image & title --}}
                 <div class="text-center mb-8">
-                    <img src="{{ asset('images/login-quote.jpg') }}" alt="{{ __('app.app_name') }}"
-                         class="inline-block w-full max-w-[280px] sm:max-w-[340px] rounded-2xl object-contain shadow-xl shadow-black/10 mb-6 ring-2 ring-white/30 dark:ring-white/10">
+                    <img src="{{ asset('images/og-cover.png') }}" alt="{{ __('app.app_name') }}"
+                         class="inline-block w-full max-w-[340px] sm:max-w-[400px] rounded-2xl object-contain shadow-xl shadow-black/10 mb-6 ring-2 ring-white/30 dark:ring-white/10">
                     <h1 class="text-2xl sm:text-3xl font-black text-primary tracking-tight">{{ __('app.app_name') }}</h1>
                     <p class="text-sm text-muted-text mt-1 font-medium">{{ __('app.tagline') }}</p>
                 </div>

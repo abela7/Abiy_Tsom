@@ -14,7 +14,7 @@
     $twitterCard = old('twitter_card', $settings['twitter_card'] ?? 'summary_large_image');
     $robots = old('robots', $settings['robots'] ?? 'index,follow,max-image-preview:large');
     $currentImagePath = $settings['og_image'] ?? null;
-    $currentImageUrl = $currentImagePath ? \Illuminate\Support\Facades\Storage::disk('public')->url($currentImagePath) : asset('images/login-quote.jpg');
+    $currentImageUrl = $currentImagePath ? \Illuminate\Support\Facades\Storage::disk('public')->url($currentImagePath) : asset('images/og-cover.png');
 @endphp
 
 <div class="mb-6">
