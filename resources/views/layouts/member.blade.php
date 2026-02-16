@@ -46,8 +46,8 @@
 
     {{-- Top nav: Welcome + theme toggle (member pages only) --}}
     @if(isset($currentMember) && request()->routeIs('member.*'))
-    <header class="sticky top-0 z-40 bg-card border-b border-border safe-area-top">
-        <div class="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
+    <header class="sticky top-0 z-40 bg-card border-b border-border safe-area-top overflow-visible">
+        <div class="max-w-lg mx-auto px-4 py-3 flex items-center justify-between overflow-visible">
             <h1 class="text-lg font-bold text-primary truncate pr-2">
                 {{ __('app.welcome') }}, <span class="text-accent">{{ $currentMember->baptism_name ?? '' }}</span>
             </h1>
@@ -61,10 +61,10 @@
                     </svg>
                 </a>
                 @endif
-                <div class="relative" x-data="{ open: false }" @click.away="open = false">
+                <div class="relative overflow-visible" x-data="{ open: false }" @click.away="open = false">
                     <button type="button"
                             @click="open = !open"
-                            class="p-2 rounded-xl hover:bg-muted transition active:scale-95"
+                            class="p-2 rounded-xl hover:bg-muted transition active:scale-95 touch-manipulation"
                             :aria-label="'{{ __('app.language') }}'">
                         <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
@@ -77,10 +77,11 @@
                          x-transition:leave="transition ease-in duration-75"
                          x-transition:leave-start="opacity-100 scale-100"
                          x-transition:leave-end="opacity-0 scale-95"
-                         class="absolute right-0 mt-2 w-40 bg-card border border-border rounded-xl shadow-lg overflow-hidden z-50"
-                         style="display: none;">
+                         @click.away="open = false"
+                         class="fixed right-2 mt-2 w-44 bg-card border border-border rounded-xl shadow-2xl overflow-hidden"
+                         style="display: none; z-index: 9999; top: 52px;">
                         <button @click="setLocale('en'); open = false"
-                                class="w-full px-4 py-2.5 text-left text-sm hover:bg-muted transition flex items-center justify-between"
+                                class="w-full px-4 py-3 text-left text-sm hover:bg-muted transition flex items-center justify-between touch-manipulation"
                                 :class="locale === 'en' ? 'bg-accent/10 text-accent font-medium' : 'text-primary'">
                             <span>English</span>
                             <svg x-show="locale === 'en'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -88,7 +89,7 @@
                             </svg>
                         </button>
                         <button @click="setLocale('am'); open = false"
-                                class="w-full px-4 py-2.5 text-left text-sm hover:bg-muted transition flex items-center justify-between"
+                                class="w-full px-4 py-3 text-left text-sm hover:bg-muted transition flex items-center justify-between touch-manipulation"
                                 :class="locale === 'am' ? 'bg-accent/10 text-accent font-medium' : 'text-primary'">
                             <span>አማርኛ</span>
                             <svg x-show="locale === 'am'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
