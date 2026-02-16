@@ -458,4 +458,5 @@ return [
     'share_preview' => 'Social Share Preview',
     'social_preview_hint' => 'Preview card for WhatsApp, Telegram, Facebook, and similar apps.',
     'seo_saved' => 'SEO settings saved.',
+    'seo_migration_required' => 'SEO database table is missing. Run migrations, then try again.',
 ];

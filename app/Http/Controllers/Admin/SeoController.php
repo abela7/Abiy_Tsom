@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\SeoSetting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -31,6 +32,12 @@ class SeoController extends Controller
      */
     public function update(Request $request): RedirectResponse
     {
+        if (! Schema::hasTable('seo_settings')) {
+            return redirect()
+                ->route('admin.seo.index')
+                ->with('error', __('app.seo_migration_required'));
+        }
+
         $validated = $request->validate([
             'site_title_en' => ['nullable', 'string', 'max:255'],
             'site_title_am' => ['nullable', 'string', 'max:255'],

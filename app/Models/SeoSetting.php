@@ -65,11 +65,20 @@ class SeoSetting extends Model
             return;
         }
 
+        if (! Schema::hasTable('seo_settings')) {
+            return;
+        }
+
         foreach ($values as $key => $value) {
-            self::query()->updateOrCreate(
-                ['key' => $key],
-                ['value' => $value]
-            );
+            try {
+                self::query()->updateOrCreate(
+                    ['key' => $key],
+                    ['value' => $value]
+                );
+            } catch (\Throwable) {
+                // Keep request flow stable if table is not ready yet.
+                return;
+            }
         }
 
         self::clearCache();

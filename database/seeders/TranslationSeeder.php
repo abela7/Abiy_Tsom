@@ -173,7 +173,7 @@ class TranslationSeeder extends Seeder
                 'current_og_image', 'remove_og_image',
                 'twitter_card', 'twitter_card_summary', 'twitter_card_summary_large_image',
                 'robots', 'robots_directive', 'robots_placeholder', 'robots_help',
-                'share_preview', 'social_preview_hint', 'seo_saved',
+                'share_preview', 'social_preview_hint', 'seo_saved', 'seo_migration_required',
             ],
             'admin_translations' => [
                 'add_key', 'no_translation_groups', 'group_label', 'key_label',
