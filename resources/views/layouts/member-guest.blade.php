@@ -5,7 +5,9 @@
         locale: '{{ app()->getLocale() }}',
         setLocale(lang) {
           this.locale = lang;
-          window.location.href = '{{ route('member.welcome') }}?lang=' + lang;
+          const url = new URL(window.location.href);
+          url.searchParams.set('lang', lang);
+          window.location.href = url.toString();
         }
       }"
       x-effect="document.documentElement.classList.toggle('dark', darkMode)"
