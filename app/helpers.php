@@ -21,3 +21,11 @@ function localized(object $model, string $baseAttr, ?string $locale = null): ?st
 
     return is_string($val) && $val !== '' ? $val : null;
 }
+
+/**
+ * Get an SEO setting value with fallback.
+ */
+function seo(string $key, ?string $default = null): ?string
+{
+    return \App\Models\SeoSetting::cached($key) ?? $default;
+}

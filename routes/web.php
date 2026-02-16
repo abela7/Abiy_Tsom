@@ -116,6 +116,10 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::post('/translations', [Admin\TranslationController::class, 'store'])->name('translations.store');
         Route::put('/translations', [Admin\TranslationController::class, 'update'])->name('translations.update');
         Route::post('/translations/sync', [Admin\TranslationController::class, 'sync'])->name('translations.sync');
+
+        // SEO
+        Route::get('/seo', [Admin\SeoController::class, 'index'])->name('seo.index');
+        Route::put('/seo', [Admin\SeoController::class, 'update'])->name('seo.update');
     });
 
     // Admin users (super admin only)
