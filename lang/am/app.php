@@ -293,7 +293,7 @@ return [
     'bible_text_am_label' => 'የመጽሐፍ ቅዱስ ጽሁፍ (አማርኛ)',
     'bible_text_am_placeholder' => 'ሙሉ የማንበብ ጽሁፍ በአማርኛ (አማራጭ)',
     'shown_when_amharic' => 'ተጠቃሚ ቋንቋ አማርኛ ሲሆን ይታያል',
-    'mezmur_label' => 'መዝሙር (መንፈሳዊ ሙዚቃ)',
+    'mezmur_label' => 'መዝሙር',
     'title_label' => 'ርዕስ',
     'url_label' => 'URL (ዩቲዩብ / ድምጽ አገናኝ)',
     'description_label' => 'ገለጻ',
