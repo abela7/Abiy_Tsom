@@ -37,7 +37,7 @@
                     <tr class="hover:bg-muted">
                         <td class="px-4 py-3 font-bold text-accent">{{ $content->day_number }}</td>
                         <td class="px-4 py-3 text-secondary">{{ $content->date->format('M d') }}</td>
-                        <td class="px-4 py-3 text-secondary">{{ $content->weeklyTheme?->name_en ?? '-' }}</td>
+                        <td class="px-4 py-3 text-secondary">{{ optional($content->weeklyTheme)->name_en ?: '-' }}</td>
                         <td class="px-4 py-3">{{ localized($content, 'day_title') ?? '-' }}</td>
                         <td class="px-4 py-3 text-secondary">{{ localized($content, 'bible_reference') ?? '-' }}</td>
                         <td class="px-4 py-3">
@@ -46,8 +46,8 @@
                             </span>
                         </td>
                         <td class="px-4 py-3 text-xs text-secondary">
-                            <div>{{ __('app.created_by') }}: {{ $content->createdBy?->name ?? '—' }}</div>
-                            <div class="text-muted-text">{{ __('app.updated_by') }}: {{ $content->updatedBy?->name ?? '—' }}</div>
+                            <div>{{ __('app.created_by') }}: {{ optional($content->createdBy)->name ?: '-' }}</div>
+                            <div class="text-muted-text">{{ __('app.updated_by') }}: {{ optional($content->updatedBy)->name ?: '-' }}</div>
                         </td>
                         <td class="px-4 py-3">
                             <a href="{{ route('admin.daily.edit', $content) }}" class="text-accent hover:underline">{{ __('app.edit') }}</a>

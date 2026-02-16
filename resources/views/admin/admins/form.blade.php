@@ -22,7 +22,7 @@
             <input type="text" name="username" value="{{ old('username', $user->username ?? '') }}" required
                    autocomplete="username"
                    class="w-full px-3 py-2 border border-border rounded-lg bg-card text-primary focus:ring-2 focus:ring-accent outline-none"
-                   {{ $user?->is_super_admin ? 'readonly' : '' }}>
+                   {{ optional($user)->is_super_admin ? 'readonly' : '' }}>
             @error('username')<p class="text-error text-xs mt-1">{{ $message }}</p>@enderror
         </div>
 
