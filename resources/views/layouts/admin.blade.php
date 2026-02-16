@@ -18,8 +18,13 @@
 <body class="min-h-screen bg-surface text-primary font-sans"
       x-data="{
         sidebarOpen: false,
+        desktopSidebar: localStorage.getItem('admin_sidebar') !== 'closed',
         darkMode: localStorage.getItem('admin_theme') !== 'light',
         locale: '{{ app()->getLocale() }}',
+        toggleDesktopSidebar() {
+          this.desktopSidebar = !this.desktopSidebar;
+          localStorage.setItem('admin_sidebar', this.desktopSidebar ? 'open' : 'closed');
+        },
         setLocale(lang) {
           this.locale = lang;
           const url = new URL(window.location.href);
@@ -37,8 +42,14 @@
     <header class="bg-accent text-on-accent shadow-lg sticky top-0 z-50">
         <div class="flex items-center justify-between px-4 h-14">
             <div class="flex items-center gap-3">
+                {{-- Mobile menu toggle --}}
                 <button type="button" @click="sidebarOpen = !sidebarOpen" class="lg:hidden p-1" aria-label="{{ __('app.toggle_menu') }}">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+                {{-- Desktop sidebar toggle --}}
+                <button type="button" @click="toggleDesktopSidebar()" class="hidden lg:flex p-1 rounded-lg hover:bg-accent-overlay transition" aria-label="{{ __('app.toggle_menu') }}">
+                    <svg x-show="desktopSidebar" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
+                    <svg x-show="!desktopSidebar" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" x-cloak><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                 </button>
                 <a href="{{ $adminHomeUrl }}" class="font-bold text-lg">{{ __('app.app_name') }} <span class="text-accent-secondary">{{ __('app.admin') }}</span></a>
             </div>
@@ -95,26 +106,26 @@
         </div>
     </header>
 
-    <div class="flex">
-        {{-- Sidebar --}}
-        <aside class="fixed inset-y-0 left-0 z-40 w-64 bg-card shadow-xl transform transition-transform duration-200 lg:translate-x-0 lg:static lg:shadow-none border-r border-border pt-14 lg:pt-0"
-               :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
-            <div class="py-4">
-                <nav class="space-y-1 px-3">
-                    @php
-                        $links = [
-                            ['route' => 'admin.dashboard', 'label' => __('app.dashboard'), 'icon' => 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6', 'roles' => ['admin', 'editor']],
-                            ['route' => 'admin.members.index', 'label' => __('app.members'), 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', 'roles' => ['admin', 'editor']],
-                            ['route' => 'admin.admins.index', 'label' => __('app.manage_admins'), 'icon' => 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z', 'super_admin' => true],
-                            ['route' => 'admin.seasons.index', 'label' => __('app.seasons'), 'icon' => 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', 'roles' => ['admin', 'editor']],
-                            ['route' => 'admin.themes.index', 'label' => __('app.themes'), 'icon' => 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10', 'roles' => ['admin', 'editor']],
-                            ['route' => 'admin.daily.index', 'label' => __('app.daily_content'), 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'roles' => ['admin', 'editor', 'writer']],
-                            ['route' => 'admin.announcements.index', 'label' => __('app.announcements'), 'icon' => 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3.14a7.5 7.5 0 011.294 12.169A5.75 5.75 0 0112 18.5a5.75 5.75 0 01-6.564-4.817z', 'roles' => ['admin', 'editor', 'writer']],
-                            ['route' => 'admin.activities.index', 'label' => __('app.activities'), 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4', 'roles' => ['admin', 'editor', 'writer']],
-                            ['route' => 'admin.translations.index', 'label' => __('app.translations'), 'icon' => 'M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129', 'roles' => ['admin', 'editor']],
-                        ];
-                    @endphp
+    <div class="flex min-h-[calc(100vh-3.5rem)]">
+        @php
+            $links = [
+                ['route' => 'admin.dashboard', 'label' => __('app.dashboard'), 'icon' => 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6', 'roles' => ['admin', 'editor']],
+                ['route' => 'admin.members.index', 'label' => __('app.members'), 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', 'roles' => ['admin', 'editor']],
+                ['route' => 'admin.admins.index', 'label' => __('app.manage_admins'), 'icon' => 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z', 'super_admin' => true],
+                ['route' => 'admin.seasons.index', 'label' => __('app.seasons'), 'icon' => 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', 'roles' => ['admin', 'editor']],
+                ['route' => 'admin.themes.index', 'label' => __('app.themes'), 'icon' => 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10', 'roles' => ['admin', 'editor']],
+                ['route' => 'admin.daily.index', 'label' => __('app.daily_content'), 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'roles' => ['admin', 'editor', 'writer']],
+                ['route' => 'admin.announcements.index', 'label' => __('app.announcements'), 'icon' => 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3.14a7.5 7.5 0 011.294 12.169A5.75 5.75 0 0112 18.5a5.75 5.75 0 01-6.564-4.817z', 'roles' => ['admin', 'editor', 'writer']],
+                ['route' => 'admin.activities.index', 'label' => __('app.activities'), 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4', 'roles' => ['admin', 'editor', 'writer']],
+                ['route' => 'admin.translations.index', 'label' => __('app.translations'), 'icon' => 'M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129', 'roles' => ['admin', 'editor']],
+            ];
+        @endphp
 
+        {{-- Mobile sidebar (overlay, < lg) --}}
+        <aside class="fixed inset-y-0 left-0 z-40 w-64 bg-card shadow-xl transform transition-transform duration-200 border-r border-border pt-14 lg:hidden"
+               :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
+            <div class="py-4 h-full overflow-y-auto">
+                <nav class="space-y-1 px-3">
                     @foreach ($links as $link)
                         @if(!empty($link['super_admin']) && !$currentAdmin?->isSuperAdmin()) @continue @endif
                         @if(!empty($link['roles']) && !$currentAdmin?->isSuperAdmin() && !in_array($currentAdmin?->role, $link['roles'], true)) @continue @endif
@@ -128,12 +139,30 @@
             </div>
         </aside>
 
-        {{-- Overlay for mobile sidebar --}}
+        {{-- Mobile overlay --}}
         <div x-show="sidebarOpen" @click="sidebarOpen = false"
              class="fixed inset-0 bg-overlay z-30 lg:hidden" x-transition.opacity></div>
 
+        {{-- Desktop sidebar (push, >= lg) --}}
+        <aside class="hidden lg:block shrink-0 bg-card border-r border-border sticky top-14 h-[calc(100vh-3.5rem)] transition-all duration-300 ease-in-out overflow-hidden"
+               :style="desktopSidebar ? 'width: 16rem' : 'width: 0; border-right-width: 0'">
+            <div class="w-64 py-4 h-full overflow-y-auto">
+                <nav class="space-y-1 px-3">
+                    @foreach ($links as $link)
+                        @if(!empty($link['super_admin']) && !$currentAdmin?->isSuperAdmin()) @continue @endif
+                        @if(!empty($link['roles']) && !$currentAdmin?->isSuperAdmin() && !in_array($currentAdmin?->role, $link['roles'], true)) @continue @endif
+                        <a href="{{ route($link['route']) }}"
+                           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition whitespace-nowrap {{ request()->routeIs($link['route'] . '*') ? 'bg-accent text-on-accent' : 'text-secondary hover:bg-muted' }}">
+                            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $link['icon'] }}"/></svg>
+                            {{ $link['label'] }}
+                        </a>
+                    @endforeach
+                </nav>
+            </div>
+        </aside>
+
         {{-- Main content --}}
-        <main class="flex-1 p-4 lg:p-6 min-h-[calc(100vh-3.5rem)] overflow-x-hidden">
+        <main class="flex-1 p-4 lg:p-6 min-w-0 overflow-x-hidden transition-all duration-300 ease-in-out">
             {{-- Flash messages --}}
             @if(session('success'))
                 <div class="mb-4 p-3 bg-success-bg border border-success text-success rounded-lg text-sm"
