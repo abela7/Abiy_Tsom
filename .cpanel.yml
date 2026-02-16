@@ -1,0 +1,13 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/$USER/Abiy_Tsom
+    - /bin/cp -R $DEPLOYPATH/ $DEPLOYPATH/
+    - cd $DEPLOYPATH && /usr/local/bin/php artisan down --retry=30
+    - cd $DEPLOYPATH && /usr/local/bin/composer install --no-dev --optimize-autoloader --no-interaction
+    - cd $DEPLOYPATH && /usr/local/bin/php artisan migrate --force
+    - cd $DEPLOYPATH && /usr/local/bin/php artisan storage:link
+    - cd $DEPLOYPATH && /usr/local/bin/php artisan config:cache
+    - cd $DEPLOYPATH && /usr/local/bin/php artisan route:cache
+    - cd $DEPLOYPATH && /usr/local/bin/php artisan view:cache
+    - cd $DEPLOYPATH && /usr/local/bin/php artisan up

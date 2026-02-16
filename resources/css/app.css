@@ -1,0 +1,153 @@
+@import 'tailwindcss';
+
+/* Class-based dark mode via .dark on html */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+/* ─── Semantic theme variables (light) ───────────────────────────────────── */
+:root {
+    --app-surface: #f9fafb;
+    --app-card: #ffffff;
+    --app-muted: #f3f4f6;
+    --app-primary: #111827;
+    --app-secondary: #4b5563;
+    --app-muted-text: #6b7280;
+    --app-border: #e5e7eb;
+    --app-border-muted: #f3f4f6;
+    --app-accent: #0a6286;
+    --app-accent-hover: #075985;
+    --app-accent-secondary: #d4af37;
+    --app-on-accent: #ffffff;
+    --app-success: #16a34a;
+    --app-success-bg: #dcfce7;
+    --app-error: #dc2626;
+    --app-error-bg: #fee2e2;
+    --app-on-error: #ffffff;
+    --app-sinksar: #9333ea;
+    --app-sinksar-bg: #faf5ff;
+    --app-book: #16a34a;
+    --app-book-bg: #dcfce7;
+    --app-reflection-bg: rgba(212, 175, 55, 0.08);
+    --app-reflection-border: rgba(212, 175, 55, 0.25);
+    --app-overlay: rgba(0, 0, 0, 0.5);
+    --app-accent-overlay: rgba(255, 255, 255, 0.1);
+    --app-accent-overlay-hover: rgba(255, 255, 255, 0.2);
+    /* Calendar day states */
+    --app-cal-today-bg: #fef9c3;
+    --app-cal-today-border: #eab308;
+    --app-cal-today-text: #a16207;
+    --app-cal-past-bg: #dcfce7;
+    --app-cal-past-border: #22c55e;
+    --app-cal-past-text: #16a34a;
+    --app-cal-upcoming-bg: #f1f5f9;
+    --app-cal-upcoming-border: #cbd5e1;
+    --app-cal-upcoming-text: #64748b;
+}
+
+/* ─── Semantic theme variables (dark) ────────────────────────────────────── */
+.dark {
+    color-scheme: dark;
+    --app-surface: #030712;
+    --app-card: #111827;
+    --app-muted: #1f2937;
+    --app-primary: #f9fafb;
+    --app-secondary: #d1d5db;
+    --app-muted-text: #9ca3af;
+    --app-border: #374151;
+    --app-border-muted: #1f2937;
+    --app-accent: #e2ca18;
+    --app-accent-hover: #b8860b;
+    --app-accent-secondary: #0b78a6;
+    --app-on-accent: #111827;
+    --app-success: #4ade80;
+    --app-success-bg: rgba(34, 197, 94, 0.2);
+    --app-error: #f87171;
+    --app-error-bg: rgba(220, 38, 38, 0.2);
+    --app-on-error: #ffffff;
+    --app-sinksar: #c084fc;
+    --app-sinksar-bg: rgba(147, 51, 234, 0.15);
+    --app-book: #4ade80;
+    --app-book-bg: rgba(34, 197, 94, 0.15);
+    --app-reflection-bg: rgba(226, 202, 24, 0.1);
+    --app-reflection-border: rgba(226, 202, 24, 0.3);
+    --app-overlay: rgba(0, 0, 0, 0.6);
+    --app-accent-overlay: rgba(255, 255, 255, 0.15);
+    --app-accent-overlay-hover: rgba(255, 255, 255, 0.25);
+    /* Calendar day states (dark) */
+    --app-cal-today-bg: rgba(234, 179, 8, 0.2);
+    --app-cal-today-border: #facc15;
+    --app-cal-today-text: #fde047;
+    --app-cal-past-bg: rgba(34, 197, 94, 0.15);
+    --app-cal-past-border: #4ade80;
+    --app-cal-past-text: #86efac;
+    --app-cal-upcoming-bg: rgba(148, 163, 184, 0.1);
+    --app-cal-upcoming-border: #475569;
+    --app-cal-upcoming-text: #94a3b8;
+}
+
+/* ─── Map to Tailwind color utilities (bg-surface, text-primary, etc.) ────── */
+@theme {
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+        'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+
+    --color-surface: var(--app-surface);
+    --color-card: var(--app-card);
+    --color-muted: var(--app-muted);
+    --color-primary: var(--app-primary);
+    --color-secondary: var(--app-secondary);
+    --color-muted-text: var(--app-muted-text);
+    --color-border: var(--app-border);
+    --color-border-muted: var(--app-border-muted);
+    --color-accent: var(--app-accent);
+    --color-accent-hover: var(--app-accent-hover);
+    --color-accent-secondary: var(--app-accent-secondary);
+    --color-on-accent: var(--app-on-accent);
+    --color-success: var(--app-success);
+    --color-success-bg: var(--app-success-bg);
+    --color-error: var(--app-error);
+    --color-error-bg: var(--app-error-bg);
+    --color-on-error: var(--app-on-error);
+    --color-sinksar: var(--app-sinksar);
+    --color-sinksar-bg: var(--app-sinksar-bg);
+    --color-book: var(--app-book);
+    --color-book-bg: var(--app-book-bg);
+    --color-reflection-bg: var(--app-reflection-bg);
+    --color-reflection-border: var(--app-reflection-border);
+    --color-overlay: var(--app-overlay);
+    --color-accent-overlay: var(--app-accent-overlay);
+    --color-accent-overlay-hover: var(--app-accent-overlay-hover);
+    --color-cal-today-bg: var(--app-cal-today-bg);
+    --color-cal-today-border: var(--app-cal-today-border);
+    --color-cal-today-text: var(--app-cal-today-text);
+    --color-cal-past-bg: var(--app-cal-past-bg);
+    --color-cal-past-border: var(--app-cal-past-border);
+    --color-cal-past-text: var(--app-cal-past-text);
+    --color-cal-upcoming-bg: var(--app-cal-upcoming-bg);
+    --color-cal-upcoming-border: var(--app-cal-upcoming-border);
+    --color-cal-upcoming-text: var(--app-cal-upcoming-text);
+}
+
+/* Countdown always uses teal+gold regardless of light/dark theme */
+@theme {
+    --color-easter-teal: #0a6286;
+    --color-easter-teal-mid: #134e5e;
+    --color-easter-gold: #d4af37;
+}
+
+/* Subtle pulse on the seconds digit of the Easter countdown */
+@keyframes easter-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .55; }
+}
+.easter-pulse {
+    animation: easter-pulse 1s ease-in-out infinite;
+}
+
+/* Alpine x-cloak */
+[x-cloak] {
+    display: none !important;
+}

@@ -1,0 +1,36 @@
+# ─── Root-level security: deny direct access to sensitive files ──────
+# This is a safety net in case the document root is misconfigured
+# and points to the project root instead of public/.
+# The real web root should always be public/.
+# ─────────────────────────────────────────────────────────────────────
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # If this .htaccess is being served (document root = project root),
+    # redirect everything to the public/ subfolder.
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ /public/$1 [L]
+</IfModule>
+
+# Block access to hidden files and directories (e.g., .env, .git)
+<FilesMatch "^\.">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Block access to sensitive files by name
+<FilesMatch "(composer\.(json|lock)|package(-lock)?\.json|artisan|\.cpanel\.yml|\.gitignore|\.env.*)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
