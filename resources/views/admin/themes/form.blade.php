@@ -63,19 +63,35 @@
         </div>
 
         <div>
-            <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.meaning') }}</label>
+            <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.meaning') }} (EN)</label>
             <input type="text" name="meaning" value="{{ old('meaning', $theme->meaning ?? '') }}" required placeholder="{{ __('app.meaning_placeholder') }}"
                    class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
         </div>
 
         <div>
-            <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.description_label') }}</label>
+            <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.meaning') }} (AM)</label>
+            <input type="text" name="meaning_am" value="{{ old('meaning_am', $theme->meaning_am ?? '') }}" placeholder="Amharic meaning"
+                   class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.description_label') }} (EN)</label>
             <textarea name="description" rows="3" class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">{{ old('description', $theme->description ?? '') }}</textarea>
         </div>
 
         <div>
-            <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.theme_summary') }}</label>
+            <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.description_label') }} (AM)</label>
+            <textarea name="description_am" rows="3" class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">{{ old('description_am', $theme->description_am ?? '') }}</textarea>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.theme_summary') }} (EN)</label>
             <textarea name="theme_summary" rows="2" class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">{{ old('theme_summary', $theme->theme_summary ?? '') }}</textarea>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.theme_summary') }} (AM)</label>
+            <textarea name="summary_am" rows="2" class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">{{ old('summary_am', $theme->summary_am ?? '') }}</textarea>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

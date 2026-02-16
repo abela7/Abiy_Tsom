@@ -22,7 +22,7 @@
     @if($daily->weeklyTheme)
     <div class="bg-accent/10 border border-accent/20 rounded-xl px-3 py-2">
         <span class="text-xs font-semibold text-accent">
-            {{ __('app.week', ['number' => $daily->weeklyTheme->week_number]) }} &mdash; {{ localized($daily->weeklyTheme, 'name') ?? $daily->weeklyTheme->name_en ?? $daily->weeklyTheme->name_geez ?? '-' }} ({{ $daily->weeklyTheme->meaning }})
+            {{ __('app.week', ['number' => $daily->weeklyTheme->week_number]) }} &mdash; {{ localized($daily->weeklyTheme, 'name') ?? $daily->weeklyTheme->name_en ?? $daily->weeklyTheme->name_geez ?? '-' }} ({{ app()->getLocale() === 'am' && $daily->weeklyTheme->meaning_am ? $daily->weeklyTheme->meaning_am : $daily->weeklyTheme->meaning }})
         </span>
     </div>
     @endif

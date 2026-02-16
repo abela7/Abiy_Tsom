@@ -173,7 +173,7 @@
                 <span class="text-on-accent/60">|</span>
                 <span class="text-sm text-on-accent/80">{{ localized($weekTheme, 'name') ?? $weekTheme->name_en ?? $weekTheme->name_geez ?? '-' }}</span>
             </div>
-            <h3 class="font-bold text-lg">{{ $weekTheme->meaning }}</h3>
+            <h3 class="font-bold text-lg">{{ app()->getLocale() === 'am' && $weekTheme->meaning_am ? $weekTheme->meaning_am : $weekTheme->meaning }}</h3>
             @if($weekTheme->gospel_reference || $weekTheme->epistles_reference || $weekTheme->liturgy)
                 <div class="text-sm text-on-accent/70 mt-1 space-y-0.5">
                     @if($weekTheme->gospel_reference)
