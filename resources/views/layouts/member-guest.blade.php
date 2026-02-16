@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
-      x-data="{ darkMode: localStorage.getItem('theme') !== 'light' }"
+      x-data="{ 
+        darkMode: localStorage.getItem('theme') !== 'light',
+        locale: '{{ app()->getLocale() }}',
+        toggleLocale() {
+          this.locale = this.locale === 'en' ? 'am' : 'en';
+          window.location.href = '{{ route('member.welcome') }}?lang=' + this.locale;
+        }
+      }"
       x-effect="document.documentElement.classList.toggle('dark', darkMode)"
       :class="{ 'dark': darkMode }"
       x-init="if (!localStorage.getItem('theme')) { localStorage.setItem('theme', 'dark'); darkMode = true; }">
@@ -29,18 +36,26 @@
             </div>
 
             <div class="relative w-full max-w-sm mx-auto">
-                {{-- Theme toggle --}}
-                <button type="button"
-                        @click="darkMode = !darkMode; localStorage.setItem('theme', darkMode ? 'dark' : 'light')"
-                        class="absolute -top-2 right-0 p-2 rounded-xl bg-card/80 dark:bg-card/80 border border-border shadow-sm hover:bg-muted transition z-10"
-                        aria-label="{{ __('app.theme') }}">
-                    <svg x-show="!darkMode" class="w-5 h-5 text-muted-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
-                    </svg>
-                    <svg x-show="darkMode" class="w-5 h-5 text-accent-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24" x-cloak>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
-                    </svg>
-                </button>
+                {{-- Theme & Language toggles --}}
+                <div class="absolute -top-2 right-0 flex gap-1 z-10">
+                    <button type="button"
+                            @click="toggleLocale()"
+                            class="p-2 rounded-xl bg-card/80 dark:bg-card/80 border border-border shadow-sm hover:bg-muted transition font-bold text-xs text-primary"
+                            :aria-label="'{{ __('app.language') }}'">
+                        <span x-text="locale === 'am' ? 'EN' : 'አም'"></span>
+                    </button>
+                    <button type="button"
+                            @click="darkMode = !darkMode; localStorage.setItem('theme', darkMode ? 'dark' : 'light')"
+                            class="p-2 rounded-xl bg-card/80 dark:bg-card/80 border border-border shadow-sm hover:bg-muted transition"
+                            aria-label="{{ __('app.theme') }}">
+                        <svg x-show="!darkMode" class="w-5 h-5 text-muted-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                        </svg>
+                        <svg x-show="darkMode" class="w-5 h-5 text-accent-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24" x-cloak>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                        </svg>
+                    </button>
+                </div>
 
                 {{-- Quote image & title --}}
                 <div class="text-center mb-8">

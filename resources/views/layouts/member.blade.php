@@ -2,11 +2,22 @@
 <html lang="{{ app()->getLocale() }}"
       x-data="{
         darkMode: localStorage.getItem('theme') !== 'light',
+        locale: '{{ app()->getLocale() }}',
         toggleTheme() {
           this.darkMode = !this.darkMode;
           const theme = this.darkMode ? 'dark' : 'light';
           localStorage.setItem('theme', theme);
           if (window.AbiyTsom?.api) { AbiyTsom.api('/api/member/settings', { theme }); }
+        },
+        toggleLocale() {
+          this.locale = this.locale === 'en' ? 'am' : 'en';
+          if (window.AbiyTsom?.api) { 
+            AbiyTsom.api('/api/member/settings', { locale: this.locale }).then(() => {
+              window.location.reload();
+            });
+          } else {
+            window.location.reload();
+          }
         }
       }"
       :class="{ 'dark': darkMode }"
@@ -50,6 +61,12 @@
                     </svg>
                 </a>
                 @endif
+                <button type="button"
+                        @click="toggleLocale()"
+                        class="p-2 rounded-xl hover:bg-muted transition active:scale-95 font-medium text-sm text-primary"
+                        :aria-label="'{{ __('app.language') }}'">
+                    <span x-text="locale === 'am' ? 'EN' : 'አም'" class="text-xs font-bold"></span>
+                </button>
                 <button type="button"
                         @click="toggleTheme()"
                         class="p-2 rounded-xl hover:bg-muted transition active:scale-95"
