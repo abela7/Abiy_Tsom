@@ -143,8 +143,8 @@
         <div x-show="sidebarOpen" @click="sidebarOpen = false"
              class="fixed inset-0 bg-overlay z-30 lg:hidden" x-transition.opacity></div>
 
-        {{-- Desktop sidebar (push, >= lg) --}}
-        <aside class="hidden lg:block shrink-0 bg-card border-r border-border sticky top-14 h-[calc(100vh-3.5rem)] transition-all duration-300 ease-in-out overflow-hidden"
+        {{-- Desktop sidebar (fixed, >= lg) --}}
+        <aside class="hidden lg:block fixed top-14 left-0 h-[calc(100vh-3.5rem)] bg-card border-r border-border z-30 transition-all duration-300 ease-in-out overflow-hidden"
                :style="desktopSidebar ? 'width: 16rem' : 'width: 0; border-right-width: 0'">
             <div class="w-64 py-4 h-full overflow-y-auto">
                 <nav class="space-y-1 px-3">
@@ -162,7 +162,8 @@
         </aside>
 
         {{-- Main content --}}
-        <main class="flex-1 p-4 lg:p-6 min-w-0 overflow-x-hidden transition-all duration-300 ease-in-out">
+        <main class="flex-1 p-4 lg:p-6 min-w-0 overflow-x-hidden transition-all duration-300 ease-in-out"
+              :class="desktopSidebar ? 'lg:ml-64' : 'lg:ml-0'">
             {{-- Flash messages --}}
             @if(session('success'))
                 <div class="mb-4 p-3 bg-success-bg border border-success text-success rounded-lg text-sm"
