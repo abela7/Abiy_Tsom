@@ -167,26 +167,60 @@
     @if($today)
         {{-- Weekly theme banner --}}
         @if($weekTheme)
-        <div class="bg-accent rounded-2xl p-4 text-on-accent shadow-lg">
+        <div class="bg-accent rounded-2xl p-4 text-on-accent shadow-lg cursor-pointer hover:shadow-xl transition"
+             x-data="{showDetails: false}"
+             @click="showDetails = !showDetails">
             <div class="flex items-center gap-2 mb-1">
                 <span class="text-accent-secondary font-semibold text-sm">{{ __('app.week', ['number' => $weekTheme->week_number]) }}</span>
                 <span class="text-on-accent/60">|</span>
                 <span class="text-sm text-on-accent/80">{{ localized($weekTheme, 'name') ?? $weekTheme->name_en ?? $weekTheme->name_geez ?? '-' }}</span>
             </div>
             <h3 class="font-bold text-lg">{{ app()->getLocale() === 'am' && $weekTheme->meaning_am ? $weekTheme->meaning_am : $weekTheme->meaning }}</h3>
-            @if($weekTheme->gospel_reference || $weekTheme->epistles_reference || $weekTheme->liturgy)
-                <div class="text-sm text-on-accent/70 mt-1 space-y-0.5">
-                    @if($weekTheme->gospel_reference)
-                        <p>{{ __('app.gospel_reference') }}: {{ $weekTheme->gospel_reference }}</p>
-                    @endif
-                    @if($weekTheme->epistles_reference)
-                        <p>{{ __('app.epistles_reference') }}: {{ $weekTheme->epistles_reference }}</p>
-                    @endif
-                    @if($weekTheme->liturgy)
-                        <p class="italic">{{ $weekTheme->liturgy }}</p>
-                    @endif
-                </div>
+            
+            {{-- Short description (always visible) --}}
+            @php
+                $description = app()->getLocale() === 'am' && $weekTheme->description_am ? $weekTheme->description_am : $weekTheme->description;
+            @endphp
+            @if($description)
+                <p class="text-sm text-on-accent/80 mt-2 line-clamp-2" x-show="!showDetails">{{ $description }}</p>
             @endif
+            
+            {{-- Expanded details (click to toggle) --}}
+            <div x-show="showDetails" x-transition class="mt-3 space-y-2">
+                @if($description)
+                    <p class="text-sm text-on-accent/90">{{ $description }}</p>
+                @endif
+                
+                @php
+                    $summary = app()->getLocale() === 'am' && $weekTheme->summary_am ? $weekTheme->summary_am : $weekTheme->theme_summary;
+                @endphp
+                @if($summary)
+                    <p class="text-sm text-on-accent/90 border-t border-on-accent/20 pt-2">{{ $summary }}</p>
+                @endif
+                
+                @if($weekTheme->gospel_reference || $weekTheme->epistles_reference || $weekTheme->liturgy)
+                    <div class="text-sm text-on-accent/70 border-t border-on-accent/20 pt-2 space-y-0.5">
+                        @if($weekTheme->gospel_reference)
+                            <p>{{ __('app.gospel_reference') }}: {{ $weekTheme->gospel_reference }}</p>
+                        @endif
+                        @if($weekTheme->epistles_reference)
+                            <p>{{ __('app.epistles_reference') }}: {{ $weekTheme->epistles_reference }}</p>
+                        @endif
+                        @if($weekTheme->liturgy)
+                            <p class="italic">{{ $weekTheme->liturgy }}</p>
+                        @endif
+                    </div>
+                @endif
+            </div>
+            
+            {{-- Click hint --}}
+            <div class="text-xs text-on-accent/60 mt-2 flex items-center gap-1">
+                <span x-show="!showDetails">{{ __('app.tap_for_details') }}</span>
+                <span x-show="showDetails">{{ __('app.tap_to_collapse') }}</span>
+                <svg class="w-4 h-4 transition-transform" :class="showDetails && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </div>
         </div>
         @endif
 

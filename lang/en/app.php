@@ -71,6 +71,8 @@ return [
     'close' => 'Close',
     'read_more' => 'Read More',
     'show_less' => 'Show less',
+    'tap_for_details' => 'Tap for details',
+    'tap_to_collapse' => 'Tap to collapse',
     'references' => 'References',
     'reference_name' => 'Reference name',
     'reference_url' => 'Link (URL)',

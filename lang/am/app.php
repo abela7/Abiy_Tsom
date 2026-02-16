@@ -74,6 +74,8 @@ return [
     'open_externally' => 'አገናኝ ክፈት',
     'read_more' => 'ተጨማሪ አንብብ',
     'show_less' => 'ያነሱ አሳይ',
+    'tap_for_details' => 'ዝርዝሮችን ለማየት ይንኩ',
+    'tap_to_collapse' => 'ለመዝጋት ይንኩ',
     'references' => 'ማጣቀሻዎች',
     'reference_name' => 'ማጣቀሻ ስም',
     'reference_url' => 'አገናኝ (URL)',
