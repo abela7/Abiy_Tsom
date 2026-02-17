@@ -20,7 +20,7 @@ class WhatsAppSettingsController extends Controller
     /**
      * Show WhatsApp settings page.
      */
-    public function index(): View
+    public function index(UltraMsgService $ultraMsgService): View
     {
         $envPath = base_path('.env');
         $envExists = File::exists($envPath);
@@ -28,17 +28,24 @@ class WhatsAppSettingsController extends Controller
         $instanceId = '';
         $token = '';
         $baseUrl = 'https://api.ultramsg.com';
+        $currentSettings = null;
 
         if ($envExists) {
             $instanceId = config('services.ultramsg.instance_id') ?? '';
             $token = config('services.ultramsg.token') ?? '';
             $baseUrl = config('services.ultramsg.base_url') ?? 'https://api.ultramsg.com';
+
+            // Fetch current webhook settings from UltraMsg
+            if ($ultraMsgService->isConfigured()) {
+                $currentSettings = $ultraMsgService->getInstanceSettings();
+            }
         }
 
         return view('admin.whatsapp.index', compact(
             'instanceId',
             'token',
-            'baseUrl'
+            'baseUrl',
+            'currentSettings'
         ));
     }
 
@@ -111,6 +118,53 @@ class WhatsAppSettingsController extends Controller
         return response()->json([
             'success' => true,
             'message' => __('app.whatsapp_test_success'),
+        ]);
+    }
+
+    /**
+     * Update webhook settings on UltraMsg instance.
+     */
+    public function updateWebhook(Request $request, UltraMsgService $ultraMsgService): JsonResponse
+    {
+        $validated = $request->validate([
+            'webhook_url' => ['required', 'url', 'max:500'],
+            'webhook_message_received' => ['nullable', 'boolean'],
+            'webhook_message_create' => ['nullable', 'boolean'],
+            'webhook_message_ack' => ['nullable', 'boolean'],
+            'webhook_message_download_media' => ['nullable', 'boolean'],
+            'sendDelay' => ['nullable', 'integer', 'min:1', 'max:60'],
+            'sendDelayMax' => ['nullable', 'integer', 'min:1', 'max:120'],
+        ]);
+
+        if (! $ultraMsgService->isConfigured()) {
+            return response()->json([
+                'success' => false,
+                'message' => __('app.whatsapp_not_configured'),
+            ], 400);
+        }
+
+        $settings = [
+            'webhook_url' => $validated['webhook_url'],
+            'webhook_message_received' => $validated['webhook_message_received'] ?? false ? 'true' : 'false',
+            'webhook_message_create' => $validated['webhook_message_create'] ?? false ? 'true' : 'false',
+            'webhook_message_ack' => $validated['webhook_message_ack'] ?? false ? 'true' : 'false',
+            'webhook_message_download_media' => $validated['webhook_message_download_media'] ?? false ? 'true' : 'false',
+            'sendDelay' => $validated['sendDelay'] ?? 1,
+            'sendDelayMax' => $validated['sendDelayMax'] ?? 15,
+        ];
+
+        $success = $ultraMsgService->updateInstanceSettings($settings);
+
+        if (! $success) {
+            return response()->json([
+                'success' => false,
+                'message' => __('app.whatsapp_webhook_update_failed'),
+            ], 400);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => __('app.whatsapp_webhook_update_success'),
         ]);
     }
 

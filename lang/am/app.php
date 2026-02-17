@@ -231,6 +231,28 @@ return [
     'whatsapp_reuse_instance_help' => 'You can use the same instance credentials across multiple applications. They will all send from the same WhatsApp number.',
     'visit_ultramsg' => 'Visit UltraMsg.com',
 
+    // WhatsApp Webhook Settings - placeholders in English for now
+    'whatsapp_webhook_settings' => 'Webhook Settings',
+    'whatsapp_webhook_help' => 'Configure how your UltraMsg instance handles incoming messages and notifications.',
+    'whatsapp_webhook_url' => 'Webhook URL',
+    'whatsapp_webhook_url_help' => 'The URL where UltraMsg will send incoming message notifications.',
+    'whatsapp_webhook_message_received' => 'Notify on Message Received',
+    'whatsapp_webhook_message_create' => 'Notify on Message Create',
+    'whatsapp_webhook_message_ack' => 'Notify on Message Acknowledgment (delivered/read)',
+    'whatsapp_webhook_download_media' => 'Download Media Files',
+    'whatsapp_send_delay' => 'Send Delay (seconds)',
+    'whatsapp_send_delay_help' => 'Delay between sending messages (default: 1 second).',
+    'whatsapp_send_delay_max' => 'Max Send Delay (seconds)',
+    'whatsapp_send_delay_max_help' => 'Max delay when queue has 10+ messages (default: 15 seconds).',
+    'update_webhook_settings' => 'Update Webhook Settings',
+    'updating_webhook' => 'Updating',
+    'whatsapp_webhook_update_success' => 'Webhook settings updated successfully on UltraMsg.',
+    'whatsapp_webhook_update_failed' => 'Failed to update webhook settings. Check your credentials.',
+    'whatsapp_not_configured' => 'Please save your Instance ID and Token first.',
+    'current_webhook_settings' => 'Current Settings on UltraMsg',
+    'webhook_not_loaded' => 'Could not load current settings. Save credentials first.',
+
+
     // Passcode screen
     'passcode_title' => 'ይለፍ ቃልዎን ያስገቡ',
     'passcode_subtitle' => 'መቸገስ ለግል ጥበቃ ተቆልፏል',

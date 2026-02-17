@@ -57,10 +57,72 @@ final class UltraMsgService
         return $sent;
     }
 
+    /**
+     * Get current instance settings from UltraMsg.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function getInstanceSettings(): ?array
+    {
+        $response = Http::acceptJson()
+            ->timeout(15)
+            ->get($this->instanceSettingsEndpoint(), [
+                'token' => $this->token(),
+            ]);
+
+        if (! $response->successful()) {
+            Log::warning('UltraMsg get settings failed.', [
+                'status' => $response->status(),
+                'response' => $response->body(),
+            ]);
+
+            return null;
+        }
+
+        return $response->json();
+    }
+
+    /**
+     * Update instance webhook settings on UltraMsg.
+     *
+     * @param  array<string, mixed>  $settings
+     */
+    public function updateInstanceSettings(array $settings): bool
+    {
+        $payload = array_merge([
+            'token' => $this->token(),
+        ], $settings);
+
+        $response = Http::asForm()
+            ->acceptJson()
+            ->timeout(20)
+            ->post($this->instanceSettingsEndpoint(), $payload);
+
+        if (! $response->successful()) {
+            Log::warning('UltraMsg update settings failed.', [
+                'status' => $response->status(),
+                'response' => $response->body(),
+            ]);
+
+            return false;
+        }
+
+        return true;
+    }
+
     private function messagesEndpoint(): string
     {
         return sprintf(
             '%s/%s/messages/chat',
+            rtrim((string) config('services.ultramsg.base_url', 'https://api.ultramsg.com'), '/'),
+            $this->instanceId()
+        );
+    }
+
+    private function instanceSettingsEndpoint(): string
+    {
+        return sprintf(
+            '%s/%s/instance/settings',
             rtrim((string) config('services.ultramsg.base_url', 'https://api.ultramsg.com'), '/'),
             $this->instanceId()
         );

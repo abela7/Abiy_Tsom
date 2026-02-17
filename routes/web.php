@@ -128,6 +128,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/whatsapp', [Admin\WhatsAppSettingsController::class, 'index'])->name('whatsapp.index');
         Route::put('/whatsapp', [Admin\WhatsAppSettingsController::class, 'update'])->name('whatsapp.update');
         Route::post('/whatsapp/test', [Admin\WhatsAppSettingsController::class, 'test'])->name('whatsapp.test');
+        Route::post('/whatsapp/webhook', [Admin\WhatsAppSettingsController::class, 'updateWebhook'])->name('whatsapp.webhook');
     });
 
     // Admin users (super admin only)
