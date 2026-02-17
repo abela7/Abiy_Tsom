@@ -78,11 +78,11 @@
         <div class="relative px-4 py-3 sm:px-6 sm:py-4 text-white" x-show="totalSeconds > 0">
 
             {{-- Top row: title + circular % ring --}}
-            <div class="flex items-center justify-between mb-3 sm:mb-4">
-                <h2 class="text-base sm:text-2xl font-black tracking-tight leading-tight">{{ __('app.easter_countdown') }}</h2>
+            <div class="flex items-center justify-between gap-3 mb-3 sm:mb-4">
+                <h2 class="text-sm sm:text-2xl font-black tracking-tight leading-tight whitespace-nowrap">{{ __('app.easter_countdown') }}</h2>
 
                 {{-- Circular progress ring --}}
-                <div class="relative w-11 h-11 sm:w-16 sm:h-16 shrink-0 group">
+                <div class="relative w-10 h-10 sm:w-16 sm:h-16 shrink-0">
                     <svg class="w-full h-full -rotate-90" viewBox="0 0 64 64">
                         <circle cx="32" cy="32" r="28" fill="none"
                                 stroke="currentColor" stroke-width="5" class="text-white/10"/>
