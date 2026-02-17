@@ -23,6 +23,19 @@ function localized(object $model, string $baseAttr, ?string $locale = null): ?st
 }
 
 /**
+ * Mask phone number for display (e.g. +44***123).
+ */
+function maskPhone(string $phone): string
+{
+    $len = strlen($phone);
+    if ($len <= 6) {
+        return str_repeat('*', $len);
+    }
+
+    return substr($phone, 0, 3).str_repeat('*', min($len - 6, 6)).substr($phone, -3);
+}
+
+/**
  * Get an SEO setting value with fallback.
  */
 function seo(string $key, ?string $default = null): ?string

@@ -124,11 +124,14 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/seo', [Admin\SeoController::class, 'index'])->name('seo.index');
         Route::put('/seo', [Admin\SeoController::class, 'update'])->name('seo.update');
 
-        // WhatsApp Settings
-        Route::get('/whatsapp', [Admin\WhatsAppSettingsController::class, 'index'])->name('whatsapp.index');
+        // WhatsApp
+        Route::get('/whatsapp', fn () => redirect()->route('admin.whatsapp.settings'))->name('whatsapp.index');
+        Route::get('/whatsapp/settings', [Admin\WhatsAppSettingsController::class, 'settings'])->name('whatsapp.settings');
         Route::put('/whatsapp', [Admin\WhatsAppSettingsController::class, 'update'])->name('whatsapp.update');
         Route::post('/whatsapp/test', [Admin\WhatsAppSettingsController::class, 'test'])->name('whatsapp.test');
         Route::post('/whatsapp/webhook', [Admin\WhatsAppSettingsController::class, 'updateWebhook'])->name('whatsapp.webhook');
+        Route::get('/whatsapp/reminders', [Admin\WhatsAppRemindersController::class, 'index'])->name('whatsapp.reminders');
+        Route::get('/whatsapp/cron', [Admin\WhatsAppCronController::class, 'index'])->name('whatsapp.cron');
     });
 
     // Admin users (super admin only)

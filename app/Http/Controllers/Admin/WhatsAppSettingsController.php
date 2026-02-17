@@ -19,9 +19,9 @@ use Illuminate\View\View;
 class WhatsAppSettingsController extends Controller
 {
     /**
-     * Show WhatsApp settings page.
+     * Show WhatsApp settings page (credentials + webhook).
      */
-    public function index(UltraMsgService $ultraMsgService): View
+    public function settings(UltraMsgService $ultraMsgService): View
     {
         $envPath = base_path('.env');
         $envExists = File::exists($envPath);
@@ -64,7 +64,7 @@ class WhatsAppSettingsController extends Controller
         $envPath = base_path('.env');
         if (! File::exists($envPath)) {
             return redirect()
-                ->route('admin.whatsapp.index')
+                ->route('admin.whatsapp.settings')
                 ->with('error', '.env file not found.');
         }
 
@@ -81,7 +81,7 @@ class WhatsAppSettingsController extends Controller
         File::put($envPath, $envContent);
 
         return redirect()
-            ->route('admin.whatsapp.index')
+            ->route('admin.whatsapp.settings')
             ->with('success', __('app.whatsapp_settings_saved'));
     }
 

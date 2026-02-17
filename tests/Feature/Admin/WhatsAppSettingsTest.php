@@ -23,7 +23,7 @@ class WhatsAppSettingsTest extends TestCase
             'role' => 'admin',
         ]);
 
-        $response = $this->actingAs($admin)->get('/admin/whatsapp');
+        $response = $this->actingAs($admin)->get(route('admin.whatsapp.settings'));
 
         $response->assertOk()
             ->assertViewIs('admin.whatsapp.index');

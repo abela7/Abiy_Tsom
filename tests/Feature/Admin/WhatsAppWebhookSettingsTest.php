@@ -37,9 +37,9 @@ class WhatsAppWebhookSettingsTest extends TestCase
             ], 200),
         ]);
 
-        $response = $this->actingAs($admin)->get(route('admin.whatsapp.index'));
+        $response = $this->actingAs($admin)->get(route('admin.whatsapp.settings'));
 
-        $response->assertStatus(200);
+        $response->assertOk();
         $response->assertViewHas('currentSettings');
     }
 

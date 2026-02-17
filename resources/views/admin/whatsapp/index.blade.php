@@ -2,6 +2,8 @@
 @section('title', __('app.whatsapp_settings'))
 
 @section('content')
+@include('admin.whatsapp._nav')
+
 <div class="mb-6">
     <h1 class="text-2xl font-bold text-primary">{{ __('app.whatsapp_settings') }}</h1>
     <p class="text-sm text-muted-text mt-1">{{ __('app.whatsapp_settings_help') }}</p>
