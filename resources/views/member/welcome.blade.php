@@ -25,8 +25,8 @@
 
             {{-- Step indicator --}}
             <div class="flex items-center justify-center pt-5 pb-1">
-                <span class="text-[11px] font-medium text-muted-text tracking-wide uppercase"
-                      x-text="'Step ' + step + ' of ' + (wantsWhatsApp ? 4 : 2)"></span>
+                <span class="text-[11px] font-medium text-muted-text tracking-wide"
+                      x-text="step + ' / ' + (wantsWhatsApp ? 4 : 2)"></span>
             </div>
 
             <div class="px-5 pb-6 pt-2 sm:px-8 sm:pb-8 sm:pt-3">
@@ -44,9 +44,6 @@
                     </div>
 
                     <div class="mb-6">
-                        <label for="baptism_name" class="block text-xs font-semibold text-muted-text uppercase tracking-wider mb-2">
-                            {{ __('app.baptism_name_label') }}
-                        </label>
                         <input type="text"
                                id="baptism_name"
                                x-model="baptismName"
@@ -112,9 +109,6 @@
                     </div>
 
                     <div class="mb-6">
-                        <label for="whatsapp_phone" class="block text-xs font-semibold text-muted-text uppercase tracking-wider mb-2">
-                            {{ __('app.wizard_phone_label') }}
-                        </label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
                                 <span class="text-muted-text text-sm font-medium">🇬🇧</span>
@@ -160,9 +154,6 @@
                     </div>
 
                     <div class="mb-6">
-                        <label for="reminder_time" class="block text-xs font-semibold text-muted-text uppercase tracking-wider mb-2">
-                            {{ __('app.wizard_time_label') }}
-                        </label>
                         <input type="time"
                                id="reminder_time"
                                x-model="reminderTime"
