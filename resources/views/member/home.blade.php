@@ -199,59 +199,67 @@
     @if($today)
         {{-- Weekly theme banner --}}
         @if($weekTheme)
-        <div class="bg-accent rounded-2xl p-4 text-on-accent shadow-lg cursor-pointer hover:shadow-xl transition"
+        <div class="relative overflow-hidden rounded-3xl shadow-2xl border border-white/10 bg-gradient-to-br from-[#0a6286] via-[#134e5e] to-[#0a6286] cursor-pointer hover:shadow-[0_20px_60px_-12px_rgba(10,98,134,0.5)] transition-all duration-300"
              x-data="{showDetails: false}"
              @click="showDetails = !showDetails">
-            <div class="flex items-center gap-2 mb-1">
-                <span class="text-accent-secondary font-semibold text-sm">{{ __('app.week', ['number' => $weekTheme->week_number]) }}</span>
-                <span class="text-on-accent/60">|</span>
-                <span class="text-sm text-on-accent/80">{{ localized($weekTheme, 'name') ?? $weekTheme->name_en ?? $weekTheme->name_geez ?? '-' }}</span>
-            </div>
-            <h3 class="font-bold text-lg">{{ app()->getLocale() === 'am' && $weekTheme->meaning_am ? $weekTheme->meaning_am : $weekTheme->meaning }}</h3>
-            
-            {{-- Short description (always visible) --}}
-            @php
-                $description = app()->getLocale() === 'am' && $weekTheme->description_am ? $weekTheme->description_am : $weekTheme->description;
-            @endphp
-            @if($description)
-                <p class="text-sm text-on-accent/80 mt-2 line-clamp-2" x-show="!showDetails">{{ $description }}</p>
-            @endif
-            
-            {{-- Expanded details (click to toggle) --}}
-            <div x-show="showDetails" x-transition class="mt-3 space-y-2">
-                @if($description)
-                    <p class="text-sm text-on-accent/90">{{ $description }}</p>
-                @endif
-                
+
+            {{-- Ambient glows --}}
+            <div class="absolute -top-20 -right-20 w-56 h-56 rounded-full bg-easter-gold/15 blur-[70px] pointer-events-none"></div>
+            <div class="absolute -bottom-20 -left-20 w-48 h-48 rounded-full bg-white/5 blur-[70px] pointer-events-none"></div>
+
+            <div class="relative px-4 py-3 sm:px-6 sm:py-4 text-white">
+                {{-- Week label + name --}}
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="px-2 py-0.5 rounded-md bg-easter-gold/20 text-easter-gold font-bold text-xs tracking-wide">{{ __('app.week', ['number' => $weekTheme->week_number]) }}</span>
+                    <span class="text-white/40">|</span>
+                    <span class="text-sm text-white/80 font-medium">{{ localized($weekTheme, 'name') ?? $weekTheme->name_en ?? $weekTheme->name_geez ?? '-' }}</span>
+                </div>
+                <h3 class="font-black text-lg text-white drop-shadow-sm">{{ app()->getLocale() === 'am' && $weekTheme->meaning_am ? $weekTheme->meaning_am : $weekTheme->meaning }}</h3>
+
+                {{-- Short description (always visible) --}}
                 @php
-                    $summary = app()->getLocale() === 'am' && $weekTheme->summary_am ? $weekTheme->summary_am : $weekTheme->theme_summary;
+                    $description = app()->getLocale() === 'am' && $weekTheme->description_am ? $weekTheme->description_am : $weekTheme->description;
                 @endphp
-                @if($summary)
-                    <p class="text-sm text-on-accent/90 border-t border-on-accent/20 pt-2">{{ $summary }}</p>
+                @if($description)
+                    <p class="text-sm text-white/75 mt-2 line-clamp-2" x-show="!showDetails">{{ $description }}</p>
                 @endif
-                
-                @if($weekTheme->gospel_reference || $weekTheme->epistles_reference || $weekTheme->liturgy)
-                    <div class="text-sm text-on-accent/70 border-t border-on-accent/20 pt-2 space-y-0.5">
-                        @if($weekTheme->gospel_reference)
-                            <p>{{ __('app.gospel_reference') }}: {{ $weekTheme->gospel_reference }}</p>
-                        @endif
-                        @if($weekTheme->epistles_reference)
-                            <p>{{ __('app.epistles_reference') }}: {{ $weekTheme->epistles_reference }}</p>
-                        @endif
-                        @if($weekTheme->liturgy)
-                            <p class="italic">{{ $weekTheme->liturgy }}</p>
-                        @endif
-                    </div>
-                @endif
-            </div>
-            
-            {{-- Click hint --}}
-            <div class="text-xs text-on-accent/60 mt-2 flex items-center gap-1">
-                <span x-show="!showDetails">{{ __('app.tap_for_details') }}</span>
-                <span x-show="showDetails">{{ __('app.tap_to_collapse') }}</span>
-                <svg class="w-4 h-4 transition-transform" :class="showDetails && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                </svg>
+
+                {{-- Expanded details (click to toggle) --}}
+                <div x-show="showDetails" x-transition class="mt-3 space-y-2">
+                    @if($description)
+                        <p class="text-sm text-white/85">{{ $description }}</p>
+                    @endif
+
+                    @php
+                        $summary = app()->getLocale() === 'am' && $weekTheme->summary_am ? $weekTheme->summary_am : $weekTheme->theme_summary;
+                    @endphp
+                    @if($summary)
+                        <p class="text-sm text-white/85 border-t border-white/10 pt-2">{{ $summary }}</p>
+                    @endif
+
+                    @if($weekTheme->gospel_reference || $weekTheme->epistles_reference || $weekTheme->liturgy)
+                        <div class="text-sm text-white/60 border-t border-white/10 pt-2 space-y-0.5">
+                            @if($weekTheme->gospel_reference)
+                                <p>{{ __('app.gospel_reference') }}: {{ $weekTheme->gospel_reference }}</p>
+                            @endif
+                            @if($weekTheme->epistles_reference)
+                                <p>{{ __('app.epistles_reference') }}: {{ $weekTheme->epistles_reference }}</p>
+                            @endif
+                            @if($weekTheme->liturgy)
+                                <p class="italic">{{ $weekTheme->liturgy }}</p>
+                            @endif
+                        </div>
+                    @endif
+                </div>
+
+                {{-- Click hint --}}
+                <div class="text-xs text-white/50 mt-2 flex items-center gap-1">
+                    <span x-show="!showDetails">{{ __('app.tap_for_details') }}</span>
+                    <span x-show="showDetails">{{ __('app.tap_to_collapse') }}</span>
+                    <svg class="w-4 h-4 transition-transform" :class="showDetails && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </div>
             </div>
         </div>
         @endif
