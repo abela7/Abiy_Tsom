@@ -51,16 +51,10 @@ class WhatsAppRemindersController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(25);
 
-        $membersByTime = (clone $this->optedInQuery())
-            ->orderBy('baptism_name')
-            ->get()
-            ->groupBy('whatsapp_reminder_time');
-
         return view('admin.whatsapp.reminders', compact(
             'totalOptedIn',
             'byTime',
-            'members',
-            'membersByTime'
+            'members'
         ));
     }
 
