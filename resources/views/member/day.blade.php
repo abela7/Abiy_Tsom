@@ -125,14 +125,23 @@
     </div>
     @endif
 
-    {{-- Spiritual book --}}
-    @if(localized($daily, 'book_title'))
-    <div class="bg-card rounded-2xl p-4 shadow-sm border border-border">
-        <h3 class="font-semibold text-sm text-book mb-1">{{ __('app.spiritual_book') }}</h3>
-        <p class="font-medium text-primary">{{ localized($daily, 'book_title') }}</p>
-        @if($daily->book_url)
-            <a href="{{ $daily->book_url }}" target="_blank" class="text-sm text-accent font-medium mt-1 inline-block">{{ __('app.read_more') }} &rarr;</a>
-        @endif
+    {{-- Spiritual books --}}
+    @if($daily->books && $daily->books->isNotEmpty())
+    <div class="space-y-3">
+        <h3 class="font-semibold text-sm text-book">{{ __('app.spiritual_book') }}</h3>
+        @foreach($daily->books as $book)
+            @if(localized($book, 'title'))
+            <div class="bg-card rounded-2xl p-4 shadow-sm border border-border">
+                <p class="font-medium text-primary">{{ localized($book, 'title') }}</p>
+                @if(localized($book, 'description'))
+                    <p class="text-sm text-muted-text mt-1 leading-relaxed">{{ localized($book, 'description') }}</p>
+                @endif
+                @if($book->url)
+                    <a href="{{ $book->url }}" target="_blank" rel="noopener" class="text-sm text-accent font-medium mt-2 inline-block">{{ __('app.read_more') }} &rarr;</a>
+                @endif
+            </div>
+            @endif
+        @endforeach
     </div>
     @endif
 

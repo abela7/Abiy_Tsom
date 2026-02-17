@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\DailyContent;
+use App\Models\DailyContentBook;
 use App\Models\LentSeason;
 use App\Services\AbiyTsomStructure;
 use Illuminate\Http\JsonResponse;
@@ -71,8 +72,9 @@ class DailyContentController extends Controller
         $dayRangesByWeek = $this->getDayRangesByWeek();
         $daily = new DailyContent;
         $initialStep = max(1, min(7, $this->normalizeStep(request())));
+        $recentBooks = $this->getRecentBooks(null);
 
-        return view('admin.daily.form', compact('season', 'themes', 'dayRangesByWeek', 'daily', 'initialStep'));
+        return view('admin.daily.form', compact('season', 'themes', 'dayRangesByWeek', 'daily', 'initialStep', 'recentBooks'));
     }
 
     /**
@@ -117,12 +119,14 @@ class DailyContentController extends Controller
 
     public function edit(DailyContent $daily): View
     {
+        $daily->load('books');
         $season = LentSeason::active();
         $themes = $season ? $season->weeklyThemes()->orderBy('week_number')->get() : collect();
         $dayRangesByWeek = $this->getDayRangesByWeek();
         $initialStep = max(1, min(7, $this->normalizeStep(request())));
+        $recentBooks = $this->getRecentBooks($daily->id);
 
-        return view('admin.daily.form', compact('season', 'themes', 'daily', 'dayRangesByWeek', 'initialStep'));
+        return view('admin.daily.form', compact('season', 'themes', 'daily', 'dayRangesByWeek', 'initialStep', 'recentBooks'));
     }
 
     public function update(Request $request, DailyContent $daily): RedirectResponse
@@ -133,11 +137,13 @@ class DailyContentController extends Controller
 
         $mezmurs = $this->parseMezmurs($request);
         $references = $this->parseReferences($request);
-        unset($validated['mezmurs'], $validated['references']);
+        $books = $this->parseBooks($request);
+        unset($validated['mezmurs'], $validated['references'], $validated['books']);
 
         $daily->update($validated);
         $this->syncMezmurs($daily, $mezmurs);
         $this->syncReferences($daily, $references);
+        $this->syncBooks($daily, $books);
 
         return redirect('/admin/daily')->with('success', 'Daily content updated.');
     }
@@ -202,13 +208,15 @@ class DailyContentController extends Controller
                 break;
 
             case 5:
-                $updates = $request->validate([
-                    'book_title_en' => ['nullable', 'string', 'max:255'],
-                    'book_title_am' => ['nullable', 'string', 'max:255'],
-                    'book_url' => ['nullable', 'url', 'max:500'],
-                    'book_description_en' => ['nullable', 'string'],
-                    'book_description_am' => ['nullable', 'string'],
+                $request->validate([
+                    'books' => ['nullable', 'array'],
+                    'books.*.title_en' => ['nullable', 'string', 'max:255'],
+                    'books.*.title_am' => ['nullable', 'string', 'max:255'],
+                    'books.*.url' => ['nullable', 'url', 'max:500'],
+                    'books.*.description_en' => ['nullable', 'string'],
+                    'books.*.description_am' => ['nullable', 'string'],
                 ]);
+                $this->syncBooks($daily, $this->parseBooks($request));
                 break;
 
             case 6:
@@ -253,6 +261,93 @@ class DailyContentController extends Controller
             'daily_id' => $daily->id,
             'next_step' => min($step + 1, 7),
         ]);
+    }
+
+    /**
+     * Recent spiritual books from previous days for quick re-use.
+     *
+     * @return array<int, array{title_en: string|null, title_am: string|null, url: string|null, description_en: string|null, description_am: string|null, day_number: int, date: string}>
+     */
+    private function getRecentBooks(?int $excludeDailyId): array
+    {
+        if (! \Illuminate\Support\Facades\Schema::hasTable('daily_content_books')) {
+            return [];
+        }
+
+        $query = DailyContentBook::query()
+            ->join('daily_contents', 'daily_content_books.daily_content_id', '=', 'daily_contents.id')
+            ->select(
+                'daily_content_books.title_en',
+                'daily_content_books.title_am',
+                'daily_content_books.url',
+                'daily_content_books.description_en',
+                'daily_content_books.description_am',
+                'daily_contents.day_number',
+                'daily_contents.date'
+            )
+            ->orderByDesc('daily_contents.date')
+            ->limit(60);
+
+        if ($excludeDailyId !== null) {
+            $query->where('daily_content_books.daily_content_id', '!=', $excludeDailyId);
+        }
+
+        return $query->get()->map(function ($row) {
+            return [
+                'title_en' => $row->title_en,
+                'title_am' => $row->title_am,
+                'url' => $row->url,
+                'description_en' => $row->description_en,
+                'description_am' => $row->description_am,
+                'day_number' => (int) $row->day_number,
+                'date' => $row->date instanceof \DateTimeInterface ? $row->date->format('Y-m-d') : (string) $row->date,
+            ];
+        })->unique(fn (array $b) => trim(($b['title_en'] ?? '') . '|' . ($b['title_am'] ?? '')) . '|' . ($b['url'] ?? ''))->values()->toArray();
+    }
+
+    /**
+     * Parse and filter books from request (keep only those with title_en or title_am).
+     *
+     * @return array<int, array{title_en: string|null, title_am: string|null, url: string|null, description_en: string|null, description_am: string|null}>
+     */
+    private function parseBooks(Request $request): array
+    {
+        $raw = $request->input('books', []);
+        $parsed = [];
+        foreach ($raw as $b) {
+            $titleEn = trim((string) ($b['title_en'] ?? ''));
+            $titleAm = trim((string) ($b['title_am'] ?? ''));
+            if ($titleEn === '' && $titleAm === '') {
+                continue;
+            }
+            $parsed[] = [
+                'title_en' => $titleEn !== '' ? $titleEn : null,
+                'title_am' => $titleAm !== '' ? $titleAm : null,
+                'url' => trim((string) ($b['url'] ?? '')) ?: null,
+                'description_en' => trim((string) ($b['description_en'] ?? '')) ?: null,
+                'description_am' => trim((string) ($b['description_am'] ?? '')) ?: null,
+            ];
+        }
+
+        return $parsed;
+    }
+
+    /**
+     * @param  array<int, array{title_en: string|null, title_am: string|null, url: string|null, description_en: string|null, description_am: string|null}>  $books
+     */
+    private function syncBooks(DailyContent $daily, array $books): void
+    {
+        $daily->books()->delete();
+        foreach ($books as $i => $b) {
+            $daily->books()->create([
+                'title_en' => $b['title_en'],
+                'title_am' => $b['title_am'],
+                'url' => $b['url'],
+                'description_en' => $b['description_en'],
+                'description_am' => $b['description_am'],
+                'sort_order' => $i,
+            ]);
+        }
     }
 
     /**
@@ -305,11 +400,12 @@ class DailyContentController extends Controller
             'sinksar_url' => ['nullable', 'url', 'max:500'],
             'sinksar_description_en' => ['nullable', 'string'],
             'sinksar_description_am' => ['nullable', 'string'],
-            'book_title_en' => ['nullable', 'string', 'max:255'],
-            'book_title_am' => ['nullable', 'string', 'max:255'],
-            'book_url' => ['nullable', 'url', 'max:500'],
-            'book_description_en' => ['nullable', 'string'],
-            'book_description_am' => ['nullable', 'string'],
+            'books' => ['nullable', 'array'],
+            'books.*.title_en' => ['nullable', 'string', 'max:255'],
+            'books.*.title_am' => ['nullable', 'string', 'max:255'],
+            'books.*.url' => ['nullable', 'url', 'max:500'],
+            'books.*.description_en' => ['nullable', 'string'],
+            'books.*.description_am' => ['nullable', 'string'],
             'reflection_en' => ['nullable', 'string'],
             'reflection_am' => ['nullable', 'string'],
             'references' => ['nullable', 'array'],

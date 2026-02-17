@@ -45,6 +45,24 @@
             ]]
     );
 
+    $initialBooks = old(
+        'books',
+        $isEdit && method_exists($daily, 'books')
+            ? $daily->books
+                ->map(fn ($b) => [
+                    'title_en' => $b->title_en ?? '',
+                    'title_am' => $b->title_am ?? '',
+                    'url' => $b->url ?? '',
+                    'description_en' => $b->description_en ?? '',
+                    'description_am' => $b->description_am ?? '',
+                ])
+                ->values()
+                ->toArray()
+            : []
+    );
+
+    $recentBooks = $recentBooks ?? [];
+
     $themesByWeek = $themes
         ->keyBy('week_number')
         ->map(fn ($theme) => [
@@ -71,11 +89,7 @@
         'sinksar_url' => old('sinksar_url', $daily->sinksar_url ?? ''),
         'sinksar_description_am' => old('sinksar_description_am', $daily->sinksar_description_am ?? ''),
         'sinksar_description_en' => old('sinksar_description_en', $daily->sinksar_description_en ?? ''),
-        'book_title_am' => old('book_title_am', $daily->book_title_am ?? ''),
-        'book_title_en' => old('book_title_en', $daily->book_title_en ?? ''),
-        'book_url' => old('book_url', $daily->book_url ?? ''),
-        'book_description_am' => old('book_description_am', $daily->book_description_am ?? ''),
-        'book_description_en' => old('book_description_en', $daily->book_description_en ?? ''),
+        'books' => $initialBooks,
         'reflection_am' => old('reflection_am', $daily->reflection_am ?? ''),
         'reflection_en' => old('reflection_en', $daily->reflection_en ?? ''),
         'is_published' => (bool) old('is_published', $daily->is_published ?? false),
@@ -118,6 +132,7 @@
                 dayRangesByWeek: @js($dayRangesByWeek ?? []),
                 themesByWeek: @js($themesByWeek),
                 stepLabels: @js($stepLabels),
+                recentBooks: @js($recentBooks),
                 state: @js($wizardState),
                 urls: {
                     create: @js(route('admin.daily.store')),
@@ -320,21 +335,51 @@
                     </div>
                 </section>
 
-                {{-- Step 5: Spiritual book --}}
+                {{-- Step 5: Spiritual book (multiple, re-use from previous days) --}}
                 <section x-show="step === 5" x-cloak class="space-y-5">
-                    <div class="space-y-3">
-                        <label class="block text-sm font-medium text-secondary">{{ __('app.title_label') }}</label>
-                        <input type="text" x-model="form.book_title_am" placeholder="{{ __('app.amharic') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
-                        <input type="text" x-model="form.book_title_en" placeholder="{{ __('app.english') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                    <p class="text-xs text-muted-text px-1">{{ __('app.add_spiritual_book_hint') }}</p>
+
+                    {{-- Recommendations from previous days --}}
+                    @if(!empty($recentBooks))
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-secondary">{{ __('app.recommend_from_previous') }}</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto overscroll-contain touch-manipulation">
+                            @foreach($recentBooks as $rb)
+                            <button type="button"
+                                    @click="addBookFromRecommendation(@js($rb))"
+                                    class="text-left p-3 rounded-xl border border-border bg-muted/30 hover:bg-accent/10 hover:border-accent/40 transition text-sm touch-manipulation">
+                                <span class="font-medium text-primary line-clamp-2">{{ ($rb['title_am'] ?? '') ?: ($rb['title_en'] ?? '-') }}</span>
+                                <span class="text-xs text-muted-text mt-1 block">{{ __('app.day_label') }} {{ $rb['day_number'] ?? '-' }}</span>
+                            </button>
+                            @endforeach
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-secondary mb-1.5">{{ __('app.url_label') }}</label>
-                        <input type="url" x-model="form.book_url" placeholder="{{ __('app.url_placeholder') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
-                    </div>
-                    <div class="space-y-3">
-                        <label class="block text-sm font-medium text-secondary">{{ __('app.description_label') }}</label>
-                        <textarea x-model="form.book_description_am" rows="3" placeholder="{{ __('app.amharic') }}" class="w-full min-h-[5rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
-                        <textarea x-model="form.book_description_en" rows="3" placeholder="{{ __('app.english') }}" class="w-full min-h-[5rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
+                    @endif
+
+                    {{-- Current books list --}}
+                    <div class="space-y-4">
+                        <template x-for="(book, index) in form.books" :key="'book-' + index">
+                            <div class="p-4 rounded-xl bg-book/5 border border-book/20 space-y-3">
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="text-sm font-semibold text-book" x-text="'{{ __('app.spiritual_book') }} ' + (index + 1)"></span>
+                                    <button
+                                        type="button"
+                                        @click="removeBook(index)"
+                                        class="min-h-10 min-w-10 px-3 py-2 text-xs text-muted-text hover:text-error hover:bg-error/10 transition rounded-lg touch-manipulation"
+                                    >
+                                        {{ __('app.remove') }}
+                                    </button>
+                                </div>
+                                <input type="text" x-model="book.title_am" placeholder="{{ __('app.name_amharic_label') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                                <input type="text" x-model="book.title_en" placeholder="{{ __('app.name_english_label') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                                <input type="url" x-model="book.url" placeholder="{{ __('app.url_placeholder') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                                <textarea x-model="book.description_am" rows="2" placeholder="{{ __('app.description_label') }} ({{ __('app.amharic') }})" class="w-full min-h-[4rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
+                                <textarea x-model="book.description_en" rows="2" placeholder="{{ __('app.description_label') }} ({{ __('app.english') }})" class="w-full min-h-[4rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
+                            </div>
+                        </template>
+                        <button type="button" @click="addBook()" class="w-full min-h-12 py-3 border-2 border-dashed border-book/40 rounded-xl text-sm font-medium text-book hover:bg-book/10 transition touch-manipulation">
+                            + {{ __('app.add_spiritual_book') }}
+                        </button>
                     </div>
                 </section>
 
@@ -397,6 +442,10 @@
                             <p class="text-xs text-muted-text mb-1">{{ __('app.mezmur_label') }}</p>
                             <p class="text-base font-medium text-primary" x-text="activeMezmurCount()"></p>
                         </div>
+                        <div class="p-4 rounded-xl border border-border bg-muted/40">
+                            <p class="text-xs text-muted-text mb-1">{{ __('app.spiritual_book') }}</p>
+                            <p class="text-base font-medium text-primary" x-text="activeBookCount()"></p>
+                        </div>
                     </div>
 
                     <label class="flex items-center gap-4 p-4 rounded-xl border border-border bg-accent/5 touch-manipulation">
@@ -453,6 +502,7 @@
                     dayRangesByWeek: config.dayRangesByWeek || {},
                     themesByWeek: config.themesByWeek || {},
                     stepLabels: config.stepLabels || {},
+                    recentBooks: Array.isArray(config.recentBooks) ? config.recentBooks : [],
                     urls: config.urls || {},
                     messages: config.messages || {},
                     resolvedInfo: null,
@@ -464,6 +514,9 @@
                         }
                         if (!Array.isArray(this.form.references) || this.form.references.length === 0) {
                             this.form.references = [{ name_en: '', name_am: '', url: '' }];
+                        }
+                        if (!Array.isArray(this.form.books)) {
+                            this.form.books = [];
                         }
                         this.syncFromDayNumber();
                     },
@@ -528,6 +581,30 @@
                             return;
                         }
                         this.form.references.splice(index, 1);
+                    },
+
+                    addBook() {
+                        this.form.books.push({
+                            title_en: '',
+                            title_am: '',
+                            url: '',
+                            description_en: '',
+                            description_am: '',
+                        });
+                    },
+
+                    removeBook(index) {
+                        this.form.books.splice(index, 1);
+                    },
+
+                    addBookFromRecommendation(bookData) {
+                        this.form.books.push({
+                            title_en: bookData.title_en || '',
+                            title_am: bookData.title_am || '',
+                            url: bookData.url || '',
+                            description_en: bookData.description_en || '',
+                            description_am: bookData.description_am || '',
+                        });
                     },
 
                     canProceed() {
@@ -620,6 +697,13 @@
                         return String(active.length);
                     },
 
+                    activeBookCount() {
+                        const active = (this.form.books || []).filter((item) => {
+                            return Boolean((item.title_en || '').trim() || (item.title_am || '').trim());
+                        });
+                        return String(active.length);
+                    },
+
                     serializeStepPayload() {
                         const step = this.step;
                         const payload = { step };
@@ -653,11 +737,13 @@
                             payload.sinksar_description_am = this.form.sinksar_description_am;
                             payload.sinksar_description_en = this.form.sinksar_description_en;
                         } else if (step === 5) {
-                            payload.book_title_am = this.form.book_title_am;
-                            payload.book_title_en = this.form.book_title_en;
-                            payload.book_url = this.form.book_url;
-                            payload.book_description_am = this.form.book_description_am;
-                            payload.book_description_en = this.form.book_description_en;
+                            payload.books = (this.form.books || []).map((item) => ({
+                                title_en: item.title_en || '',
+                                title_am: item.title_am || '',
+                                url: item.url || '',
+                                description_en: item.description_en || '',
+                                description_am: item.description_am || '',
+                            }));
                         } else if (step === 6) {
                             payload.reflection_am = this.form.reflection_am;
                             payload.reflection_en = this.form.reflection_en;

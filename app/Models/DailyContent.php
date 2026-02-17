@@ -32,11 +32,6 @@ class DailyContent extends Model
         'sinksar_url',
         'sinksar_description_en',
         'sinksar_description_am',
-        'book_title_en',
-        'book_title_am',
-        'book_url',
-        'book_description_en',
-        'book_description_am',
         'reflection_en',
         'reflection_am',
         'is_published',
@@ -83,6 +78,14 @@ class DailyContent extends Model
     public function mezmurs(): HasMany
     {
         return $this->hasMany(DailyContentMezmur::class)->orderBy('sort_order');
+    }
+
+    /**
+     * Spiritual book recommendations for this day (can have multiple).
+     */
+    public function books(): HasMany
+    {
+        return $this->hasMany(DailyContentBook::class)->orderBy('sort_order');
     }
 
     /**
