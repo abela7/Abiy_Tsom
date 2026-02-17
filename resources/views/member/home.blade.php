@@ -75,14 +75,14 @@
         <div class="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-easter-gold/20 blur-[80px] pointer-events-none"></div>
         <div class="absolute -bottom-24 -left-24 w-64 h-64 rounded-full bg-white/5 blur-[80px] pointer-events-none"></div>
 
-        <div class="relative p-4 sm:p-8 text-white" x-show="totalSeconds > 0">
+        <div class="relative px-4 py-3 sm:px-6 sm:py-4 text-white" x-show="totalSeconds > 0">
 
             {{-- Top row: title + circular % ring --}}
-            <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center justify-between mb-3 sm:mb-4">
                 <h2 class="text-base sm:text-2xl font-black tracking-tight leading-tight">{{ __('app.easter_countdown') }}</h2>
 
                 {{-- Circular progress ring --}}
-                <div class="relative w-14 h-14 sm:w-20 sm:h-20 shrink-0 group">
+                <div class="relative w-11 h-11 sm:w-16 sm:h-16 shrink-0 group">
                     <svg class="w-full h-full -rotate-90" viewBox="0 0 64 64">
                         <circle cx="32" cy="32" r="28" fill="none"
                                 stroke="currentColor" stroke-width="5" class="text-white/10"/>
@@ -100,32 +100,32 @@
             </div>
 
             {{-- Countdown digits --}}
-            <div class="grid grid-cols-4 gap-2 sm:gap-4">
+            <div class="grid grid-cols-4 gap-2 sm:gap-3">
                 {{-- Days --}}
-                <div class="relative flex flex-col items-center py-3 sm:py-6 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 shadow-inner group transition-all duration-300 hover:bg-white/10">
+                <div class="relative flex flex-col items-center py-2 sm:py-3.5 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 shadow-inner group transition-all duration-300 hover:bg-white/10">
                     <span class="text-xl sm:text-5xl font-black tabular-nums leading-none tracking-tighter text-white drop-shadow-sm" x-text="pad(days)">—</span>
-                    <span class="text-[8px] sm:text-[11px] text-white/60 mt-1.5 font-bold uppercase tracking-widest">{{ __('app.days') }}</span>
+                    <span class="text-[8px] sm:text-[11px] text-white/60 mt-1 font-bold uppercase tracking-widest">{{ __('app.days') }}</span>
                 </div>
                 {{-- Hours --}}
-                <div class="relative flex flex-col items-center py-3 sm:py-6 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 shadow-inner group transition-all duration-300 hover:bg-white/10">
+                <div class="relative flex flex-col items-center py-2 sm:py-3.5 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 shadow-inner group transition-all duration-300 hover:bg-white/10">
                     <span class="text-xl sm:text-5xl font-black tabular-nums leading-none tracking-tighter text-white drop-shadow-sm" x-text="pad(hours)">—</span>
-                    <span class="text-[8px] sm:text-[11px] text-white/60 mt-1.5 font-bold uppercase tracking-widest">{{ __('app.hours') }}</span>
+                    <span class="text-[8px] sm:text-[11px] text-white/60 mt-1 font-bold uppercase tracking-widest">{{ __('app.hours') }}</span>
                 </div>
                 {{-- Minutes --}}
-                <div class="relative flex flex-col items-center py-3 sm:py-6 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 shadow-inner group transition-all duration-300 hover:bg-white/10">
+                <div class="relative flex flex-col items-center py-2 sm:py-3.5 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 shadow-inner group transition-all duration-300 hover:bg-white/10">
                     <span class="text-xl sm:text-5xl font-black tabular-nums leading-none tracking-tighter text-white drop-shadow-sm" x-text="pad(minutes)">—</span>
-                    <span class="text-[8px] sm:text-[11px] text-white/60 mt-1.5 font-bold uppercase tracking-widest">{{ __('app.minutes') }}</span>
+                    <span class="text-[8px] sm:text-[11px] text-white/60 mt-1 font-bold uppercase tracking-widest">{{ __('app.minutes') }}</span>
                 </div>
                 {{-- Seconds --}}
-                <div class="relative flex flex-col items-center py-3 sm:py-6 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 shadow-inner group transition-all duration-300 hover:bg-white/10">
+                <div class="relative flex flex-col items-center py-2 sm:py-3.5 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 shadow-inner group transition-all duration-300 hover:bg-white/10">
                     <span class="text-xl sm:text-5xl font-black tabular-nums leading-none tracking-tighter text-white drop-shadow-sm easter-pulse" x-text="pad(seconds)">—</span>
-                    <span class="text-[8px] sm:text-[11px] text-white/60 mt-1.5 font-bold uppercase tracking-widest">{{ __('app.seconds') }}</span>
+                    <span class="text-[8px] sm:text-[11px] text-white/60 mt-1 font-bold uppercase tracking-widest">{{ __('app.seconds') }}</span>
                 </div>
             </div>
 
             {{-- Bottom progress bar (100 → 0) --}}
-            <div class="mt-6">
-                <div class="h-2 sm:h-3 w-full bg-white/10 rounded-full overflow-hidden p-0.5 border border-white/5">
+            <div class="mt-3 sm:mt-4">
+                <div class="h-1.5 sm:h-2.5 w-full bg-white/10 rounded-full overflow-hidden p-0.5 border border-white/5">
                     <div class="h-full rounded-full bg-easter-gold transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(212,175,55,0.4)]"
                          :style="'width: ' + progressPct + '%'"></div>
                 </div>
