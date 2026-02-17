@@ -5,35 +5,67 @@
 @section('content')
 <div class="px-4 pt-4 space-y-4">
 
-    {{-- Today bar — date, day number, View Today button --}}
-    <div class="flex flex-wrap items-center justify-between gap-3 py-3 px-4 rounded-2xl bg-card border border-border/60 shadow-sm">
-        <div class="flex flex-wrap items-center gap-3 min-w-0">
-            <span class="text-sm font-bold text-primary">{{ now()->locale('en')->translatedFormat('l, j F Y') }}</span>
+    {{-- View Today — hero CTA card --}}
+    @php $dayToken = isset($member) && $member?->token ? '?token=' . e($member->token) : ''; @endphp
+    @if(isset($viewTodayTarget) && $viewTodayTarget)
+    <a href="{{ route('member.day', $viewTodayTarget) }}{{ $dayToken }}"
+       class="group relative block overflow-hidden rounded-3xl bg-gradient-to-br from-accent via-accent to-accent-hover shadow-lg shadow-accent/25 hover:shadow-xl hover:shadow-accent/35 transition-all duration-300 active:scale-[0.98]">
+        {{-- Decorative glow --}}
+        <div class="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-white/10 blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-black/10 blur-2xl pointer-events-none"></div>
+
+        <div class="relative flex items-center gap-4 p-5 sm:p-6">
+            {{-- Day number badge --}}
             @if($season && $today)
-                <span class="text-xs font-semibold text-muted-text">
-                    · {{ __('app.day_of', ['day' => $today->day_number, 'total' => $season->total_days]) }}
-                </span>
+            <div class="shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/15 backdrop-blur-sm border border-white/20 flex flex-col items-center justify-center shadow-inner">
+                <span class="text-2xl sm:text-3xl font-black text-on-accent leading-none">{{ $today->day_number }}</span>
+                <span class="text-[9px] sm:text-[10px] font-bold text-on-accent/70 uppercase tracking-wider">{{ __('app.of_total', ['total' => $season->total_days]) }}</span>
+            </div>
             @endif
+
+            {{-- Text content --}}
+            <div class="flex-1 min-w-0">
+                <p class="text-xs sm:text-sm font-medium text-on-accent/70 mb-0.5">
+                    {{ now()->locale('en')->translatedFormat('l, j F Y') }}
+                </p>
+                <h2 class="text-lg sm:text-xl font-black text-on-accent leading-tight">
+                    {{ $today ? __('app.view_today') : __('app.view_recommended_day') }}
+                </h2>
+                @if($today && $today->weeklyTheme)
+                <p class="text-xs sm:text-sm text-on-accent/70 mt-1 truncate">
+                    {{ localized($today->weeklyTheme, 'name') ?? $today->weeklyTheme->name_en ?? '' }}
+                </p>
+                @endif
+            </div>
+
+            {{-- Arrow indicator --}}
+            <div class="shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center group-hover:bg-white/25 transition-colors">
+                <svg class="w-5 h-5 sm:w-6 sm:h-6 text-on-accent group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                </svg>
+            </div>
         </div>
-        @php $dayToken = isset($member) && $member?->token ? '?token=' . e($member->token) : ''; @endphp
-        @if(isset($viewTodayTarget) && $viewTodayTarget)
-            <a href="{{ route('member.day', $viewTodayTarget) }}{{ $dayToken }}"
-               class="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-accent text-on-accent text-sm font-bold hover:bg-accent-hover transition shadow-sm">
-                {{ $today ? __('app.view_today') : __('app.view_recommended_day') }}
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+    </a>
+    @else
+    <a href="{{ route('member.calendar') }}{{ $dayToken }}"
+       class="group relative block overflow-hidden rounded-3xl bg-card border border-border shadow-md hover:shadow-lg transition-all duration-300 active:scale-[0.98]">
+        <div class="relative flex items-center gap-4 p-5 sm:p-6">
+            <div class="flex-1 min-w-0">
+                <p class="text-xs sm:text-sm font-medium text-muted-text mb-0.5">
+                    {{ now()->locale('en')->translatedFormat('l, j F Y') }}
+                </p>
+                <h2 class="text-lg sm:text-xl font-bold text-primary leading-tight">
+                    {{ __('app.view_today') }}
+                </h2>
+            </div>
+            <div class="shrink-0 w-10 h-10 rounded-xl bg-muted flex items-center justify-center group-hover:bg-border transition-colors">
+                <svg class="w-5 h-5 text-muted-text group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
                 </svg>
-            </a>
-        @else
-            <a href="{{ route('member.calendar') }}{{ $dayToken }}"
-               class="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-muted text-muted-text text-sm font-semibold hover:bg-border transition">
-                {{ __('app.view_today') }}
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-                </svg>
-            </a>
-        @endif
-    </div>
+            </div>
+        </div>
+    </a>
+    @endif
 
     {{-- Easter countdown — visible to all members, mobile-first --}}
     <div class="relative overflow-hidden rounded-3xl shadow-2xl border border-white/10 bg-gradient-to-br from-[#0a6286] via-[#134e5e] to-[#0a6286]"

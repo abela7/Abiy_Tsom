@@ -52,6 +52,7 @@ return [
     'view_today' => 'View Today',
     'view_recommended_day' => 'View Recommended Day',
     'day_of' => 'Day :day of :total',
+    'of_total' => 'of :total',
     'day_page_title' => 'Day :day',
     'day_x' => 'Day :day',
     'share' => 'Share',

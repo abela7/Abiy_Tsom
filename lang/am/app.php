@@ -56,6 +56,7 @@ return [
     'view_today' => 'ዛሬን ይመልከት',
     'view_recommended_day' => 'የሚመከር ቀን ይመልከት',
     'day_of' => 'ቀን :day ከ :total',
+    'of_total' => 'ከ :total',
     'day_page_title' => 'ቀን :day',
     'day_x' => 'ቀን :day',
     'share' => 'ያጋሩ',
