@@ -9,10 +9,10 @@
     @php $dayToken = isset($member) && $member?->token ? '?token=' . e($member->token) : ''; @endphp
     @if(isset($viewTodayTarget) && $viewTodayTarget)
     <a href="{{ route('member.day', $viewTodayTarget) }}{{ $dayToken }}"
-       class="group relative block overflow-hidden rounded-3xl bg-gradient-to-br from-accent via-accent to-accent-hover shadow-lg shadow-accent/25 hover:shadow-xl hover:shadow-accent/35 transition-all duration-300 active:scale-[0.98]">
-        {{-- Decorative glow --}}
-        <div class="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-white/10 blur-3xl pointer-events-none"></div>
-        <div class="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-black/10 blur-2xl pointer-events-none"></div>
+       class="group relative block overflow-hidden rounded-3xl bg-gradient-to-br from-accent via-accent to-accent-hover shadow-lg shadow-accent/25 dark:shadow-none hover:shadow-xl hover:shadow-accent/35 dark:hover:shadow-none transition-all duration-300 active:scale-[0.98]">
+        {{-- Decorative glow (light mode only) --}}
+        <div class="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-white/10 blur-3xl pointer-events-none dark:hidden"></div>
+        <div class="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-black/10 blur-2xl pointer-events-none dark:hidden"></div>
 
         <div class="relative flex items-center gap-4 p-5 sm:p-6">
             {{-- Day number badge --}}
@@ -40,7 +40,7 @@
 
             {{-- Arrow indicator --}}
             <div class="shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/15 backdrop-blur-sm border border-white/20 shadow-inner flex items-center justify-center group-hover:bg-white/25 group-hover:scale-105 transition-all duration-200">
-                <svg class="w-6 h-6 sm:w-7 sm:h-7 text-easter-gold group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-6 h-6 sm:w-7 sm:h-7 text-white group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
                 </svg>
             </div>
