@@ -328,7 +328,7 @@ function dayPage() {
         async shareDay() {
             const shareData = {
                 title: this.shareTitle,
-                text: this.shareTitle + '\n' + this.shareDescription,
+                text: this.shareDescription,
                 url: this.shareUrl,
             };
 
