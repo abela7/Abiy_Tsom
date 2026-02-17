@@ -195,6 +195,8 @@ return [
     'data_cleared' => 'ሁሉም ውሂብ ተሰርዟል።',
     'clear_confirm_label' => 'ለማረጋገጥ RESET ይጻፉ',
     'clear_confirm_placeholder' => 'RESET',
+    'whatsapp_reminder_requires_phone_and_time' => 'Phone number and reminder time are required when WhatsApp reminders are enabled.',
+    'whatsapp_daily_reminder_message' => 'Abiy Tsom Day :day is ready. Open today\'s content: :url',
 
     // Passcode screen
     'passcode_title' => 'ይለፍ ቃልዎን ያስገቡ',

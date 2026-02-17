@@ -23,6 +23,10 @@ class Member extends Model
         'passcode_enabled',
         'locale',
         'theme',
+        'whatsapp_reminder_enabled',
+        'whatsapp_phone',
+        'whatsapp_reminder_time',
+        'whatsapp_last_sent_date',
     ];
 
     /** @var list<string> */
@@ -35,6 +39,8 @@ class Member extends Model
     {
         return [
             'passcode_enabled' => 'boolean',
+            'whatsapp_reminder_enabled' => 'boolean',
+            'whatsapp_last_sent_date' => 'date',
         ];
     }
 
