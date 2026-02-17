@@ -19,20 +19,20 @@
             @if($season && $today)
             <div class="shrink-0 w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem] rounded-2xl bg-white/20 dark:bg-white/25 backdrop-blur-md border border-white/30 flex flex-col items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_4px_12px_rgba(0,0,0,0.15)]">
                 <span class="text-3xl sm:text-4xl font-black text-on-accent dark:text-white leading-none drop-shadow-sm">{{ $today->day_number }}</span>
-                <span class="text-[9px] sm:text-[10px] font-bold text-on-accent/70 dark:text-white/80 uppercase tracking-wider">{{ __('app.of_total', ['total' => $season->total_days]) }}</span>
+                <span class="text-[9px] sm:text-[10px] font-bold text-white uppercase tracking-wider">{{ __('app.of_total', ['total' => $season->total_days]) }}</span>
             </div>
             @endif
 
             {{-- Text content --}}
             <div class="flex-1 min-w-0">
-                <p class="text-xs sm:text-sm font-semibold text-on-accent/70 dark:text-white/80 mb-0.5">
+                <p class="text-xs sm:text-sm font-semibold text-white mb-0.5">
                     {{ now()->locale('en')->translatedFormat('l, j F Y') }}
                 </p>
                 <h2 class="text-xl sm:text-2xl font-black text-on-accent dark:text-white leading-tight drop-shadow-sm">
                     {{ $today ? __('app.view_today') : __('app.view_recommended_day') }}
                 </h2>
                 @if($today && $today->weeklyTheme)
-                <p class="text-sm sm:text-base font-medium text-on-accent/70 dark:text-white/75 mt-0.5 truncate">
+                <p class="text-sm sm:text-base font-medium text-white mt-0.5 truncate">
                     {{ localized($today->weeklyTheme, 'name') ?? $today->weeklyTheme->name_en ?? '' }}
                 </p>
                 @endif
