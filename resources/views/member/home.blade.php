@@ -39,8 +39,8 @@
             </div>
 
             {{-- Arrow indicator --}}
-            <div class="shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center group-hover:bg-white/25 transition-colors">
-                <svg class="w-5 h-5 sm:w-6 sm:h-6 text-on-accent group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-amber-400 shadow-md shadow-amber-500/30 flex items-center justify-center group-hover:bg-amber-300 transition-colors">
+                <svg class="w-5 h-5 sm:w-6 sm:h-6 text-amber-900 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
                 </svg>
             </div>
