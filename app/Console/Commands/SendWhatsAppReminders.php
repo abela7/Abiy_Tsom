@@ -110,10 +110,15 @@ class SendWhatsAppReminders extends Command
             ): void {
                 foreach ($members as $member) {
                     $dayUrl = route('member.day', ['daily' => $dailyContent]).'?token='.urlencode((string) $member->token);
+                    $dayUrl = $this->ensureHttpsUrl($dayUrl);
+                    $locale = in_array((string) $member->whatsapp_language, ['en', 'am'], true)
+                        ? (string) $member->whatsapp_language
+                        : 'en';
+
                     $message = Lang::get('app.whatsapp_daily_reminder_message', [
                         'day' => $dailyContent->day_number,
                         'url' => $dayUrl,
-                    ], 'en');
+                    ], $locale);
 
                     if ($dryRun) {
                         $sentCount++;
@@ -144,5 +149,18 @@ class SendWhatsAppReminders extends Command
         ));
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Ensure reminder links are sent as full HTTPS URLs
+     * on non-local environments for best WhatsApp clickability.
+     */
+    private function ensureHttpsUrl(string $url): string
+    {
+        if (app()->environment('local')) {
+            return $url;
+        }
+
+        return preg_replace('/^http:\/\//i', 'https://', $url) ?? $url;
     }
 }

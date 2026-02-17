@@ -58,8 +58,8 @@ return [
     'wizard_lang_amharic' => 'አማርኛ (Amharic)',
 
     // WhatsApp welcome confirmation messages (sent after registration)
-    'whatsapp_welcome_message_en' => "Respected :name, may the peace of God be with you.\nWe thank you for being a user of this platform. From now on, based on the time you have chosen, we will send you our daily reminders each day.\n\nTo be able to open the daily link directly by clicking here, please save this WhatsApp number.\n\nLiverpool Mekane Kidusan Abune Teklehaimanot Church.\nBlessed Great Lent!",
-    'whatsapp_welcome_message_am' => "የተከበሩ :name ሰላመ እግዚአብሄር ከእርስዎ ጋር ይሁን። የዚህ ፕላትፎርም ተጠቃሚ ስለሆኑ እያመሰገንን ከዚህ በኋላ በመረጡት ሰዓት መሰረት በየዕለቱ ማስታወሻወችን እንልክልዎታለን። የየቀኑንን ሊንክ ቀጥታ እዚሁ ላይ ክሊክ አድርገው መክፈት እንዲችሉ እባክዋ ይሄንን የዋትስአፕ ቀጥር ሴቭ ያድርጉት።\n\nሊቨርፑል መካነ ቅዱሳን አቡነ ተክለሃይማኖት ቤተክርስቲያን።\nመልካም የዓብይ ጾም!",
+    'whatsapp_welcome_message_en' => "Respected :name, may the peace of God be with you.\nWe thank you for being a user of this platform. From now on, based on the time you have chosen, we will send you our daily reminders each day.\n\nLiverpool Mekane Kidusan Abune Teklehaimanot Church.\nBlessed Great Lent!",
+    'whatsapp_welcome_message_am' => "የተከበሩ :name ሰላመ እግዚአብሄር ከእርስዎ ጋር ይሁን። የዚህ ፕላትፎርም ተጠቃሚ ስለሆኑ እያመሰገንን ከዚህ በኋላ በመረጡት ሰዓት መሰረት በየዕለቱ ማስታወሻወችን እንልክልዎታለን።\n\nሊቨርፑል መካነ ቅዱሳን አቡነ ተክለሃይማኖት ቤተክርስቲያን።\nመልካም የዓብይ ጾም!",
 
     // Navigation
     'nav_home' => 'Home',
@@ -236,7 +236,7 @@ return [
     'settings_whatsapp_lang' => 'Message Language',
     'settings_whatsapp_not_setup' => 'Not set up',
     'settings_whatsapp_setup_cta' => 'Set up WhatsApp reminders to receive daily spiritual content.',
-    'whatsapp_daily_reminder_message' => 'Abiy Tsom Day :day is ready. Open today\'s content: :url',
+    'whatsapp_daily_reminder_message' => "Abiy Tsom Day :day is ready.\nOpen today's content:\n:url",
 
     // WhatsApp Settings (Admin)
     'whatsapp_settings' => 'WhatsApp Settings',

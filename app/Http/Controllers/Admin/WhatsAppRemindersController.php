@@ -161,8 +161,11 @@ class WhatsAppRemindersController extends Controller
             ], 400);
         }
 
-        $lang = $member->whatsapp_language ?? 'en';
+        $lang = in_array((string) $member->whatsapp_language, ['en', 'am'], true)
+            ? (string) $member->whatsapp_language
+            : 'en';
         $dayUrl = route('member.day', ['daily' => $dailyContent]).'?token='.urlencode((string) $member->token);
+        $dayUrl = $this->ensureHttpsUrl($dayUrl);
 
         $message = Lang::get('app.whatsapp_daily_reminder_message', [
             'day' => $dailyContent->day_number,
@@ -187,5 +190,18 @@ class WhatsAppRemindersController extends Controller
         if (! $member->whatsapp_reminder_enabled || ! $member->whatsapp_phone || ! $member->whatsapp_reminder_time) {
             abort(404);
         }
+    }
+
+    /**
+     * Ensure reminder links are sent as full HTTPS URLs
+     * on non-local environments for best WhatsApp clickability.
+     */
+    private function ensureHttpsUrl(string $url): string
+    {
+        if (app()->environment('local')) {
+            return $url;
+        }
+
+        return preg_replace('/^http:\/\//i', 'https://', $url) ?? $url;
     }
 }
