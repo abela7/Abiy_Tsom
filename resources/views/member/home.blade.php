@@ -9,41 +9,37 @@
     @php $dayToken = isset($member) && $member?->token ? '?token=' . e($member->token) : ''; @endphp
     @if(isset($viewTodayTarget) && $viewTodayTarget)
     <a href="{{ route('member.day', $viewTodayTarget) }}{{ $dayToken }}"
-       class="group relative block overflow-hidden rounded-3xl shadow-[0_8px_30px_-4px_rgba(10,98,134,0.45)] dark:shadow-[0_8px_30px_-4px_rgba(226,202,24,0.35)] hover:shadow-[0_12px_40px_-4px_rgba(10,98,134,0.55)] dark:hover:shadow-[0_12px_40px_-4px_rgba(226,202,24,0.45)] transition-all duration-300 active:scale-[0.98] ring-1 ring-accent/30">
-        {{-- Gradient background --}}
-        <div class="absolute inset-0 bg-gradient-to-br from-[#0d7eab] via-accent to-[#064a66] dark:from-[#c9a800] dark:via-[#a08600] dark:to-[#7a6500]"></div>
-
-        {{-- Decorative glows --}}
-        <div class="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-white/15 blur-3xl pointer-events-none"></div>
-        <div class="absolute -bottom-12 -left-12 w-40 h-40 rounded-full bg-white/5 blur-2xl pointer-events-none"></div>
-        <div class="absolute top-1/2 right-0 w-24 h-24 rounded-full bg-accent-secondary/20 blur-2xl pointer-events-none"></div>
+       class="group relative block overflow-hidden rounded-3xl bg-gradient-to-br from-accent via-accent to-accent-hover shadow-lg shadow-accent/25 hover:shadow-xl hover:shadow-accent/35 transition-all duration-300 active:scale-[0.98]">
+        {{-- Decorative glow --}}
+        <div class="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-white/10 blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-black/10 blur-2xl pointer-events-none"></div>
 
         <div class="relative flex items-center gap-4 p-5 sm:p-6">
             {{-- Day number badge --}}
             @if($season && $today)
             <div class="shrink-0 w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem] rounded-2xl bg-white/20 dark:bg-white/25 backdrop-blur-md border border-white/30 flex flex-col items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_4px_12px_rgba(0,0,0,0.15)]">
-                <span class="text-3xl sm:text-4xl font-black text-white leading-none drop-shadow-sm">{{ $today->day_number }}</span>
-                <span class="text-[9px] sm:text-[10px] font-bold text-white/80 uppercase tracking-wider">{{ __('app.of_total', ['total' => $season->total_days]) }}</span>
+                <span class="text-3xl sm:text-4xl font-black text-on-accent dark:text-white leading-none drop-shadow-sm">{{ $today->day_number }}</span>
+                <span class="text-[9px] sm:text-[10px] font-bold text-on-accent/70 dark:text-white/80 uppercase tracking-wider">{{ __('app.of_total', ['total' => $season->total_days]) }}</span>
             </div>
             @endif
 
             {{-- Text content --}}
             <div class="flex-1 min-w-0">
-                <p class="text-xs sm:text-sm font-semibold text-white/80 mb-0.5">
+                <p class="text-xs sm:text-sm font-semibold text-on-accent/70 dark:text-white/80 mb-0.5">
                     {{ now()->locale('en')->translatedFormat('l, j F Y') }}
                 </p>
-                <h2 class="text-xl sm:text-2xl font-black text-white leading-tight drop-shadow-sm">
+                <h2 class="text-xl sm:text-2xl font-black text-on-accent dark:text-white leading-tight drop-shadow-sm">
                     {{ $today ? __('app.view_today') : __('app.view_recommended_day') }}
                 </h2>
                 @if($today && $today->weeklyTheme)
-                <p class="text-sm sm:text-base font-semibold text-white/75 mt-0.5 truncate">
+                <p class="text-sm sm:text-base font-medium text-on-accent/70 dark:text-white/75 mt-0.5 truncate">
                     {{ localized($today->weeklyTheme, 'name') ?? $today->weeklyTheme->name_en ?? '' }}
                 </p>
                 @endif
             </div>
 
             {{-- Arrow indicator --}}
-            <div class="shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-amber-400 shadow-lg shadow-amber-500/40 flex items-center justify-center group-hover:bg-amber-300 group-hover:shadow-amber-400/50 group-hover:scale-105 transition-all duration-200">
+            <div class="shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-amber-400 shadow-lg shadow-amber-500/40 flex items-center justify-center group-hover:bg-amber-300 group-hover:scale-105 transition-all duration-200">
                 <svg class="w-6 h-6 sm:w-7 sm:h-7 text-amber-900 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
                 </svg>
