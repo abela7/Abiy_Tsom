@@ -132,6 +132,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::post('/whatsapp/webhook', [Admin\WhatsAppSettingsController::class, 'updateWebhook'])->name('whatsapp.webhook');
         Route::get('/whatsapp/reminders', [Admin\WhatsAppRemindersController::class, 'index'])->name('whatsapp.reminders');
         Route::put('/whatsapp/reminders/{member}', [Admin\WhatsAppRemindersController::class, 'update'])->name('whatsapp.reminders.update');
+        Route::post('/whatsapp/reminders/{member}/send', [Admin\WhatsAppRemindersController::class, 'sendReminder'])->name('whatsapp.reminders.send');
         Route::post('/whatsapp/reminders/{member}/disable', [Admin\WhatsAppRemindersController::class, 'disable'])->name('whatsapp.reminders.disable');
         Route::delete('/whatsapp/reminders/{member}', [Admin\WhatsAppRemindersController::class, 'destroy'])->name('whatsapp.reminders.destroy');
         Route::get('/whatsapp/cron', [Admin\WhatsAppCronController::class, 'index'])->name('whatsapp.cron');

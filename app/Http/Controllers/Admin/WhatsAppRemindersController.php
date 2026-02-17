@@ -5,9 +5,15 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\DailyContent;
+use App\Models\LentSeason;
 use App\Models\Member;
+use App\Services\UltraMsgService;
+use Carbon\CarbonImmutable;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Lang;
 use Illuminate\View\View;
 
 /**
@@ -45,10 +51,16 @@ class WhatsAppRemindersController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(25);
 
+        $membersByTime = (clone $this->optedInQuery())
+            ->orderBy('baptism_name')
+            ->get()
+            ->groupBy('whatsapp_reminder_time');
+
         return view('admin.whatsapp.reminders', compact(
             'totalOptedIn',
             'byTime',
-            'members'
+            'members',
+            'membersByTime'
         ));
     }
 
@@ -115,6 +127,65 @@ class WhatsAppRemindersController extends Controller
         return redirect()
             ->route('admin.whatsapp.reminders')
             ->with('success', __('app.member_deleted'));
+    }
+
+    /**
+     * Send today's reminder to a member on demand (admin-triggered).
+     */
+    public function sendReminder(Member $member, UltraMsgService $ultraMsg): JsonResponse
+    {
+        $this->ensureOptedIn($member);
+
+        if (! $ultraMsg->isConfigured()) {
+            return response()->json([
+                'success' => false,
+                'message' => __('app.whatsapp_not_configured'),
+            ], 400);
+        }
+
+        $timezone = 'Europe/London';
+        $today = CarbonImmutable::now($timezone)->toDateString();
+
+        $season = LentSeason::active();
+        if (! $season) {
+            return response()->json([
+                'success' => false,
+                'message' => __('app.no_active_season'),
+            ], 400);
+        }
+
+        $dailyContent = DailyContent::query()
+            ->where('lent_season_id', $season->id)
+            ->whereDate('date', $today)
+            ->where('is_published', true)
+            ->first();
+
+        if (! $dailyContent) {
+            return response()->json([
+                'success' => false,
+                'message' => __('app.timetable_no_content_today'),
+            ], 400);
+        }
+
+        $lang = $member->whatsapp_language ?? 'en';
+        $dayUrl = route('member.day', ['daily' => $dailyContent]).'?token='.urlencode((string) $member->token);
+
+        $message = Lang::get('app.whatsapp_daily_reminder_message', [
+            'day' => $dailyContent->day_number,
+            'url' => $dayUrl,
+        ], $lang);
+
+        $sent = $ultraMsg->sendTextMessage((string) $member->whatsapp_phone, $message);
+
+        if ($sent) {
+            $member->forceFill(['whatsapp_last_sent_date' => $today])->save();
+        }
+
+        return response()->json([
+            'success' => true,
+            'sent' => $sent,
+            'message' => $sent ? __('app.timetable_reminder_sent') : __('app.whatsapp_test_failed'),
+        ]);
     }
 
     private function ensureOptedIn(Member $member): void

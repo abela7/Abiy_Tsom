@@ -314,6 +314,15 @@ return [
     'member_deleted' => 'Member deleted.',
     'reminder_disable_confirm' => 'Disable reminders for this member? They will be removed from the list.',
     'member_delete_confirm' => 'Delete this member permanently? This cannot be undone.',
+
+    // Timetable & Send Reminder
+    'timetable_title' => 'Reminder Timetable',
+    'timetable_help' => 'Click a time slot to see members and send reminders on demand.',
+    'timetable_no_content_today' => 'No published content for today.',
+    'timetable_reminder_sent' => 'Reminder sent.',
+    'send_reminder' => 'Send Reminder',
+    'sending' => 'Sending…',
+    'timetable_member_count' => 'members',
     'london_time' => '(London)',
     'never' => 'Never',
     'baptism_name' => 'Name',
