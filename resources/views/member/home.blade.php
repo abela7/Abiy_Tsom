@@ -125,9 +125,9 @@
 
             {{-- Bottom progress bar (100 → 0) --}}
             <div class="mt-3 sm:mt-4">
-                <div class="h-1.5 sm:h-2.5 w-full bg-white/10 rounded-full overflow-hidden p-0.5 border border-white/5">
-                    <div class="h-full rounded-full bg-easter-gold transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(212,175,55,0.4)]"
-                         :style="'width: ' + progressPct + '%'"></div>
+                <div class="h-2 sm:h-3 w-full bg-white/10 rounded-full border border-white/5 relative">
+                    <div class="absolute inset-y-0 left-0 rounded-full bg-easter-gold transition-all duration-1000 ease-out shadow-[0_0_8px_2px_rgba(212,175,55,0.6)]"
+                         :style="'width: max(' + progressPct + '%, 0.75rem)'"></div>
                 </div>
             </div>
         </div>
