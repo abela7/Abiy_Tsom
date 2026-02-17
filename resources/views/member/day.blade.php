@@ -5,7 +5,8 @@
     $dayTitle = localized($daily, 'day_title') ?? __('app.day_x', ['day' => $daily->day_number]);
     $shareTitle = $weekName ? ($weekName . ' - ' . $dayTitle) : $dayTitle;
     $shareDescription = __('app.share_day_description');
-    $shareUrl = url()->current();
+    // Use public share URL so social crawlers can read OG meta tags
+    $shareUrl = route('share.day', $daily);
 @endphp
 
 @section('title', $shareTitle . ' - ' . __('app.app_name'))
@@ -326,15 +327,11 @@ function dayPage() {
         },
 
         async shareDay() {
-            const shareData = {
-                title: this.shareTitle,
-                text: this.shareDescription,
-                url: this.shareUrl,
-            };
-
             if (navigator.share) {
                 try {
-                    await navigator.share(shareData);
+                    await navigator.share({
+                        text: this.shareTitle + '\n' + this.shareDescription + '\n' + this.shareUrl,
+                    });
                 } catch (_e) {
                     // User cancelled or share failed
                 }
@@ -343,7 +340,6 @@ function dayPage() {
                     await navigator.clipboard.writeText(this.shareTitle + '\n' + this.shareDescription + '\n' + this.shareUrl);
                     alert(@js(__('app.link_copied')));
                 } catch (_e) {
-                    // Fallback: select text in a prompt
                     prompt(@js(__('app.copy_link')), this.shareUrl);
                 }
             }

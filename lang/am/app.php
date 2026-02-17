@@ -64,6 +64,7 @@ return [
     'share_day_description' => 'ለዕለቱ የተመረጠ የመጽሐፍ ቅዱስ ክፍል ፣ መዝሙር ፣ ስንክሳር ፣ መንፈሳዊ መጽሐፍ እንዲሁም ስብከት እና ሌሎች መረጃዎች።',
     'link_copied' => 'ሊንኩ ተቀድቷል!',
     'copy_link' => 'ይህን ሊንክ ይቅዱ:',
+    'redirecting' => 'Redirecting to',
     'week' => 'ሳምንት :number',
     'this_week' => 'በዚህ ሳምንት',
     'no_content_today' => 'ለዛሬ ገና ይዘት የለም።',

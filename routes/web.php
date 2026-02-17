@@ -17,6 +17,9 @@ Route::get('/', [Member\OnboardingController::class, 'welcome'])->name('home');
 Route::post('/member/register', [Member\OnboardingController::class, 'register'])->name('member.register');
 Route::post('/member/identify', [Member\OnboardingController::class, 'identify'])->name('member.identify');
 
+// Public share page — serves OG meta for social crawlers, then redirects
+Route::get('/share/day/{daily}', [Member\ShareController::class, 'day'])->name('share.day');
+
 // Passcode routes (member-identified but before passcode check)
 Route::get('/member/passcode', [Member\PasscodeController::class, 'show'])->name('member.passcode');
 Route::get('/member/passcode/lock', [Member\PasscodeController::class, 'lock'])->name('member.passcode.lock');

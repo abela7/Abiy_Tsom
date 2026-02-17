@@ -60,6 +60,7 @@ return [
     'share_day_description' => 'Daily Bible reading, mezmur, Sinksar, spiritual book, sermon and more selected for today.',
     'link_copied' => 'Link copied!',
     'copy_link' => 'Copy this link:',
+    'redirecting' => 'Redirecting to',
     'week' => 'Week :number',
     'this_week' => 'This Week',
     'no_content_today' => 'No content available for today yet.',
