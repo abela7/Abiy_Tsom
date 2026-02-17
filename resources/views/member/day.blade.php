@@ -17,6 +17,20 @@
 @section('content')
 <div x-data="dayPage()" class="px-4 pt-4 space-y-4">
 
+    {{-- "Copied!" toast --}}
+    <div x-show="linkCopied"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 -translate-y-2"
+         x-transition:enter-end="opacity-100 translate-y-0"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100 translate-y-0"
+         x-transition:leave-end="opacity-0 -translate-y-2"
+         x-cloak
+         class="fixed top-4 left-1/2 -translate-x-1/2 z-[100] px-4 py-2.5 bg-success text-white text-sm font-semibold rounded-xl shadow-lg flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+        {{ __('app.link_copied') }}
+    </div>
+
     {{-- Back + day info + share --}}
     <div class="flex items-center gap-3">
         <a href="{{ route('member.calendar') }}" class="p-2 rounded-lg bg-muted shrink-0">
@@ -28,14 +42,37 @@
             </h1>
             <p class="text-xs text-muted-text">{{ $daily->date->locale('en')->translatedFormat('l, F j, Y') }}</p>
         </div>
-        <button type="button"
-                @click="shareDay()"
-                class="p-2.5 rounded-xl bg-accent/10 hover:bg-accent/20 transition touch-manipulation shrink-0"
-                :aria-label="'{{ __('app.share') }}'">
-            <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
-            </svg>
-        </button>
+        <div class="relative shrink-0" x-data="{ shareOpen: false }" @click.outside="shareOpen = false">
+            <button type="button"
+                    @click="shareOpen = !shareOpen"
+                    class="p-2.5 rounded-xl bg-accent/10 hover:bg-accent/20 transition touch-manipulation"
+                    :aria-label="'{{ __('app.share') }}'">
+                <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                </svg>
+            </button>
+            {{-- Share dropdown --}}
+            <div x-show="shareOpen" x-transition
+                 x-cloak
+                 class="absolute right-0 top-full mt-2 w-44 bg-card rounded-xl shadow-xl border border-border z-50 overflow-hidden">
+                <button type="button"
+                        @click="shareOpen = false; shareDay()"
+                        class="flex items-center gap-3 w-full px-4 py-3 text-sm text-primary hover:bg-muted transition text-left">
+                    <svg class="w-4 h-4 text-accent shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                    </svg>
+                    {{ __('app.share') }}
+                </button>
+                <button type="button"
+                        @click="shareOpen = false; copyLink()"
+                        class="flex items-center gap-3 w-full px-4 py-3 text-sm text-primary hover:bg-muted transition text-left border-t border-border">
+                    <svg class="w-4 h-4 text-accent shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
+                    </svg>
+                    {{ __('app.copy_link_btn') }}
+                </button>
+            </div>
+        </div>
     </div>
 
     {{-- Weekly theme badge --}}
@@ -234,6 +271,14 @@
                 {{ __('app.share_btn') }}
             </button>
             <button type="button"
+                    @click="copyLink()"
+                    class="p-2 rounded-xl bg-accent/10 hover:bg-accent/20 transition touch-manipulation"
+                    :aria-label="'{{ __('app.copy_link_btn') }}'">
+                <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
+                </svg>
+            </button>
+            <button type="button"
                     @click="sharePromptDismissed = true"
                     class="p-1.5 rounded-lg hover:bg-muted transition touch-manipulation"
                     aria-label="{{ __('app.close') }}">
@@ -301,6 +346,7 @@ function dayPage() {
     return {
         showSharePrompt: false,
         sharePromptDismissed: false,
+        linkCopied: false,
         _observer: null,
 
         shareTitle: @js($shareTitle),
@@ -336,13 +382,24 @@ function dayPage() {
                     // User cancelled or share failed
                 }
             } else {
-                try {
-                    await navigator.clipboard.writeText(this.shareTitle + '\n' + this.shareDescription + '\n' + this.shareUrl);
-                    alert(@js(__('app.link_copied')));
-                } catch (_e) {
-                    prompt(@js(__('app.copy_link')), this.shareUrl);
-                }
+                this.copyLink();
             }
+        },
+
+        async copyLink() {
+            try {
+                await navigator.clipboard.writeText(this.shareUrl);
+            } catch (_e) {
+                const ta = document.createElement('textarea');
+                ta.value = this.shareUrl;
+                ta.style.cssText = 'position:fixed;opacity:0';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+            }
+            this.linkCopied = true;
+            setTimeout(() => { this.linkCopied = false; }, 2000);
         },
 
         async toggleChecklist(dailyContentId, activityId, completed) {

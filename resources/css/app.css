@@ -167,6 +167,33 @@
     animation: progress-stripes 0.8s linear infinite;
 }
 
+/* ─── Announcement stacked card carousel ─────────────────────────────────── */
+.announcement-carousel {
+    perspective: 1200px;
+}
+.carousel-card {
+    transform-origin: center bottom;
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+}
+.carousel-card--active {
+    box-shadow:
+        0 8px 30px -8px rgba(0, 0, 0, 0.2),
+        0 0 0 1px var(--app-border);
+}
+.carousel-card--next {
+    box-shadow:
+        0 4px 16px -4px rgba(0, 0, 0, 0.12),
+        0 0 0 1px var(--app-border);
+    filter: brightness(0.92);
+}
+.carousel-card--behind {
+    filter: brightness(0.85);
+}
+.carousel-card--hidden {
+    visibility: hidden;
+}
+
 /* Safe area for sticky bottom bars on iOS */
 .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom, 0px);
