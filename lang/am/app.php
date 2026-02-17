@@ -416,6 +416,7 @@ return [
     'amharic_default' => 'አማርኛ (ነባሪ)',
     'english_fallback' => 'እንግሊዝኛ (አማርኛ ባዶ ከሆነ ይጠቀማል)',
     'add_mezmur_hint' => '2 ወይም ከዚያ በላይ የመዝሙር አገናኞችን ይጨምሩ። ርዕስ (አማርኛ ወይም እንግሊዝኛ) ይፈለጋል፤ URL እና ገለጻ አማራጭ።',
+    // Multiple spiritual books feature
     'add_spiritual_book_hint' => 'አንድ ወይም ከዚያ በላይ መንፈሳዊ መጽሐፍ ይጨምሩ። ተመሳሳይ መጽሐፍን በተለያዩ ቀናት መመከር ይችላሉ። የቀደሙትን ቀናት መጽሐፍ ጠቅ ማድረግ በፍጥነት ለመጨመር።',
     'recommend_from_previous' => 'ከቀደሙት ቀናት (ለመጨመር ጠቅ ያድርጉ)',
     'add_spiritual_book' => 'መንፈሳዊ መጽሐፍ ጨምር',

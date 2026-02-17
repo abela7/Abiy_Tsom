@@ -336,6 +336,7 @@
                 </section>
 
                 {{-- Step 5: Spiritual book (multiple, re-use from previous days) --}}
+                {{-- Feature: Multiple books per day + recommendations from previous days --}}
                 <section x-show="step === 5" x-cloak class="space-y-5">
                     <p class="text-xs text-muted-text px-1">{{ __('app.add_spiritual_book_hint') }}</p>
 

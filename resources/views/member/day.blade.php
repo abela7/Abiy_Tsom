@@ -125,7 +125,7 @@
     </div>
     @endif
 
-    {{-- Spiritual books --}}
+    {{-- Spiritual books (multiple per day) --}}
     @if($daily->books && $daily->books->isNotEmpty())
     <div class="space-y-3">
         <h3 class="font-semibold text-sm text-book">{{ __('app.spiritual_book') }}</h3>

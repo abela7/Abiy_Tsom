@@ -179,6 +179,7 @@ class HomeController extends Controller
         }
 
         $member = $request->attributes->get('member');
+        // Load books relation for multiple spiritual books per day
         $daily->load(['weeklyTheme', 'mezmurs', 'references', 'books']);
 
         $activities = Activity::where('lent_season_id', $daily->lent_season_id)

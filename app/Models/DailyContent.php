@@ -82,6 +82,7 @@ class DailyContent extends Model
 
     /**
      * Spiritual book recommendations for this day (can have multiple).
+     * Feature: Allow multiple books per day, recommend same book on different days.
      */
     public function books(): HasMany
     {

@@ -120,6 +120,7 @@ class TranslationSeeder extends Seeder
                 'mezmur_label', 'title_label', 'url_label', 'description_label',
                 'sinksar_label', 'url_video_label', 'spiritual_book_label',
                 'references_legend', 'references_help', 'reflection_label', 'publish_label',
+                // Multiple spiritual books feature keys
                 'add_mezmur_hint', 'add_spiritual_book_hint', 'recommend_from_previous', 'add_spiritual_book',
                 'name_amharic_label', 'name_english_label',
                 'url_placeholder', 'day_label', 'week_label',

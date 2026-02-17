@@ -265,6 +265,7 @@ class DailyContentController extends Controller
 
     /**
      * Recent spiritual books from previous days for quick re-use.
+     * Feature: Recommendations from previous days (click to add).
      *
      * @return array<int, array{title_en: string|null, title_am: string|null, url: string|null, description_en: string|null, description_am: string|null, day_number: int, date: string}>
      */
