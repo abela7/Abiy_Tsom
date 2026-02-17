@@ -35,9 +35,9 @@
                 @endif
             </div>
 
-            {{-- Arrow indicator --}}
+            {{-- Arrow indicator with nudge animation --}}
             <div class="shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/15 backdrop-blur-sm border border-white/20 shadow-inner flex items-center justify-center group-hover:bg-white/25 group-hover:scale-105 transition-all duration-200">
-                <svg class="w-6 h-6 sm:w-7 sm:h-7 text-white group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-6 h-6 sm:w-7 sm:h-7 text-white animate-nudge-right" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
                 </svg>
             </div>
