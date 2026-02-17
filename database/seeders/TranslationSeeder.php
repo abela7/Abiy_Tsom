@@ -46,6 +46,8 @@ class TranslationSeeder extends Seeder
                 'listen', 'watch', 'open_in_youtube', 'open_externally',
                 'read_more', 'show_less', 'tap_for_details', 'tap_to_collapse',
                 'references', 'reference_name', 'reference_url', 'add_reference',
+                'reference_type_label', 'reference_type_video', 'reference_type_website', 'reference_type_file',
+                'view_video', 'view_file',
                 'close', 'weekly_theme', 'gospel_reference', 'epistles_reference',
                 'video_player',
             ],

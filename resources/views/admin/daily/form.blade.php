@@ -35,6 +35,7 @@
                     'name_en' => $r->name_en ?? '',
                     'name_am' => $r->name_am ?? '',
                     'url' => $r->url ?? '',
+                    'type' => $r->type ?? 'website',
                 ])
                 ->values()
                 ->toArray()
@@ -42,6 +43,7 @@
                 'name_en' => '',
                 'name_am' => '',
                 'url' => '',
+                'type' => 'website',
             ]]
     );
 
@@ -410,6 +412,14 @@
                                 <input type="text" x-model="reference.name_am" placeholder="{{ __('app.name_amharic_label') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
                                 <input type="text" x-model="reference.name_en" placeholder="{{ __('app.name_english_label') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
                                 <input type="url" x-model="reference.url" placeholder="{{ __('app.url_placeholder') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                                <div>
+                                    <label class="block text-xs font-medium text-secondary mb-1">{{ __('app.reference_type_label') }}</label>
+                                    <select x-model="reference.type" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                                        <option value="video">{{ __('app.reference_type_video') }}</option>
+                                        <option value="website">{{ __('app.reference_type_website') }}</option>
+                                        <option value="file">{{ __('app.reference_type_file') }}</option>
+                                    </select>
+                                </div>
                             </div>
                         </template>
                         <button type="button" @click="addReference()" class="w-full min-h-12 py-3 border-2 border-dashed border-border rounded-xl text-sm font-medium text-muted-text hover:text-accent hover:border-accent transition touch-manipulation">
@@ -514,7 +524,7 @@
                             this.form.mezmurs = [{ title_en: '', title_am: '', url: '', description_en: '', description_am: '' }];
                         }
                         if (!Array.isArray(this.form.references) || this.form.references.length === 0) {
-                            this.form.references = [{ name_en: '', name_am: '', url: '' }];
+                            this.form.references = [{ name_en: '', name_am: '', url: '', type: 'website' }];
                         }
                         if (!Array.isArray(this.form.books)) {
                             this.form.books = [];
@@ -573,12 +583,13 @@
                             name_en: '',
                             name_am: '',
                             url: '',
+                            type: 'website',
                         });
                     },
 
                     removeReference(index) {
                         if (this.form.references.length === 1) {
-                            this.form.references[0] = { name_en: '', name_am: '', url: '' };
+                            this.form.references[0] = { name_en: '', name_am: '', url: '', type: 'website' };
                             return;
                         }
                         this.form.references.splice(index, 1);
@@ -752,6 +763,7 @@
                                 name_en: item.name_en || '',
                                 name_am: item.name_am || '',
                                 url: item.url || '',
+                                type: item.type || 'website',
                             }));
                         } else if (step === 7) {
                             payload.is_published = Boolean(this.form.is_published);

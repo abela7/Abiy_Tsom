@@ -177,10 +177,18 @@
              x-cloak
              class="mt-3 pt-3 border-t border-border space-y-2">
             @foreach($daily->references as $ref)
+            @php
+                $refType = $ref->type ?? 'website';
+                $btnLabel = match($refType) {
+                    'video' => __('app.view_video'),
+                    'file' => __('app.view_file'),
+                    default => __('app.read_more'),
+                };
+            @endphp
             <a href="{{ $ref->url }}" target="_blank" rel="noopener"
                class="flex items-center justify-between gap-2 p-3 rounded-xl bg-muted hover:bg-border transition">
                 <span class="text-sm font-medium text-primary">{{ localized($ref, 'name') }}</span>
-                <span class="shrink-0 px-3 py-1 bg-accent text-on-accent rounded-lg text-xs font-medium">{{ __('app.read_more') }}</span>
+                <span class="shrink-0 px-3 py-1 bg-accent text-on-accent rounded-lg text-xs font-medium">{{ $btnLabel }}</span>
             </a>
             @endforeach
         </div>

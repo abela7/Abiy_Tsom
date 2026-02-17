@@ -12,8 +12,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class DailyContentReference extends Model
 {
+    public const TYPE_VIDEO = 'video';
+    public const TYPE_WEBSITE = 'website';
+    public const TYPE_FILE = 'file';
+
     /** @var list<string> */
-    protected $fillable = ['daily_content_id', 'name_en', 'name_am', 'url', 'sort_order'];
+    protected $fillable = ['daily_content_id', 'name_en', 'name_am', 'url', 'type', 'sort_order'];
 
     public function dailyContent(): BelongsTo
     {

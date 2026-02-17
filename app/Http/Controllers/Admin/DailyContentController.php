@@ -227,6 +227,7 @@ class DailyContentController extends Controller
                     'references.*.name_en' => ['nullable', 'string', 'max:255'],
                     'references.*.name_am' => ['nullable', 'string', 'max:255'],
                     'references.*.url' => ['nullable', 'url', 'max:500'],
+                    'references.*.type' => ['nullable', 'string', 'in:video,website,file'],
                 ]);
                 $updates = [
                     'reflection_en' => $request->input('reflection_en'),
@@ -413,6 +414,7 @@ class DailyContentController extends Controller
             'references.*.name_en' => ['nullable', 'string', 'max:255'],
             'references.*.name_am' => ['nullable', 'string', 'max:255'],
             'references.*.url' => ['nullable', 'url', 'max:500'],
+            'references.*.type' => ['nullable', 'string', 'in:video,website,file'],
         ]);
     }
 
@@ -464,21 +466,27 @@ class DailyContentController extends Controller
     /**
      * Parse and filter references from request (keep only those with name_en or name_am and url).
      *
-     * @return array<int, array{name_en: string|null, name_am: string|null, url: string}>
+     * @return array<int, array{name_en: string|null, name_am: string|null, url: string, type: string}>
      */
     private function parseReferences(Request $request): array
     {
         $raw = $request->input('references', []);
         $parsed = [];
+        $allowed = ['video', 'website', 'file'];
         foreach ($raw as $r) {
             $nameEn = trim((string) ($r['name_en'] ?? ''));
             $nameAm = trim((string) ($r['name_am'] ?? ''));
             $url = trim((string) ($r['url'] ?? ''));
+            $type = trim((string) ($r['type'] ?? 'website'));
+            if (! in_array($type, $allowed, true)) {
+                $type = 'website';
+            }
             if (($nameEn !== '' || $nameAm !== '') && $url !== '') {
                 $parsed[] = [
                     'name_en' => $nameEn !== '' ? $nameEn : null,
                     'name_am' => $nameAm !== '' ? $nameAm : null,
                     'url' => $url,
+                    'type' => $type,
                 ];
             }
         }
@@ -487,7 +495,7 @@ class DailyContentController extends Controller
     }
 
     /**
-     * @param  array<int, array{name_en: string|null, name_am: string|null, url: string}>  $references
+     * @param  array<int, array{name_en: string|null, name_am: string|null, url: string, type: string}>  $references
      */
     private function syncReferences(DailyContent $daily, array $references): void
     {
@@ -497,6 +505,7 @@ class DailyContentController extends Controller
                 'name_en' => $ref['name_en'],
                 'name_am' => $ref['name_am'],
                 'url' => $ref['url'],
+                'type' => $ref['type'] ?? 'website',
                 'sort_order' => $i,
             ]);
         }
