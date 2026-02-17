@@ -27,6 +27,7 @@ class Member extends Model
         'whatsapp_phone',
         'whatsapp_reminder_time',
         'whatsapp_last_sent_date',
+        'whatsapp_language',
     ];
 
     /** @var list<string> */

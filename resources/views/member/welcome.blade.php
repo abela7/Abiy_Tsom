@@ -20,13 +20,13 @@
             {{-- Progress bar --}}
             <div class="h-1 bg-muted/60">
                 <div class="h-full bg-gradient-to-r from-accent to-accent-secondary rounded-r-full transition-all duration-500 ease-out"
-                     :style="'width: ' + (step / (wantsWhatsApp ? 4 : 2) * 100) + '%'"></div>
+                     :style="'width: ' + (step / (wantsWhatsApp ? 5 : 2) * 100) + '%'"></div>
             </div>
 
             {{-- Step indicator --}}
             <div class="flex items-center justify-center pt-5 pb-1">
                 <span class="text-[11px] font-medium text-muted-text tracking-wide"
-                      x-text="step + ' / ' + (wantsWhatsApp ? 4 : 2)"></span>
+                      x-text="step + ' / ' + (wantsWhatsApp ? 5 : 2)"></span>
             </div>
 
             <div class="px-5 pb-6 pt-2 sm:px-8 sm:pb-8 sm:pt-3">
@@ -141,8 +141,54 @@
                     </button>
                 </div>
 
-                {{-- ==================== STEP 4: Reminder Time ==================== --}}
+                {{-- ==================== STEP 4: Reminder Language ==================== --}}
                 <div x-show="step === 4" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-x-4" x-transition:enter-end="opacity-100 translate-x-0">
+                    <div class="text-center mb-7">
+                        <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-accent/10 mb-4">
+                            <svg class="w-7 h-7 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
+                            </svg>
+                        </div>
+                        <h2 class="text-xl sm:text-2xl font-bold text-primary leading-tight">{{ __('app.wizard_lang_title') }}</h2>
+                        <p class="text-sm text-muted-text mt-2 max-w-[260px] mx-auto leading-relaxed">{{ __('app.wizard_lang_subtitle') }}</p>
+                    </div>
+
+                    <div class="space-y-3">
+                        {{-- English option --}}
+                        <button @click="whatsappLang = 'en'; step = 5"
+                                class="group w-full py-4 rounded-xl font-bold text-base active:scale-[0.98] transition-all duration-150 flex items-center justify-between px-5 border-2"
+                                :class="whatsappLang === 'en'
+                                    ? 'bg-accent text-on-accent border-accent shadow-lg shadow-accent/25'
+                                    : 'bg-muted/60 text-primary border-border hover:border-accent/50'">
+                            <span class="flex items-center gap-3">
+                                <span class="text-2xl leading-none">🇬🇧</span>
+                                <span>{{ __('app.wizard_lang_english') }}</span>
+                            </span>
+                            <svg x-show="whatsappLang === 'en'" class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                        </button>
+
+                        {{-- Amharic option --}}
+                        <button @click="whatsappLang = 'am'; step = 5"
+                                class="group w-full py-4 rounded-xl font-bold text-base active:scale-[0.98] transition-all duration-150 flex items-center justify-between px-5 border-2"
+                                :class="whatsappLang === 'am'
+                                    ? 'bg-accent text-on-accent border-accent shadow-lg shadow-accent/25'
+                                    : 'bg-muted/60 text-primary border-border hover:border-accent/50'">
+                            <span class="flex items-center gap-3">
+                                <span class="text-2xl leading-none">🇪🇹</span>
+                                <span>{{ __('app.wizard_lang_amharic') }}</span>
+                            </span>
+                            <svg x-show="whatsappLang === 'am'" class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                        </button>
+                    </div>
+
+                    <button @click="step = 3" class="group w-full mt-5 py-2 text-sm text-muted-text hover:text-primary transition-colors flex items-center justify-center gap-1">
+                        <svg class="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                        {{ __('app.wizard_back') }}
+                    </button>
+                </div>
+
+                {{-- ==================== STEP 5: Reminder Time ==================== --}}
+                <div x-show="step === 5" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-x-4" x-transition:enter-end="opacity-100 translate-x-0">
                     <div class="text-center mb-7">
                         <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-accent/10 mb-4">
                             <svg class="w-7 h-7 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -177,7 +223,7 @@
                         </span>
                     </button>
 
-                    <button @click="step = 3" :disabled="isLoading" class="group w-full mt-5 py-2 text-sm text-muted-text hover:text-primary transition-colors disabled:opacity-50 flex items-center justify-center gap-1">
+                    <button @click="step = 4" :disabled="isLoading" class="group w-full mt-5 py-2 text-sm text-muted-text hover:text-primary transition-colors disabled:opacity-50 flex items-center justify-center gap-1">
                         <svg class="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                         {{ __('app.wizard_back') }}
                     </button>
@@ -211,6 +257,7 @@ function onboarding() {
         baptismName: '',
         wantsWhatsApp: false,
         phone: '',
+        whatsappLang: 'en',
         reminderTime: '',
         hasToken: false,
         isLoading: false,
@@ -268,6 +315,7 @@ function onboarding() {
 
             if (this.wantsWhatsApp) {
                 payload.whatsapp_phone = this.normalizeUkPhone(this.phone) || this.phone;
+                payload.whatsapp_language = this.whatsappLang;
                 payload.whatsapp_reminder_time = this.reminderTime;
             }
 

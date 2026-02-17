@@ -7,8 +7,10 @@ namespace App\Http\Controllers\Member;
 use App\Http\Controllers\Controller;
 use App\Models\LentSeason;
 use App\Models\Member;
+use App\Services\UltraMsgService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -17,6 +19,8 @@ use Illuminate\View\View;
  */
 class OnboardingController extends Controller
 {
+    public function __construct(private readonly UltraMsgService $ultraMsg) {}
+
     /**
      * Show the welcome / onboarding page.
      */
@@ -28,7 +32,8 @@ class OnboardingController extends Controller
     }
 
     /**
-     * Register a new member — returns a unique token.
+     * Register a new member — returns a unique token, then fires
+     * a WhatsApp confirmation message if the member opted in.
      */
     public function register(Request $request): JsonResponse
     {
@@ -39,15 +44,17 @@ class OnboardingController extends Controller
         }
 
         $validated = $request->validate([
-            'baptism_name' => ['required', 'string', 'max:255'],
+            'baptism_name'             => ['required', 'string', 'max:255'],
             'whatsapp_reminder_enabled' => ['nullable', 'boolean'],
-            'whatsapp_phone' => ['nullable', 'string', 'regex:/^\+447\d{9}$/'],
-            'whatsapp_reminder_time' => ['nullable', 'date_format:H:i'],
+            'whatsapp_phone'           => ['nullable', 'string', 'regex:/^\+447\d{9}$/'],
+            'whatsapp_language'        => ['nullable', 'string', 'in:en,am'],
+            'whatsapp_reminder_time'   => ['nullable', 'date_format:H:i'],
         ]);
 
         $reminderEnabled = $request->boolean('whatsapp_reminder_enabled');
-        $reminderPhone = $validated['whatsapp_phone'] ?? null;
-        $reminderTime = $this->normalizeReminderTime($validated['whatsapp_reminder_time'] ?? null);
+        $reminderPhone   = $validated['whatsapp_phone'] ?? null;
+        $reminderTime    = $this->normalizeReminderTime($validated['whatsapp_reminder_time'] ?? null);
+        $reminderLang    = $validated['whatsapp_language'] ?? 'en';
 
         if ($reminderEnabled && (! $reminderPhone || ! $reminderTime)) {
             return response()->json([
@@ -62,10 +69,10 @@ class OnboardingController extends Controller
         }
 
         $memberPayload = [
-            'baptism_name' => $validated['baptism_name'],
-            'token' => $token,
-            'locale' => app()->getLocale(),
-            'theme' => 'light',
+            'baptism_name'             => $validated['baptism_name'],
+            'token'                    => $token,
+            'locale'                   => app()->getLocale(),
+            'theme'                    => 'light',
             'whatsapp_reminder_enabled' => $reminderEnabled,
         ];
 
@@ -77,17 +84,27 @@ class OnboardingController extends Controller
             $memberPayload['whatsapp_reminder_time'] = $reminderTime;
         }
 
+        if ($reminderEnabled) {
+            $memberPayload['whatsapp_language'] = $reminderLang;
+        }
+
         $member = Member::create($memberPayload);
+
+        // Send WhatsApp confirmation immediately after registration.
+        if ($reminderEnabled && $reminderPhone) {
+            $this->sendWelcomeMessage($member, $reminderLang);
+        }
 
         return response()->json([
             'success' => true,
-            'token' => $member->token,
-            'member' => [
-                'id' => $member->id,
-                'baptism_name' => $member->baptism_name,
+            'token'   => $member->token,
+            'member'  => [
+                'id'                       => $member->id,
+                'baptism_name'             => $member->baptism_name,
                 'whatsapp_reminder_enabled' => $member->whatsapp_reminder_enabled,
-                'whatsapp_phone' => $member->whatsapp_phone,
-                'whatsapp_reminder_time' => $member->whatsapp_reminder_time,
+                'whatsapp_phone'           => $member->whatsapp_phone,
+                'whatsapp_reminder_time'   => $member->whatsapp_reminder_time,
+                'whatsapp_language'        => $member->whatsapp_language,
             ],
         ]);
     }
@@ -109,17 +126,49 @@ class OnboardingController extends Controller
 
         return response()->json([
             'success' => true,
-            'member' => [
-                'id' => $member->id,
-                'baptism_name' => $member->baptism_name,
-                'passcode_enabled' => $member->passcode_enabled,
-                'locale' => $member->locale,
-                'theme' => $member->theme,
+            'member'  => [
+                'id'                       => $member->id,
+                'baptism_name'             => $member->baptism_name,
+                'passcode_enabled'         => $member->passcode_enabled,
+                'locale'                   => $member->locale,
+                'theme'                    => $member->theme,
                 'whatsapp_reminder_enabled' => $member->whatsapp_reminder_enabled,
-                'whatsapp_phone' => $member->whatsapp_phone,
-                'whatsapp_reminder_time' => $member->whatsapp_reminder_time,
+                'whatsapp_phone'           => $member->whatsapp_phone,
+                'whatsapp_reminder_time'   => $member->whatsapp_reminder_time,
+                'whatsapp_language'        => $member->whatsapp_language,
             ],
         ]);
+    }
+
+    /**
+     * Send the welcome / confirmation WhatsApp message to the member.
+     * Failures are logged but never bubble up — registration already succeeded.
+     */
+    private function sendWelcomeMessage(Member $member, string $lang): void
+    {
+        if (! $this->ultraMsg->isConfigured()) {
+            Log::info('UltraMsg not configured — skipping welcome message.', [
+                'member_id' => $member->id,
+            ]);
+
+            return;
+        }
+
+        try {
+            // Pick the correct template key based on chosen language.
+            $messageKey = $lang === 'am'
+                ? 'app.whatsapp_welcome_message_am'
+                : 'app.whatsapp_welcome_message_en';
+
+            $body = __($messageKey, ['name' => $member->baptism_name]);
+
+            $this->ultraMsg->sendTextMessage((string) $member->whatsapp_phone, $body);
+        } catch (\Throwable $e) {
+            Log::warning('Failed to send WhatsApp welcome message.', [
+                'member_id' => $member->id,
+                'error'     => $e->getMessage(),
+            ]);
+        }
     }
 
     private function normalizeReminderTime(?string $time): ?string

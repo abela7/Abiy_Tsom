@@ -52,6 +52,14 @@ return [
     'wizard_time_label' => 'Preferred Time',
     'wizard_time_help' => 'You will receive a daily WhatsApp message at this time (London time).',
     'wizard_error' => 'Something went wrong. Please try again.',
+    'wizard_lang_title' => 'Reminder Language',
+    'wizard_lang_subtitle' => 'Choose the language for your daily WhatsApp reminders.',
+    'wizard_lang_english' => 'English',
+    'wizard_lang_amharic' => 'አማርኛ (Amharic)',
+
+    // WhatsApp welcome confirmation messages (sent after registration)
+    'whatsapp_welcome_message_en' => "Respected :name, may the peace of God be with you.\nWe thank you for being a user of this platform. From now on, based on the time you have chosen, we will send you our daily reminders each day.\n\nTo be able to open the daily link directly by clicking here, please save this WhatsApp number.\n\nLiverpool Mekane Kidusan Abune Teklehaimanot Church.\nBlessed Great Lent!",
+    'whatsapp_welcome_message_am' => "የተከበሩ :name ሰላመ እግዚአብሄር ከእርስዎ ጋር ይሁን። የዚህ ፕላትፎርም ተጠቃሚ ስለሆኑ እያመሰገንን ከዚህ በኋላ በመረጡት ሰዓት መሰረት በየዕለቱ ማስታወሻወችን እንልክልዎታለን። የየቀኑንን ሊንክ ቀጥታ እዚሁ ላይ ክሊክ አድርገው መክፈት እንዲችሉ እባክዋ ይሄንን የዋትስአፕ ቀጥር ሴቭ ያድርጉት።\n\nሊቨርፑል መካነ ቅዱሳን አቡነ ተክለሃይማኖት ቤተክርስቲያን።\nመልካም የዓብይ ጾም!",
 
     // Navigation
     'nav_home' => 'Home',
