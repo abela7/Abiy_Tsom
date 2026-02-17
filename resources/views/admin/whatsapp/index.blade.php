@@ -49,8 +49,9 @@
                         this.testMessage = data.message || '{{ __('app.whatsapp_test_failed') }}';
                     }
                 } catch (error) {
+                    console.error('Connection error:', error);
                     this.testResult = 'error';
-                    this.testMessage = '{{ __('app.whatsapp_test_error') }}';
+                    this.testMessage = '{{ __('app.whatsapp_test_error') }} ' + (error.message || '');
                 } finally {
                     this.testing = false;
                 }

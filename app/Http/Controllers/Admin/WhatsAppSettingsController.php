@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 /**
@@ -95,30 +96,47 @@ class WhatsAppSettingsController extends Controller
             'test_phone' => ['required', 'string', 'regex:/^\+[1-9]\d{7,14}$/'],
         ]);
 
-        config()->set('services.ultramsg.instance_id', trim($validated['instance_id']));
-        config()->set('services.ultramsg.token', trim($validated['token']));
+        try {
+            config()->set('services.ultramsg.instance_id', trim($validated['instance_id']));
+            config()->set('services.ultramsg.token', trim($validated['token']));
 
-        if (! $ultraMsgService->isConfigured()) {
+            if (! $ultraMsgService->isConfigured()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('app.whatsapp_test_not_configured'),
+                ], 400);
+            }
+
+            $testMessage = __('app.whatsapp_test_message', ['app' => config('app.name', 'Abiy Tsom')]);
+            $sent = $ultraMsgService->sendTextMessage($validated['test_phone'], $testMessage);
+
+            if (! $sent) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('app.whatsapp_test_failed'),
+                ], 400);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => __('app.whatsapp_test_success'),
+            ]);
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
             return response()->json([
                 'success' => false,
-                'message' => __('app.whatsapp_test_not_configured'),
-            ], 400);
-        }
+                'message' => 'Network error: Cannot reach UltraMsg API. Check your internet connection.',
+            ], 500);
+        } catch (\Exception $e) {
+            Log::error('WhatsApp test connection error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
 
-        $testMessage = __('app.whatsapp_test_message', ['app' => config('app.name', 'Abiy Tsom')]);
-        $sent = $ultraMsgService->sendTextMessage($validated['test_phone'], $testMessage);
-
-        if (! $sent) {
             return response()->json([
                 'success' => false,
-                'message' => __('app.whatsapp_test_failed'),
-            ], 400);
+                'message' => 'Error: '.$e->getMessage(),
+            ], 500);
         }
-
-        return response()->json([
-            'success' => true,
-            'message' => __('app.whatsapp_test_success'),
-        ]);
     }
 
     /**
