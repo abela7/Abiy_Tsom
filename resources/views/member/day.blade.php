@@ -1,21 +1,40 @@
 @extends('layouts.member')
 
-@section('title', __('app.day_page_title', ['day' => $daily->day_number]) . ' - ' . __('app.app_name'))
+@php
+    $weekName = $daily->weeklyTheme ? (localized($daily->weeklyTheme, 'name') ?? $daily->weeklyTheme->name_en ?? '-') : '';
+    $dayTitle = localized($daily, 'day_title') ?? __('app.day_x', ['day' => $daily->day_number]);
+    $shareTitle = $weekName ? ($weekName . ' - ' . $dayTitle) : $dayTitle;
+    $shareDescription = __('app.share_day_description');
+    $shareUrl = url()->current();
+@endphp
+
+@section('title', $shareTitle . ' - ' . __('app.app_name'))
+
+@section('og_title', $shareTitle)
+@section('og_description', $shareDescription)
 
 @section('content')
 <div x-data="dayPage()" class="px-4 pt-4 space-y-4">
 
-    {{-- Back + day info --}}
+    {{-- Back + day info + share --}}
     <div class="flex items-center gap-3">
-        <a href="{{ route('member.calendar') }}" class="p-2 rounded-lg bg-muted">
+        <a href="{{ route('member.calendar') }}" class="p-2 rounded-lg bg-muted shrink-0">
             <svg class="w-5 h-5 text-muted-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
         </a>
-        <div>
+        <div class="flex-1 min-w-0">
             <h1 class="text-lg font-bold text-primary">
                 {{ __('app.day_of', ['day' => $daily->day_number, 'total' => 55]) }}
             </h1>
             <p class="text-xs text-muted-text">{{ $daily->date->locale('en')->translatedFormat('l, F j, Y') }}</p>
         </div>
+        <button type="button"
+                @click="shareDay()"
+                class="p-2.5 rounded-xl bg-accent/10 hover:bg-accent/20 transition touch-manipulation shrink-0"
+                :aria-label="'{{ __('app.share') }}'">
+            <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+            </svg>
+        </button>
     </div>
 
     {{-- Weekly theme badge --}}
@@ -195,6 +214,33 @@
     </div>
     @endif
 
+    {{-- Bottom share prompt (appears when user scrolls near bottom) --}}
+    <div x-ref="bottomSentinel" class="h-0"></div>
+    <div x-show="showSharePrompt && !sharePromptDismissed"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 translate-y-4"
+         x-transition:enter-end="opacity-100 translate-y-0"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100 translate-y-0"
+         x-transition:leave-end="opacity-0 translate-y-4"
+         x-cloak
+         class="flex items-center justify-between gap-3 p-4 rounded-2xl bg-accent/10 border border-accent/20">
+        <p class="text-sm font-medium text-primary flex-1 min-w-0">{{ __('app.share_prompt_message') }}</p>
+        <div class="flex items-center gap-2 shrink-0">
+            <button type="button"
+                    @click="shareDay()"
+                    class="px-4 py-2 bg-accent text-on-accent rounded-xl text-sm font-semibold hover:bg-accent-hover transition touch-manipulation">
+                {{ __('app.share_btn') }}
+            </button>
+            <button type="button"
+                    @click="sharePromptDismissed = true"
+                    class="p-1.5 rounded-lg hover:bg-muted transition touch-manipulation"
+                    aria-label="{{ __('app.close') }}">
+                <svg class="w-4 h-4 text-muted-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+    </div>
+
     {{-- Checklist --}}
     @if($activities->isNotEmpty() || ($customActivities ?? collect())->isNotEmpty())
     <div class="rounded-2xl p-5 shadow-sm border-2 transition-all duration-300"
@@ -252,6 +298,57 @@
 <script>
 function dayPage() {
     return {
+        showSharePrompt: false,
+        sharePromptDismissed: false,
+        _observer: null,
+
+        shareTitle: @js($shareTitle),
+        shareDescription: @js($shareDescription),
+        shareUrl: @js($shareUrl),
+
+        init() {
+            this.$nextTick(() => {
+                const sentinel = this.$refs.bottomSentinel;
+                if (!sentinel) return;
+                this._observer = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting && !this.sharePromptDismissed) {
+                            this.showSharePrompt = true;
+                        }
+                    });
+                }, { threshold: 0.1 });
+                this._observer.observe(sentinel);
+            });
+        },
+
+        destroy() {
+            if (this._observer) this._observer.disconnect();
+        },
+
+        async shareDay() {
+            const shareData = {
+                title: this.shareTitle,
+                text: this.shareTitle + '\n' + this.shareDescription,
+                url: this.shareUrl,
+            };
+
+            if (navigator.share) {
+                try {
+                    await navigator.share(shareData);
+                } catch (_e) {
+                    // User cancelled or share failed
+                }
+            } else {
+                try {
+                    await navigator.clipboard.writeText(this.shareTitle + '\n' + this.shareDescription + '\n' + this.shareUrl);
+                    alert(@js(__('app.link_copied')));
+                } catch (_e) {
+                    // Fallback: select text in a prompt
+                    prompt(@js(__('app.copy_link')), this.shareUrl);
+                }
+            }
+        },
+
         async toggleChecklist(dailyContentId, activityId, completed) {
             await AbiyTsom.api('/api/member/checklist/toggle', {
                 daily_content_id: dailyContentId,

@@ -33,6 +33,10 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     @include('partials.favicon')
+    @php
+        $ogTitle = $ogTitle ?? (trim($__env->yieldContent('og_title')) ?: null);
+        $ogDescription = $ogDescription ?? (trim($__env->yieldContent('og_description')) ?: null);
+    @endphp
     @include('partials.seo-meta')
     <title>@yield('title', __('app.app_name'))</title>
 
