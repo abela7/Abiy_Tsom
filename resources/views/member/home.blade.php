@@ -155,8 +155,8 @@
              @touchstart.passive="onTouchStart($event)"
              @touchend.passive="onTouchEnd($event)">
 
-            {{-- Card stack container --}}
-            <div class="relative w-full" :style="'height: ' + containerHeight + 'px'">
+            {{-- Card stack container (top padding for cards peeking above) --}}
+            <div class="relative w-full pt-5" :style="'height: ' + containerHeight + 'px'">
                 @foreach($announcements as $index => $announcement)
                 <article class="carousel-card absolute top-0 left-0 w-full rounded-2xl shadow-lg border border-border overflow-hidden transition-all duration-500 ease-out"
                          :class="getCardClasses({{ $index }})"
@@ -335,7 +335,7 @@ document.addEventListener('alpine:init', function() {
                     var cards = self.$el.querySelectorAll('.carousel-card');
                     if (cards[self.current]) {
                         var h = cards[self.current].offsetHeight;
-                        self.containerHeight = h + 30;
+                        self.containerHeight = h + 24;
                     }
                 });
             },
@@ -429,26 +429,25 @@ document.addEventListener('alpine:init', function() {
 
             /**
              * Compute inline transform/opacity styles for
-             * stacked card positioning.
+             * stacked card positioning. Background cards peek
+             * from the top-right corner.
              *
              * @param {number} index - Card index
              * @returns {string} Inline CSS style string
              */
             getCardStyles: function(index) {
                 if (index === this.current) {
-                    return 'transform: translateY(0) scale(1) rotate(0deg); opacity: 1; pointer-events: auto;';
+                    return 'transform: translate(0,0) scale(1) rotate(0deg); opacity: 1; pointer-events: auto;';
                 }
                 var offset = this.getOffset(index);
                 var absOffset = Math.min(Math.abs(offset), this.total - Math.abs(offset));
                 if (absOffset === 1) {
-                    var dir = (offset > 0 || offset === -(this.total - 1)) ? 1 : -1;
-                    return 'transform: translateY(10px) scale(0.95) rotate(' + (dir * 1.5) + 'deg); opacity: 0.6; pointer-events: auto;';
+                    return 'transform: translate(6px,-8px) scale(0.97) rotate(1.5deg); opacity: 0.5; pointer-events: auto;';
                 }
                 if (absOffset === 2) {
-                    var dir2 = (offset > 0 || offset === -(this.total - 2)) ? 1 : -1;
-                    return 'transform: translateY(20px) scale(0.90) rotate(' + (dir2 * -1) + 'deg); opacity: 0.3; pointer-events: none;';
+                    return 'transform: translate(12px,-16px) scale(0.94) rotate(2.5deg); opacity: 0.25; pointer-events: none;';
                 }
-                return 'transform: translateY(30px) scale(0.85) rotate(0deg); opacity: 0; pointer-events: none;';
+                return 'transform: translate(16px,-20px) scale(0.91) rotate(3deg); opacity: 0; pointer-events: none;';
             },
 
             /**
