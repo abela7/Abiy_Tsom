@@ -42,6 +42,7 @@ class SettingsController extends Controller
             'whatsapp_reminder_enabled' => ['nullable', 'boolean'],
             'whatsapp_phone' => ['nullable', 'string', 'regex:/^\+447\d{9}$/'],
             'whatsapp_reminder_time' => ['nullable', 'date_format:H:i'],
+            'whatsapp_language' => ['nullable', 'string', 'in:en,am'],
         ]);
 
         /** @var \App\Models\Member $member */
@@ -64,7 +65,8 @@ class SettingsController extends Controller
 
         $hasReminderPayload = $request->exists('whatsapp_reminder_enabled')
             || $request->exists('whatsapp_phone')
-            || $request->exists('whatsapp_reminder_time');
+            || $request->exists('whatsapp_reminder_time')
+            || $request->exists('whatsapp_language');
 
         if ($hasReminderPayload) {
             $nextEnabled = $request->exists('whatsapp_reminder_enabled')
@@ -88,6 +90,12 @@ class SettingsController extends Controller
 
             if ($request->exists('whatsapp_reminder_enabled')) {
                 $updates['whatsapp_reminder_enabled'] = $nextEnabled;
+
+                // When turning off, clear the last-sent date so re-enabling
+                // allows a fresh reminder on the next scheduled time.
+                if (! $nextEnabled) {
+                    $updates['whatsapp_last_sent_date'] = null;
+                }
             }
 
             if ($request->exists('whatsapp_phone')) {
@@ -96,6 +104,10 @@ class SettingsController extends Controller
 
             if ($request->exists('whatsapp_reminder_time')) {
                 $updates['whatsapp_reminder_time'] = $nextTime;
+            }
+
+            if ($request->exists('whatsapp_language')) {
+                $updates['whatsapp_language'] = $request->input('whatsapp_language', 'en');
             }
         }
 

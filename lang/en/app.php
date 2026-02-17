@@ -221,6 +221,21 @@ return [
     'clear_confirm_label' => 'Type RESET to confirm',
     'clear_confirm_placeholder' => 'RESET',
     'whatsapp_reminder_requires_phone_and_time' => 'Phone number and reminder time are required when WhatsApp reminders are enabled.',
+
+    // Member WhatsApp Settings
+    'settings_whatsapp_title' => 'WhatsApp Reminder',
+    'settings_whatsapp_desc_off' => 'Get daily reminders via WhatsApp during Great Lent.',
+    'settings_whatsapp_desc_on' => 'You are receiving daily WhatsApp reminders.',
+    'settings_whatsapp_enable' => 'Turn On Reminders',
+    'settings_whatsapp_disable' => 'Turn Off Reminders',
+    'settings_whatsapp_enabled' => 'Reminders are active.',
+    'settings_whatsapp_disabled' => 'Reminders turned off.',
+    'settings_whatsapp_saved' => 'WhatsApp settings saved.',
+    'settings_whatsapp_phone' => 'WhatsApp Number',
+    'settings_whatsapp_time' => 'Reminder Time',
+    'settings_whatsapp_lang' => 'Message Language',
+    'settings_whatsapp_not_setup' => 'Not set up',
+    'settings_whatsapp_setup_cta' => 'Set up WhatsApp reminders to receive daily spiritual content.',
     'whatsapp_daily_reminder_message' => 'Abiy Tsom Day :day is ready. Open today\'s content: :url',
 
     // WhatsApp Settings (Admin)

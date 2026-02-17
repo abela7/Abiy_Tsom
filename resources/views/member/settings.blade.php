@@ -108,6 +108,164 @@
             </div>
         </div>
 
+        {{-- WhatsApp Reminder --}}
+        <div class="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
+            <button type="button" @click="openId = openId === 'whatsapp' ? null : 'whatsapp'"
+                    class="w-full flex items-center justify-between px-4 py-4 text-left">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                         :class="waEnabled ? 'bg-green-500/15' : 'bg-muted'">
+                        <svg class="w-5 h-5" :class="waEnabled ? 'text-green-500' : 'text-muted-text'" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                        </svg>
+                    </div>
+                    <div class="min-w-0">
+                        <h3 class="font-semibold text-primary">{{ __('app.settings_whatsapp_title') }}</h3>
+                        <p class="text-xs text-muted-text truncate" x-text="waEnabled ? '{{ __('app.settings_whatsapp_enabled') }}' : '{{ __('app.settings_whatsapp_not_setup') }}'"></p>
+                    </div>
+                </div>
+                <svg class="w-5 h-5 text-muted-text transition-transform shrink-0" :class="openId === 'whatsapp' && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </button>
+            <div x-show="openId === 'whatsapp'" x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0 -translate-y-1"
+            x-transition:enter-end="opacity-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-150"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0" class="px-4 pb-4 pt-0 space-y-4">
+
+                {{-- Disabled state: setup prompt --}}
+                <template x-if="!waEnabled && !waPhone">
+                    <div class="space-y-4">
+                        <p class="text-sm text-muted-text">{{ __('app.settings_whatsapp_setup_cta') }}</p>
+
+                        {{-- Phone --}}
+                        <div>
+                            <label class="block text-xs font-medium text-muted-text mb-1.5">{{ __('app.settings_whatsapp_phone') }}</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+                                    <span class="text-sm">🇬🇧</span>
+                                </div>
+                                <input type="tel" x-model="waPhone" placeholder="07123456789" dir="ltr"
+                                       class="w-full pl-10 pr-4 py-2.5 border border-border rounded-xl bg-muted text-primary text-sm font-mono tracking-wider outline-none focus:ring-2 focus:ring-accent">
+                            </div>
+                        </div>
+
+                        {{-- Time --}}
+                        <div>
+                            <label class="block text-xs font-medium text-muted-text mb-1.5">{{ __('app.settings_whatsapp_time') }}</label>
+                            <input type="time" x-model="waTime"
+                                   class="w-full px-4 py-2.5 border border-border rounded-xl bg-muted text-primary text-sm outline-none focus:ring-2 focus:ring-accent">
+                        </div>
+
+                        {{-- Language --}}
+                        <div>
+                            <label class="block text-xs font-medium text-muted-text mb-1.5">{{ __('app.settings_whatsapp_lang') }}</label>
+                            <div class="flex gap-2">
+                                <button type="button" @click="waLang = 'en'"
+                                        class="flex-1 py-2.5 rounded-xl text-sm font-medium transition flex items-center justify-center gap-1.5"
+                                        :class="waLang === 'en' ? 'bg-accent text-on-accent' : 'bg-muted text-secondary border border-border'">
+                                    <span>🇬🇧</span> {{ __('app.wizard_lang_english') }}
+                                </button>
+                                <button type="button" @click="waLang = 'am'"
+                                        class="flex-1 py-2.5 rounded-xl text-sm font-medium transition flex items-center justify-center gap-1.5"
+                                        :class="waLang === 'am' ? 'bg-accent text-on-accent' : 'bg-muted text-secondary border border-border'">
+                                    <span>🇪🇹</span> {{ __('app.wizard_lang_amharic') }}
+                                </button>
+                            </div>
+                        </div>
+
+                        {{-- Enable button --}}
+                        <button type="button" @click="enableWhatsApp()"
+                                :disabled="!waPhoneValid || !waTime || waSaving"
+                                class="w-full py-3 bg-green-600 text-white rounded-xl font-bold text-sm disabled:opacity-40 transition active:scale-[0.98] flex items-center justify-center gap-2">
+                            <span x-show="!waSaving">{{ __('app.settings_whatsapp_enable') }}</span>
+                            <span x-show="waSaving" class="inline-flex items-center gap-2">
+                                <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                                {{ __('app.loading') }}
+                            </span>
+                        </button>
+                    </div>
+                </template>
+
+                {{-- Enabled state: showing current settings with edit --}}
+                <template x-if="waEnabled || waPhone">
+                    <div class="space-y-4">
+                        <p class="text-sm text-muted-text" x-text="waEnabled ? '{{ __('app.settings_whatsapp_desc_on') }}' : '{{ __('app.settings_whatsapp_desc_off') }}'"></p>
+
+                        {{-- Toggle on/off --}}
+                        <div class="flex items-center justify-between p-3 rounded-xl bg-muted/60">
+                            <span class="text-sm font-medium text-primary">{{ __('app.settings_whatsapp_title') }}</span>
+                            <button type="button" @click="toggleWhatsApp()"
+                                    :disabled="waSaving"
+                                    class="relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 disabled:opacity-50"
+                                    :class="waEnabled ? 'bg-green-500' : 'bg-border'"
+                                    role="switch" :aria-checked="waEnabled">
+                                <span class="pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-sm ring-0 transition-transform duration-200"
+                                      :class="waEnabled ? 'translate-x-5' : 'translate-x-0'"></span>
+                            </button>
+                        </div>
+
+                        {{-- Editable fields (shown when enabled) --}}
+                        <div x-show="waEnabled" x-transition class="space-y-3">
+                            {{-- Phone --}}
+                            <div>
+                                <label class="block text-xs font-medium text-muted-text mb-1.5">{{ __('app.settings_whatsapp_phone') }}</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+                                        <span class="text-sm">🇬🇧</span>
+                                    </div>
+                                    <input type="tel" x-model="waPhone" placeholder="07123456789" dir="ltr"
+                                           class="w-full pl-10 pr-10 py-2.5 border rounded-xl bg-muted text-primary text-sm font-mono tracking-wider outline-none focus:ring-2 focus:ring-accent"
+                                           :class="waPhone && !waPhoneValid ? 'border-red-400' : 'border-border'">
+                                    <div x-show="waPhoneValid" class="absolute inset-y-0 right-0 flex items-center pr-3.5">
+                                        <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Time --}}
+                            <div>
+                                <label class="block text-xs font-medium text-muted-text mb-1.5">{{ __('app.settings_whatsapp_time') }}</label>
+                                <input type="time" x-model="waTime"
+                                       class="w-full px-4 py-2.5 border border-border rounded-xl bg-muted text-primary text-sm outline-none focus:ring-2 focus:ring-accent">
+                                <p class="text-xs text-muted-text mt-1">{{ __('app.wizard_time_help') }}</p>
+                            </div>
+
+                            {{-- Language --}}
+                            <div>
+                                <label class="block text-xs font-medium text-muted-text mb-1.5">{{ __('app.settings_whatsapp_lang') }}</label>
+                                <div class="flex gap-2">
+                                    <button type="button" @click="waLang = 'en'"
+                                            class="flex-1 py-2.5 rounded-xl text-sm font-medium transition flex items-center justify-center gap-1.5"
+                                            :class="waLang === 'en' ? 'bg-accent text-on-accent' : 'bg-muted text-secondary border border-border'">
+                                        <span>🇬🇧</span> {{ __('app.wizard_lang_english') }}
+                                    </button>
+                                    <button type="button" @click="waLang = 'am'"
+                                            class="flex-1 py-2.5 rounded-xl text-sm font-medium transition flex items-center justify-center gap-1.5"
+                                            :class="waLang === 'am' ? 'bg-accent text-on-accent' : 'bg-muted text-secondary border border-border'">
+                                        <span>🇪🇹</span> {{ __('app.wizard_lang_amharic') }}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {{-- Save changes button --}}
+                            <button type="button" @click="saveWhatsApp()"
+                                    :disabled="!waPhoneValid || !waTime || waSaving || !waHasChanges"
+                                    class="w-full py-2.5 bg-accent text-on-accent rounded-xl font-medium text-sm disabled:opacity-40 transition active:scale-[0.98]">
+                                <span x-show="!waSaving">{{ __('app.save') }}</span>
+                                <span x-show="waSaving">{{ __('app.loading') }}</span>
+                            </button>
+                        </div>
+
+                        {{-- Feedback --}}
+                        <p x-show="waMsg" x-text="waMsg" class="text-xs" :class="waMsgError ? 'text-error' : 'text-success'"></p>
+                    </div>
+                </template>
+            </div>
+        </div>
+
         {{-- Custom Activities --}}
         <div class="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
             <button type="button" @click="openId = openId === 'activities' ? null : 'activities'"
@@ -384,6 +542,137 @@ function settingsPage() {
         passcodeEnabled: {{ ($member?->passcode_enabled ?? false) ? 'true' : 'false' }},
         newPasscode: '',
         passcodeMsg: '',
+
+        // WhatsApp reminder state
+        waEnabled: {{ ($member?->whatsapp_reminder_enabled ?? false) ? 'true' : 'false' }},
+        waPhone: '{{ addslashes($member?->whatsapp_phone ?? '') }}',
+        waTime: '{{ $member?->whatsapp_reminder_time ? substr($member->whatsapp_reminder_time, 0, 5) : '' }}',
+        waLang: '{{ $member?->whatsapp_language ?? 'en' }}',
+        waSaving: false,
+        waMsg: '',
+        waMsgError: false,
+        waSavedPhone: '{{ addslashes($member?->whatsapp_phone ?? '') }}',
+        waSavedTime: '{{ $member?->whatsapp_reminder_time ? substr($member->whatsapp_reminder_time, 0, 5) : '' }}',
+        waSavedLang: '{{ $member?->whatsapp_language ?? 'en' }}',
+
+        normalizeUkPhone(raw) {
+            if (!raw || typeof raw !== 'string') return null;
+            let d = raw.replace(/\D/g, '');
+            if (!d) return null;
+            if (d.startsWith('00')) d = d.slice(2);
+            while (d.startsWith('0')) d = d.slice(1);
+            if (d.startsWith('44')) d = d.slice(2);
+            if (d.startsWith('0')) d = d.slice(1);
+            if (d.length !== 10 || d[0] !== '7') return null;
+            return '+44' + d;
+        },
+        get waPhoneValid() {
+            return this.normalizeUkPhone(this.waPhone) !== null;
+        },
+        get waHasChanges() {
+            return this.waPhone !== this.waSavedPhone
+                || this.waTime !== this.waSavedTime
+                || this.waLang !== this.waSavedLang;
+        },
+
+        async enableWhatsApp() {
+            if (!this.waPhoneValid || !this.waTime) return;
+            this.waSaving = true;
+            this.waMsg = '';
+            try {
+                const phone = this.normalizeUkPhone(this.waPhone) || this.waPhone;
+                const data = await AbiyTsom.api('/api/member/settings', {
+                    whatsapp_reminder_enabled: true,
+                    whatsapp_phone: phone,
+                    whatsapp_reminder_time: this.waTime,
+                    whatsapp_language: this.waLang,
+                });
+                if (data.success) {
+                    this.waEnabled = true;
+                    this.waPhone = phone;
+                    this.waSavedPhone = phone;
+                    this.waSavedTime = this.waTime;
+                    this.waSavedLang = this.waLang;
+                    this.waMsg = '{{ __("app.settings_whatsapp_enabled") }}';
+                    this.waMsgError = false;
+                } else {
+                    this.waMsg = data.message || '{{ __("app.failed_to_save") }}';
+                    this.waMsgError = true;
+                }
+            } catch (e) {
+                this.waMsg = '{{ __("app.failed_to_save") }}';
+                this.waMsgError = true;
+            } finally {
+                this.waSaving = false;
+                setTimeout(() => { this.waMsg = ''; }, 4000);
+            }
+        },
+
+        async toggleWhatsApp() {
+            this.waSaving = true;
+            this.waMsg = '';
+            try {
+                const next = !this.waEnabled;
+                if (next && (!this.waPhoneValid || !this.waTime)) {
+                    this.waMsg = '{{ __("app.whatsapp_reminder_requires_phone_and_time") }}';
+                    this.waMsgError = true;
+                    this.waSaving = false;
+                    return;
+                }
+                const payload = { whatsapp_reminder_enabled: next };
+                if (next) {
+                    payload.whatsapp_phone = this.normalizeUkPhone(this.waPhone) || this.waPhone;
+                    payload.whatsapp_reminder_time = this.waTime;
+                    payload.whatsapp_language = this.waLang;
+                }
+                const data = await AbiyTsom.api('/api/member/settings', payload);
+                if (data.success) {
+                    this.waEnabled = next;
+                    this.waMsg = next ? '{{ __("app.settings_whatsapp_enabled") }}' : '{{ __("app.settings_whatsapp_disabled") }}';
+                    this.waMsgError = false;
+                } else {
+                    this.waMsg = data.message || '{{ __("app.failed_to_save") }}';
+                    this.waMsgError = true;
+                }
+            } catch (e) {
+                this.waMsg = '{{ __("app.failed_to_save") }}';
+                this.waMsgError = true;
+            } finally {
+                this.waSaving = false;
+                setTimeout(() => { this.waMsg = ''; }, 4000);
+            }
+        },
+
+        async saveWhatsApp() {
+            if (!this.waPhoneValid || !this.waTime || !this.waHasChanges) return;
+            this.waSaving = true;
+            this.waMsg = '';
+            try {
+                const phone = this.normalizeUkPhone(this.waPhone) || this.waPhone;
+                const data = await AbiyTsom.api('/api/member/settings', {
+                    whatsapp_phone: phone,
+                    whatsapp_reminder_time: this.waTime,
+                    whatsapp_language: this.waLang,
+                });
+                if (data.success) {
+                    this.waPhone = phone;
+                    this.waSavedPhone = phone;
+                    this.waSavedTime = this.waTime;
+                    this.waSavedLang = this.waLang;
+                    this.waMsg = '{{ __("app.settings_whatsapp_saved") }}';
+                    this.waMsgError = false;
+                } else {
+                    this.waMsg = data.message || '{{ __("app.failed_to_save") }}';
+                    this.waMsgError = true;
+                }
+            } catch (e) {
+                this.waMsg = '{{ __("app.failed_to_save") }}';
+                this.waMsgError = true;
+            } finally {
+                this.waSaving = false;
+                setTimeout(() => { this.waMsg = ''; }, 4000);
+            }
+        },
         async setLocale(lang) {
             this.locale = lang;
             await AbiyTsom.api('/api/member/settings', { locale: lang });
