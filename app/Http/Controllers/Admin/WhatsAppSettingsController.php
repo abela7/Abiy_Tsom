@@ -80,6 +80,18 @@ class WhatsAppSettingsController extends Controller
 
         File::put($envPath, $envContent);
 
+        // Refresh config so values are available immediately,
+        // even when config:cache has been run.
+        config()->set('services.ultramsg.instance_id', $instanceId);
+        config()->set('services.ultramsg.token', $token);
+        config()->set('services.ultramsg.base_url', $baseUrl);
+
+        // Clear config cache if it exists so future requests
+        // pick up the new .env values.
+        if (is_file(base_path('bootstrap/cache/config.php'))) {
+            @unlink(base_path('bootstrap/cache/config.php'));
+        }
+
         return redirect()
             ->route('admin.whatsapp.settings')
             ->with('success', __('app.whatsapp_settings_saved'));

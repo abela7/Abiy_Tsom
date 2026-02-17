@@ -91,14 +91,16 @@ class OnboardingController extends Controller
         $member = Member::create($memberPayload);
 
         // Send WhatsApp confirmation immediately after registration.
+        $whatsappSent = false;
         if ($reminderEnabled && $reminderPhone) {
-            $this->sendWelcomeMessage($member, $reminderLang);
+            $whatsappSent = $this->sendWelcomeMessage($member, $reminderLang);
         }
 
         return response()->json([
-            'success' => true,
-            'token'   => $member->token,
-            'member'  => [
+            'success'       => true,
+            'token'         => $member->token,
+            'whatsapp_sent' => $whatsappSent,
+            'member'        => [
                 'id'                       => $member->id,
                 'baptism_name'             => $member->baptism_name,
                 'whatsapp_reminder_enabled' => $member->whatsapp_reminder_enabled,
@@ -142,32 +144,46 @@ class OnboardingController extends Controller
 
     /**
      * Send the welcome / confirmation WhatsApp message to the member.
-     * Failures are logged but never bubble up — registration already succeeded.
+     *
+     * @return bool True if the message was delivered, false otherwise.
      */
-    private function sendWelcomeMessage(Member $member, string $lang): void
+    private function sendWelcomeMessage(Member $member, string $lang): bool
     {
         if (! $this->ultraMsg->isConfigured()) {
-            Log::info('UltraMsg not configured — skipping welcome message.', [
-                'member_id' => $member->id,
+            Log::warning('UltraMsg not configured — skipping welcome message.', [
+                'member_id'   => $member->id,
+                'instance_id' => config('services.ultramsg.instance_id'),
+                'has_token'   => config('services.ultramsg.token') !== null,
             ]);
 
-            return;
+            return false;
         }
 
         try {
-            // Pick the correct template key based on chosen language.
             $messageKey = $lang === 'am'
                 ? 'app.whatsapp_welcome_message_am'
                 : 'app.whatsapp_welcome_message_en';
 
             $body = __($messageKey, ['name' => $member->baptism_name]);
 
-            $this->ultraMsg->sendTextMessage((string) $member->whatsapp_phone, $body);
-        } catch (\Throwable $e) {
-            Log::warning('Failed to send WhatsApp welcome message.', [
+            $sent = $this->ultraMsg->sendTextMessage((string) $member->whatsapp_phone, $body);
+
+            Log::info('WhatsApp welcome message ' . ($sent ? 'sent' : 'NOT confirmed') . '.', [
                 'member_id' => $member->id,
+                'phone'     => maskPhone((string) $member->whatsapp_phone),
+                'lang'      => $lang,
+                'sent'      => $sent,
+            ]);
+
+            return $sent;
+        } catch (\Throwable $e) {
+            Log::error('WhatsApp welcome message failed.', [
+                'member_id' => $member->id,
+                'phone'     => maskPhone((string) $member->whatsapp_phone),
                 'error'     => $e->getMessage(),
             ]);
+
+            return false;
         }
     }
 
