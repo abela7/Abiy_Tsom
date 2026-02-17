@@ -32,7 +32,8 @@
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
                         },
                         body: JSON.stringify({
                             instance_id: this.instanceId,
@@ -40,6 +41,17 @@
                             test_phone: this.testPhone
                         })
                     });
+                    
+                    // Check if response is JSON
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        const htmlText = await response.text();
+                        console.error('Received HTML instead of JSON:', htmlText.substring(0, 500));
+                        this.testResult = 'error';
+                        this.testMessage = 'Server error: Expected JSON but got HTML. Check console for details.';
+                        return;
+                    }
+                    
                     const data = await response.json();
                     if (response.ok && data.success) {
                         this.testResult = 'success';
@@ -51,7 +63,7 @@
                 } catch (error) {
                     console.error('Connection error:', error);
                     this.testResult = 'error';
-                    this.testMessage = '{{ __('app.whatsapp_test_error') }} ' + (error.message || '');
+                    this.testMessage = 'Error: ' + (error.message || 'Connection failed. Check console for details.');
                 } finally {
                     this.testing = false;
                 }
@@ -192,7 +204,8 @@
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
                         },
                         body: JSON.stringify({
                             webhook_url: this.webhookUrl,
@@ -204,6 +217,17 @@
                             sendDelayMax: parseInt(this.sendDelayMax)
                         })
                     });
+                    
+                    // Check if response is JSON
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        const htmlText = await response.text();
+                        console.error('Received HTML instead of JSON:', htmlText.substring(0, 500));
+                        this.updateResult = 'error';
+                        this.updateMessage = 'Server error: Expected JSON but got HTML. Check console for details.';
+                        return;
+                    }
+                    
                     const data = await response.json();
                     if (response.ok && data.success) {
                         this.updateResult = 'success';
@@ -213,8 +237,9 @@
                         this.updateMessage = data.message || '{{ __('app.whatsapp_webhook_update_failed') }}';
                     }
                 } catch (error) {
+                    console.error('Webhook update error:', error);
                     this.updateResult = 'error';
-                    this.updateMessage = '{{ __('app.whatsapp_test_error') }}';
+                    this.updateMessage = 'Error: ' + (error.message || 'Connection failed. Check console for details.');
                 } finally {
                     this.updating = false;
                 }

@@ -32,5 +32,16 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // Ensure JSON responses for AJAX/API requests
+        $exceptions->shouldRenderJsonWhen(function ($request) {
+            if ($request->expectsJson()) {
+                return true;
+            }
+            // Force JSON for WhatsApp API endpoints
+            if ($request->is('admin/whatsapp/test') || $request->is('admin/whatsapp/webhook')) {
+                return true;
+            }
+
+            return false;
+        });
     })->create();
