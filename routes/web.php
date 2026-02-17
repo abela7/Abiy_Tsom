@@ -123,6 +123,11 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         // SEO
         Route::get('/seo', [Admin\SeoController::class, 'index'])->name('seo.index');
         Route::put('/seo', [Admin\SeoController::class, 'update'])->name('seo.update');
+
+        // WhatsApp Settings
+        Route::get('/whatsapp', [Admin\WhatsAppSettingsController::class, 'index'])->name('whatsapp.index');
+        Route::put('/whatsapp', [Admin\WhatsAppSettingsController::class, 'update'])->name('whatsapp.update');
+        Route::post('/whatsapp/test', [Admin\WhatsAppSettingsController::class, 'test'])->name('whatsapp.test');
     });
 
     // Admin users (super admin only)
