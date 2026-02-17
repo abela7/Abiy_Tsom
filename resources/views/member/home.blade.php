@@ -9,10 +9,7 @@
     @php $dayToken = isset($member) && $member?->token ? '?token=' . e($member->token) : ''; @endphp
     @if(isset($viewTodayTarget) && $viewTodayTarget)
     <a href="{{ route('member.day', $viewTodayTarget) }}{{ $dayToken }}"
-       class="group relative block overflow-hidden rounded-3xl bg-gradient-to-br from-accent via-accent to-accent-hover shadow-lg shadow-accent/25 dark:shadow-none hover:shadow-xl hover:shadow-accent/35 dark:hover:shadow-none transition-all duration-300 active:scale-[0.98]">
-        {{-- Decorative glow (light mode only) --}}
-        <div class="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-white/10 blur-3xl pointer-events-none dark:hidden"></div>
-        <div class="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-black/10 blur-2xl pointer-events-none dark:hidden"></div>
+       class="group relative block overflow-hidden rounded-3xl bg-gradient-to-br from-accent via-accent to-accent-hover transition-all duration-300 active:scale-[0.98]">
 
         <div class="relative flex items-center gap-4 p-5 sm:p-6">
             {{-- Day number badge --}}
