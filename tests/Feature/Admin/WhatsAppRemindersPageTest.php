@@ -71,14 +71,14 @@ class WhatsAppRemindersPageTest extends TestCase
 
         $response = $this->actingAs($admin)->put(route('admin.whatsapp.reminders.update', $member), [
             'baptism_name' => 'Updated Name',
-            'whatsapp_phone' => '+251912345678',
+            'whatsapp_phone' => '07123456789',
             'whatsapp_reminder_time' => '14:30',
         ]);
 
         $response->assertRedirect(route('admin.whatsapp.reminders'));
         $member->refresh();
         $this->assertEquals('Updated Name', $member->baptism_name);
-        $this->assertEquals('+251912345678', $member->whatsapp_phone);
+        $this->assertEquals('+447123456789', $member->whatsapp_phone);
         $this->assertEquals('14:30:00', $member->whatsapp_reminder_time);
     }
 

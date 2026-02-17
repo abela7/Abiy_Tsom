@@ -98,7 +98,7 @@
                            id="whatsapp_phone"
                            x-model="phone"
                            @keydown.enter="if (isPhoneValid) step = 4"
-                           placeholder="+251912345678"
+                           placeholder="07123456789 or +447123456789"
                            class="w-full px-4 py-3.5 border border-border rounded-xl bg-muted/50 dark:bg-muted/30 text-primary placeholder:text-muted-text focus:ring-2 focus:ring-accent focus:border-accent outline-none transition text-base font-mono tracking-wider"
                            dir="ltr">
                     <p class="text-xs text-muted-text mt-2">{{ __('app.wizard_phone_help') }}</p>
@@ -177,8 +177,18 @@ function onboarding() {
         isLoading: false,
         errorMessage: '',
 
+        normalizeUkPhone(raw) {
+            if (!raw || typeof raw !== 'string') return null;
+            let d = raw.replace(/\D/g, '');
+            if (!d) return null;
+            if (d.startsWith('0')) d = d.slice(1);
+            if (d.startsWith('44')) d = d.slice(2);
+            if (d.startsWith('0')) d = d.slice(1);
+            if (d.length !== 10 || d[0] !== '7') return null;
+            return '+44' + d;
+        },
         get isPhoneValid() {
-            return /^\+[1-9]\d{7,14}$/.test(this.phone.replace(/[\s\-\(\)]/g, ''));
+            return this.normalizeUkPhone(this.phone) !== null;
         },
 
         checkExisting() {
@@ -217,7 +227,7 @@ function onboarding() {
             };
 
             if (this.wantsWhatsApp) {
-                payload.whatsapp_phone = this.phone.replace(/[\s\-\(\)]/g, '');
+                payload.whatsapp_phone = this.normalizeUkPhone(this.phone) || this.phone;
                 payload.whatsapp_reminder_time = this.reminderTime;
             }
 

@@ -59,12 +59,13 @@ class WhatsAppRemindersController extends Controller
     {
         $this->ensureOptedIn($member);
 
-        $phone = preg_replace('/[\s\-\(\)]/', '', (string) $request->input('whatsapp_phone', ''));
-        $request->merge(['whatsapp_phone' => $phone]);
+        $request->merge([
+            'whatsapp_phone' => normalizeUkWhatsAppPhone((string) $request->input('whatsapp_phone', '')),
+        ]);
 
         $validated = $request->validate([
             'baptism_name' => ['required', 'string', 'max:255'],
-            'whatsapp_phone' => ['required', 'string', 'regex:/^\+[1-9]\d{7,14}$/'],
+            'whatsapp_phone' => ['required', 'string', 'regex:/^\+447\d{9}$/'],
             'whatsapp_reminder_time' => ['required', 'date_format:H:i'],
         ]);
 

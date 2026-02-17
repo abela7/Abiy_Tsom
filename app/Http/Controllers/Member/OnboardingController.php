@@ -34,14 +34,14 @@ class OnboardingController extends Controller
     {
         if ($request->exists('whatsapp_phone')) {
             $request->merge([
-                'whatsapp_phone' => $this->normalizeWhatsAppPhone($request->input('whatsapp_phone')),
+                'whatsapp_phone' => normalizeUkWhatsAppPhone((string) $request->input('whatsapp_phone')),
             ]);
         }
 
         $validated = $request->validate([
             'baptism_name' => ['required', 'string', 'max:255'],
             'whatsapp_reminder_enabled' => ['nullable', 'boolean'],
-            'whatsapp_phone' => ['nullable', 'string', 'regex:/^\+[1-9]\d{7,14}$/'],
+            'whatsapp_phone' => ['nullable', 'string', 'regex:/^\+447\d{9}$/'],
             'whatsapp_reminder_time' => ['nullable', 'date_format:H:i'],
         ]);
 
@@ -120,20 +120,6 @@ class OnboardingController extends Controller
                 'whatsapp_reminder_time' => $member->whatsapp_reminder_time,
             ],
         ]);
-    }
-
-    private function normalizeWhatsAppPhone(mixed $phone): ?string
-    {
-        if (! is_string($phone)) {
-            return null;
-        }
-
-        $normalized = preg_replace('/[\s\-\(\)]/', '', trim($phone));
-        if (! is_string($normalized) || $normalized === '') {
-            return null;
-        }
-
-        return $normalized;
     }
 
     private function normalizeReminderTime(?string $time): ?string

@@ -31,7 +31,7 @@ class SettingsController extends Controller
     {
         if ($request->exists('whatsapp_phone')) {
             $request->merge([
-                'whatsapp_phone' => $this->normalizeWhatsAppPhone($request->input('whatsapp_phone')),
+                'whatsapp_phone' => normalizeUkWhatsAppPhone((string) $request->input('whatsapp_phone')),
             ]);
         }
 
@@ -40,7 +40,7 @@ class SettingsController extends Controller
             'theme' => ['nullable', 'string', 'in:light,dark'],
             'baptism_name' => ['nullable', 'string', 'min:1', 'max:255'],
             'whatsapp_reminder_enabled' => ['nullable', 'boolean'],
-            'whatsapp_phone' => ['nullable', 'string', 'regex:/^\+[1-9]\d{7,14}$/'],
+            'whatsapp_phone' => ['nullable', 'string', 'regex:/^\+447\d{9}$/'],
             'whatsapp_reminder_time' => ['nullable', 'date_format:H:i'],
         ]);
 
@@ -72,7 +72,7 @@ class SettingsController extends Controller
                 : (bool) $member->whatsapp_reminder_enabled;
 
             $nextPhone = $request->exists('whatsapp_phone')
-                ? $this->normalizeWhatsAppPhone($request->input('whatsapp_phone'))
+                ? normalizeUkWhatsAppPhone((string) $request->input('whatsapp_phone'))
                 : $member->whatsapp_phone;
 
             $nextTime = $request->exists('whatsapp_reminder_time')
@@ -104,20 +104,6 @@ class SettingsController extends Controller
         }
 
         return response()->json(['success' => true, 'member' => $member->fresh()]);
-    }
-
-    private function normalizeWhatsAppPhone(mixed $phone): ?string
-    {
-        if (! is_string($phone)) {
-            return null;
-        }
-
-        $normalized = preg_replace('/[\s\-\(\)]/', '', trim($phone));
-        if (! is_string($normalized) || $normalized === '') {
-            return null;
-        }
-
-        return $normalized;
     }
 
     private function normalizeReminderTime(mixed $time): ?string

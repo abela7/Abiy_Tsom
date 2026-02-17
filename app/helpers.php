@@ -23,6 +23,51 @@ function localized(object $model, string $baseAttr, ?string $locale = null): ?st
 }
 
 /**
+ * Normalize UK mobile number to E.164 (+447XXXXXXXXX).
+ * Accepts: 07..., +447..., +4407..., 447..., 00447..., with or without spaces/dashes.
+ *
+ * @return string|null +447XXXXXXXXX or null if invalid
+ */
+function normalizeUkWhatsAppPhone(?string $input): ?string
+{
+    if (! is_string($input) || trim($input) === '') {
+        return null;
+    }
+
+    $digits = preg_replace('/\D/', '', $input);
+    if ($digits === '') {
+        return null;
+    }
+
+    // Strip international prefix 00
+    if (str_starts_with($digits, '00')) {
+        $digits = substr($digits, 2);
+    }
+
+    // Strip leading 0 (UK national format: 07...)
+    while (str_starts_with($digits, '0')) {
+        $digits = substr($digits, 1);
+    }
+
+    // Strip country code 44
+    if (str_starts_with($digits, '44')) {
+        $digits = substr($digits, 2);
+    }
+
+    // Strip leading 0 after 44 (e.g. +4407...)
+    if (str_starts_with($digits, '0')) {
+        $digits = substr($digits, 1);
+    }
+
+    // UK mobile: 7 followed by 9 digits (10 digits total)
+    if (strlen($digits) !== 10 || $digits[0] !== '7') {
+        return null;
+    }
+
+    return '+44'.$digits;
+}
+
+/**
  * Mask phone number for display (e.g. +44***123).
  */
 function maskPhone(string $phone): string
