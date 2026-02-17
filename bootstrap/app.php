@@ -38,7 +38,10 @@ return Application::configure(basePath: dirname(__DIR__))
                 return true;
             }
             // Force JSON for WhatsApp API endpoints
-            if ($request->is('admin/whatsapp/test') || $request->is('admin/whatsapp/webhook') || $request->is('admin/whatsapp/reminders/*/send')) {
+            if ($request->is('admin/whatsapp/test')
+                || $request->is('admin/whatsapp/webhook')
+                || $request->is('admin/whatsapp/reminders/*/send')
+                || $request->is('webhooks/ultramsg')) {
                 return true;
             }
 

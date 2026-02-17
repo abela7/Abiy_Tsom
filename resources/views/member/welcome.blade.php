@@ -322,6 +322,9 @@ function onboarding() {
             AbiyTsom.api('/member/register', payload)
                 .then(data => {
                     if (data.success) {
+                        if (data.whatsapp_confirmation_pending && data.message) {
+                            alert(data.message);
+                        }
                         localStorage.setItem('member_token', data.token);
                         localStorage.setItem('member_name', data.member.baptism_name);
                         AbiyTsom.token = data.token;

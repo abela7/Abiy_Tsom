@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
+use App\Services\WhatsAppReminderConfirmationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -27,8 +28,10 @@ class SettingsController extends Controller
     /**
      * Update member preferences (theme, locale).
      */
-    public function update(Request $request): JsonResponse
-    {
+    public function update(
+        Request $request,
+        WhatsAppReminderConfirmationService $confirmation
+    ): JsonResponse {
         if ($request->exists('whatsapp_phone')) {
             $request->merge([
                 'whatsapp_phone' => normalizeUkWhatsAppPhone((string) $request->input('whatsapp_phone')),
@@ -49,6 +52,7 @@ class SettingsController extends Controller
         $member = $request->attributes->get('member');
 
         $updates = [];
+        $shouldSendPrompt = false;
         if ($request->filled('locale')) {
             $updates['locale'] = $request->input('locale');
             session(['locale' => $request->input('locale')]);
@@ -81,21 +85,15 @@ class SettingsController extends Controller
                 ? $this->normalizeReminderTime($request->input('whatsapp_reminder_time'))
                 : $member->whatsapp_reminder_time;
 
+            $nextLang = $request->exists('whatsapp_language')
+                ? (string) $request->input('whatsapp_language', 'en')
+                : (string) ($member->whatsapp_language ?? 'en');
+
             if ($nextEnabled && (! $nextPhone || ! $nextTime)) {
                 return response()->json([
                     'success' => false,
                     'message' => __('app.whatsapp_reminder_requires_phone_and_time'),
                 ], 422);
-            }
-
-            if ($request->exists('whatsapp_reminder_enabled')) {
-                $updates['whatsapp_reminder_enabled'] = $nextEnabled;
-
-                // When turning off, clear the last-sent date so re-enabling
-                // allows a fresh reminder on the next scheduled time.
-                if (! $nextEnabled) {
-                    $updates['whatsapp_last_sent_date'] = null;
-                }
             }
 
             if ($request->exists('whatsapp_phone')) {
@@ -107,7 +105,34 @@ class SettingsController extends Controller
             }
 
             if ($request->exists('whatsapp_language')) {
-                $updates['whatsapp_language'] = $request->input('whatsapp_language', 'en');
+                $updates['whatsapp_language'] = $nextLang;
+            }
+
+            $phoneChanged = $request->exists('whatsapp_phone')
+                && $nextPhone !== $member->whatsapp_phone;
+
+            $requiresConfirmation = $nextEnabled
+                && (
+                    $member->whatsapp_confirmation_status !== 'confirmed'
+                    || $phoneChanged
+                );
+
+            if ($requiresConfirmation) {
+                $shouldSendPrompt = true;
+                $updates['whatsapp_reminder_enabled'] = false;
+                $updates['whatsapp_confirmation_status'] = 'pending';
+                $updates['whatsapp_confirmation_requested_at'] = now();
+                $updates['whatsapp_confirmation_responded_at'] = null;
+                $updates['whatsapp_last_sent_date'] = null;
+            } elseif ($request->exists('whatsapp_reminder_enabled')) {
+                $updates['whatsapp_reminder_enabled'] = $nextEnabled;
+
+                if (! $nextEnabled) {
+                    $updates['whatsapp_last_sent_date'] = null;
+                    $updates['whatsapp_confirmation_status'] = 'none';
+                    $updates['whatsapp_confirmation_requested_at'] = null;
+                    $updates['whatsapp_confirmation_responded_at'] = null;
+                }
             }
         }
 
@@ -115,7 +140,25 @@ class SettingsController extends Controller
             $member->update($updates);
         }
 
-        return response()->json(['success' => true, 'member' => $member->fresh()]);
+        $freshMember = $member->fresh();
+        $pending = $freshMember?->whatsapp_confirmation_status === 'pending';
+        $promptSent = true;
+
+        if ($shouldSendPrompt && $freshMember) {
+            $promptSent = $confirmation->sendOptInPrompt($freshMember);
+        }
+
+        return response()->json([
+            'success' => true,
+            'whatsapp_confirmation_pending' => $pending,
+            'whatsapp_confirmation_prompt_sent' => $shouldSendPrompt ? $promptSent : null,
+            'message' => $shouldSendPrompt
+                ? ($promptSent
+                    ? __('app.whatsapp_confirmation_pending_notice')
+                    : __('app.whatsapp_confirmation_send_failed_notice'))
+                : null,
+            'member' => $freshMember,
+        ]);
     }
 
     private function normalizeReminderTime(mixed $time): ?string

@@ -272,7 +272,7 @@
                     <input type="url"
                            id="webhook_url"
                            x-model="webhookUrl"
-                           placeholder="https://yourdomain.com/api/webhook/ultramsg"
+                           placeholder="{{ url('/webhooks/ultramsg') }}"
                            maxlength="500"
                            class="w-full px-3 py-2 border border-border rounded-lg bg-card text-primary focus:ring-2 focus:ring-accent outline-none text-sm">
                     <p class="text-xs text-muted-text mt-1.5">{{ __('app.whatsapp_webhook_url_help') }}</p>

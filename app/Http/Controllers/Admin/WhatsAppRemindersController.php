@@ -28,6 +28,7 @@ class WhatsAppRemindersController extends Controller
     {
         return Member::query()
             ->where('whatsapp_reminder_enabled', true)
+            ->where('whatsapp_confirmation_status', 'confirmed')
             ->whereNotNull('whatsapp_phone')
             ->where('whatsapp_phone', '!=', '')
             ->whereNotNull('whatsapp_reminder_time');
@@ -102,6 +103,10 @@ class WhatsAppRemindersController extends Controller
             'whatsapp_reminder_enabled' => false,
             'whatsapp_phone' => null,
             'whatsapp_reminder_time' => null,
+            'whatsapp_confirmation_status' => 'none',
+            'whatsapp_confirmation_requested_at' => null,
+            'whatsapp_confirmation_responded_at' => null,
+            'whatsapp_last_sent_date' => null,
         ]);
 
         return redirect()
@@ -187,7 +192,10 @@ class WhatsAppRemindersController extends Controller
 
     private function ensureOptedIn(Member $member): void
     {
-        if (! $member->whatsapp_reminder_enabled || ! $member->whatsapp_phone || ! $member->whatsapp_reminder_time) {
+        if (! $member->whatsapp_reminder_enabled
+            || $member->whatsapp_confirmation_status !== 'confirmed'
+            || ! $member->whatsapp_phone
+            || ! $member->whatsapp_reminder_time) {
             abort(404);
         }
     }

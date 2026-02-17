@@ -12,7 +12,7 @@ class MemberWhatsAppSettingsTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_member_can_enable_whatsapp_reminder_settings(): void
+    public function test_member_enable_sets_pending_confirmation_until_yes_reply(): void
     {
         $member = Member::create([
             'baptism_name' => 'Martha',
@@ -30,13 +30,17 @@ class MemberWhatsAppSettingsTest extends TestCase
         ]);
 
         $response->assertOk()
-            ->assertJson(['success' => true]);
+            ->assertJson([
+                'success' => true,
+                'whatsapp_confirmation_pending' => true,
+            ]);
 
         $this->assertDatabaseHas('members', [
             'id' => $member->id,
-            'whatsapp_reminder_enabled' => 1,
+            'whatsapp_reminder_enabled' => 0,
             'whatsapp_phone' => '+447700900123',
             'whatsapp_reminder_time' => '08:30:00',
+            'whatsapp_confirmation_status' => 'pending',
         ]);
     }
 

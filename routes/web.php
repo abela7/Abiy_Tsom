@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\Member;
+use App\Http\Controllers\Webhook;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -16,6 +17,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [Member\OnboardingController::class, 'welcome'])->name('home');
 Route::post('/member/register', [Member\OnboardingController::class, 'register'])->name('member.register');
 Route::post('/member/identify', [Member\OnboardingController::class, 'identify'])->name('member.identify');
+Route::post('/webhooks/ultramsg', [Webhook\UltraMsgWebhookController::class, 'handle'])
+    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class])
+    ->name('webhooks.ultramsg');
 
 // Public share page — serves OG meta for social crawlers, then redirects
 Route::get('/share/day/{daily}', [Member\ShareController::class, 'day'])->name('share.day');

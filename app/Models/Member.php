@@ -28,6 +28,9 @@ class Member extends Model
         'whatsapp_reminder_time',
         'whatsapp_last_sent_date',
         'whatsapp_language',
+        'whatsapp_confirmation_status',
+        'whatsapp_confirmation_requested_at',
+        'whatsapp_confirmation_responded_at',
     ];
 
     /** @var list<string> */
@@ -42,6 +45,8 @@ class Member extends Model
             'passcode_enabled' => 'boolean',
             'whatsapp_reminder_enabled' => 'boolean',
             'whatsapp_last_sent_date' => 'date',
+            'whatsapp_confirmation_requested_at' => 'datetime',
+            'whatsapp_confirmation_responded_at' => 'datetime',
         ];
     }
 

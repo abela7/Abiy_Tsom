@@ -42,6 +42,7 @@ class WhatsAppRemindersPageTest extends TestCase
             'baptism_name' => 'Test Member',
             'token' => 'abc123',
             'whatsapp_reminder_enabled' => true,
+            'whatsapp_confirmation_status' => 'confirmed',
             'whatsapp_phone' => '+447700900123',
             'whatsapp_reminder_time' => '09:00:00',
         ]);
@@ -65,6 +66,7 @@ class WhatsAppRemindersPageTest extends TestCase
             'baptism_name' => 'Test',
             'token' => 'token123',
             'whatsapp_reminder_enabled' => true,
+            'whatsapp_confirmation_status' => 'confirmed',
             'whatsapp_phone' => '+447700900123',
             'whatsapp_reminder_time' => '09:00:00',
         ]);
@@ -95,6 +97,7 @@ class WhatsAppRemindersPageTest extends TestCase
             'baptism_name' => 'Test',
             'token' => 'token123',
             'whatsapp_reminder_enabled' => true,
+            'whatsapp_confirmation_status' => 'confirmed',
             'whatsapp_phone' => '+447700900123',
             'whatsapp_reminder_time' => '09:00:00',
         ]);
@@ -106,6 +109,7 @@ class WhatsAppRemindersPageTest extends TestCase
         $this->assertFalse($member->whatsapp_reminder_enabled);
         $this->assertNull($member->whatsapp_phone);
         $this->assertNull($member->whatsapp_reminder_time);
+        $this->assertSame('none', $member->whatsapp_confirmation_status);
     }
 
     public function test_admin_can_delete_member(): void
@@ -121,6 +125,7 @@ class WhatsAppRemindersPageTest extends TestCase
             'baptism_name' => 'Test',
             'token' => 'token123',
             'whatsapp_reminder_enabled' => true,
+            'whatsapp_confirmation_status' => 'confirmed',
             'whatsapp_phone' => '+447700900123',
             'whatsapp_reminder_time' => '09:00:00',
         ]);

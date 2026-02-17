@@ -65,6 +65,7 @@ class SendWhatsAppRemindersCommandTest extends TestCase
             'locale' => 'en',
             'theme' => 'light',
             'whatsapp_reminder_enabled' => true,
+            'whatsapp_confirmation_status' => 'confirmed',
             'whatsapp_phone' => '+447700900111',
             'whatsapp_reminder_time' => '08:30:00',
         ]);
@@ -75,6 +76,7 @@ class SendWhatsAppRemindersCommandTest extends TestCase
             'locale' => 'en',
             'theme' => 'light',
             'whatsapp_reminder_enabled' => true,
+            'whatsapp_confirmation_status' => 'confirmed',
             'whatsapp_phone' => '+447700900112',
             'whatsapp_reminder_time' => '08:30:00',
             'whatsapp_last_sent_date' => '2026-02-17',
@@ -86,6 +88,7 @@ class SendWhatsAppRemindersCommandTest extends TestCase
             'locale' => 'en',
             'theme' => 'light',
             'whatsapp_reminder_enabled' => true,
+            'whatsapp_confirmation_status' => 'confirmed',
             'whatsapp_phone' => '+447700900113',
             'whatsapp_reminder_time' => '09:00:00',
         ]);

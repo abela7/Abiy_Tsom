@@ -114,14 +114,14 @@
                     class="w-full flex items-center justify-between px-4 py-4 text-left">
                 <div class="flex items-center gap-3 min-w-0">
                     <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                         :class="waEnabled ? 'bg-green-500/15' : 'bg-muted'">
-                        <svg class="w-5 h-5" :class="waEnabled ? 'text-green-500' : 'text-muted-text'" fill="currentColor" viewBox="0 0 24 24">
+                         :class="waStatus === 'confirmed' ? 'bg-green-500/15' : (waStatus === 'pending' ? 'bg-amber-500/15' : 'bg-muted')">
+                        <svg class="w-5 h-5" :class="waStatus === 'confirmed' ? 'text-green-500' : (waStatus === 'pending' ? 'text-amber-500' : 'text-muted-text')" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
                         </svg>
                     </div>
                     <div class="min-w-0">
                         <h3 class="font-semibold text-primary">{{ __('app.settings_whatsapp_title') }}</h3>
-                        <p class="text-xs text-muted-text truncate" x-text="waEnabled ? '{{ __('app.settings_whatsapp_enabled') }}' : '{{ __('app.settings_whatsapp_not_setup') }}'"></p>
+                        <p class="text-xs text-muted-text truncate" x-text="waStatusLabel"></p>
                     </div>
                 </div>
                 <svg class="w-5 h-5 text-muted-text transition-transform shrink-0" :class="openId === 'whatsapp' && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -192,7 +192,7 @@
                 {{-- Enabled state: showing current settings with edit --}}
                 <template x-if="waEnabled || waPhone">
                     <div class="space-y-4">
-                        <p class="text-sm text-muted-text" x-text="waEnabled ? '{{ __('app.settings_whatsapp_desc_on') }}' : '{{ __('app.settings_whatsapp_desc_off') }}'"></p>
+                        <p class="text-sm text-muted-text" x-text="waStatusDescription"></p>
 
                         {{-- Toggle on/off --}}
                         <div class="flex items-center justify-between p-3 rounded-xl bg-muted/60">
@@ -207,8 +207,8 @@
                             </button>
                         </div>
 
-                        {{-- Editable fields (shown when enabled) --}}
-                        <div x-show="waEnabled" x-transition class="space-y-3">
+                        {{-- Editable fields (shown when enabled or pending confirmation) --}}
+                        <div x-show="waEnabled || waStatus === 'pending'" x-transition class="space-y-3">
                             {{-- Phone --}}
                             <div>
                                 <label class="block text-xs font-medium text-muted-text mb-1.5">{{ __('app.settings_whatsapp_phone') }}</label>
@@ -252,9 +252,9 @@
 
                             {{-- Save changes button --}}
                             <button type="button" @click="saveWhatsApp()"
-                                    :disabled="!waPhoneValid || !waTime || waSaving || !waHasChanges"
+                                    :disabled="!waPhoneValid || !waTime || waSaving || (!waHasChanges && waStatus !== 'pending')"
                                     class="w-full py-2.5 bg-accent text-on-accent rounded-xl font-medium text-sm disabled:opacity-40 transition active:scale-[0.98]">
-                                <span x-show="!waSaving">{{ __('app.save') }}</span>
+                                <span x-show="!waSaving" x-text="waStatus === 'pending' ? '{{ __('app.settings_whatsapp_resend_confirmation') }}' : '{{ __('app.save') }}'"></span>
                                 <span x-show="waSaving">{{ __('app.loading') }}</span>
                             </button>
                         </div>
@@ -548,6 +548,7 @@ function settingsPage() {
         waPhone: '{{ addslashes($member?->whatsapp_phone ?? '') }}',
         waTime: '{{ $member?->whatsapp_reminder_time ? substr($member->whatsapp_reminder_time, 0, 5) : '' }}',
         waLang: '{{ $member?->whatsapp_language ?? 'en' }}',
+        waStatus: '{{ $member?->whatsapp_confirmation_status ?? 'none' }}',
         waSaving: false,
         waMsg: '',
         waMsgError: false,
@@ -566,6 +567,28 @@ function settingsPage() {
             if (d.length !== 10 || d[0] !== '7') return null;
             return '+44' + d;
         },
+        normalizeTimeForInput(value) {
+            if (!value || typeof value !== 'string') return '';
+            return value.slice(0, 5);
+        },
+        applyWhatsAppMember(member) {
+            if (!member || typeof member !== 'object') return;
+            this.waEnabled = !!member.whatsapp_reminder_enabled;
+            this.waStatus = member.whatsapp_confirmation_status || (this.waEnabled ? 'confirmed' : 'none');
+            this.waPhone = member.whatsapp_phone || this.waPhone;
+            this.waSavedPhone = this.waPhone;
+
+            const inputTime = this.normalizeTimeForInput(member.whatsapp_reminder_time);
+            if (inputTime) {
+                this.waTime = inputTime;
+                this.waSavedTime = inputTime;
+            }
+
+            if (member.whatsapp_language) {
+                this.waLang = member.whatsapp_language;
+                this.waSavedLang = member.whatsapp_language;
+            }
+        },
         get waPhoneValid() {
             return this.normalizeUkPhone(this.waPhone) !== null;
         },
@@ -573,6 +596,14 @@ function settingsPage() {
             return this.waPhone !== this.waSavedPhone
                 || this.waTime !== this.waSavedTime
                 || this.waLang !== this.waSavedLang;
+        },
+        get waStatusLabel() {
+            if (this.waStatus === 'pending') return '{{ __("app.settings_whatsapp_pending") }}';
+            return this.waEnabled ? '{{ __("app.settings_whatsapp_enabled") }}' : '{{ __("app.settings_whatsapp_not_setup") }}';
+        },
+        get waStatusDescription() {
+            if (this.waStatus === 'pending') return '{{ __("app.settings_whatsapp_desc_pending") }}';
+            return this.waEnabled ? '{{ __("app.settings_whatsapp_desc_on") }}' : '{{ __("app.settings_whatsapp_desc_off") }}';
         },
 
         async enableWhatsApp() {
@@ -588,12 +619,10 @@ function settingsPage() {
                     whatsapp_language: this.waLang,
                 });
                 if (data.success) {
-                    this.waEnabled = true;
-                    this.waPhone = phone;
-                    this.waSavedPhone = phone;
-                    this.waSavedTime = this.waTime;
-                    this.waSavedLang = this.waLang;
-                    this.waMsg = '{{ __("app.settings_whatsapp_enabled") }}';
+                    this.applyWhatsAppMember(data.member);
+                    this.waMsg = data.message || (data.whatsapp_confirmation_pending
+                        ? '{{ __("app.whatsapp_confirmation_pending_notice") }}'
+                        : '{{ __("app.settings_whatsapp_enabled") }}');
                     this.waMsgError = false;
                 } else {
                     this.waMsg = data.message || '{{ __("app.failed_to_save") }}';
@@ -627,8 +656,10 @@ function settingsPage() {
                 }
                 const data = await AbiyTsom.api('/api/member/settings', payload);
                 if (data.success) {
-                    this.waEnabled = next;
-                    this.waMsg = next ? '{{ __("app.settings_whatsapp_enabled") }}' : '{{ __("app.settings_whatsapp_disabled") }}';
+                    this.applyWhatsAppMember(data.member);
+                    this.waMsg = data.message || (next
+                        ? '{{ __("app.settings_whatsapp_enabled") }}'
+                        : '{{ __("app.settings_whatsapp_disabled") }}');
                     this.waMsgError = false;
                 } else {
                     this.waMsg = data.message || '{{ __("app.failed_to_save") }}';
@@ -644,22 +675,25 @@ function settingsPage() {
         },
 
         async saveWhatsApp() {
-            if (!this.waPhoneValid || !this.waTime || !this.waHasChanges) return;
+            if (!this.waPhoneValid || !this.waTime || (!this.waHasChanges && this.waStatus !== 'pending')) return;
             this.waSaving = true;
             this.waMsg = '';
             try {
                 const phone = this.normalizeUkPhone(this.waPhone) || this.waPhone;
-                const data = await AbiyTsom.api('/api/member/settings', {
+                const payload = {
                     whatsapp_phone: phone,
                     whatsapp_reminder_time: this.waTime,
                     whatsapp_language: this.waLang,
-                });
+                };
+                if (this.waStatus === 'pending') {
+                    payload.whatsapp_reminder_enabled = true;
+                }
+                const data = await AbiyTsom.api('/api/member/settings', payload);
                 if (data.success) {
-                    this.waPhone = phone;
-                    this.waSavedPhone = phone;
-                    this.waSavedTime = this.waTime;
-                    this.waSavedLang = this.waLang;
-                    this.waMsg = '{{ __("app.settings_whatsapp_saved") }}';
+                    this.applyWhatsAppMember(data.member);
+                    this.waMsg = data.message || (data.whatsapp_confirmation_pending
+                        ? '{{ __("app.whatsapp_confirmation_pending_notice") }}'
+                        : '{{ __("app.settings_whatsapp_saved") }}');
                     this.waMsgError = false;
                 } else {
                     this.waMsg = data.message || '{{ __("app.failed_to_save") }}';

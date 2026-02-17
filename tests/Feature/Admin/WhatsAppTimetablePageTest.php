@@ -42,6 +42,7 @@ class WhatsAppTimetablePageTest extends TestCase
             'baptism_name' => 'Test',
             'token' => 'token123',
             'whatsapp_reminder_enabled' => true,
+            'whatsapp_confirmation_status' => 'confirmed',
             'whatsapp_phone' => '+447700900123',
             'whatsapp_reminder_time' => '09:00:00',
         ]);

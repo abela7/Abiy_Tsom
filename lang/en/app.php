@@ -234,8 +234,16 @@ return [
     'settings_whatsapp_phone' => 'WhatsApp Number',
     'settings_whatsapp_time' => 'Reminder Time',
     'settings_whatsapp_lang' => 'Message Language',
+    'settings_whatsapp_pending' => 'Confirmation pending',
+    'settings_whatsapp_desc_pending' => 'Reply YES from your WhatsApp number to activate reminders.',
+    'settings_whatsapp_resend_confirmation' => 'Resend Confirmation',
     'settings_whatsapp_not_setup' => 'Not set up',
     'settings_whatsapp_setup_cta' => 'Set up WhatsApp reminders to receive daily spiritual content.',
+    'whatsapp_confirmation_prompt_message' => "Hi :name,\nAre you happy to get daily WhatsApp reminders with this number?\nReply YES to activate or NO to cancel.",
+    'whatsapp_confirmation_pending_notice' => 'We sent a WhatsApp confirmation message. Reply YES to activate reminders.',
+    'whatsapp_confirmation_send_failed_notice' => 'Could not send confirmation right now. Please try again later from Settings.',
+    'whatsapp_confirmation_activated_message' => 'Great! Your daily WhatsApp reminders are now activated.',
+    'whatsapp_confirmation_rejected_message' => 'Okay, WhatsApp reminders are not activated. You can enable them anytime from Settings.',
     'whatsapp_daily_reminder_message' => "Abiy Tsom Day :day is ready.\nOpen today's content:\n:url",
 
     // WhatsApp Settings (Admin)
