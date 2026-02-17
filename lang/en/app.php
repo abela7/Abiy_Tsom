@@ -33,6 +33,26 @@ return [
     'start_journey' => 'Start My Journey',
     'already_registered' => 'I have already registered',
 
+    // Onboarding Wizard
+    'baptism_name_label' => 'What is your baptism name?',
+    'wizard_next' => 'Continue',
+    'wizard_back' => 'Go Back',
+    'wizard_finish' => 'Start My Journey',
+    'wizard_whatsapp_title' => 'Daily Reminder',
+    'wizard_whatsapp_description' => 'Would you like to receive a WhatsApp message once a day until the end of Great Lent? It will remind you to take a moment to reflect on the day\'s spiritual content.',
+    'wizard_yes_notify' => 'Yes, Remind Me',
+    'wizard_no_thanks' => 'No Thanks, Continue',
+    'wizard_phone_title' => 'Your WhatsApp Number',
+    'wizard_phone_subtitle' => 'We will send your daily reminder to this number.',
+    'wizard_phone_label' => 'Phone Number',
+    'wizard_phone_help' => 'Enter with country code, e.g. +251912345678 or +447700900123',
+    'wizard_phone_invalid' => 'Please enter a valid phone number with country code (e.g. +251912345678)',
+    'wizard_time_title' => 'When Should We Remind You?',
+    'wizard_time_subtitle' => 'Choose a time in London timezone (GMT/BST).',
+    'wizard_time_label' => 'Preferred Time',
+    'wizard_time_help' => 'You will receive a daily WhatsApp message at this time (London time).',
+    'wizard_error' => 'Something went wrong. Please try again.',
+
     // Navigation
     'nav_home' => 'Home',
     'nav_calendar' => 'Calendar',
