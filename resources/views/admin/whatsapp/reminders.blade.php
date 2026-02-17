@@ -159,11 +159,10 @@
                            id="edit_whatsapp_phone"
                            name="whatsapp_phone"
                            x-model="editPhone"
-                           placeholder="07123456789 or +447123456789"
+                           placeholder="07123456789"
                            required
                            maxlength="20"
                            class="w-full px-3 py-2.5 border border-border rounded-lg bg-card text-primary font-mono focus:ring-2 focus:ring-accent outline-none">
-                    <p class="text-xs text-muted-text mt-1">{{ __('app.wizard_phone_help') }}</p>
                 </div>
 
                 <div>

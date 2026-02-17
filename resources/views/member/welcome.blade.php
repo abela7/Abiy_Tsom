@@ -98,10 +98,9 @@
                            id="whatsapp_phone"
                            x-model="phone"
                            @keydown.enter="if (isPhoneValid) step = 4"
-                           placeholder="07123456789 or +447123456789"
+                           placeholder="07123456789"
                            class="w-full px-4 py-3.5 border border-border rounded-xl bg-muted/50 dark:bg-muted/30 text-primary placeholder:text-muted-text focus:ring-2 focus:ring-accent focus:border-accent outline-none transition text-base font-mono tracking-wider"
                            dir="ltr">
-                    <p class="text-xs text-muted-text mt-2">{{ __('app.wizard_phone_help') }}</p>
                     <p x-show="phone && !isPhoneValid" class="text-xs text-red-500 mt-1">{{ __('app.wizard_phone_invalid') }}</p>
                 </div>
 
