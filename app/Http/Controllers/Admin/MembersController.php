@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Member;
 use App\Models\MemberChecklist;
+use App\Models\MemberCustomActivity;
 use App\Models\MemberCustomChecklist;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -104,15 +105,14 @@ class MembersController extends Controller
 
     /**
      * Delete every member and all their data (nuclear option).
+     * Uses DELETE instead of TRUNCATE to avoid MySQL FK constraint errors.
      */
     public function wipeAll(): RedirectResponse
     {
-        MemberChecklist::truncate();
-        MemberCustomChecklist::truncate();
-        Member::query()->each(function (Member $m): void {
-            $m->customActivities()->delete();
-        });
-        Member::truncate();
+        MemberChecklist::query()->delete();
+        MemberCustomChecklist::query()->delete();
+        MemberCustomActivity::query()->delete();
+        Member::query()->delete();
 
         return redirect()->route('admin.members.index')
             ->with('success', __('app.all_members_wiped'));
