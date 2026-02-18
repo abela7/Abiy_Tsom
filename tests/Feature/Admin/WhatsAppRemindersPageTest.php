@@ -20,13 +20,14 @@ class WhatsAppRemindersPageTest extends TestCase
             'username' => 'admin',
             'password' => bcrypt('password'),
             'role' => 'admin',
+            'is_super_admin' => true,
         ]);
 
         $response = $this->actingAs($admin)->get(route('admin.whatsapp.reminders'));
 
         $response->assertOk()
             ->assertViewIs('admin.whatsapp.reminders')
-            ->assertViewHas(['totalOptedIn', 'byTime', 'members']);
+            ->assertViewHas(['totalOptedIn', 'totalPending', 'byTime', 'members']);
     }
 
     public function test_reminders_page_shows_opted_in_members(): void
@@ -36,6 +37,7 @@ class WhatsAppRemindersPageTest extends TestCase
             'username' => 'admin',
             'password' => bcrypt('password'),
             'role' => 'admin',
+            'is_super_admin' => true,
         ]);
 
         Member::create([
@@ -60,6 +62,7 @@ class WhatsAppRemindersPageTest extends TestCase
             'username' => 'admin',
             'password' => bcrypt('password'),
             'role' => 'admin',
+            'is_super_admin' => true,
         ]);
 
         $member = Member::create([
@@ -91,6 +94,7 @@ class WhatsAppRemindersPageTest extends TestCase
             'username' => 'admin',
             'password' => bcrypt('password'),
             'role' => 'admin',
+            'is_super_admin' => true,
         ]);
 
         $member = Member::create([
@@ -119,6 +123,7 @@ class WhatsAppRemindersPageTest extends TestCase
             'username' => 'admin',
             'password' => bcrypt('password'),
             'role' => 'admin',
+            'is_super_admin' => true,
         ]);
 
         $member = Member::create([
@@ -136,5 +141,60 @@ class WhatsAppRemindersPageTest extends TestCase
 
         $response->assertRedirect(route('admin.whatsapp.reminders'));
         $this->assertNull(Member::find($id));
+    }
+
+    public function test_pending_members_appear_in_reminders_list(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin',
+            'username' => 'admin',
+            'password' => bcrypt('password'),
+            'role' => 'admin',
+            'is_super_admin' => true,
+        ]);
+
+        Member::create([
+            'baptism_name' => 'Pending Member',
+            'token' => 'pending123',
+            'whatsapp_reminder_enabled' => false,
+            'whatsapp_confirmation_status' => 'pending',
+            'whatsapp_phone' => '+447700900999',
+            'whatsapp_reminder_time' => '08:00:00',
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('admin.whatsapp.reminders'));
+
+        $response->assertOk();
+        $this->assertEquals(1, $response->viewData('totalPending'));
+        $members = $response->viewData('members');
+        $this->assertCount(1, $members);
+        $this->assertSame('pending', $members->first()->whatsapp_confirmation_status);
+    }
+
+    public function test_admin_can_manually_confirm_pending_member(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin',
+            'username' => 'admin',
+            'password' => bcrypt('password'),
+            'role' => 'admin',
+            'is_super_admin' => true,
+        ]);
+
+        $member = Member::create([
+            'baptism_name' => 'Pending',
+            'token' => 'pending456',
+            'whatsapp_reminder_enabled' => false,
+            'whatsapp_confirmation_status' => 'pending',
+            'whatsapp_phone' => '+447700900888',
+            'whatsapp_reminder_time' => '09:00:00',
+        ]);
+
+        $response = $this->actingAs($admin)->post(route('admin.whatsapp.reminders.confirm', $member));
+
+        $response->assertRedirect(route('admin.whatsapp.reminders'));
+        $member->refresh();
+        $this->assertTrue($member->whatsapp_reminder_enabled);
+        $this->assertSame('confirmed', $member->whatsapp_confirmation_status);
     }
 }

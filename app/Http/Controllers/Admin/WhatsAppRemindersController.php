@@ -22,7 +22,7 @@ use Illuminate\View\View;
 class WhatsAppRemindersController extends Controller
 {
     /**
-     * Members with WhatsApp reminders enabled.
+     * Members with WhatsApp reminders enabled and confirmed.
      */
     private function optedInQuery()
     {
@@ -35,11 +35,26 @@ class WhatsAppRemindersController extends Controller
     }
 
     /**
+     * Members who have set up WhatsApp (phone + time) — includes pending confirmation.
+     */
+    private function membersWithWhatsAppQuery()
+    {
+        return Member::query()
+            ->whereNotNull('whatsapp_phone')
+            ->where('whatsapp_phone', '!=', '')
+            ->whereNotNull('whatsapp_reminder_time')
+            ->whereIn('whatsapp_confirmation_status', ['confirmed', 'pending']);
+    }
+
+    /**
      * List members with WhatsApp reminders and stats.
      */
     public function index(): View
     {
         $totalOptedIn = (clone $this->optedInQuery())->count();
+        $totalPending = (clone $this->membersWithWhatsAppQuery())
+            ->where('whatsapp_confirmation_status', 'pending')
+            ->count();
 
         $byTime = (clone $this->optedInQuery())
             ->selectRaw('whatsapp_reminder_time as time, count(*) as count')
@@ -47,24 +62,36 @@ class WhatsAppRemindersController extends Controller
             ->orderBy('whatsapp_reminder_time')
             ->get();
 
-        $members = (clone $this->optedInQuery())
+        $members = (clone $this->membersWithWhatsAppQuery())
+            ->orderByRaw("CASE WHEN whatsapp_confirmation_status = 'confirmed' THEN 0 ELSE 1 END")
             ->orderBy('whatsapp_reminder_time')
             ->orderBy('created_at', 'desc')
             ->paginate(25);
 
         return view('admin.whatsapp.reminders', compact(
             'totalOptedIn',
+            'totalPending',
             'byTime',
             'members'
         ));
     }
 
     /**
-     * Update a member's reminder settings.
+     * Require member to have phone + time set (allows pending or confirmed).
+     */
+    private function ensureHasWhatsAppSetup(Member $member): void
+    {
+        if (! $member->whatsapp_phone || ! $member->whatsapp_reminder_time) {
+            abort(404);
+        }
+    }
+
+    /**
+     * Update a member's reminder settings (works for pending or confirmed).
      */
     public function update(Request $request, Member $member): RedirectResponse
     {
-        $this->ensureOptedIn($member);
+        $this->ensureHasWhatsAppSetup($member);
 
         $request->merge([
             'whatsapp_phone' => normalizeUkWhatsAppPhone((string) $request->input('whatsapp_phone', '')),
@@ -93,11 +120,11 @@ class WhatsAppRemindersController extends Controller
     }
 
     /**
-     * Disable reminder for a member (removes from list).
+     * Disable reminder for a member (removes from list). Works for pending or confirmed.
      */
     public function disable(Member $member): RedirectResponse
     {
-        $this->ensureOptedIn($member);
+        $this->ensureHasWhatsAppSetup($member);
 
         $member->update([
             'whatsapp_reminder_enabled' => false,
@@ -115,17 +142,41 @@ class WhatsAppRemindersController extends Controller
     }
 
     /**
-     * Delete a member entirely.
+     * Delete a member entirely. Works for pending or confirmed.
      */
     public function destroy(Member $member): RedirectResponse
     {
-        $this->ensureOptedIn($member);
+        $this->ensureHasWhatsAppSetup($member);
 
         $member->delete();
 
         return redirect()
             ->route('admin.whatsapp.reminders')
             ->with('success', __('app.member_deleted'));
+    }
+
+    /**
+     * Manually confirm a member (bypasses webhook YES reply). For pending only.
+     */
+    public function confirm(Member $member): RedirectResponse
+    {
+        $this->ensureHasWhatsAppSetup($member);
+
+        if ($member->whatsapp_confirmation_status !== 'pending') {
+            return redirect()
+                ->route('admin.whatsapp.reminders')
+                ->with('info', __('app.reminder_already_confirmed'));
+        }
+
+        $member->update([
+            'whatsapp_reminder_enabled' => true,
+            'whatsapp_confirmation_status' => 'confirmed',
+            'whatsapp_confirmation_responded_at' => now(),
+        ]);
+
+        return redirect()
+            ->route('admin.whatsapp.reminders')
+            ->with('success', __('app.reminder_manually_confirmed'));
     }
 
     /**
