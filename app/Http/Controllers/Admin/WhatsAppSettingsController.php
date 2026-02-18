@@ -42,13 +42,15 @@ class WhatsAppSettingsController extends Controller
         }
 
         $webhookSecret = config('services.ultramsg.webhook_secret') ?? '';
+        $reminderOnceOnly = config('services.ultramsg.reminder_once_only', true);
 
         return view('admin.whatsapp.index', compact(
             'instanceId',
             'token',
             'baseUrl',
             'currentSettings',
-            'webhookSecret'
+            'webhookSecret',
+            'reminderOnceOnly'
         ));
     }
 
@@ -231,6 +233,40 @@ class WhatsAppSettingsController extends Controller
         return redirect()
             ->route('admin.whatsapp.settings')
             ->with('webhook_secret_success', __('app.whatsapp_webhook_secret_saved'));
+    }
+
+    /**
+     * Save the reminder once-only toggle (once per day vs unlimited per day).
+     */
+    public function updateReminderOnceOnly(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'reminder_once_only' => ['nullable', 'boolean'],
+        ]);
+
+        $enabled = $request->boolean('reminder_once_only');
+        $value = $enabled ? 'true' : 'false';
+
+        $envPath = base_path('.env');
+        if (! File::exists($envPath)) {
+            return redirect()
+                ->route('admin.whatsapp.settings')
+                ->with('error', '.env file not found.');
+        }
+
+        $envContent = File::get($envPath);
+        $envContent = $this->updateEnvVariable($envContent, 'WHATSAPP_REMINDER_ONCE_ONLY', $value);
+        File::put($envPath, $envContent);
+
+        config()->set('services.ultramsg.reminder_once_only', $enabled);
+
+        if (is_file(base_path('bootstrap/cache/config.php'))) {
+            @unlink(base_path('bootstrap/cache/config.php'));
+        }
+
+        return redirect()
+            ->route('admin.whatsapp.settings')
+            ->with('reminder_once_only_success', __('app.whatsapp_once_only_saved'));
     }
 
     private function updateEnvVariable(string $envContent, string $key, string $value): string

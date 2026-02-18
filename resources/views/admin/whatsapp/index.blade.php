@@ -221,6 +221,38 @@
         </form>
     </div>
 
+    {{-- Once Per Day Toggle --}}
+    <div class="bg-card rounded-xl p-6 shadow-sm border border-border lg:col-span-2">
+        <h2 class="text-base font-semibold text-primary mb-2">{{ __('app.whatsapp_once_only_label') }}</h2>
+        <p class="text-xs text-muted-text mb-4">{{ __('app.whatsapp_once_only_help') }}</p>
+
+        <form method="POST" action="{{ route('admin.whatsapp.update-reminder-once-only') }}" class="space-y-4">
+            @csrf
+            @method('PUT')
+
+            <label class="flex items-start gap-2.5 cursor-pointer">
+                <input type="hidden" name="reminder_once_only" value="0">
+                <input type="checkbox"
+                       name="reminder_once_only"
+                       value="1"
+                       {{ $reminderOnceOnly ? 'checked' : '' }}
+                       class="mt-0.5 w-4 h-4 text-accent bg-card border-border rounded focus:ring-2 focus:ring-accent">
+                <span class="text-sm text-secondary">{{ __('app.whatsapp_once_only_label') }}</span>
+            </label>
+
+            <button type="submit"
+                    class="px-4 py-2 bg-accent text-on-accent rounded-lg font-medium hover:bg-accent-hover transition text-sm">
+                {{ __('app.save') }}
+            </button>
+
+            @if(session('reminder_once_only_success'))
+            <div class="p-3 rounded-lg text-sm bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-800">
+                {{ session('reminder_once_only_success') }}
+            </div>
+            @endif
+        </form>
+    </div>
+
     {{-- Webhook Settings Form --}}
     @if($instanceId && $token)
     <div class="lg:col-span-2"

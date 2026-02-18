@@ -71,11 +71,14 @@ class SendWhatsAppReminders extends Command
             ->whereNotNull('whatsapp_phone')
             ->where('whatsapp_phone', '!=', '')
             ->whereNotNull('whatsapp_reminder_time')
-            ->where('whatsapp_reminder_time', $currentTime)
-            ->where(function ($query) use ($today): void {
+            ->where('whatsapp_reminder_time', $currentTime);
+
+        if (config('services.ultramsg.reminder_once_only', true)) {
+            $dueMembersQuery->where(function ($query) use ($today): void {
                 $query->whereNull('whatsapp_last_sent_date')
                     ->orWhere('whatsapp_last_sent_date', '<', $today);
             });
+        }
 
         $dueCount = (clone $dueMembersQuery)->count();
         if ($dueCount === 0) {

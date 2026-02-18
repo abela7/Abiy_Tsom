@@ -310,6 +310,9 @@ return [
     'whatsapp_webhook_secret_label' => 'Shared Secret',
     'whatsapp_webhook_secret_instructions' => 'Give this exact secret to the other app\'s developer. They must send it as an X-Webhook-Secret header or ?secret= query parameter when forwarding webhooks.',
     'whatsapp_webhook_secret_saved' => 'Webhook secret saved. Share it with the forwarding app.',
+    'whatsapp_once_only_label' => 'Once per day',
+    'whatsapp_once_only_help' => 'When enabled, members receive at most one reminder per day. When disabled, reminders are sent every minute at the member\'s chosen time (useful for testing).',
+    'whatsapp_once_only_saved' => 'Reminder mode saved.',
     'generate' => 'Generate',
 
     // WhatsApp Admin Pages - placeholders in English for now

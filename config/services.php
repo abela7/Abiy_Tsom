@@ -40,6 +40,7 @@ return [
         'instance_id' => env('ULTRAMSG_INSTANCE_ID'),
         'token' => env('ULTRAMSG_TOKEN'),
         'webhook_secret' => env('ULTRAMSG_WEBHOOK_SECRET'),
+        'reminder_once_only' => env('WHATSAPP_REMINDER_ONCE_ONLY', true),
     ],
 
 ];
