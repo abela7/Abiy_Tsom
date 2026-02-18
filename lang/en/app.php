@@ -536,6 +536,7 @@ return [
 
     // Translation page group labels (admin)
     'group_onboarding' => 'Onboarding / Welcome',
+    'group_wizard' => 'Registration Wizard',
     'group_navigation' => 'Navigation',
     'group_home' => 'Home',
     'group_day_content' => 'Day Content (Bible, Mezmur, etc.)',

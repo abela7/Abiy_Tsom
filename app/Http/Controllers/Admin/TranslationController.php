@@ -27,6 +27,7 @@ class TranslationController extends Controller
         return [
             'user' => [
                 'onboarding' => __('app.group_onboarding'),
+                'wizard' => __('app.group_wizard'),
                 'navigation' => __('app.group_navigation'),
                 'home' => __('app.group_home'),
                 'content_sections' => __('app.group_day_content'),
@@ -165,7 +166,7 @@ class TranslationController extends Controller
         (new TranslationSeeder)->run();
 
         return redirect()
-            ->route('admin.translations.index', ['section' => 'user', 'group' => 'onboarding'])
+            ->route('admin.translations.index', ['section' => 'user', 'group' => 'wizard'])
             ->with('success', __('app.translations_saved'));
     }
 }

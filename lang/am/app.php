@@ -534,6 +534,7 @@ return [
 
     // Translation page group labels (admin)
     'group_onboarding' => 'መግቢያ / እንኳን ደህና መጡ',
+    'group_wizard' => 'Registration Wizard',
     'group_navigation' => 'መርካቶ',
     'group_home' => 'መነሻ',
     'group_day_content' => 'የቀን ይዘት (መጽሐፍ ቅዱስ፣ መዝሙር፣ ወዘተ)',
