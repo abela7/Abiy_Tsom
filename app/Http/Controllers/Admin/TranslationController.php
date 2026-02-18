@@ -28,6 +28,7 @@ class TranslationController extends Controller
             'user' => [
                 'onboarding' => __('app.group_onboarding'),
                 'wizard' => __('app.group_wizard'),
+                'whatsapp_member' => __('app.group_whatsapp_member'),
                 'navigation' => __('app.group_navigation'),
                 'home' => __('app.group_home'),
                 'content_sections' => __('app.group_day_content'),
