@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\DailyContent;
 use App\Models\LentSeason;
 use App\Models\User;
+use App\Services\WriterReminderService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -59,5 +60,18 @@ class DayAssignmentsController extends Controller
             'assigned_role' => $assigned?->role,
             'has_whatsapp' => ! empty($assigned?->whatsapp_phone),
         ]);
+    }
+
+    /**
+     * Manually send the writer reminder (to whoever is assigned to tomorrow).
+     */
+    public function sendReminder(WriterReminderService $writerReminderService): JsonResponse
+    {
+        $result = $writerReminderService->sendReminderForTomorrow(dryRun: false);
+
+        return response()->json([
+            'success' => $result['sent'],
+            'message' => $result['message'],
+        ], $result['sent'] ? 200 : 400);
     }
 }
