@@ -178,6 +178,49 @@
         </div>
     </form>
 
+    {{-- Webhook Secret --}}
+    <div class="bg-card rounded-xl p-6 shadow-sm border border-border lg:col-span-2">
+        <h2 class="text-base font-semibold text-primary mb-2">{{ __('app.whatsapp_webhook_secret_title') }}</h2>
+        <p class="text-xs text-muted-text mb-4">{{ __('app.whatsapp_webhook_secret_help') }}</p>
+
+        <form method="POST" action="{{ route('admin.whatsapp.update-webhook-secret') }}" class="space-y-4">
+            @csrf
+            @method('PUT')
+
+            <div>
+                <label for="webhook_secret" class="block text-sm font-medium text-secondary mb-1.5">
+                    {{ __('app.whatsapp_webhook_secret_label') }}
+                </label>
+                <div class="flex gap-2">
+                    <input type="text"
+                           id="webhook_secret"
+                           name="webhook_secret"
+                           value="{{ old('webhook_secret', $webhookSecret) }}"
+                           placeholder="e.g. my-strong-secret-key-123"
+                           maxlength="255"
+                           class="flex-1 px-3 py-2 border border-border rounded-lg bg-card text-primary focus:ring-2 focus:ring-accent outline-none font-mono text-sm">
+                    <button type="button"
+                            onclick="document.getElementById('webhook_secret').value = crypto.randomUUID().replaceAll('-','')"
+                            class="px-3 py-2 bg-surface text-secondary rounded-lg text-xs font-medium hover:bg-muted transition whitespace-nowrap">
+                        {{ __('app.generate') }}
+                    </button>
+                </div>
+                <p class="text-xs text-muted-text mt-1.5">{{ __('app.whatsapp_webhook_secret_instructions') }}</p>
+            </div>
+
+            <button type="submit"
+                    class="px-4 py-2 bg-accent text-on-accent rounded-lg font-medium hover:bg-accent-hover transition text-sm">
+                {{ __('app.save') }}
+            </button>
+
+            @if(session('webhook_secret_success'))
+            <div class="p-3 rounded-lg text-sm bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-800">
+                {{ session('webhook_secret_success') }}
+            </div>
+            @endif
+        </form>
+    </div>
+
     {{-- Webhook Settings Form --}}
     @if($instanceId && $token)
     <div class="lg:col-span-2"

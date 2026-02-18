@@ -36,17 +36,19 @@ class WhatsAppSettingsController extends Controller
             $token = config('services.ultramsg.token') ?? '';
             $baseUrl = config('services.ultramsg.base_url') ?? 'https://api.ultramsg.com';
 
-            // Fetch current webhook settings from UltraMsg
             if ($ultraMsgService->isConfigured()) {
                 $currentSettings = $ultraMsgService->getInstanceSettings();
             }
         }
 
+        $webhookSecret = config('services.ultramsg.webhook_secret') ?? '';
+
         return view('admin.whatsapp.index', compact(
             'instanceId',
             'token',
             'baseUrl',
-            'currentSettings'
+            'currentSettings',
+            'webhookSecret'
         ));
     }
 
@@ -196,6 +198,39 @@ class WhatsAppSettingsController extends Controller
             'success' => true,
             'message' => __('app.whatsapp_webhook_update_success'),
         ]);
+    }
+
+    /**
+     * Save the shared webhook verification secret.
+     */
+    public function updateWebhookSecret(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'webhook_secret' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $envPath = base_path('.env');
+        if (! File::exists($envPath)) {
+            return redirect()
+                ->route('admin.whatsapp.settings')
+                ->with('error', '.env file not found.');
+        }
+
+        $secret = trim($validated['webhook_secret'] ?? '');
+
+        $envContent = File::get($envPath);
+        $envContent = $this->updateEnvVariable($envContent, 'ULTRAMSG_WEBHOOK_SECRET', $secret);
+        File::put($envPath, $envContent);
+
+        config()->set('services.ultramsg.webhook_secret', $secret);
+
+        if (is_file(base_path('bootstrap/cache/config.php'))) {
+            @unlink(base_path('bootstrap/cache/config.php'));
+        }
+
+        return redirect()
+            ->route('admin.whatsapp.settings')
+            ->with('webhook_secret_success', __('app.whatsapp_webhook_secret_saved'));
     }
 
     private function updateEnvVariable(string $envContent, string $key, string $value): string

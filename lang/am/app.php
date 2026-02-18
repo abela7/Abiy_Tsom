@@ -303,6 +303,14 @@ return [
     'current_webhook_settings' => 'Current Settings on UltraMsg',
     'webhook_not_loaded' => 'Could not load current settings. Save credentials first.',
 
+    // Webhook Secret
+    'whatsapp_webhook_secret_title' => 'Webhook Verification Secret',
+    'whatsapp_webhook_secret_help' => 'Protect this endpoint from unauthorized requests. Only requests with the correct secret will be accepted.',
+    'whatsapp_webhook_secret_label' => 'Shared Secret',
+    'whatsapp_webhook_secret_instructions' => 'Give this exact secret to the other app\'s developer. They must send it as an X-Webhook-Secret header or ?secret= query parameter when forwarding webhooks.',
+    'whatsapp_webhook_secret_saved' => 'Webhook secret saved. Share it with the forwarding app.',
+    'generate' => 'Generate',
+
     // WhatsApp Admin Pages - placeholders in English for now
     'whatsapp_settings_tab' => 'Settings',
     'whatsapp_reminders_tab' => 'Reminders',

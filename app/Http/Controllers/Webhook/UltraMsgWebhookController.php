@@ -17,6 +17,10 @@ class UltraMsgWebhookController extends Controller
 {
     public function handle(Request $request, WhatsAppReminderConfirmationService $confirmation): JsonResponse
     {
+        if (! $this->verifySecret($request)) {
+            return response()->json(['error' => 'unauthorized'], 401);
+        }
+
         $payload = $request->all();
 
         if ($this->isFromSelf($payload)) {
@@ -121,6 +125,24 @@ class UltraMsgWebhookController extends Controller
         }
 
         return null;
+    }
+
+    /**
+     * Reject requests missing the shared webhook secret.
+     * If no secret is configured, all requests are allowed (dev mode).
+     */
+    private function verifySecret(Request $request): bool
+    {
+        $expected = config('services.ultramsg.webhook_secret');
+
+        if (! $expected) {
+            return true;
+        }
+
+        $provided = $request->header('X-Webhook-Secret')
+            ?? $request->query('secret');
+
+        return hash_equals($expected, (string) $provided);
     }
 
     /**

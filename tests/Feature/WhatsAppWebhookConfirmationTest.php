@@ -12,6 +12,46 @@ class WhatsAppWebhookConfirmationTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_webhook_rejected_when_secret_is_wrong(): void
+    {
+        config()->set('services.ultramsg.webhook_secret', 'correct-secret');
+
+        $response = $this->postJson(route('webhooks.ultramsg'), [
+            'from' => '447700900123@c.us',
+            'body' => 'YES',
+            'fromMe' => false,
+        ], ['X-Webhook-Secret' => 'wrong-secret']);
+
+        $response->assertStatus(401)
+            ->assertJson(['error' => 'unauthorized']);
+    }
+
+    public function test_webhook_accepted_when_secret_matches(): void
+    {
+        config()->set('services.ultramsg.webhook_secret', 'correct-secret');
+
+        $response = $this->postJson(route('webhooks.ultramsg'), [
+            'from' => '447700900123@c.us',
+            'body' => 'YES',
+            'fromMe' => false,
+        ], ['X-Webhook-Secret' => 'correct-secret']);
+
+        $response->assertOk();
+    }
+
+    public function test_webhook_allowed_when_no_secret_configured(): void
+    {
+        config()->set('services.ultramsg.webhook_secret', null);
+
+        $response = $this->postJson(route('webhooks.ultramsg'), [
+            'from' => '447700900123@c.us',
+            'body' => 'HELLO',
+            'fromMe' => false,
+        ]);
+
+        $response->assertOk();
+    }
+
     public function test_yes_reply_confirms_pending_whatsapp_reminder(): void
     {
         $member = Member::create([
