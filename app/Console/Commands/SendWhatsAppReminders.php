@@ -119,10 +119,13 @@ class SendWhatsAppReminders extends Command
                         ? (string) $member->whatsapp_language
                         : 'en';
 
-                    $message = Lang::get('app.whatsapp_daily_reminder_message', [
+                    $header = Lang::get('app.whatsapp_daily_reminder_header', [
                         'day' => $dailyContent->day_number,
+                    ], $locale);
+                    $content = Lang::get('app.whatsapp_daily_reminder_content', [
                         'url' => $dayUrl,
                     ], $locale);
+                    $message = $header."\n".$content;
 
                     if ($dryRun) {
                         $sentCount++;

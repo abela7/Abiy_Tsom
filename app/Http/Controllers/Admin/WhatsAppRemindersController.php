@@ -172,10 +172,13 @@ class WhatsAppRemindersController extends Controller
         $dayUrl = route('member.day', ['daily' => $dailyContent]).'?token='.urlencode((string) $member->token);
         $dayUrl = $this->ensureHttpsUrl($dayUrl);
 
-        $message = Lang::get('app.whatsapp_daily_reminder_message', [
+        $header = Lang::get('app.whatsapp_daily_reminder_header', [
             'day' => $dailyContent->day_number,
+        ], $lang);
+        $content = Lang::get('app.whatsapp_daily_reminder_content', [
             'url' => $dayUrl,
         ], $lang);
+        $message = $header."\n".$content;
 
         $sent = $ultraMsg->sendTextMessage((string) $member->whatsapp_phone, $message);
 

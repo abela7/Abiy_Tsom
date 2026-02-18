@@ -28,6 +28,7 @@ class TranslationSeeder extends Seeder
                 'onboarding_title', 'onboarding_subtitle',
                 'baptism_name', 'baptism_name_placeholder', 'baptism_name_saved',
                 'start_journey', 'already_registered',
+                'whatsapp_daily_reminder_header', 'whatsapp_daily_reminder_content',
             ],
             'wizard' => [
                 'onboarding_title', 'onboarding_subtitle',
