@@ -173,6 +173,7 @@ class WhatsAppRemindersController extends Controller
         $dayUrl = $this->ensureHttpsUrl($dayUrl);
 
         $header = Lang::get('app.whatsapp_daily_reminder_header', [
+            'baptism_name' => $member->baptism_name ?? '',
             'day' => $dailyContent->day_number,
         ], $lang);
         $content = Lang::get('app.whatsapp_daily_reminder_content', [

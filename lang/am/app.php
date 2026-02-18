@@ -248,7 +248,7 @@ return [
     'whatsapp_confirmation_send_failed_notice' => 'Could not send confirmation right now. Please try again later from Settings.',
     'whatsapp_confirmation_activated_message' => 'Great! Your daily WhatsApp reminders are now activated.',
     'whatsapp_confirmation_rejected_message' => 'Okay, WhatsApp reminders are not activated. You can enable them anytime from Settings.',
-    'whatsapp_daily_reminder_header' => 'Abiy Tsom Day :day is ready.',
+    'whatsapp_daily_reminder_header' => 'Hello :baptism_name. Today is day :day of the 55 great lent days.',
     'whatsapp_daily_reminder_content' => "Open today's content:\n:url",
 
     // WhatsApp Settings (Admin) - placeholders in English for now
