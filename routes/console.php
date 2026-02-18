@@ -8,9 +8,8 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Schedule::command('reminders:send-whatsapp')
-    ->everyMinute()
-    ->withoutOverlapping();
+// WhatsApp reminders: run via direct cron (see admin/whatsapp/cron), not schedule:run.
+// Direct cron is more reliable on shared hosting than Laravel's scheduler.
 
 Schedule::command('reminders:send-writer')
     ->dailyAt('17:00')

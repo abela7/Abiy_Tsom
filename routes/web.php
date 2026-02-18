@@ -121,6 +121,9 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         // Dashboard & Members
         Route::get('/dashboard', [Admin\DashboardController::class, 'index'])->name('dashboard');
         Route::get('/members', [Admin\MembersController::class, 'index'])->name('members.index');
+        Route::delete('/members/wipe-all', [Admin\MembersController::class, 'wipeAll'])->name('members.wipe-all');
+        Route::delete('/members/{member}', [Admin\MembersController::class, 'destroy'])->name('members.destroy');
+        Route::delete('/members/{member}/data', [Admin\MembersController::class, 'wipeData'])->name('members.wipe-data');
 
         // Translations
         Route::get('/translations', [Admin\TranslationController::class, 'index'])->name('translations.index');

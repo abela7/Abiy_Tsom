@@ -8,15 +8,16 @@ use App\Http\Controllers\Controller;
 use App\Models\Member;
 use App\Models\MemberChecklist;
 use App\Models\MemberCustomChecklist;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 /**
- * Anonymous member analytics — no PII, aggregate stats only.
+ * Member analytics, listing, and management for admins.
  */
 class MembersController extends Controller
 {
     /**
-     * Show anonymous user tracking stats.
+     * Show member stats and paginated member list.
      */
     public function index(): View
     {
@@ -55,6 +56,8 @@ class MembersController extends Controller
             ->orWhereHas('customChecklists', fn ($q) => $q->where('completed', true))
             ->count();
 
+        $members = Member::orderByDesc('created_at')->paginate(25);
+
         return view('admin.members.index', compact(
             'totalMembers',
             'registrationsByDay',
@@ -67,7 +70,51 @@ class MembersController extends Controller
             'passcodeEnabled',
             'totalChecklistCompletions',
             'totalCustomCompletions',
-            'engagedMembers'
+            'engagedMembers',
+            'members'
         ));
+    }
+
+    /**
+     * Delete a single member and all their associated data.
+     */
+    public function destroy(Member $member): RedirectResponse
+    {
+        $member->checklists()->delete();
+        $member->customChecklists()->delete();
+        $member->customActivities()->delete();
+        $member->delete();
+
+        return redirect()->route('admin.members.index')
+            ->with('success', __('app.member_deleted'));
+    }
+
+    /**
+     * Wipe all activity/checklist data for a member but keep their account.
+     */
+    public function wipeData(Member $member): RedirectResponse
+    {
+        $member->checklists()->delete();
+        $member->customChecklists()->delete();
+        $member->customActivities()->delete();
+
+        return redirect()->route('admin.members.index')
+            ->with('success', __('app.member_data_wiped'));
+    }
+
+    /**
+     * Delete every member and all their data (nuclear option).
+     */
+    public function wipeAll(): RedirectResponse
+    {
+        MemberChecklist::truncate();
+        MemberCustomChecklist::truncate();
+        Member::query()->each(function (Member $m): void {
+            $m->customActivities()->delete();
+        });
+        Member::truncate();
+
+        return redirect()->route('admin.members.index')
+            ->with('success', __('app.all_members_wiped'));
     }
 }

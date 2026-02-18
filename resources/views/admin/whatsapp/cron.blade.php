@@ -23,8 +23,11 @@
 
         <div class="bg-card rounded-xl p-6 shadow-sm border border-border">
             <h2 class="text-base font-semibold text-primary mb-3">{{ __('app.whatsapp_cron_command_label') }}</h2>
-            <p class="text-xs text-muted-text mb-2">{{ __('app.whatsapp_cron_command_help') }}</p>
-            <pre class="p-4 bg-muted rounded-lg text-sm font-mono overflow-x-auto break-all">{{ $phpPath }} {{ $artisanPath }} schedule:run >> /dev/null 2>&1</pre>
+            <p class="text-xs text-muted-text mb-3">{{ __('app.whatsapp_cron_two_jobs_help') }}</p>
+            <p class="text-xs font-medium text-primary mb-1">{{ __('app.whatsapp_cron_reminders_job') }}</p>
+            <pre class="p-3 bg-muted rounded-lg text-sm font-mono overflow-x-auto break-all mb-4">* * * * * cd {{ $projectPath }} && {{ $phpPath }} artisan reminders:send-whatsapp >> /dev/null 2>&1</pre>
+            <p class="text-xs font-medium text-primary mb-1">{{ __('app.whatsapp_cron_scheduler_job') }}</p>
+            <pre class="p-3 bg-muted rounded-lg text-sm font-mono overflow-x-auto break-all">* * * * * cd {{ $projectPath }} && {{ $phpPath }} artisan schedule:run >> /dev/null 2>&1</pre>
             <p class="text-xs text-muted-text mt-2">{{ __('app.whatsapp_cron_php_path_note') }}</p>
         </div>
     </div>

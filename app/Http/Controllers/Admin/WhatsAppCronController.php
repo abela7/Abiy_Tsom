@@ -17,13 +17,15 @@ class WhatsAppCronController extends Controller
      */
     public function index(): View
     {
-        $phpPath = '/usr/local/bin/ea-php82';
+        $phpPath = env('CRON_PHP_PATH', '/usr/bin/php');
         $artisanPath = base_path('artisan');
+        $projectPath = base_path();
         $appUrl = config('app.url');
 
         return view('admin.whatsapp.cron', compact(
             'phpPath',
             'artisanPath',
+            'projectPath',
             'appUrl'
         ));
     }
