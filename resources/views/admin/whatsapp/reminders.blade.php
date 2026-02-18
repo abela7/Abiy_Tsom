@@ -4,24 +4,24 @@
 @section('content')
 @include('admin.whatsapp._nav')
 
-<div class="mb-6">
-    <h1 class="text-2xl font-bold text-primary">{{ __('app.whatsapp_reminders_tab') }}</h1>
-    <p class="text-sm text-muted-text mt-1">{{ __('app.whatsapp_reminders_help') }}</p>
+<div class="mb-8">
+    <h1 class="text-2xl font-bold tracking-tight text-primary">{{ __('app.whatsapp_reminders_tab') }}</h1>
+    <p class="text-sm text-muted-text mt-1.5">{{ __('app.whatsapp_reminders_help') }}</p>
 </div>
 
 {{-- Stats --}}
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-    <div class="bg-card rounded-xl p-4 shadow-sm border border-border">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="bg-card rounded-xl p-5 shadow-sm border border-border">
         <p class="text-xs font-semibold text-muted-text uppercase tracking-wider">{{ __('app.whatsapp_opted_in_total') }}</p>
-        <p class="text-2xl font-black text-accent mt-1">{{ number_format($totalOptedIn) }}</p>
+        <p class="text-2xl font-bold text-accent mt-2 tabular-nums">{{ number_format($totalOptedIn) }}</p>
     </div>
-    <div class="bg-card rounded-xl p-4 shadow-sm border border-border">
+    <div class="bg-card rounded-xl p-5 shadow-sm border border-border">
         <p class="text-xs font-semibold text-muted-text uppercase tracking-wider">{{ __('app.settings_whatsapp_pending') }}</p>
-        <p class="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">{{ number_format($totalPending) }}</p>
+        <p class="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-2 tabular-nums">{{ number_format($totalPending) }}</p>
     </div>
-    <div class="bg-card rounded-xl p-4 shadow-sm border border-border">
+    <div class="bg-card rounded-xl p-5 shadow-sm border border-border">
         <p class="text-xs font-semibold text-muted-text uppercase tracking-wider">{{ __('app.whatsapp_time_slots') }}</p>
-        <p class="text-2xl font-black text-accent-secondary mt-1">{{ number_format($byTime->count()) }}</p>
+        <p class="text-2xl font-bold text-accent-secondary mt-2 tabular-nums">{{ number_format($byTime->count()) }}</p>
     </div>
 </div>
 
@@ -29,60 +29,60 @@
 <div x-data="reminderActions()">
 {{-- Members list --}}
 <div class="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
-    <div class="px-4 py-3 border-b border-border">
-        <h2 class="text-sm font-bold text-primary">{{ __('app.whatsapp_members_list') }}</h2>
+    <div class="px-5 py-4 border-b border-border">
+        <h2 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_members_list') }}</h2>
     </div>
     <div class="overflow-x-auto">
         <table class="w-full text-sm">
-            <thead class="bg-muted">
-                <tr>
-                    <th class="text-left px-4 py-2 font-semibold text-secondary">{{ __('app.baptism_name') }}</th>
-                    <th class="text-left px-4 py-2 font-semibold text-secondary">{{ __('app.whatsapp_phone') }}</th>
-                    <th class="text-left px-4 py-2 font-semibold text-secondary">{{ __('app.whatsapp_reminder_time') }}</th>
-                    <th class="text-left px-4 py-2 font-semibold text-secondary">{{ __('app.status') }}</th>
-                    <th class="text-left px-4 py-2 font-semibold text-secondary">{{ __('app.whatsapp_last_sent') }}</th>
-                    <th class="text-left px-4 py-2 font-semibold text-secondary">{{ __('app.registered') }}</th>
-                    <th class="text-left px-4 py-2 font-semibold text-secondary">{{ __('app.actions') }}</th>
+            <thead>
+                <tr class="border-b border-border">
+                    <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.baptism_name') }}</th>
+                    <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_phone') }}</th>
+                    <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_reminder_time') }}</th>
+                    <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.status') }}</th>
+                    <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_last_sent') }}</th>
+                    <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.registered') }}</th>
+                    <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.actions') }}</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-border">
                 @forelse($members as $m)
-                    <tr class="hover:bg-muted/50">
-                        <td class="px-4 py-2 font-medium">{{ $m->baptism_name ?: '—' }}</td>
-                        <td class="px-4 py-2 font-mono text-xs">{{ $m->whatsapp_phone ? maskPhone($m->whatsapp_phone) : '—' }}</td>
-                        <td class="px-4 py-2">{{ $m->whatsapp_reminder_time ? \Carbon\Carbon::parse($m->whatsapp_reminder_time)->format('H:i') : '—' }} {{ __('app.london_time') }}</td>
-                        <td class="px-4 py-2">
+                    <tr class="hover:bg-muted/40 transition-colors">
+                        <td class="px-5 py-3.5 font-medium text-primary">{{ $m->baptism_name ?: '—' }}</td>
+                        <td class="px-5 py-3.5 font-mono text-xs text-secondary">{{ $m->whatsapp_phone ? maskPhone($m->whatsapp_phone) : '—' }}</td>
+                        <td class="px-5 py-3.5 text-secondary">{{ $m->whatsapp_reminder_time ? \Carbon\Carbon::parse($m->whatsapp_reminder_time)->format('H:i') : '—' }} {{ __('app.london_time') }}</td>
+                        <td class="px-5 py-3.5">
                             @if($m->whatsapp_confirmation_status === 'confirmed')
-                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300">
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-success-bg text-success">
                                     {{ __('app.settings_whatsapp_enabled') }}
                                 </span>
                             @else
-                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300">
                                     {{ __('app.settings_whatsapp_pending') }}
                                 </span>
                             @endif
                         </td>
-                        <td class="px-4 py-2">{{ $m->whatsapp_last_sent_date ? $m->whatsapp_last_sent_date->format('Y-m-d') : __('app.never') }}</td>
-                        <td class="px-4 py-2 text-muted-text">{{ $m->created_at->format('M d, Y') }}</td>
-                        <td class="px-4 py-2">
-                            <div class="flex items-center gap-2 flex-wrap">
+                        <td class="px-5 py-3.5 text-secondary">{{ $m->whatsapp_last_sent_date ? $m->whatsapp_last_sent_date->format('Y-m-d') : __('app.never') }}</td>
+                        <td class="px-5 py-3.5 text-muted-text">{{ $m->created_at->format('M d, Y') }}</td>
+                        <td class="px-5 py-3.5">
+                            <div class="flex items-center gap-1.5 flex-wrap">
                                 @if($m->whatsapp_confirmation_status === 'pending')
                                     <form method="POST" action="{{ route('admin.whatsapp.reminders.confirm', $m) }}" class="inline">
                                         @csrf
-                                        <button type="submit" class="text-green-600 hover:underline text-xs font-medium">
+                                        <button type="submit" class="px-2.5 py-1 rounded-md text-xs font-medium bg-success-bg text-success hover:opacity-90 transition">
                                             {{ __('app.confirm_reminder') }}
                                         </button>
                                     </form>
                                 @endif
                                 <button type="button"
                                         @click="openEdit({{ $m->id }}, @js($m->baptism_name), @js($m->whatsapp_phone), @js($m->whatsapp_reminder_time ? \Carbon\Carbon::parse($m->whatsapp_reminder_time)->format('H:i') : ''))"
-                                        class="text-accent hover:underline text-xs font-medium">
+                                        class="px-2.5 py-1 rounded-md text-xs font-medium bg-accent/10 text-accent hover:bg-accent/20 transition">
                                     {{ __('app.edit') }}
                                 </button>
                                 <form method="POST" action="{{ route('admin.whatsapp.reminders.disable', $m) }}" class="inline"
                                       x-data @submit.prevent="if (confirm('{{ __('app.reminder_disable_confirm') }}')) $el.submit()">
                                     @csrf
-                                    <button type="submit" class="text-amber-600 hover:underline text-xs font-medium">
+                                    <button type="submit" class="px-2.5 py-1 rounded-md text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300 hover:opacity-90 transition">
                                         {{ __('app.disable_reminder') }}
                                     </button>
                                 </form>
@@ -90,7 +90,7 @@
                                       x-data @submit.prevent="if (confirm('{{ __('app.member_delete_confirm') }}')) $el.submit()">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:underline text-xs font-medium">
+                                    <button type="submit" class="px-2.5 py-1 rounded-md text-xs font-medium bg-error-bg text-error hover:opacity-90 transition">
                                         {{ __('app.delete') }}
                                     </button>
                                 </form>
@@ -98,13 +98,13 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="7" class="px-4 py-8 text-center text-muted-text">{{ __('app.whatsapp_no_opted_in') }}</td></tr>
+                    <tr><td colspan="7" class="px-5 py-12 text-center text-muted-text">{{ __('app.whatsapp_no_opted_in') }}</td></tr>
                 @endforelse
             </tbody>
         </table>
     </div>
     @if($members->hasPages())
-        <div class="px-4 py-3 border-t border-border">
+        <div class="px-5 py-4 border-t border-border">
             {{ $members->links() }}
         </div>
     @endif
@@ -125,8 +125,8 @@
          x-transition:enter="transition ease-out duration-200"
          x-transition:enter-start="opacity-0 scale-95"
          x-transition:enter-end="opacity-100 scale-100"
-         class="w-full max-w-md bg-card rounded-2xl shadow-2xl border border-border p-6">
-        <h3 class="text-lg font-bold text-primary mb-4">{{ __('app.edit_reminder') }}</h3>
+         class="w-full max-w-md bg-card rounded-2xl shadow-xl border border-border p-6">
+        <h3 class="text-lg font-semibold text-primary mb-5">{{ __('app.edit_reminder') }}</h3>
 
         <form method="POST" :action="editUrl" x-ref="editForm">
             @csrf
@@ -134,7 +134,7 @@
 
             <div class="space-y-4">
                 <div>
-                    <label for="edit_baptism_name" class="block text-sm font-semibold text-secondary mb-1.5">
+                    <label for="edit_baptism_name" class="block text-sm font-medium text-secondary mb-1.5">
                         {{ __('app.baptism_name') }}
                     </label>
                     <input type="text"
@@ -143,11 +143,11 @@
                            x-model="editBaptismName"
                            required
                            maxlength="255"
-                           class="w-full px-3 py-2.5 border border-border rounded-lg bg-card text-primary focus:ring-2 focus:ring-accent outline-none">
+                           class="w-full px-4 py-2.5 border border-border rounded-lg bg-muted/50 text-primary placeholder:text-muted-text focus:ring-2 focus:ring-accent focus:border-transparent outline-none transition">
                 </div>
 
                 <div>
-                    <label for="edit_whatsapp_phone" class="block text-sm font-semibold text-secondary mb-1.5">
+                    <label for="edit_whatsapp_phone" class="block text-sm font-medium text-secondary mb-1.5">
                         {{ __('app.whatsapp_phone') }}
                     </label>
                     <input type="tel"
@@ -157,11 +157,11 @@
                            placeholder="07123456789"
                            required
                            maxlength="20"
-                           class="w-full px-3 py-2.5 border border-border rounded-lg bg-card text-primary font-mono focus:ring-2 focus:ring-accent outline-none">
+                           class="w-full px-4 py-2.5 border border-border rounded-lg bg-muted/50 text-primary font-mono placeholder:text-muted-text focus:ring-2 focus:ring-accent focus:border-transparent outline-none transition">
                 </div>
 
                 <div>
-                    <label for="edit_reminder_time" class="block text-sm font-semibold text-secondary mb-1.5">
+                    <label for="edit_reminder_time" class="block text-sm font-medium text-secondary mb-1.5">
                         {{ __('app.whatsapp_reminder_time') }}
                     </label>
                     <input type="time"
@@ -169,17 +169,17 @@
                            name="whatsapp_reminder_time"
                            x-model="editTime"
                            required
-                           class="w-full px-3 py-2.5 border border-border rounded-lg bg-card text-primary focus:ring-2 focus:ring-accent outline-none">
+                           class="w-full px-4 py-2.5 border border-border rounded-lg bg-muted/50 text-primary focus:ring-2 focus:ring-accent focus:border-transparent outline-none transition">
                 </div>
             </div>
 
             <div class="flex gap-3 mt-6">
-                <button type="submit" class="flex-1 py-2.5 bg-accent text-on-accent rounded-lg font-semibold hover:bg-accent-hover transition">
+                <button type="submit" class="flex-1 py-2.5 bg-accent text-on-accent rounded-lg font-medium hover:opacity-95 transition">
                     {{ __('app.save') }}
                 </button>
                 <button type="button"
                         @click="editOpen = false"
-                        class="flex-1 py-2.5 bg-muted text-secondary rounded-lg font-semibold hover:bg-muted/80 transition">
+                        class="flex-1 py-2.5 bg-muted text-secondary rounded-lg font-medium hover:bg-muted/80 transition">
                     {{ __('app.cancel') }}
                 </button>
             </div>

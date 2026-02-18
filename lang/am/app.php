@@ -325,6 +325,7 @@ return [
     'whatsapp_time_slots' => 'Time Slots Used',
     'whatsapp_members_by_time' => 'Members by Reminder Time',
     'whatsapp_members_list' => 'Member List',
+    'whatsapp_phone' => 'Phone',
     'whatsapp_reminder_time' => 'Reminder Time',
     'whatsapp_last_sent' => 'Last Sent',
     'whatsapp_no_opted_in' => 'No members have opted in yet.',
