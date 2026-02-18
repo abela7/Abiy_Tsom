@@ -7,6 +7,7 @@ namespace App\Console\Commands;
 use App\Models\DailyContent;
 use App\Models\LentSeason;
 use App\Models\Member;
+use App\Models\Translation;
 use App\Services\UltraMsgService;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
@@ -118,6 +119,8 @@ class SendWhatsAppReminders extends Command
                     $locale = in_array((string) $member->whatsapp_language, ['en', 'am'], true)
                         ? (string) $member->whatsapp_language
                         : 'en';
+
+                    Translation::loadFromDb($locale);
 
                     $header = Lang::get('app.whatsapp_daily_reminder_header', [
                         'baptism_name' => $member->baptism_name ?? '',

@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\DailyContent;
 use App\Models\LentSeason;
 use App\Models\Member;
+use App\Models\Translation;
 use App\Services\UltraMsgService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
@@ -220,6 +221,8 @@ class WhatsAppRemindersController extends Controller
         $lang = in_array((string) $member->whatsapp_language, ['en', 'am'], true)
             ? (string) $member->whatsapp_language
             : 'en';
+        Translation::loadFromDb($lang);
+
         $dayUrl = route('member.day', ['daily' => $dailyContent]).'?token='.urlencode((string) $member->token);
         $dayUrl = $this->ensureHttpsUrl($dayUrl);
 
