@@ -110,18 +110,18 @@
     <div class="flex min-h-[calc(100vh-3.5rem)]">
         @php
             $links = [
-                ['route' => 'admin.dashboard', 'label' => __('app.dashboard'), 'icon' => 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6', 'roles' => ['admin', 'editor']],
-                ['route' => 'admin.members.index', 'label' => __('app.members'), 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', 'roles' => ['admin', 'editor']],
+                ['route' => 'admin.dashboard', 'label' => __('app.dashboard'), 'icon' => 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6', 'super_admin' => true],
+                ['route' => 'admin.members.index', 'label' => __('app.members'), 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', 'super_admin' => true],
                 ['route' => 'admin.admins.index', 'label' => __('app.manage_admins'), 'icon' => 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z', 'super_admin' => true],
                 ['route' => 'admin.seasons.index', 'label' => __('app.seasons'), 'icon' => 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', 'roles' => ['admin', 'editor']],
                 ['route' => 'admin.themes.index', 'label' => __('app.themes'), 'icon' => 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10', 'roles' => ['admin', 'editor']],
                 ['route' => 'admin.daily.index', 'label' => __('app.daily_content'), 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'roles' => ['admin', 'editor', 'writer']],
-                ['route' => 'admin.day-assignments.index', 'label' => __('app.day_assignments'), 'icon' => 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', 'roles' => ['admin', 'editor']],
+                ['route' => 'admin.day-assignments.index', 'label' => __('app.day_assignments'), 'icon' => 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', 'super_admin' => true],
                 ['route' => 'admin.announcements.index', 'label' => __('app.announcements'), 'icon' => 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3.14a7.5 7.5 0 011.294 12.169A5.75 5.75 0 0112 18.5a5.75 5.75 0 01-6.564-4.817z', 'roles' => ['admin', 'editor', 'writer']],
                 ['route' => 'admin.activities.index', 'label' => __('app.activities'), 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4', 'roles' => ['admin', 'editor', 'writer']],
-                ['route' => 'admin.translations.index', 'label' => __('app.translations'), 'icon' => 'M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129', 'roles' => ['admin', 'editor']],
-                ['route' => 'admin.seo.index', 'label' => __('app.seo'), 'icon' => 'M21 12a9 9 0 11-18 0 9 9 0 0118 0zM3.6 9h16.8M3.6 15h16.8M12 3a15.3 15.3 0 010 18M12 3a15.3 15.3 0 000 18', 'roles' => ['admin', 'editor']],
-                ['route' => 'admin.whatsapp.settings', 'label' => __('app.whatsapp_settings'), 'icon' => 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z', 'roles' => ['admin', 'editor'], 'match' => 'admin.whatsapp.*'],
+                ['route' => 'admin.translations.index', 'label' => __('app.translations'), 'icon' => 'M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129', 'super_admin' => true],
+                ['route' => 'admin.seo.index', 'label' => __('app.seo'), 'icon' => 'M21 12a9 9 0 11-18 0 9 9 0 0118 0zM3.6 9h16.8M3.6 15h16.8M12 3a15.3 15.3 0 010 18M12 3a15.3 15.3 0 000 18', 'super_admin' => true],
+                ['route' => 'admin.whatsapp.settings', 'label' => __('app.whatsapp_settings'), 'icon' => 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z', 'super_admin' => true, 'match' => 'admin.whatsapp.*'],
             ];
         @endphp
 

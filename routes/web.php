@@ -101,10 +101,6 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
 
     // Editor/admin routes
     Route::middleware('admin_role:editor,admin')->group(function () {
-        // Dashboard
-        Route::get('/dashboard', [Admin\DashboardController::class, 'index'])->name('dashboard');
-        Route::get('/members', [Admin\MembersController::class, 'index'])->name('members.index');
-
         // Seasons
         Route::get('/seasons', [Admin\LentSeasonController::class, 'index'])->name('seasons.index');
         Route::get('/seasons/create', [Admin\LentSeasonController::class, 'create'])->name('seasons.create');
@@ -118,6 +114,13 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::post('/themes', [Admin\WeeklyThemeController::class, 'store'])->name('themes.store');
         Route::get('/themes/{theme}/edit', [Admin\WeeklyThemeController::class, 'edit'])->name('themes.edit');
         Route::put('/themes/{theme}', [Admin\WeeklyThemeController::class, 'update'])->name('themes.update');
+    });
+
+    // Super admin only routes
+    Route::middleware('super_admin')->group(function () {
+        // Dashboard & Members
+        Route::get('/dashboard', [Admin\DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/members', [Admin\MembersController::class, 'index'])->name('members.index');
 
         // Translations
         Route::get('/translations', [Admin\TranslationController::class, 'index'])->name('translations.index');
@@ -129,7 +132,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/seo', [Admin\SeoController::class, 'index'])->name('seo.index');
         Route::put('/seo', [Admin\SeoController::class, 'update'])->name('seo.update');
 
-        // Day assignments (assign writers/editors to each day)
+        // Day assignments
         Route::get('/day-assignments', [Admin\DayAssignmentsController::class, 'index'])->name('day-assignments.index');
         Route::patch('/day-assignments/{daily}', [Admin\DayAssignmentsController::class, 'update'])->name('day-assignments.update');
         Route::post('/day-assignments/{daily}/send-reminder', [Admin\DayAssignmentsController::class, 'sendReminder'])->name('day-assignments.send-reminder');
@@ -148,16 +151,16 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::post('/whatsapp/reminders/{member}/disable', [Admin\WhatsAppRemindersController::class, 'disable'])->name('whatsapp.reminders.disable');
         Route::delete('/whatsapp/reminders/{member}', [Admin\WhatsAppRemindersController::class, 'destroy'])->name('whatsapp.reminders.destroy');
         Route::get('/whatsapp/cron', [Admin\WhatsAppCronController::class, 'index'])->name('whatsapp.cron');
-    });
 
-    // Admin users (super admin only)
-    Route::middleware('super_admin')->prefix('admins')->name('admins.')->group(function () {
-        Route::get('/', [Admin\AdminUserController::class, 'index'])->name('index');
-        Route::get('/create', [Admin\AdminUserController::class, 'create'])->name('create');
-        Route::post('/', [Admin\AdminUserController::class, 'store'])->name('store');
-        Route::get('/{admin}', [Admin\AdminUserController::class, 'show'])->name('show');
-        Route::get('/{admin}/edit', [Admin\AdminUserController::class, 'edit'])->name('edit');
-        Route::put('/{admin}', [Admin\AdminUserController::class, 'update'])->name('update');
-        Route::delete('/{admin}', [Admin\AdminUserController::class, 'destroy'])->name('destroy');
+        // Admin users
+        Route::prefix('admins')->name('admins.')->group(function () {
+            Route::get('/', [Admin\AdminUserController::class, 'index'])->name('index');
+            Route::get('/create', [Admin\AdminUserController::class, 'create'])->name('create');
+            Route::post('/', [Admin\AdminUserController::class, 'store'])->name('store');
+            Route::get('/{admin}', [Admin\AdminUserController::class, 'show'])->name('show');
+            Route::get('/{admin}/edit', [Admin\AdminUserController::class, 'edit'])->name('edit');
+            Route::put('/{admin}', [Admin\AdminUserController::class, 'update'])->name('update');
+            Route::delete('/{admin}', [Admin\AdminUserController::class, 'destroy'])->name('destroy');
+        });
     });
 });
