@@ -9,6 +9,7 @@ use App\Models\Member;
 use App\Services\WhatsAppReminderConfirmationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Receives inbound WhatsApp webhooks from UltraMsg.
@@ -17,25 +18,44 @@ class UltraMsgWebhookController extends Controller
 {
     public function handle(Request $request, WhatsAppReminderConfirmationService $confirmation): JsonResponse
     {
+        Log::info('[Webhook] Incoming request', [
+            'headers' => $request->headers->all(),
+            'payload' => $request->all(),
+            'ip' => $request->ip(),
+        ]);
+
         if (! $this->verifySecret($request)) {
+            Log::warning('[Webhook] Secret mismatch — rejected');
+
             return response()->json(['error' => 'unauthorized'], 401);
         }
 
         $payload = $request->all();
 
         if ($this->isFromSelf($payload)) {
+            Log::info('[Webhook] Ignored: outgoing message');
+
             return response()->json(['success' => true, 'ignored' => 'outgoing']);
         }
 
         $phone = $this->extractPhone($payload);
         $messageText = $this->extractMessageText($payload);
 
+        Log::info('[Webhook] Parsed', [
+            'phone' => $phone,
+            'text' => $messageText,
+        ]);
+
         if (! $phone || ! $messageText) {
+            Log::info('[Webhook] Ignored: missing phone or text');
+
             return response()->json(['success' => true, 'ignored' => 'missing_phone_or_text']);
         }
 
         $reply = $confirmation->parseReply($messageText);
         if (! $reply) {
+            Log::info('[Webhook] Ignored: not a YES/NO reply', ['text' => $messageText]);
+
             return response()->json(['success' => true, 'ignored' => 'not_yes_no']);
         }
 
@@ -46,8 +66,15 @@ class UltraMsgWebhookController extends Controller
             ->first();
 
         if (! $member) {
+            Log::info('[Webhook] Ignored: no pending member for phone', ['phone' => $phone]);
+
             return response()->json(['success' => true, 'ignored' => 'no_pending_member']);
         }
+
+        Log::info('[Webhook] Processing reply', [
+            'member_id' => $member->id,
+            'reply' => $reply,
+        ]);
 
         if ($reply === 'yes') {
             $member->forceFill([
@@ -57,6 +84,8 @@ class UltraMsgWebhookController extends Controller
             ])->save();
 
             $confirmation->sendConfirmedNotice($member);
+
+            Log::info('[Webhook] Member confirmed', ['member_id' => $member->id]);
 
             return response()->json(['success' => true, 'action' => 'confirmed']);
         }
@@ -69,6 +98,8 @@ class UltraMsgWebhookController extends Controller
         ])->save();
 
         $confirmation->sendRejectedNotice($member);
+
+        Log::info('[Webhook] Member rejected', ['member_id' => $member->id]);
 
         return response()->json(['success' => true, 'action' => 'rejected']);
     }
