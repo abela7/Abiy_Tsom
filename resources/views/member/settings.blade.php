@@ -198,8 +198,9 @@
                         <div class="flex items-center justify-between p-3 rounded-xl bg-muted/60">
                             <span class="text-sm font-medium text-primary">{{ __('app.settings_whatsapp_title') }}</span>
                             <button type="button" @click="toggleWhatsApp()"
-                                    :disabled="waSaving"
-                                    class="relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 disabled:opacity-50"
+                                    :disabled="waSaving || (waEnabled ? false : (!waPhoneValid || !waTime))"
+                                    :title="(!waEnabled && (!waPhoneValid || !waTime)) ? '{{ __('app.whatsapp_reminder_requires_phone_and_time') }}' : ''"
+                                    class="relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                     :class="waEnabled ? 'bg-green-500' : 'bg-border'"
                                     role="switch" :aria-checked="waEnabled">
                                 <span class="pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-sm ring-0 transition-transform duration-200"
@@ -207,8 +208,8 @@
                             </button>
                         </div>
 
-                        {{-- Editable fields (shown when enabled or pending confirmation) --}}
-                        <div x-show="waEnabled || waStatus === 'pending'" x-transition class="space-y-3">
+                        {{-- Editable fields (always visible when toggle is shown so user can fill phone/time before enabling) --}}
+                        <div x-show="true" x-transition class="space-y-3">
                             {{-- Phone --}}
                             <div>
                                 <label class="block text-xs font-medium text-muted-text mb-1.5">{{ __('app.settings_whatsapp_phone') }}</label>
@@ -662,11 +663,13 @@ function settingsPage() {
                         : '{{ __("app.settings_whatsapp_disabled") }}');
                     this.waMsgError = false;
                 } else {
-                    this.waMsg = data.message || '{{ __("app.failed_to_save") }}';
+                    this.waMsg = (data.errors && Object.values(data.errors).flat().length)
+                        ? Object.values(data.errors).flat().join(' ')
+                        : (data.message || '{{ __("app.failed_to_save") }}');
                     this.waMsgError = true;
                 }
             } catch (e) {
-                this.waMsg = '{{ __("app.failed_to_save") }}';
+                this.waMsg = (e && e.message) ? e.message : '{{ __("app.failed_to_save") }}';
                 this.waMsgError = true;
             } finally {
                 this.waSaving = false;
