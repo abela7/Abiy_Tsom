@@ -140,8 +140,10 @@
                     create: @js(route('admin.daily.store')),
                     patchTemplate: @js(route('admin.daily.patch', ['daily' => '__DAILY_ID__'])),
                     editTemplate: @js(route('admin.daily.edit', ['daily' => '__DAILY_ID__'])),
-                    index: @js(route('admin.daily.index'))
+                    index: @js(route('admin.daily.index')),
+                    copyFromTemplate: @js(route('admin.daily.copy_from', ['day_number' => '__DAY__']))
                 },
+                daysWithContent: @js($daysWithContent ?? []),
                 messages: {
                     stepTemplate: @js(__('app.step_x_of_y', ['current' => ':current', 'total' => ':total'])),
                     next: @js(__('app.next')),
@@ -149,7 +151,12 @@
                     saving: @js(__('app.saving')),
                     saved: @js(__('app.saved')),
                     finish: @js(__('app.finish')),
-                    failed: @js(__('app.failed'))
+                    failed: @js(__('app.failed')),
+                    copyDay: @js(__('app.copy_day')),
+                    copyFromDay: @js(__('app.copy_from_day')),
+                    copyDayHint: @js(__('app.copy_from_day_hint')),
+                    copying: @js(__('app.copying')),
+                    copySuccess: @js(__('app.copy_day_success'))
                 }
             })"
             x-init="init()"
@@ -248,6 +255,35 @@
                         <span class="font-semibold text-accent">{{ __('app.day_label') }}:</span>
                         <span class="text-secondary" x-text="resolvedInfo ? resolvedInfo.dayOfWeek : ''"></span>
                     </div>
+
+                    {{-- Copy from day (mobile-first) --}}
+                    @if(!empty($daysWithContent ?? []))
+                    <div class="p-4 rounded-xl border-2 border-dashed border-border bg-muted/20 space-y-3">
+                        <label class="block text-sm font-medium text-secondary">{{ __('app.copy_from_day') }}</label>
+                        <p class="text-xs text-muted-text" x-text="messages.copyDayHint"></p>
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <select
+                                x-model="copySourceDay"
+                                class="flex-1 min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition touch-manipulation"
+                            >
+                                <option value="">{{ __('app.select_placeholder') }}</option>
+                                @foreach($daysWithContent as $opt)
+                                    <option value="{{ $opt['day_number'] }}">{{ $opt['label'] }}</option>
+                                @endforeach
+                            </select>
+                            <button
+                                type="button"
+                                @click="copyFromDay()"
+                                :disabled="!copySourceDay || isCopying"
+                                class="min-h-12 px-5 py-3 rounded-xl bg-accent-secondary text-on-accent text-base font-medium hover:bg-accent-secondary/90 transition touch-manipulation disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+                            >
+                                <span x-show="!isCopying" x-text="messages.copyDay"></span>
+                                <span x-show="isCopying" x-cloak x-text="messages.copying"></span>
+                            </button>
+                        </div>
+                        <p x-show="copyNotice" x-cloak class="text-sm text-success font-medium" x-text="copyNotice"></p>
+                    </div>
+                    @endif
 
                     <div class="space-y-3">
                         <label class="block text-sm font-medium text-secondary">{{ __('app.day_title_optional') }}</label>
@@ -516,8 +552,12 @@
                     recentBooks: Array.isArray(config.recentBooks) ? config.recentBooks : [],
                     urls: config.urls || {},
                     messages: config.messages || {},
+                    daysWithContent: Array.isArray(config.daysWithContent) ? config.daysWithContent : [],
                     resolvedInfo: null,
                     form: config.state || {},
+                    copySourceDay: '',
+                    isCopying: false,
+                    copyNotice: '',
 
                     init() {
                         if (!Array.isArray(this.form.mezmurs) || this.form.mezmurs.length === 0) {
@@ -617,6 +657,74 @@
                             description_en: bookData.description_en || '',
                             description_am: bookData.description_am || '',
                         });
+                    },
+
+                    async copyFromDay() {
+                        const day = Number(this.copySourceDay || 0);
+                        if (!day || day < 1 || day > 55 || this.isCopying) {
+                            return;
+                        }
+                        this.isCopying = true;
+                        this.copyNotice = '';
+                        this.errorMessage = '';
+                        const url = (this.urls.copyFromTemplate || '').replace('__DAY__', String(day));
+                        try {
+                            const response = await fetch(url, {
+                                method: 'GET',
+                                credentials: 'same-origin',
+                                headers: { 'Accept': 'application/json' },
+                            });
+                            const json = await response.json();
+                            if (!response.ok || !json?.success) {
+                                throw new Error(json?.message || this.messages.failed || 'Failed');
+                            }
+                            const data = json.data || {};
+                            this.form.day_title_en = data.day_title_en ?? '';
+                            this.form.day_title_am = data.day_title_am ?? '';
+                            this.form.bible_reference_en = data.bible_reference_en ?? '';
+                            this.form.bible_reference_am = data.bible_reference_am ?? '';
+                            this.form.bible_summary_en = data.bible_summary_en ?? '';
+                            this.form.bible_summary_am = data.bible_summary_am ?? '';
+                            this.form.bible_text_en = data.bible_text_en ?? '';
+                            this.form.bible_text_am = data.bible_text_am ?? '';
+                            this.form.sinksar_title_en = data.sinksar_title_en ?? '';
+                            this.form.sinksar_title_am = data.sinksar_title_am ?? '';
+                            this.form.sinksar_url = data.sinksar_url ?? '';
+                            this.form.sinksar_description_en = data.sinksar_description_en ?? '';
+                            this.form.sinksar_description_am = data.sinksar_description_am ?? '';
+                            this.form.reflection_en = data.reflection_en ?? '';
+                            this.form.reflection_am = data.reflection_am ?? '';
+                            this.form.mezmurs = Array.isArray(data.mezmurs) && data.mezmurs.length > 0
+                                ? data.mezmurs.map((m) => ({
+                                    title_en: m.title_en ?? '',
+                                    title_am: m.title_am ?? '',
+                                    url: m.url ?? '',
+                                    description_en: m.description_en ?? '',
+                                    description_am: m.description_am ?? '',
+                                }))
+                                : [{ title_en: '', title_am: '', url: '', description_en: '', description_am: '' }];
+                            this.form.references = Array.isArray(data.references) && data.references.length > 0
+                                ? data.references.map((r) => ({
+                                    name_en: r.name_en ?? '',
+                                    name_am: r.name_am ?? '',
+                                    url: r.url ?? '',
+                                    type: r.type ?? 'website',
+                                }))
+                                : [{ name_en: '', name_am: '', url: '', type: 'website' }];
+                            this.form.books = Array.isArray(data.books) ? data.books.map((b) => ({
+                                title_en: b.title_en ?? '',
+                                title_am: b.title_am ?? '',
+                                url: b.url ?? '',
+                                description_en: b.description_en ?? '',
+                                description_am: b.description_am ?? '',
+                            })) : [];
+                            this.copyNotice = this.messages.copySuccess || 'Day copied.';
+                            this.maxUnlockedStep = this.totalSteps;
+                        } catch (err) {
+                            this.errorMessage = err.message || this.messages.failed || 'Failed';
+                        } finally {
+                            this.isCopying = false;
+                        }
                     },
 
                     canProceed() {

@@ -73,8 +73,9 @@ class DailyContentController extends Controller
         $daily = new DailyContent;
         $initialStep = max(1, min(7, $this->normalizeStep(request())));
         $recentBooks = $this->getRecentBooks(null);
+        $daysWithContent = $this->getDaysWithContent(null);
 
-        return view('admin.daily.form', compact('season', 'themes', 'dayRangesByWeek', 'daily', 'initialStep', 'recentBooks'));
+        return view('admin.daily.form', compact('season', 'themes', 'dayRangesByWeek', 'daily', 'initialStep', 'recentBooks', 'daysWithContent'));
     }
 
     /**
@@ -117,6 +118,81 @@ class DailyContentController extends Controller
             ->with('success', 'Step saved. Continue with the next section.');
     }
 
+    /**
+     * Return full day content for copying into another day.
+     * Used when "Copy from day" is clicked in the create/edit form.
+     */
+    public function copyFrom(int $day_number): JsonResponse
+    {
+        $season = LentSeason::active();
+        if (! $season) {
+            return response()->json(['success' => false, 'message' => 'No active season.'], 404);
+        }
+
+        $source = DailyContent::where('lent_season_id', $season->id)
+            ->where('day_number', $day_number)
+            ->with(['mezmurs', 'books', 'references'])
+            ->first();
+
+        if (! $source) {
+            return response()->json(['success' => false, 'message' => 'Day not found.'], 404);
+        }
+
+        $mezmurs = $source->mezmurs->map(fn ($m) => [
+            'title_en' => $m->title_en ?? '',
+            'title_am' => $m->title_am ?? '',
+            'url' => $m->url ?? '',
+            'description_en' => $m->description_en ?? '',
+            'description_am' => $m->description_am ?? '',
+        ])->values()->toArray();
+
+        $references = $source->references->map(fn ($r) => [
+            'name_en' => $r->name_en ?? '',
+            'name_am' => $r->name_am ?? '',
+            'url' => $r->url ?? '',
+            'type' => $r->type ?? 'website',
+        ])->values()->toArray();
+
+        $books = $source->books->map(fn ($b) => [
+            'title_en' => $b->title_en ?? '',
+            'title_am' => $b->title_am ?? '',
+            'url' => $b->url ?? '',
+            'description_en' => $b->description_en ?? '',
+            'description_am' => $b->description_am ?? '',
+        ])->values()->toArray();
+
+        if (empty($mezmurs)) {
+            $mezmurs = [['title_en' => '', 'title_am' => '', 'url' => '', 'description_en' => '', 'description_am' => '']];
+        }
+        if (empty($references)) {
+            $references = [['name_en' => '', 'name_am' => '', 'url' => '', 'type' => 'website']];
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'day_title_en' => $source->day_title_en ?? '',
+                'day_title_am' => $source->day_title_am ?? '',
+                'bible_reference_en' => $source->bible_reference_en ?? '',
+                'bible_reference_am' => $source->bible_reference_am ?? '',
+                'bible_summary_en' => $source->bible_summary_en ?? '',
+                'bible_summary_am' => $source->bible_summary_am ?? '',
+                'bible_text_en' => $source->bible_text_en ?? '',
+                'bible_text_am' => $source->bible_text_am ?? '',
+                'sinksar_title_en' => $source->sinksar_title_en ?? '',
+                'sinksar_title_am' => $source->sinksar_title_am ?? '',
+                'sinksar_url' => $source->sinksar_url ?? '',
+                'sinksar_description_en' => $source->sinksar_description_en ?? '',
+                'sinksar_description_am' => $source->sinksar_description_am ?? '',
+                'reflection_en' => $source->reflection_en ?? '',
+                'reflection_am' => $source->reflection_am ?? '',
+                'mezmurs' => $mezmurs,
+                'references' => $references,
+                'books' => $books,
+            ],
+        ]);
+    }
+
     public function edit(DailyContent $daily): View
     {
         $daily->load('books');
@@ -125,8 +201,9 @@ class DailyContentController extends Controller
         $dayRangesByWeek = $this->getDayRangesByWeek();
         $initialStep = max(1, min(7, $this->normalizeStep(request())));
         $recentBooks = $this->getRecentBooks($daily->id);
+        $daysWithContent = $this->getDaysWithContent($daily->id);
 
-        return view('admin.daily.form', compact('season', 'themes', 'daily', 'dayRangesByWeek', 'initialStep', 'recentBooks'));
+        return view('admin.daily.form', compact('season', 'themes', 'daily', 'dayRangesByWeek', 'initialStep', 'recentBooks', 'daysWithContent'));
     }
 
     public function update(Request $request, DailyContent $daily): RedirectResponse
@@ -265,6 +342,33 @@ class DailyContentController extends Controller
     }
 
     /**
+     * Days that have content (for copy-from dropdown).
+     * Excludes the given daily ID when editing.
+     *
+     * @return array<int, array{day_number: int, label: string}>
+     */
+    private function getDaysWithContent(?int $excludeDailyId): array
+    {
+        $season = LentSeason::active();
+        if (! $season) {
+            return [];
+        }
+
+        $query = DailyContent::where('lent_season_id', $season->id)
+            ->orderBy('day_number')
+            ->get(['id', 'day_number', 'date']);
+
+        if ($excludeDailyId !== null) {
+            $query = $query->filter(fn ($d) => (int) $d->id !== $excludeDailyId)->values();
+        }
+
+        return $query->map(fn ($d) => [
+            'day_number' => (int) $d->day_number,
+            'label' => sprintf('Day %d (%s)', $d->day_number, $d->date->format('M j')),
+        ])->values()->toArray();
+    }
+
+    /**
      * Recent spiritual books from previous days for quick re-use.
      * Feature: Recommendations from previous days (click to add).
      *
@@ -304,7 +408,7 @@ class DailyContentController extends Controller
                 'day_number' => (int) $row->day_number,
                 'date' => $row->date instanceof \DateTimeInterface ? $row->date->format('Y-m-d') : (string) $row->date,
             ];
-        })->unique(fn (array $b) => trim(($b['title_en'] ?? '') . '|' . ($b['title_am'] ?? '')) . '|' . ($b['url'] ?? ''))->values()->toArray();
+        })->unique(fn (array $b) => trim(($b['title_en'] ?? '').'|'.($b['title_am'] ?? '')).'|'.($b['url'] ?? ''))->values()->toArray();
     }
 
     /**
