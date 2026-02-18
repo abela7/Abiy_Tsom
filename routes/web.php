@@ -129,6 +129,10 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/seo', [Admin\SeoController::class, 'index'])->name('seo.index');
         Route::put('/seo', [Admin\SeoController::class, 'update'])->name('seo.update');
 
+        // Day assignments (assign writers/editors to each day)
+        Route::get('/day-assignments', [Admin\DayAssignmentsController::class, 'index'])->name('day-assignments.index');
+        Route::patch('/day-assignments/{daily}', [Admin\DayAssignmentsController::class, 'update'])->name('day-assignments.update');
+
         // WhatsApp
         Route::get('/whatsapp', fn () => redirect()->route('admin.whatsapp.settings'))->name('whatsapp.index');
         Route::get('/whatsapp/settings', [Admin\WhatsAppSettingsController::class, 'settings'])->name('whatsapp.settings');

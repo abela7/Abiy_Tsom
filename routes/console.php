@@ -11,3 +11,8 @@ Artisan::command('inspire', function () {
 Schedule::command('reminders:send-whatsapp')
     ->everyMinute()
     ->withoutOverlapping();
+
+Schedule::command('reminders:send-writer')
+    ->dailyAt('18:00')
+    ->timezone('Europe/London')
+    ->withoutOverlapping();

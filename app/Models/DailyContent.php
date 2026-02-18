@@ -37,6 +37,7 @@ class DailyContent extends Model
         'is_published',
         'created_by_id',
         'updated_by_id',
+        'assigned_to_id',
     ];
 
     /** @return array<string, string> */
@@ -111,5 +112,13 @@ class DailyContent extends Model
     public function updatedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'updated_by_id');
+    }
+
+    /**
+     * User assigned to prepare this day's content (writer/editor/admin).
+     */
+    public function assignedTo(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_to_id');
     }
 }

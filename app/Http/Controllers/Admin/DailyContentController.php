@@ -59,7 +59,7 @@ class DailyContentController extends Controller
     {
         $season = LentSeason::active();
         $contents = $season
-            ? $season->dailyContents()->with(['weeklyTheme', 'createdBy', 'updatedBy'])->orderBy('day_number')->get()
+            ? $season->dailyContents()->with(['weeklyTheme', 'createdBy', 'updatedBy', 'assignedTo'])->orderBy('day_number')->get()
             : collect();
 
         return view('admin.daily.index', compact('season', 'contents'));

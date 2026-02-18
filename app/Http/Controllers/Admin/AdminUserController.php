@@ -47,9 +47,11 @@ class AdminUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:64', 'unique:users,username'],
             'email' => ['nullable', 'email', 'max:255'],
+            'whatsapp_phone' => ['nullable', 'string', 'max:20'],
             'password' => ['required', 'confirmed', Password::defaults()],
             'role' => ['required', 'in:admin,editor,writer'],
         ]);
+        $data['whatsapp_phone'] = $data['whatsapp_phone'] ? normalizeUkWhatsAppPhone($data['whatsapp_phone']) : null;
 
         $data['password'] = Hash::make($data['password']);
         unset($data['password_confirmation']);
@@ -92,6 +94,7 @@ class AdminUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:64', 'unique:users,username,' . $admin->id],
             'email' => ['nullable', 'email', 'max:255'],
+            'whatsapp_phone' => ['nullable', 'string', 'max:20'],
             'role' => ['required', 'in:admin,editor,writer'],
         ];
 
@@ -100,6 +103,9 @@ class AdminUserController extends Controller
         }
 
         $data = $request->validate($rules);
+        $data['whatsapp_phone'] = ! empty($data['whatsapp_phone'])
+            ? normalizeUkWhatsAppPhone($data['whatsapp_phone'])
+            : null;
 
         if ($request->filled('password')) {
             $data['password'] = Hash::make($data['password']);

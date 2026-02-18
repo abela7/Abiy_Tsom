@@ -34,6 +34,15 @@
         </div>
 
         <div>
+            <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.admin_whatsapp_phone') }}</label>
+            <input type="tel" name="whatsapp_phone" value="{{ old('whatsapp_phone', $user->whatsapp_phone ?? '') }}"
+                   placeholder="07123456789"
+                   class="w-full px-3 py-2 border border-border rounded-lg bg-card text-primary focus:ring-2 focus:ring-accent outline-none">
+            <p class="text-xs text-muted-text mt-1">{{ __('app.admin_whatsapp_phone_help') }}</p>
+            @error('whatsapp_phone')<p class="text-error text-xs mt-1">{{ $message }}</p>@enderror
+        </div>
+
+        <div>
             <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.password') }}</label>
             <input type="password" name="password" {{ $user ? '' : 'required' }}
                    autocomplete="{{ $user ? 'new-password' : 'new-password' }}"

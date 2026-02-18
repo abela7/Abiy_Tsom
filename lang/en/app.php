@@ -403,7 +403,22 @@ return [
     'admin_created' => 'Admin created.',
     'admin_updated' => 'Admin updated.',
     'admin_deleted' => 'Admin deleted.',
+    'admin_whatsapp_phone' => 'WhatsApp (for writer reminders)',
+    'admin_whatsapp_phone_help' => 'Used to remind this writer when they are assigned to prepare content. UK mobile format (e.g. 07123456789).',
     'confirm_delete_admin' => 'Delete this admin?',
+
+    // Day assignments
+    'day_assignments' => 'Day Assignments',
+    'day_assignments_help' => 'Assign a writer, editor, or admin to prepare each day\'s content. They will receive a WhatsApp reminder the evening before their day.',
+    'day_assignments_scaffold_first' => 'Scaffold the 55 days first from',
+    'assigned_writer' => 'Assigned To',
+    'not_assigned' => 'Not assigned',
+    'no_whatsapp' => 'No WhatsApp',
+    'day_assignments_reminder_note' => 'Assigned writers receive a WhatsApp reminder at 6pm London time the day before their scheduled day.',
+
+    // Writer reminder WhatsApp message
+    'writer_reminder_message' => 'Hi :name, you are assigned to prepare tomorrow\'s content (Day :day, :date). Please be ready.',
+
     'confirm_delete_activity' => 'Delete this activity?',
     'edit_activity' => 'Edit Activity',
     'create_activity' => 'Create Activity',

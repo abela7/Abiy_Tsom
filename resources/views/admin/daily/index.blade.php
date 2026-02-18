@@ -6,6 +6,7 @@
     <h1 class="text-2xl font-bold text-primary">{{ __('app.daily_content') }}</h1>
     @if($season)
         <div class="flex gap-2">
+            <a href="{{ route('admin.day-assignments.index') }}" class="px-4 py-2 bg-muted text-secondary rounded-lg text-sm font-medium hover:bg-border transition">{{ __('app.day_assignments') }}</a>
             <form method="POST" action="{{ route('admin.daily.scaffold') }}" class="inline" onsubmit="return confirm('{{ __('app.scaffold_confirm') }}');">
                 @csrf
                 <button type="submit" class="px-4 py-2 bg-muted text-secondary rounded-lg text-sm font-medium hover:bg-border transition">{{ __('app.scaffold_55_days') }}</button>
@@ -46,7 +47,8 @@
                             </span>
                         </td>
                         <td class="px-4 py-3 text-xs text-secondary">
-                            <div>{{ __('app.created_by') }}: {{ optional($content->createdBy)->name ?: '-' }}</div>
+                            <div>{{ __('app.assigned_writer') }}: {{ optional($content->assignedTo)->name ?: '-' }}</div>
+                            <div class="text-muted-text">{{ __('app.created_by') }}: {{ optional($content->createdBy)->name ?: '-' }}</div>
                             <div class="text-muted-text">{{ __('app.updated_by') }}: {{ optional($content->updatedBy)->name ?: '-' }}</div>
                         </td>
                         <td class="px-4 py-3">
