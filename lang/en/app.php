@@ -415,7 +415,7 @@ return [
     'assigned_writer' => 'Assigned To',
     'not_assigned' => 'Not assigned',
     'no_whatsapp' => 'No WhatsApp',
-    'day_assignments_reminder_note' => 'Assigned writers receive a WhatsApp reminder at 6pm London time the day before their scheduled day.',
+    'day_assignments_reminder_note' => 'Assigned writers receive a WhatsApp reminder at 5pm London time the day before their scheduled day.',
     'send_writer_reminder' => 'Send reminder now',
     'writer_reminder_sent' => 'Reminder sent to the writer assigned for tomorrow.',
     'writer_reminder_send_failed' => 'Could not send reminder. UltraMsg failed.',

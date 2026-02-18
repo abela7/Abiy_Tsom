@@ -13,6 +13,6 @@ Schedule::command('reminders:send-whatsapp')
     ->withoutOverlapping();
 
 Schedule::command('reminders:send-writer')
-    ->dailyAt('18:00')
+    ->dailyAt('17:00')
     ->timezone('Europe/London')
     ->withoutOverlapping();
