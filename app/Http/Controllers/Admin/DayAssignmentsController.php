@@ -63,11 +63,11 @@ class DayAssignmentsController extends Controller
     }
 
     /**
-     * Manually send the writer reminder (to whoever is assigned to tomorrow).
+     * Send reminder for a specific day to its assigned writer.
      */
-    public function sendReminder(WriterReminderService $writerReminderService): JsonResponse
+    public function sendReminder(WriterReminderService $writerReminderService, DailyContent $daily): JsonResponse
     {
-        $result = $writerReminderService->sendReminderForTomorrow(dryRun: false);
+        $result = $writerReminderService->sendReminderForDay($daily, dryRun: false);
 
         return response()->json([
             'success' => $result['sent'],

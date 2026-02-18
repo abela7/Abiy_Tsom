@@ -10,7 +10,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Lang;
 
 /**
- * Send WhatsApp reminders to writers assigned to prepare tomorrow's content.
+ * Send WhatsApp reminders to writers assigned to prepare content.
  */
 final class WriterReminderService
 {
@@ -19,7 +19,60 @@ final class WriterReminderService
     ) {}
 
     /**
-     * Attempt to send reminder. Returns result array:
+     * Send reminder for a specific day to its assigned writer.
+     * Returns: ['sent' => bool, 'message' => string]
+     */
+    public function sendReminderForDay(DailyContent $daily, bool $dryRun = false): array
+    {
+        if (! $this->ultraMsgService->isConfigured()) {
+            return [
+                'sent' => false,
+                'message' => __('app.writer_reminder_ultramsg_not_configured'),
+            ];
+        }
+
+        if (! $daily->assigned_to_id) {
+            return [
+                'sent' => false,
+                'message' => __('app.writer_reminder_no_assignment'),
+            ];
+        }
+
+        $assignee = $daily->assignedTo;
+        if (empty($assignee->whatsapp_phone)) {
+            return [
+                'sent' => false,
+                'message' => __('app.writer_reminder_no_whatsapp', ['name' => $assignee->name]),
+            ];
+        }
+
+        $dateStr = $daily->date->format('d/m/Y');
+
+        $message = __('app.writer_reminder_for_day_message', [
+            'name' => $assignee->name,
+            'day' => $daily->day_number,
+            'date' => $dateStr,
+        ]);
+
+        if ($dryRun) {
+            return [
+                'sent' => false,
+                'message' => __('app.writer_reminder_dry_run', ['name' => $assignee->name]),
+            ];
+        }
+
+        $sent = $this->ultraMsgService->sendTextMessage($assignee->whatsapp_phone, $message);
+
+        return [
+            'sent' => $sent,
+            'message' => $sent
+                ? __('app.writer_reminder_sent')
+                : __('app.writer_reminder_send_failed'),
+        ];
+    }
+
+    /**
+     * Attempt to send reminder for tomorrow. Returns result array:
      * - sent: bool
      * - message: string (user-facing)
      * - assignee_name: ?string

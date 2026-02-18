@@ -132,7 +132,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         // Day assignments (assign writers/editors to each day)
         Route::get('/day-assignments', [Admin\DayAssignmentsController::class, 'index'])->name('day-assignments.index');
         Route::patch('/day-assignments/{daily}', [Admin\DayAssignmentsController::class, 'update'])->name('day-assignments.update');
-        Route::post('/day-assignments/send-reminder', [Admin\DayAssignmentsController::class, 'sendReminder'])->name('day-assignments.send-reminder');
+        Route::post('/day-assignments/{daily}/send-reminder', [Admin\DayAssignmentsController::class, 'sendReminder'])->name('day-assignments.send-reminder');
 
         // WhatsApp
         Route::get('/whatsapp', fn () => redirect()->route('admin.whatsapp.settings'))->name('whatsapp.index');

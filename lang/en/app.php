@@ -22,6 +22,7 @@ return [
     'search' => 'Search',
     'close' => 'Close',
     'submit' => 'Submit',
+    'send' => 'Send',
     'confirm' => 'Confirm',
 
     // Onboarding
@@ -425,8 +426,9 @@ return [
     'writer_reminder_dry_run' => 'Would send to :name (dry run).',
     'sending' => 'Sending',
 
-    // Writer reminder WhatsApp message
+    // Writer reminder WhatsApp messages
     'writer_reminder_message' => 'Hi :name, you are assigned to prepare tomorrow\'s content (Day :day, :date). Please be ready.',
+    'writer_reminder_for_day_message' => 'Hi :name, you are assigned for :date (Day :day). Please be ready to prepare the content.',
 
     'confirm_delete_activity' => 'Delete this activity?',
     'edit_activity' => 'Edit Activity',

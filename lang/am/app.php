@@ -26,6 +26,7 @@ return [
     'search' => 'ፈልግ',
     'close' => 'ዝጋ',
     'submit' => 'አስገባ',
+    'send' => 'Send',
     'confirm' => 'ያረጋግጡ',
 
     // Onboarding
@@ -425,6 +426,7 @@ return [
     'writer_reminder_dry_run' => 'Would send to :name (dry run).',
     'sending' => 'Sending',
     'writer_reminder_message' => 'Hi :name, you are assigned to prepare tomorrow\'s content (Day :day, :date). Please be ready.',
+    'writer_reminder_for_day_message' => 'Hi :name, you are assigned for :date (Day :day). Please be ready to prepare the content.',
     'confirm_delete_admin' => 'ይህ አስተዳዳሪ ይሰረዝ?',
     'confirm_delete_activity' => 'ይህን እንቅስቃሴ ይሰረዝ?',
     'edit_activity' => 'እንቅስቃሴ አርትዕ',
