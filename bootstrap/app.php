@@ -16,7 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // Redirect unauthenticated users to admin login (route 'login' does not exist)
         $middleware->redirectGuestsTo('/admin/login');
-        $middleware->redirectAuthenticatedUsersTo('/admin/dashboard');
+        $middleware->redirectUsersTo('/admin/dashboard');
 
         // Applied to every web request
         $middleware->web(append: [
