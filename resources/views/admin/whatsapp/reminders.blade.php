@@ -208,7 +208,7 @@ function reminderActions() {
             this.editId = id;
             this.editBaptismName = baptismName || '';
             this.editPhone = phone || '';
-            this.editTime = time || '09:00';
+            this.editTime = time || '18:00';
             this.editOpen = true;
         }
     };

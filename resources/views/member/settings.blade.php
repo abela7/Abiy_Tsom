@@ -547,7 +547,7 @@ function settingsPage() {
         // WhatsApp reminder state
         waEnabled: {{ ($member?->whatsapp_reminder_enabled ?? false) ? 'true' : 'false' }},
         waPhone: '{{ addslashes($member?->whatsapp_phone ?? '') }}',
-        waTime: '{{ $member?->whatsapp_reminder_time ? substr($member->whatsapp_reminder_time, 0, 5) : '' }}',
+        waTime: '{{ $member?->whatsapp_reminder_time ? substr($member->whatsapp_reminder_time, 0, 5) : '18:00' }}',
         waLang: '{{ $member?->whatsapp_language ?? 'en' }}',
         waStatus: '{{ $member?->whatsapp_confirmation_status ?? 'none' }}',
         waSaving: false,

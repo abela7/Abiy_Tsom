@@ -258,7 +258,7 @@ function onboarding() {
         wantsWhatsApp: false,
         phone: '',
         whatsappLang: 'en',
-        reminderTime: '',
+        reminderTime: '18:00',
         hasToken: false,
         isLoading: false,
         errorMessage: '',
