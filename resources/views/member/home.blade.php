@@ -158,6 +158,10 @@
             {{-- Card stack container (top padding for cards peeking above) --}}
             <div class="relative w-full pt-5" :style="'height: ' + containerHeight + 'px'">
                 @foreach($announcements as $index => $announcement)
+                @php
+                    $announcementTitle = $announcement->titleForLocale();
+                    $announcementDescription = $announcement->descriptionForLocale();
+                @endphp
                 <article class="carousel-card absolute top-0 left-0 w-full rounded-2xl shadow-lg border border-border overflow-hidden transition-all duration-500 ease-out"
                          :class="getCardClasses({{ $index }})"
                          :style="getCardStyles({{ $index }})"
@@ -191,11 +195,11 @@
                         @endif
                         <div class="p-4 sm:p-5">
                             <h3 class="text-lg sm:text-xl font-bold text-primary group-hover:text-accent transition">
-                                {{ $announcement->title }}
+                                {{ $announcementTitle }}
                             </h3>
-                            @if($announcement->description)
+                            @if($announcementDescription)
                                 <p class="mt-2 text-sm text-secondary leading-relaxed line-clamp-2 sm:line-clamp-3">
-                                    {{ $announcement->description }}
+                                    {{ $announcementDescription }}
                                 </p>
                                 <span class="mt-3 text-accent font-semibold text-sm inline-flex items-center gap-1 group-hover:gap-2 transition-all">
                                     {{ __('app.read_more') }}

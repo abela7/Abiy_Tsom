@@ -37,11 +37,14 @@ class AnnouncementController extends Controller
         $validated = $request->validate([
             'photo' => ['nullable', 'image', 'max:2048'],
             'title' => ['required', 'string', 'max:255'],
+            'title_en' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:5000'],
+            'description_en' => ['nullable', 'string', 'max:5000'],
             'youtube_url' => ['nullable', 'string', 'max:500'],
             'youtube_position' => ['nullable', 'string', 'in:top,end'],
             'button_enabled' => ['boolean'],
             'button_label' => ['nullable', 'required_if:button_enabled,true', 'string', 'max:100'],
+            'button_label_en' => ['nullable', 'string', 'max:100'],
             'button_url' => ['nullable', 'required_if:button_enabled,true', 'string', 'max:500'],
         ]);
 
@@ -71,11 +74,14 @@ class AnnouncementController extends Controller
         $validated = $request->validate([
             'photo' => ['nullable', 'image', 'max:2048'],
             'title' => ['required', 'string', 'max:255'],
+            'title_en' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:5000'],
+            'description_en' => ['nullable', 'string', 'max:5000'],
             'youtube_url' => ['nullable', 'string', 'max:500'],
             'youtube_position' => ['nullable', 'string', 'in:top,end'],
             'button_enabled' => ['boolean'],
             'button_label' => ['nullable', 'required_if:button_enabled,true', 'string', 'max:100'],
+            'button_label_en' => ['nullable', 'string', 'max:100'],
             'button_url' => ['nullable', 'required_if:button_enabled,true', 'string', 'max:500'],
         ]);
 

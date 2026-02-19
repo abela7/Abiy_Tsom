@@ -31,17 +31,32 @@
 
         {{-- Title --}}
         <div class="bg-card rounded-xl p-4 shadow-sm border border-border">
-            <label for="title" class="block text-sm font-medium text-secondary mb-2">{{ __('app.title_label') }} *</label>
+            <label for="title" class="block text-sm font-medium text-secondary mb-2">{{ __('app.title_label') }} ({{ __('app.amharic') }}) *</label>
             <input type="text" name="title" id="title" value="{{ old('title', $announcement->title) }}"
                    required maxlength="255"
                    class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none bg-card text-primary">
         </div>
 
+        <div class="bg-card rounded-xl p-4 shadow-sm border border-border">
+            <label for="title_en" class="block text-sm font-medium text-secondary mb-2">{{ __('app.title_label') }} ({{ __('app.english') }})</label>
+            <input type="text" name="title_en" id="title_en" value="{{ old('title_en', $announcement->title_en ?? '') }}"
+                   maxlength="255" placeholder="{{ __('app.english_fallback') }}"
+                   class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none bg-card text-primary">
+            <p class="mt-1 text-xs text-muted-text">{{ __('app.shown_when_english') }}</p>
+        </div>
+
         {{-- Description --}}
         <div class="bg-card rounded-xl p-4 shadow-sm border border-border">
-            <label for="description" class="block text-sm font-medium text-secondary mb-2">{{ __('app.description_label') }}</label>
+            <label for="description" class="block text-sm font-medium text-secondary mb-2">{{ __('app.description_label') }} ({{ __('app.amharic') }})</label>
             <textarea name="description" id="description" rows="5" maxlength="5000"
                       class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none bg-card text-primary">{{ old('description', $announcement->description) }}</textarea>
+        </div>
+
+        <div class="bg-card rounded-xl p-4 shadow-sm border border-border">
+            <label for="description_en" class="block text-sm font-medium text-secondary mb-2">{{ __('app.description_label') }} ({{ __('app.english') }})</label>
+            <textarea name="description_en" id="description_en" rows="5" maxlength="5000"
+                      placeholder="{{ __('app.shown_when_english') }}"
+                      class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none bg-card text-primary">{{ old('description_en', $announcement->description_en ?? '') }}</textarea>
         </div>
 
         {{-- YouTube video (optional) --}}
@@ -80,13 +95,21 @@
                 <span class="text-sm font-medium text-secondary">{{ __('app.show_action_button') }}</span>
             </label>
 
-            <div x-show="buttonEnabled" x-transition class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div x-show="buttonEnabled" x-transition class="mt-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                 <div>
                     <label for="button_label" class="block text-sm font-medium text-secondary mb-1">{{ __('app.button_label') }}</label>
                     <input type="text" name="button_label" id="button_label" value="{{ old('button_label', $announcement->button_label) }}"
                            maxlength="100"
                            class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none bg-card text-primary"
                            placeholder="{{ __('app.button_label_placeholder') }}">
+                </div>
+                <div>
+                    <label for="button_label_en" class="block text-sm font-medium text-secondary mb-1">{{ __('app.button_label') }} ({{ __('app.english') }})</label>
+                    <input type="text" name="button_label_en" id="button_label_en" value="{{ old('button_label_en', $announcement->button_label_en ?? '') }}"
+                           maxlength="100"
+                           class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none bg-card text-primary"
+                           placeholder="{{ __('app.button_label_placeholder') }}">
+                    <p class="mt-1 text-xs text-muted-text">{{ __('app.shown_when_english') }}</p>
                 </div>
                 <div>
                     <label for="button_url" class="block text-sm font-medium text-secondary mb-1">{{ __('app.button_url') }}</label>

@@ -1,6 +1,6 @@
 @extends('layouts.member')
 
-@section('title', $announcement->title . ' - ' . __('app.app_name'))
+@section('title', $announcement->titleForLocale() . ' - ' . __('app.app_name'))
 
 @section('content')
 @php
@@ -33,7 +33,7 @@
     <div class="max-w-2xl mx-auto px-4 py-6 sm:py-8">
         <header class="mb-6">
             <h1 class="text-2xl sm:text-3xl font-bold text-primary leading-tight tracking-tight">
-                {{ $announcement->title }}
+                {{ $announcement->titleForLocale() }}
             </h1>
             <p class="mt-2 text-sm text-muted-text">
                 {{ $announcement->created_at->locale('en')->translatedFormat('l, F j, Y') }}
@@ -44,9 +44,9 @@
             @include('member.announcement._youtube-embed', ['announcement' => $announcement])
         @endif
 
-        @if($announcement->description)
+        @if($announcement->descriptionForLocale())
             <div class="prose prose-sm sm:prose max-w-none">
-                <div class="text-secondary leading-relaxed whitespace-pre-wrap">{{ $announcement->description }}</div>
+                <div class="text-secondary leading-relaxed whitespace-pre-wrap">{{ $announcement->descriptionForLocale() }}</div>
             </div>
         @endif
 
@@ -58,7 +58,7 @@
             <div class="mt-8 pt-6 border-t border-border">
                 <a href="{{ $announcement->button_url }}" target="_blank" rel="noopener noreferrer"
                    class="inline-flex items-center gap-2 px-6 py-3 bg-accent text-on-accent rounded-xl text-sm font-semibold hover:bg-accent-hover transition active:scale-95">
-                    {{ $announcement->button_label }}
+                    {{ $announcement->buttonLabelForLocale() }}
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
                     </svg>

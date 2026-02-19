@@ -17,10 +17,13 @@ class Announcement extends Model
     protected $fillable = [
         'photo',
         'title',
+        'title_en',
         'description',
+        'description_en',
         'youtube_url',
         'youtube_position',
         'button_label',
+        'button_label_en',
         'button_url',
         'button_enabled',
         'created_by_id',
@@ -57,10 +60,54 @@ class Announcement extends Model
      * Whether this announcement has an action button.
      */
     public function hasButton(): bool
+    public function hasButton(?string $locale = null): bool
     {
+        $buttonLabel = $this->buttonLabelForLocale($locale);
+
         return $this->button_enabled
-            && ! empty(trim((string) $this->button_label))
+            && ! empty(trim((string) $buttonLabel))
             && ! empty(trim((string) $this->button_url));
+    }
+
+    /**
+     * Localized title for current locale (falls back to legacy title).
+     */
+    public function titleForLocale(?string $locale = null): ?string
+    {
+        return $this->localizedField($locale, $this->title_en, $this->title);
+    }
+
+    /**
+     * Localized description for current locale (falls back to legacy description).
+     */
+    public function descriptionForLocale(?string $locale = null): ?string
+    {
+        return $this->localizedField($locale, $this->description_en, $this->description);
+    }
+
+    /**
+     * Localized button label for current locale (falls back to legacy label).
+     */
+    public function buttonLabelForLocale(?string $locale = null): ?string
+    {
+        return $this->localizedField($locale, $this->button_label_en, $this->button_label);
+    }
+
+    /**
+     * Return locale-aware text with fallback to legacy value.
+     */
+    private function localizedField(?string $locale, ?string $enValue, ?string $fallbackValue): ?string
+    {
+        $locale = $locale ?? app()->getLocale();
+        if ($locale === 'en' && is_string($enValue) && trim($enValue) !== '') {
+            return $enValue;
+        }
+
+        if (is_string($fallbackValue) && trim($fallbackValue) !== '') {
+            return $fallbackValue;
+        }
+
+        return null;
     }
 
     /**

@@ -34,7 +34,7 @@
                             </div>
                         @endif
                     </td>
-                    <td class="px-4 py-3 font-medium text-primary">{{ $announcement->title }}</td>
+                    <td class="px-4 py-3 font-medium text-primary">{{ $announcement->titleForLocale() }}</td>
                     <td class="px-4 py-3 text-muted-text">{{ $announcement->created_at->format('M d, Y') }}</td>
                     <td class="px-4 py-3 flex gap-3">
                         <a href="{{ route('admin.announcements.edit', $announcement) }}" class="text-accent hover:underline">{{ __('app.edit') }}</a>

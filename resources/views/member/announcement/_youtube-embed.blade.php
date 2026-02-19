@@ -6,7 +6,7 @@
     <div class="aspect-video w-full rounded-xl overflow-hidden bg-muted shadow-lg">
         <iframe
             src="https://www.youtube.com/embed/{{ $videoId }}"
-            title="{{ $announcement->title }}"
+            title="{{ $announcement->titleForLocale() }}"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowfullscreen
             class="w-full h-full"
