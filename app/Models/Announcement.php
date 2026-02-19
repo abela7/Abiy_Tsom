@@ -28,6 +28,7 @@ class Announcement extends Model
         'button_label',
         'button_label_en',
         'button_url',
+        'button_url_en',
         'button_enabled',
         'created_by_id',
         'updated_by_id',
@@ -61,10 +62,11 @@ class Announcement extends Model
     public function hasButton(?string $locale = null): bool
     {
         $buttonLabel = $this->buttonLabelForLocale($locale);
+        $buttonUrl = $this->buttonUrlForLocale($locale);
 
         return $this->button_enabled
             && ! empty(trim((string) $buttonLabel))
-            && ! empty(trim((string) $this->button_url));
+            && ! empty(trim((string) $buttonUrl));
     }
 
     /**
@@ -89,6 +91,14 @@ class Announcement extends Model
     public function buttonLabelForLocale(?string $locale = null): ?string
     {
         return $this->localizedField($locale, $this->button_label_en, $this->button_label);
+    }
+
+    /**
+     * Localized button URL for current locale (falls back to legacy url).
+     */
+    public function buttonUrlForLocale(?string $locale = null): ?string
+    {
+        return $this->localizedField($locale, $this->button_url_en, $this->button_url);
     }
 
     /**

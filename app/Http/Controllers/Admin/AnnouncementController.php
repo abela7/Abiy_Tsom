@@ -49,6 +49,7 @@ class AnnouncementController extends Controller
             'button_label' => ['nullable', 'required_if:button_enabled,true', 'string', 'max:100'],
             'button_label_en' => ['nullable', 'string', 'max:100'],
             'button_url' => ['nullable', 'required_if:button_enabled,true', 'string', 'max:500'],
+            'button_url_en' => ['nullable', 'string', 'max:500'],
         ]);
 
         $validated['button_enabled'] = $request->boolean('button_enabled');
@@ -93,6 +94,7 @@ class AnnouncementController extends Controller
             'button_label' => ['nullable', 'required_if:button_enabled,true', 'string', 'max:100'],
             'button_label_en' => ['nullable', 'string', 'max:100'],
             'button_url' => ['nullable', 'required_if:button_enabled,true', 'string', 'max:500'],
+            'button_url_en' => ['nullable', 'string', 'max:500'],
         ]);
 
         $validated['button_enabled'] = $request->boolean('button_enabled');

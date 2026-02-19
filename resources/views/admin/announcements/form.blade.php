@@ -170,6 +170,14 @@
                            class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none bg-card text-primary"
                            placeholder="{{ __('app.url_placeholder') }}">
                 </div>
+                <div>
+                    <label for="button_url_en" class="block text-sm font-medium text-secondary mb-1">{{ __('app.button_url') }} ({{ __('app.english') }})</label>
+                    <input type="url" name="button_url_en" id="button_url_en" value="{{ old('button_url_en', $announcement->button_url_en ?? '') }}"
+                           maxlength="500"
+                           class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none bg-card text-primary"
+                           placeholder="{{ __('app.url_placeholder') }}">
+                    <p class="mt-1 text-xs text-muted-text">{{ __('app.shown_when_english') }}</p>
+                </div>
             </div>
         </div>
 

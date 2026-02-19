@@ -58,7 +58,7 @@
 
         @if($announcement->hasButton())
             <div class="mt-8 pt-6 border-t border-border">
-                <a href="{{ $announcement->button_url }}" target="_blank" rel="noopener noreferrer"
+                <a href="{{ $announcement->buttonUrlForLocale() }}" target="_blank" rel="noopener noreferrer"
                    class="inline-flex items-center gap-2 px-6 py-3 bg-accent text-on-accent rounded-xl text-sm font-semibold hover:bg-accent-hover transition active:scale-95">
                     {{ $announcement->buttonLabelForLocale() }}
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -81,4 +81,3 @@
     </div>
 </article>
 @endsection
-
