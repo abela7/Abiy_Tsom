@@ -378,38 +378,24 @@
 
                 {{-- Step 4: Sinksar --}}
                 <section x-show="step === 4" x-cloak class="space-y-5">
-                    <div class="space-y-3">
-                        <label class="block text-sm font-medium text-secondary">{{ __('app.title_label') }}</label>
-                        <div class="space-y-2 rounded-lg bg-sinksar/8 border border-sinksar/25 p-3">
-                            <p class="text-xs font-semibold text-sinksar">{{ __('app.amharic') }}</p>
-                            <input type="text" x-model="form.sinksar_title_am" placeholder="{{ __('app.amharic') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
-                        </div>
-                        <div class="space-y-2 rounded-lg bg-sinksar/8 border border-sinksar/25 p-3">
-                            <p class="text-xs font-semibold text-sinksar">{{ __('app.english') }}</p>
-                            <input type="text" x-model="form.sinksar_title_en" placeholder="{{ __('app.english') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
-                        </div>
+                    <div class="space-y-4 rounded-xl border border-sinksar/30 bg-sinksar/5 p-3">
+                        <p class="text-xs font-semibold text-sinksar mb-2">{{ __('app.amharic') }}</p>
+                        <label class="block text-sm font-medium text-secondary mb-1.5">{{ __('app.title_label') }}</label>
+                        <input type="text" x-model="form.sinksar_title_am" placeholder="{{ __('app.name_amharic_label') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                        <label class="block text-sm font-medium text-secondary mt-3 mb-1.5">{{ __('app.url_video_label') }}</label>
+                        <input type="url" x-model="form.sinksar_url_am" placeholder="{{ __('app.youtube_url_placeholder') }} ({{ __('app.amharic') }})" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                        <label class="block text-sm font-medium text-secondary mt-3 mb-1.5">{{ __('app.description_label') }}</label>
+                        <textarea x-model="form.sinksar_description_am" rows="3" placeholder="{{ __('app.description_label') }} ({{ __('app.amharic') }})" class="w-full min-h-[5rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
                     </div>
-                    <div class="space-y-3">
-                        <label class="block text-sm font-medium text-secondary mb-1.5">{{ __('app.url_video_label') }}</label>
-                        <div class="space-y-2 rounded-lg bg-sinksar/8 border border-sinksar/25 p-3">
-                            <p class="text-xs font-semibold text-sinksar">{{ __('app.amharic') }}</p>
-                            <input type="url" x-model="form.sinksar_url_am" placeholder="{{ __('app.youtube_url_placeholder') }} ({{ __('app.amharic') }})" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
-                        </div>
-                        <div class="space-y-2 rounded-lg bg-sinksar/8 border border-sinksar/25 p-3">
-                            <p class="text-xs font-semibold text-sinksar">{{ __('app.english') }}</p>
-                            <input type="url" x-model="form.sinksar_url_en" placeholder="{{ __('app.youtube_url_placeholder') }} ({{ __('app.english') }})" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
-                        </div>
-                    </div>
-                    <div class="space-y-3">
-                        <label class="block text-sm font-medium text-secondary">{{ __('app.description_label') }}</label>
-                        <div class="space-y-2 rounded-lg bg-sinksar/8 border border-sinksar/25 p-3">
-                            <p class="text-xs font-semibold text-sinksar">{{ __('app.amharic') }}</p>
-                            <textarea x-model="form.sinksar_description_am" rows="3" placeholder="{{ __('app.amharic') }}" class="w-full min-h-[5rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
-                        </div>
-                        <div class="space-y-2 rounded-lg bg-sinksar/8 border border-sinksar/25 p-3">
-                            <p class="text-xs font-semibold text-sinksar">{{ __('app.english') }}</p>
-                            <textarea x-model="form.sinksar_description_en" rows="3" placeholder="{{ __('app.english') }}" class="w-full min-h-[5rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
-                        </div>
+
+                    <div class="space-y-4 rounded-xl border border-sinksar/30 bg-sinksar/5 p-3">
+                        <p class="text-xs font-semibold text-sinksar mb-2">{{ __('app.english') }}</p>
+                        <label class="block text-sm font-medium text-secondary mb-1.5">{{ __('app.title_label') }}</label>
+                        <input type="text" x-model="form.sinksar_title_en" placeholder="{{ __('app.name_english_label') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                        <label class="block text-sm font-medium text-secondary mt-3 mb-1.5">{{ __('app.url_video_label') }}</label>
+                        <input type="url" x-model="form.sinksar_url_en" placeholder="{{ __('app.youtube_url_placeholder') }} ({{ __('app.english') }})" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                        <label class="block text-sm font-medium text-secondary mt-3 mb-1.5">{{ __('app.description_label') }}</label>
+                        <textarea x-model="form.sinksar_description_en" rows="3" placeholder="{{ __('app.description_label') }} ({{ __('app.english') }})" class="w-full min-h-[5rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
                     </div>
                 </section>
 
