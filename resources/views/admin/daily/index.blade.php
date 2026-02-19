@@ -10,14 +10,6 @@
                class="px-3.5 py-2 bg-muted text-secondary rounded-lg text-sm font-medium hover:bg-border transition whitespace-nowrap">
                 {{ __('app.day_assignments') }}
             </a>
-            <form method="POST" action="{{ route('admin.daily.scaffold') }}" class="inline"
-                  onsubmit="return confirm('{{ __('app.scaffold_confirm') }}');">
-                @csrf
-                <button type="submit"
-                        class="px-3.5 py-2 bg-muted text-secondary rounded-lg text-sm font-medium hover:bg-border transition whitespace-nowrap">
-                    {{ __('app.scaffold_55_days') }}
-                </button>
-            </form>
             <a href="{{ route('admin.daily.create') }}"
                class="px-3.5 py-2 bg-accent text-on-accent rounded-lg text-sm font-medium hover:bg-accent-hover transition whitespace-nowrap">
                 + {{ __('app.create') }}
@@ -101,14 +93,10 @@
                     </div>
 
                     {{-- Details grid --}}
-                    <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
+                    <div class="grid grid-cols-1 gap-x-4 gap-y-1.5 text-xs">
                         <div>
                             <span class="text-muted-text">{{ __('app.week_label') }}:</span>
                             <span class="text-secondary font-medium ml-1">{{ $content->weeklyTheme ? (localized($content->weeklyTheme, 'name') ?? '-') : '-' }}</span>
-                        </div>
-                        <div>
-                            <span class="text-muted-text">{{ __('app.bible') }}:</span>
-                            <span class="text-secondary font-medium ml-1">{{ localized($content, 'bible_reference') ?? '-' }}</span>
                         </div>
                     </div>
 
