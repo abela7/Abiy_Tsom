@@ -331,7 +331,7 @@
                            @change="toggleChecklist({{ $daily->id }}, {{ $activity->id }}, checked); $dispatch('checklist-updated')"
                            class="w-5 h-5 rounded-md border-2 border-border accent-success focus:ring-2 focus:ring-success focus:ring-offset-0">
                     <span class="text-sm font-semibold" :class="checked ? 'line-through text-muted-text' : 'text-primary'">
-                        {{ $activity->name }}
+                        {{ localized($activity, 'name') }}
                     </span>
                 </label>
             @endforeach

@@ -26,7 +26,7 @@
                 @forelse($activities as $activity)
                     <tr class="hover:bg-muted">
                         <td class="px-4 py-3 text-secondary">{{ $activity->sort_order }}</td>
-                        <td class="px-4 py-3 font-medium">{{ $activity->name }}</td>
+                        <td class="px-4 py-3 font-medium">{{ localized($activity, 'name') }}</td>
                         <td class="px-4 py-3">
                             <span class="px-2 py-0.5 rounded-full text-xs font-medium {{ $activity->is_active ? 'bg-success-bg text-success' : 'bg-muted text-muted-text' }}">
                                 {{ $activity->is_active ? __('app.active') : __('app.inactive') }}

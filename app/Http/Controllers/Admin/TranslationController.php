@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Activity;
 use App\Models\Translation;
 use Database\Seeders\TranslationSeeder;
 use Illuminate\Http\RedirectResponse;
@@ -41,6 +42,7 @@ class TranslationController extends Controller
                 'admin_login' => __('app.group_admin_login'),
                 'admin_dashboard' => __('app.group_admin_dashboard'),
                 'admin_daily' => __('app.group_admin_daily'),
+                'admin_activities' => __('app.group_activities'),
                 'admin_other' => __('app.group_admin_other'),
                 'admin_translations' => __('app.group_admin_translations'),
             ],
@@ -76,20 +78,34 @@ class TranslationController extends Controller
             $group = array_key_first($sections[$section]) ?? 'onboarding';
         }
 
-        // Get English strings for this group
-        $enStrings = Translation::where('locale', 'en')
-            ->where('group', $group)
-            ->orderBy('key')
-            ->get()
-            ->keyBy('key');
+        $isActivityTranslationGroup = $group === 'admin_activities';
+        $activities = collect();
 
-        // Get Amharic translations
-        $amStrings = Translation::where('locale', 'am')
-            ->where('group', $group)
-            ->get()
-            ->keyBy('key');
+        if ($isActivityTranslationGroup) {
+            $enStrings = collect();
+            $amStrings = collect();
+            $activities = Activity::query()
+                ->with('lentSeason')
+                ->orderBy('lent_season_id')
+                ->orderBy('sort_order')
+                ->get();
+        } else {
+            // Get English strings for this group
+            $enStrings = Translation::where('locale', 'en')
+                ->where('group', $group)
+                ->orderBy('key')
+                ->get()
+                ->keyBy('key');
 
-        return view('admin.translations.index', compact('sections', 'section', 'group', 'enStrings', 'amStrings'));
+            // Get Amharic translations
+            $amStrings = Translation::where('locale', 'am')
+                ->where('group', $group)
+                ->orderBy('key')
+                ->get()
+                ->keyBy('key');
+        }
+
+        return view('admin.translations.index', compact('sections', 'section', 'group', 'isActivityTranslationGroup', 'activities', 'enStrings', 'amStrings'));
     }
 
     /**
@@ -97,6 +113,36 @@ class TranslationController extends Controller
      */
     public function update(Request $request): RedirectResponse
     {
+        $group = $request->input('group');
+
+        if ($group === 'admin_activities') {
+            $request->validate([
+                'group' => ['required', 'string'],
+                'activities' => ['required', 'array'],
+                'activities.*.name_en' => ['nullable', 'string'],
+                'activities.*.name_am' => ['nullable', 'string'],
+                'activities.*.description_en' => ['nullable', 'string'],
+                'activities.*.description_am' => ['nullable', 'string'],
+            ]);
+
+            foreach ($request->input('activities', []) as $activityId => $payload) {
+                $activity = Activity::query()->find((int) $activityId);
+                if (! $activity) {
+                    continue;
+                }
+
+                $activity->update([
+                    'name_en' => trim((string) ($payload['name_en'] ?? '')),
+                    'name_am' => trim((string) ($payload['name_am'] ?? '')),
+                    'description_en' => trim((string) ($payload['description_en'] ?? '')),
+                    'description_am' => trim((string) ($payload['description_am'] ?? '')),
+                ]);
+            }
+
+            return redirect("/admin/translations?section=admin&group={$group}")
+                ->with('success', __('app.translations_saved'));
+        }
+
         $request->validate([
             'group' => ['required', 'string'],
             'translations' => ['required', 'array'],
@@ -104,8 +150,6 @@ class TranslationController extends Controller
             'translations.*.en' => ['required', 'string'],
             'translations.*.am' => ['nullable', 'string'],
         ]);
-
-        $group = $request->input('group');
 
         foreach ($request->input('translations') as $item) {
             Translation::updateOrCreate(

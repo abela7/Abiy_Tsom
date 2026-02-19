@@ -577,6 +577,7 @@ return [
     'group_admin_login' => 'Login',
     'group_admin_dashboard' => 'Dashboard',
     'group_admin_daily' => 'Daily Content Form',
+    'group_activities' => 'Activities',
     'group_admin_other' => 'Seasons, Activities, Themes',
     'group_admin_translations' => 'Translations Page',
     'pages_label' => 'Pages',

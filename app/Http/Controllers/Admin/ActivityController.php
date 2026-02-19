@@ -42,6 +42,12 @@ class ActivityController extends Controller
             'sort_order' => ['required', 'integer', 'min:0'],
         ]);
 
+        $validated['name_en'] = $validated['name'];
+        $validated['name_am'] = null;
+        $validated['description_en'] = $validated['description'];
+        $validated['description_am'] = null;
+        $validated['name'] = $validated['name'];
+
         $validated['is_active'] = $request->boolean('is_active', true);
         $validated['created_by_id'] = auth()->id();
         $validated['updated_by_id'] = auth()->id();
@@ -64,6 +70,9 @@ class ActivityController extends Controller
             'description' => ['nullable', 'string'],
             'sort_order' => ['required', 'integer', 'min:0'],
         ]);
+
+        $validated['name_en'] = $validated['name'];
+        $validated['description_en'] = $validated['description'];
 
         $validated['is_active'] = $request->boolean('is_active', true);
         $validated['updated_by_id'] = auth()->id();

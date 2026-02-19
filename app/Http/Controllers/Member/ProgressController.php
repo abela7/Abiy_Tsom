@@ -122,6 +122,10 @@ class ProgressController extends Controller
         $periodDayCount = $periodDays->count();
         $activityRates = [];
 
+        $memberLocale = in_array($member->locale, ['en', 'am'], true)
+            ? $member->locale
+            : app()->getLocale();
+
         foreach ($activities as $activity) {
             $doneCount = $checks->where('activity_id', $activity->id)->count();
             $rate = $periodDayCount > 0
@@ -129,7 +133,7 @@ class ProgressController extends Controller
                 : 0;
             $activityRates[] = [
                 'key' => 'a-' . $activity->id,
-                'name' => $activity->name,
+                'name' => localized($activity, 'name', $memberLocale) ?? $activity->name,
                 'rate' => $rate,
             ];
         }

@@ -14,13 +14,13 @@
 
         <div>
             <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.activity_name') }}</label>
-            <input type="text" name="name" value="{{ old('name', $activity->name ?? '') }}" required placeholder="{{ __('app.activity_placeholder') }}"
+            <input type="text" name="name" value="{{ old('name', $activity?->name_en ?? $activity->name ?? '') }}" required placeholder="{{ __('app.activity_placeholder') }}"
                    class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
         </div>
 
         <div>
             <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.description_optional') }}</label>
-            <textarea name="description" rows="2" class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">{{ old('description', $activity->description ?? '') }}</textarea>
+            <textarea name="description" rows="2" class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">{{ old('description', $activity?->description_en ?? $activity?->description ?? '') }}</textarea>
         </div>
 
         <div>

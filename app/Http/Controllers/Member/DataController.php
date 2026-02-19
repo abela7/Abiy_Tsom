@@ -29,6 +29,9 @@ class DataController extends Controller
     {
         /** @var Member $member */
         $member = $request->attributes->get('member');
+        $memberLocale = in_array($member->locale, ['en', 'am'], true)
+            ? $member->locale
+            : app()->getLocale();
 
         $season = LentSeason::active();
         $dailyByDay = $season
@@ -56,7 +59,7 @@ class DataController extends Controller
             if ($c->dailyContent && $c->activity) {
                 $exportChecklists[] = [
                     'day_number' => $c->dailyContent->day_number,
-                    'activity_name' => $c->activity->name,
+                    'activity_name' => localized($c->activity, 'name', $memberLocale) ?? $c->activity->name,
                     'activity_type' => 'admin',
                     'completed' => $c->completed,
                 ];
@@ -136,9 +139,20 @@ class DataController extends Controller
             ->get()
             ->keyBy('day_number');
 
-        $activitiesByName = Activity::where('lent_season_id', $season->id)
-            ->get()
-            ->keyBy('name');
+        $activitiesByName = collect();
+        foreach (Activity::where('lent_season_id', $season->id)->get() as $activity) {
+            $candidateNames = [
+                $activity->name,
+                $activity->name_en,
+                $activity->name_am,
+            ];
+            foreach ($candidateNames as $candidateName) {
+                $candidateName = trim((string) $candidateName);
+                if ($candidateName !== '' && ! $activitiesByName->has($candidateName)) {
+                    $activitiesByName->put($candidateName, $activity);
+                }
+            }
+        }
 
         DB::beginTransaction();
         try {

@@ -5,15 +5,17 @@
 <div x-data="{ showAdd: false }">
     <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
         <h1 class="text-2xl font-bold text-primary">{{ __('app.translations') }}</h1>
-        <div class="flex gap-2">
-            <form method="POST" action="{{ route('admin.translations.sync') }}" class="inline">
-                @csrf
-                <button type="submit" class="px-4 py-2 bg-accent-secondary text-primary rounded-lg text-sm font-medium hover:opacity-90 transition">
-                    {{ __('app.sync_translations') }}
-                </button>
-            </form>
+    <div class="flex gap-2">
+        <form method="POST" action="{{ route('admin.translations.sync') }}" class="inline">
+            @csrf
+            <button type="submit" class="px-4 py-2 bg-accent-secondary text-primary rounded-lg text-sm font-medium hover:opacity-90 transition">
+                {{ __('app.sync_translations') }}
+            </button>
+        </form>
+        @unless($isActivityTranslationGroup ?? false)
             <button @click="showAdd = !showAdd" class="px-4 py-2 bg-accent text-on-accent rounded-lg text-sm font-medium hover:bg-accent-hover transition">{{ __('app.add_key') }}</button>
-        </div>
+        @endunless
+    </div>
     </div>
 
     @if(session('success'))
@@ -53,6 +55,7 @@
     </div>
 
     {{-- Add new key form --}}
+    @unless($isActivityTranslationGroup ?? false)
     <div x-show="showAdd" x-transition class="bg-card rounded-xl shadow-sm border border-border p-4 mb-6">
         <form method="POST" action="{{ route('admin.translations.store') }}" class="grid grid-cols-1 sm:grid-cols-5 gap-3 items-end">
             @csrf
@@ -79,9 +82,61 @@
             <button type="submit" class="px-4 py-2 bg-accent-secondary text-primary rounded-lg font-medium text-sm hover:opacity-90 transition">{{ __('app.add') }}</button>
         </form>
     </div>
+    @endunless
 
     {{-- Translation table --}}
-    @if($enStrings->isNotEmpty())
+    @if($isActivityTranslationGroup ?? false)
+        @if($activities->isNotEmpty())
+            <form method="POST" action="{{ route('admin.translations.update') }}">
+                @csrf @method('PUT')
+                <input type="hidden" name="group" value="{{ $group }}">
+
+                <div class="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
+                    <table class="w-full text-sm">
+                        <thead class="bg-muted border-b border-border">
+                            <tr>
+                                <th class="text-left px-4 py-3 font-semibold text-secondary w-1/6">{{ __('app.activities') }}</th>
+                                <th class="text-left px-4 py-3 font-semibold text-secondary w-1/4">{{ __('app.name_english_label') }}</th>
+                                <th class="text-left px-4 py-3 font-semibold text-secondary w-1/4">{{ __('app.name_amharic_label') }}</th>
+                                <th class="text-left px-4 py-3 font-semibold text-secondary w-1/3">{{ __('app.description_optional') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-border">
+                            @foreach($activities as $activity)
+                                <tr class="hover:bg-muted">
+                                    <td class="px-4 py-2">
+                                        <p class="font-medium text-secondary">{{ localized($activity, 'name') }}</p>
+                                        <p class="text-xs text-muted-text">#{{ $activity->id }}</p>
+                                    </td>
+                                    <td class="px-4 py-2">
+                                        <input type="text" name="activities[{{ $activity->id }}][name_en]" value="{{ old('activities.' . $activity->id . '.name_en', $activity->name_en) }}"
+                                               class="w-full px-2 py-1.5 border border-border rounded-lg text-sm outline-none focus:ring-1 focus:ring-accent">
+                                    </td>
+                                    <td class="px-4 py-2">
+                                        <input type="text" name="activities[{{ $activity->id }}][name_am]" value="{{ old('activities.' . $activity->id . '.name_am', $activity->name_am) }}"
+                                               class="w-full px-2 py-1.5 border border-border rounded-lg text-sm outline-none focus:ring-1 focus:ring-accent" dir="auto">
+                                    </td>
+                                    <td class="px-4 py-2">
+                                        <textarea name="activities[{{ $activity->id }}][description_en]" rows="2" placeholder="{{ __('app.description_optional') }}"
+                                                  class="w-full px-2 py-1.5 border border-border rounded-lg text-sm outline-none focus:ring-1 focus:ring-accent">{{ old('activities.' . $activity->id . '.description_en', $activity->description_en) }}</textarea>
+                                        <textarea name="activities[{{ $activity->id }}][description_am]" rows="2" placeholder="{{ __('app.description_optional') }}"
+                                                  class="w-full mt-2 px-2 py-1.5 border border-border rounded-lg text-sm outline-none focus:ring-1 focus:ring-accent" dir="auto">{{ old('activities.' . $activity->id . '.description_am', $activity->description_am) }}</textarea>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="px-6 py-2.5 bg-accent text-on-accent rounded-lg font-medium hover:bg-accent-hover transition">{{ __('app.save') }}</button>
+                </div>
+            </form>
+        @else
+            <p class="text-muted-text text-center py-8">{{ __('app.no_activities_yet') }}</p>
+        @endif
+
+    @elseif($enStrings->isNotEmpty())
         <form method="POST" action="{{ route('admin.translations.update') }}">
             @csrf @method('PUT')
             <input type="hidden" name="group" value="{{ $group }}">

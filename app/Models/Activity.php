@@ -18,7 +18,11 @@ class Activity extends Model
     protected $fillable = [
         'lent_season_id',
         'name',
+        'name_en',
+        'name_am',
         'description',
+        'description_en',
+        'description_am',
         'sort_order',
         'is_active',
         'created_by_id',
@@ -31,6 +35,37 @@ class Activity extends Model
         return [
             'is_active' => 'boolean',
         ];
+    }
+
+    public function getNameEnAttribute(?string $value): ?string
+    {
+        return $this->fallbackLocalizedValue($value, $this->attributes['name'] ?? null);
+    }
+
+    public function getNameAmAttribute(?string $value): ?string
+    {
+        return $this->fallbackLocalizedValue($value, $this->attributes['name'] ?? null);
+    }
+
+    public function getDescriptionEnAttribute(?string $value): ?string
+    {
+        return $this->fallbackLocalizedValue($value, $this->attributes['description'] ?? null);
+    }
+
+    public function getDescriptionAmAttribute(?string $value): ?string
+    {
+        return $this->fallbackLocalizedValue($value, $this->attributes['description'] ?? null);
+    }
+
+    protected function fallbackLocalizedValue(?string $localizedValue, ?string $fallbackValue): ?string
+    {
+        $value = trim((string) $localizedValue);
+        if ($value !== '') {
+            return $localizedValue;
+        }
+
+        $fallback = trim((string) $fallbackValue);
+        return $fallback !== '' ? $fallbackValue : null;
     }
 
     /**

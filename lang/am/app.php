@@ -557,6 +557,7 @@ return [
     'group_admin_login' => 'መግቢያ',
     'group_admin_dashboard' => 'ዋና ማያ',
     'group_admin_daily' => 'ዕለታዊ ይዘት ቅጽ',
+    'group_activities' => 'Activities',
     'group_admin_other' => 'ወቅቶች፣ እንቅስቃሴዎች፣ ጭብጨባዎች',
     'group_admin_translations' => 'የትርጉም ገጽ',
     'pages_label' => 'ገጾች',

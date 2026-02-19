@@ -207,6 +207,7 @@ class TranslationSeeder extends Seeder
                 'link_copied', 'copy_link',
             ],
             'admin_translations' => [
+                'group_activities',
                 'add_key', 'no_translation_groups', 'group_label', 'key_label',
                 'english_label', 'amharic_label', 'translations_saved', 'translation_added',
                 'no_translations_in_group', 'sync_translations', 'sync_translations_help',
