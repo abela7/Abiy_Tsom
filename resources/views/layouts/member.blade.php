@@ -55,7 +55,8 @@
     <header class="sticky top-0 z-40 bg-card border-b border-border safe-area-top overflow-visible">
         <div class="max-w-lg mx-auto px-4 py-3 flex items-center justify-between overflow-visible">
             @php $baptismName = trim((string) ($currentMember->baptism_name ?? '')); @endphp
-            <h1 class="flex-1 min-w-0 pr-2 text-lg sm:text-xl font-bold text-primary leading-tight whitespace-nowrap overflow-hidden text-ellipsis">
+            <h1 class="flex-1 min-w-0 pr-2 font-bold text-primary leading-tight whitespace-nowrap overflow-hidden text-ellipsis"
+                style="font-size: clamp(0.95rem, 4.6vw, 1.125rem);">
                 @if(app()->getLocale() === 'am')
                     @if($baptismName !== '')
                         <span class="text-accent">{{ $baptismName }}</span>
