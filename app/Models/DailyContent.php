@@ -30,6 +30,8 @@ class DailyContent extends Model
         'sinksar_title_en',
         'sinksar_title_am',
         'sinksar_url',
+        'sinksar_url_en',
+        'sinksar_url_am',
         'sinksar_description_en',
         'sinksar_description_am',
         'reflection_en',
@@ -120,5 +122,20 @@ class DailyContent extends Model
     public function assignedTo(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_to_id');
+    }
+
+    /**
+     * Localized Sinksar URL with language fallback.
+     */
+    public function sinksarUrl(?string $locale = null): ?string
+    {
+        $locale = in_array($locale ?? app()->getLocale(), ['en', 'am'], true) ? ($locale ?? app()->getLocale()) : 'en';
+        $enUrl = $this->sinksar_url_en ?? null;
+        $amUrl = $this->sinksar_url_am ?? null;
+        $fallbackUrl = $this->sinksar_url ?? null;
+
+        return $locale === 'en'
+            ? (($enUrl !== '' ? $enUrl : null) ?: ($amUrl !== '' ? $amUrl : null) ?: ($fallbackUrl !== '' ? $fallbackUrl : null))
+            : (($amUrl !== '' ? $amUrl : null) ?: ($enUrl !== '' ? $enUrl : null) ?: ($fallbackUrl !== '' ? $fallbackUrl : null));
     }
 }

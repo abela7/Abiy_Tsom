@@ -141,7 +141,8 @@ class DailyContentController extends Controller
         $mezmurs = $source->mezmurs->map(fn ($m) => [
             'title_en' => $m->title_en ?? '',
             'title_am' => $m->title_am ?? '',
-            'url' => $m->url ?? '',
+            'url_en' => $m->url_en ?? $m->url ?? '',
+            'url_am' => $m->url_am ?? $m->url ?? '',
             'description_en' => $m->description_en ?? '',
             'description_am' => $m->description_am ?? '',
         ])->values()->toArray();
@@ -149,23 +150,25 @@ class DailyContentController extends Controller
         $references = $source->references->map(fn ($r) => [
             'name_en' => $r->name_en ?? '',
             'name_am' => $r->name_am ?? '',
-            'url' => $r->url ?? '',
+            'url_en' => $r->url_en ?? $r->url ?? '',
+            'url_am' => $r->url_am ?? $r->url ?? '',
             'type' => $r->type ?? 'website',
         ])->values()->toArray();
 
         $books = $source->books->map(fn ($b) => [
             'title_en' => $b->title_en ?? '',
             'title_am' => $b->title_am ?? '',
-            'url' => $b->url ?? '',
+            'url_en' => $b->url_en ?? $b->url ?? '',
+            'url_am' => $b->url_am ?? $b->url ?? '',
             'description_en' => $b->description_en ?? '',
             'description_am' => $b->description_am ?? '',
         ])->values()->toArray();
 
         if (empty($mezmurs)) {
-            $mezmurs = [['title_en' => '', 'title_am' => '', 'url' => '', 'description_en' => '', 'description_am' => '']];
+            $mezmurs = [['title_en' => '', 'title_am' => '', 'url_en' => '', 'url_am' => '', 'description_en' => '', 'description_am' => '']];
         }
         if (empty($references)) {
-            $references = [['name_en' => '', 'name_am' => '', 'url' => '', 'type' => 'website']];
+            $references = [['name_en' => '', 'name_am' => '', 'url_en' => '', 'url_am' => '', 'type' => 'website']];
         }
 
         return response()->json([
@@ -181,7 +184,8 @@ class DailyContentController extends Controller
                 'bible_text_am' => $source->bible_text_am ?? '',
                 'sinksar_title_en' => $source->sinksar_title_en ?? '',
                 'sinksar_title_am' => $source->sinksar_title_am ?? '',
-                'sinksar_url' => $source->sinksar_url ?? '',
+                'sinksar_url_en' => $source->sinksar_url_en ?? $source->sinksar_url ?? '',
+                'sinksar_url_am' => $source->sinksar_url_am ?? $source->sinksar_url ?? '',
                 'sinksar_description_en' => $source->sinksar_description_en ?? '',
                 'sinksar_description_am' => $source->sinksar_description_am ?? '',
                 'reflection_en' => $source->reflection_en ?? '',
@@ -267,7 +271,8 @@ class DailyContentController extends Controller
                     'mezmurs' => ['nullable', 'array'],
                     'mezmurs.*.title_en' => ['nullable', 'string', 'max:255'],
                     'mezmurs.*.title_am' => ['nullable', 'string', 'max:255'],
-                    'mezmurs.*.url' => ['nullable', 'url', 'max:500'],
+                    'mezmurs.*.url_en' => ['nullable', 'url', 'max:500'],
+                    'mezmurs.*.url_am' => ['nullable', 'url', 'max:500'],
                     'mezmurs.*.description_en' => ['nullable', 'string'],
                     'mezmurs.*.description_am' => ['nullable', 'string'],
                 ]);
@@ -278,7 +283,8 @@ class DailyContentController extends Controller
                 $updates = $request->validate([
                     'sinksar_title_en' => ['nullable', 'string', 'max:255'],
                     'sinksar_title_am' => ['nullable', 'string', 'max:255'],
-                    'sinksar_url' => ['nullable', 'url', 'max:500'],
+                    'sinksar_url_en' => ['nullable', 'url', 'max:500'],
+                    'sinksar_url_am' => ['nullable', 'url', 'max:500'],
                     'sinksar_description_en' => ['nullable', 'string'],
                     'sinksar_description_am' => ['nullable', 'string'],
                 ]);
@@ -289,7 +295,8 @@ class DailyContentController extends Controller
                     'books' => ['nullable', 'array'],
                     'books.*.title_en' => ['nullable', 'string', 'max:255'],
                     'books.*.title_am' => ['nullable', 'string', 'max:255'],
-                    'books.*.url' => ['nullable', 'url', 'max:500'],
+                    'books.*.url_en' => ['nullable', 'url', 'max:500'],
+                    'books.*.url_am' => ['nullable', 'url', 'max:500'],
                     'books.*.description_en' => ['nullable', 'string'],
                     'books.*.description_am' => ['nullable', 'string'],
                 ]);
@@ -303,7 +310,8 @@ class DailyContentController extends Controller
                     'references' => ['nullable', 'array'],
                     'references.*.name_en' => ['nullable', 'string', 'max:255'],
                     'references.*.name_am' => ['nullable', 'string', 'max:255'],
-                    'references.*.url' => ['nullable', 'url', 'max:500'],
+                    'references.*.url_en' => ['nullable', 'url', 'max:500'],
+                    'references.*.url_am' => ['nullable', 'url', 'max:500'],
                     'references.*.type' => ['nullable', 'string', 'in:video,website,file'],
                 ]);
                 $updates = [
@@ -372,7 +380,7 @@ class DailyContentController extends Controller
      * Recent spiritual books from previous days for quick re-use.
      * Feature: Recommendations from previous days (click to add).
      *
-     * @return array<int, array{title_en: string|null, title_am: string|null, url: string|null, description_en: string|null, description_am: string|null, day_number: int, date: string}>
+     * @return array<int, array{title_en: string|null, title_am: string|null, url_en: string|null, url_am: string|null, url: string|null, description_en: string|null, description_am: string|null, day_number: int, date: string}>
      */
     private function getRecentBooks(?int $excludeDailyId): array
     {
@@ -386,6 +394,8 @@ class DailyContentController extends Controller
                 'daily_content_books.title_en',
                 'daily_content_books.title_am',
                 'daily_content_books.url',
+                'daily_content_books.url_en',
+                'daily_content_books.url_am',
                 'daily_content_books.description_en',
                 'daily_content_books.description_am',
                 'daily_contents.day_number',
@@ -402,7 +412,9 @@ class DailyContentController extends Controller
             return [
                 'title_en' => $row->title_en,
                 'title_am' => $row->title_am,
-                'url' => $row->url,
+                'url' => $row->url ?? null,
+                'url_en' => $row->url_en ?? null,
+                'url_am' => $row->url_am ?? null,
                 'description_en' => $row->description_en,
                 'description_am' => $row->description_am,
                 'day_number' => (int) $row->day_number,
@@ -414,7 +426,7 @@ class DailyContentController extends Controller
     /**
      * Parse and filter books from request (keep only those with title_en or title_am).
      *
-     * @return array<int, array{title_en: string|null, title_am: string|null, url: string|null, description_en: string|null, description_am: string|null}>
+     * @return array<int, array{title_en: string|null, title_am: string|null, url_en: string|null, url_am: string|null, description_en: string|null, description_am: string|null}>
      */
     private function parseBooks(Request $request): array
     {
@@ -429,7 +441,8 @@ class DailyContentController extends Controller
             $parsed[] = [
                 'title_en' => $titleEn !== '' ? $titleEn : null,
                 'title_am' => $titleAm !== '' ? $titleAm : null,
-                'url' => trim((string) ($b['url'] ?? '')) ?: null,
+                'url_en' => trim((string) ($b['url_en'] ?? '')) ?: null,
+                'url_am' => trim((string) ($b['url_am'] ?? '')) ?: null,
                 'description_en' => trim((string) ($b['description_en'] ?? '')) ?: null,
                 'description_am' => trim((string) ($b['description_am'] ?? '')) ?: null,
             ];
@@ -439,7 +452,7 @@ class DailyContentController extends Controller
     }
 
     /**
-     * @param  array<int, array{title_en: string|null, title_am: string|null, url: string|null, description_en: string|null, description_am: string|null}>  $books
+     * @param  array<int, array{title_en: string|null, title_am: string|null, url_en: string|null, url_am: string|null, description_en: string|null, description_am: string|null}>  $books
      */
     private function syncBooks(DailyContent $daily, array $books): void
     {
@@ -448,7 +461,9 @@ class DailyContentController extends Controller
             $daily->books()->create([
                 'title_en' => $b['title_en'],
                 'title_am' => $b['title_am'],
-                'url' => $b['url'],
+                'url_en' => $b['url_en'] ?? null,
+                'url_am' => $b['url_am'] ?? null,
+                'url' => $b['url_en'] ?? $b['url_am'] ?? null,
                 'description_en' => $b['description_en'],
                 'description_am' => $b['description_am'],
                 'sort_order' => $i,
@@ -498,18 +513,21 @@ class DailyContentController extends Controller
             'mezmurs' => ['nullable', 'array'],
             'mezmurs.*.title_en' => ['nullable', 'string', 'max:255'],
             'mezmurs.*.title_am' => ['nullable', 'string', 'max:255'],
-            'mezmurs.*.url' => ['nullable', 'url', 'max:500'],
+            'mezmurs.*.url_en' => ['nullable', 'url', 'max:500'],
+            'mezmurs.*.url_am' => ['nullable', 'url', 'max:500'],
             'mezmurs.*.description_en' => ['nullable', 'string'],
             'mezmurs.*.description_am' => ['nullable', 'string'],
             'sinksar_title_en' => ['nullable', 'string', 'max:255'],
             'sinksar_title_am' => ['nullable', 'string', 'max:255'],
-            'sinksar_url' => ['nullable', 'url', 'max:500'],
+            'sinksar_url_en' => ['nullable', 'url', 'max:500'],
+            'sinksar_url_am' => ['nullable', 'url', 'max:500'],
             'sinksar_description_en' => ['nullable', 'string'],
             'sinksar_description_am' => ['nullable', 'string'],
             'books' => ['nullable', 'array'],
             'books.*.title_en' => ['nullable', 'string', 'max:255'],
             'books.*.title_am' => ['nullable', 'string', 'max:255'],
-            'books.*.url' => ['nullable', 'url', 'max:500'],
+            'books.*.url_en' => ['nullable', 'url', 'max:500'],
+            'books.*.url_am' => ['nullable', 'url', 'max:500'],
             'books.*.description_en' => ['nullable', 'string'],
             'books.*.description_am' => ['nullable', 'string'],
             'reflection_en' => ['nullable', 'string'],
@@ -517,7 +535,8 @@ class DailyContentController extends Controller
             'references' => ['nullable', 'array'],
             'references.*.name_en' => ['nullable', 'string', 'max:255'],
             'references.*.name_am' => ['nullable', 'string', 'max:255'],
-            'references.*.url' => ['nullable', 'url', 'max:500'],
+            'references.*.url_en' => ['nullable', 'url', 'max:500'],
+            'references.*.url_am' => ['nullable', 'url', 'max:500'],
             'references.*.type' => ['nullable', 'string', 'in:video,website,file'],
         ]);
     }
@@ -525,7 +544,7 @@ class DailyContentController extends Controller
     /**
      * Parse and filter mezmurs from request (keep only those with title_en or title_am).
      *
-     * @return array<int, array{title_en: string|null, title_am: string|null, url: string|null, description_en: string|null, description_am: string|null}>
+     * @return array<int, array{title_en: string|null, title_am: string|null, url_en: string|null, url_am: string|null, description_en: string|null, description_am: string|null}>
      */
     private function parseMezmurs(Request $request): array
     {
@@ -540,7 +559,8 @@ class DailyContentController extends Controller
             $parsed[] = [
                 'title_en' => $titleEn !== '' ? $titleEn : null,
                 'title_am' => $titleAm !== '' ? $titleAm : null,
-                'url' => trim((string) ($m['url'] ?? '')) ?: null,
+                'url_en' => trim((string) ($m['url_en'] ?? '')) ?: null,
+                'url_am' => trim((string) ($m['url_am'] ?? '')) ?: null,
                 'description_en' => trim((string) ($m['description_en'] ?? '')) ?: null,
                 'description_am' => trim((string) ($m['description_am'] ?? '')) ?: null,
             ];
@@ -559,7 +579,9 @@ class DailyContentController extends Controller
             $daily->mezmurs()->create([
                 'title_en' => $m['title_en'],
                 'title_am' => $m['title_am'],
-                'url' => $m['url'],
+                'url_en' => $m['url_en'] ?? null,
+                'url_am' => $m['url_am'] ?? null,
+                'url' => $m['url_en'] ?? $m['url_am'] ?? null,
                 'description_en' => $m['description_en'],
                 'description_am' => $m['description_am'],
                 'sort_order' => $i,
@@ -570,7 +592,7 @@ class DailyContentController extends Controller
     /**
      * Parse and filter references from request (keep only those with name_en or name_am and url).
      *
-     * @return array<int, array{name_en: string|null, name_am: string|null, url: string, type: string}>
+     * @return array<int, array{name_en: string|null, name_am: string|null, url_en: string|null, url_am: string|null, type: string}>
      */
     private function parseReferences(Request $request): array
     {
@@ -580,16 +602,19 @@ class DailyContentController extends Controller
         foreach ($raw as $r) {
             $nameEn = trim((string) ($r['name_en'] ?? ''));
             $nameAm = trim((string) ($r['name_am'] ?? ''));
-            $url = trim((string) ($r['url'] ?? ''));
+            $urlEn = trim((string) ($r['url_en'] ?? ''));
+            $urlAm = trim((string) ($r['url_am'] ?? ''));
             $type = trim((string) ($r['type'] ?? 'website'));
             if (! in_array($type, $allowed, true)) {
                 $type = 'website';
             }
-            if (($nameEn !== '' || $nameAm !== '') && $url !== '') {
+            if (($nameEn !== '' || $nameAm !== '') && ($urlEn !== '' || $urlAm !== '')) {
                 $parsed[] = [
                     'name_en' => $nameEn !== '' ? $nameEn : null,
                     'name_am' => $nameAm !== '' ? $nameAm : null,
-                    'url' => $url,
+                    'url_en' => $urlEn !== '' ? $urlEn : null,
+                    'url_am' => $urlAm !== '' ? $urlAm : null,
+                    'url' => $urlEn !== '' ? $urlEn : ($urlAm !== '' ? $urlAm : null),
                     'type' => $type,
                 ];
             }
@@ -599,7 +624,7 @@ class DailyContentController extends Controller
     }
 
     /**
-     * @param  array<int, array{name_en: string|null, name_am: string|null, url: string, type: string}>  $references
+     * @param  array<int, array{name_en: string|null, name_am: string|null, url_en: string|null, url_am: string|null, url: string|null, type: string}>  $references
      */
     private function syncReferences(DailyContent $daily, array $references): void
     {
@@ -608,7 +633,9 @@ class DailyContentController extends Controller
             $daily->references()->create([
                 'name_en' => $ref['name_en'],
                 'name_am' => $ref['name_am'],
-                'url' => $ref['url'],
+                'url_en' => $ref['url_en'],
+                'url_am' => $ref['url_am'],
+                'url' => $ref['url'] ?? ($ref['url_en'] ?? $ref['url_am'] ?? null),
                 'type' => $ref['type'] ?? 'website',
                 'sort_order' => $i,
             ]);

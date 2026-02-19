@@ -1,8 +1,10 @@
 @extends('layouts.member')
 
 @php
+    $locale = app()->getLocale();
     $weekName = $daily->weeklyTheme ? (localized($daily->weeklyTheme, 'name') ?? $daily->weeklyTheme->name_en ?? '-') : '';
     $dayTitle = localized($daily, 'day_title') ?? __('app.day_x', ['day' => $daily->day_number]);
+    $sinksarUrl = $daily->sinksarUrl($locale);
     $shareTitle = $weekName ? ($weekName . ' - ' . $dayTitle) : $dayTitle;
     $shareDescription = __('app.share_day_description');
     // Use public share URL so social crawlers can read OG meta tags
@@ -157,8 +159,11 @@
                         @if(localized($mezmur, 'description'))
                             <p class="text-sm text-muted-text leading-relaxed">{{ localized($mezmur, 'description') }}</p>
                         @endif
-                        @if($mezmur->url)
-                            <x-embedded-media :url="$mezmur->url" play-label="{{ __('app.listen') }}" :open-label="__('app.open_in_youtube')" />
+                @php
+                    $mezmurUrl = $mezmur->mediaUrl($locale);
+                @endphp
+                @if($mezmurUrl)
+                            <x-embedded-media :url="$mezmurUrl" play-label="{{ __('app.listen') }}" :open-label="__('app.open_in_youtube')" />
                         @endif
                     </div>
                 </div>
@@ -176,8 +181,8 @@
         @if(localized($daily, 'sinksar_description'))
             <p class="text-sm text-muted-text mt-2 leading-relaxed">{{ localized($daily, 'sinksar_description') }}</p>
         @endif
-        @if($daily->sinksar_url)
-            <x-embedded-media :url="$daily->sinksar_url" play-label="{{ __('app.listen') }}" :open-label="__('app.open_in_youtube')" />
+        @if($sinksarUrl)
+            <x-embedded-media :url="$sinksarUrl" play-label="{{ __('app.listen') }}" :open-label="__('app.open_in_youtube')" />
         @endif
     </div>
     @endif
@@ -187,17 +192,20 @@
     <div class="space-y-3">
         <h3 class="font-semibold text-sm text-book">{{ __('app.spiritual_book') }}</h3>
         @foreach($daily->books as $book)
-            @if(localized($book, 'title'))
+                @php
+                    $bookUrl = $book->mediaUrl($locale);
+                @endphp
+                @if(localized($book, 'title'))
             <div class="bg-card rounded-2xl p-4 shadow-sm border border-border">
                 <p class="font-medium text-primary">{{ localized($book, 'title') }}</p>
                 @if(localized($book, 'description'))
                     <p class="text-sm text-muted-text mt-1 leading-relaxed">{{ localized($book, 'description') }}</p>
                 @endif
-                @if($book->url)
-                    <a href="{{ $book->url }}" target="_blank" rel="noopener" class="text-sm text-accent font-medium mt-2 inline-block">{{ __('app.read_more') }} &rarr;</a>
+                @if($bookUrl)
+                    <a href="{{ $bookUrl }}" target="_blank" rel="noopener" class="text-sm text-accent font-medium mt-2 inline-block">{{ __('app.read_more') }} &rarr;</a>
                 @endif
             </div>
-            @endif
+                @endif
         @endforeach
     </div>
     @endif
@@ -234,7 +242,11 @@
              x-cloak
              class="mt-3 pt-3 border-t border-border space-y-2">
             @foreach($daily->references as $ref)
-            @php
+                @php
+                    $refUrl = $ref->mediaUrl($locale);
+                @endphp
+                @if ($refUrl)
+                @php
                 $refType = $ref->type ?? 'website';
                 $btnLabel = match($refType) {
                     'video' => __('app.view_video'),
@@ -242,11 +254,12 @@
                     default => __('app.read_more'),
                 };
             @endphp
-            <a href="{{ $ref->url }}" target="_blank" rel="noopener"
+            <a href="{{ $refUrl }}" target="_blank" rel="noopener"
                class="flex items-center justify-between gap-2 p-3 rounded-xl bg-muted hover:bg-border transition">
                 <span class="text-sm font-medium text-primary">{{ localized($ref, 'name') }}</span>
                 <span class="shrink-0 px-3 py-1 bg-accent text-on-accent rounded-lg text-xs font-medium">{{ $btnLabel }}</span>
             </a>
+                @endif
             @endforeach
         </div>
     </div>

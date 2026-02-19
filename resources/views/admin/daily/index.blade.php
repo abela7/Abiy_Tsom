@@ -38,8 +38,8 @@
                     <tr class="hover:bg-muted">
                         <td class="px-4 py-3 font-bold text-accent">{{ $content->day_number }}</td>
                         <td class="px-4 py-3 text-secondary">{{ $content->date->format('M d') }}</td>
-                        <td class="px-4 py-3 text-secondary">{{ optional($content->weeklyTheme)->name_en ?: '-' }}</td>
-                        <td class="px-4 py-3">{{ localized($content, 'day_title') ?? '-' }}</td>
+                        <td class="px-4 py-3 text-secondary">{{ $content->weeklyTheme ? (localized($content->weeklyTheme, 'name') ?? '-') : '-' }}</td>
+                            <td class="px-4 py-3">{{ localized($content, 'day_title') ?? '-' }}</td>
                         <td class="px-4 py-3 text-secondary">{{ localized($content, 'bible_reference') ?? '-' }}</td>
                         <td class="px-4 py-3">
                             <span class="px-2 py-0.5 rounded-full text-xs font-medium {{ $content->is_published ? 'bg-success-bg text-success' : 'bg-reflection-bg text-accent-secondary' }}">

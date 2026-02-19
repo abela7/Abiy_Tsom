@@ -14,7 +14,8 @@
                 ->map(fn ($m) => [
                     'title_en' => $m->title_en ?? '',
                     'title_am' => $m->title_am ?? '',
-                    'url' => $m->url ?? '',
+                    'url_en' => $m->url_en ?? $m->url ?? '',
+                    'url_am' => $m->url_am ?? $m->url ?? '',
                     'description_en' => $m->description_en ?? '',
                     'description_am' => $m->description_am ?? '',
                 ])
@@ -23,7 +24,8 @@
             : [[
                 'title_en' => '',
                 'title_am' => '',
-                'url' => '',
+                'url_en' => '',
+                'url_am' => '',
                 'description_en' => '',
                 'description_am' => '',
             ]]
@@ -32,11 +34,12 @@
     $initialReferences = old(
         'references',
         $isEdit
-            ? $daily->references
+                ? $daily->references
                 ->map(fn ($r) => [
                     'name_en' => $r->name_en ?? '',
                     'name_am' => $r->name_am ?? '',
-                    'url' => $r->url ?? '',
+                    'url_en' => $r->url_en ?? $r->url ?? '',
+                    'url_am' => $r->url_am ?? $r->url ?? '',
                     'type' => $r->type ?? 'website',
                 ])
                 ->values()
@@ -44,7 +47,8 @@
             : [[
                 'name_en' => '',
                 'name_am' => '',
-                'url' => '',
+                'url_en' => '',
+                'url_am' => '',
                 'type' => 'website',
             ]]
     );
@@ -56,7 +60,8 @@
                 ->map(fn ($b) => [
                     'title_en' => $b->title_en ?? '',
                     'title_am' => $b->title_am ?? '',
-                    'url' => $b->url ?? '',
+                    'url_en' => $b->url_en ?? $b->url ?? '',
+                    'url_am' => $b->url_am ?? $b->url ?? '',
                     'description_en' => $b->description_en ?? '',
                     'description_am' => $b->description_am ?? '',
                 ])
@@ -91,7 +96,8 @@
         'bible_text_en' => old('bible_text_en', $daily->bible_text_en ?? ''),
         'sinksar_title_am' => old('sinksar_title_am', $daily->sinksar_title_am ?? ''),
         'sinksar_title_en' => old('sinksar_title_en', $daily->sinksar_title_en ?? ''),
-        'sinksar_url' => old('sinksar_url', $daily->sinksar_url ?? ''),
+        'sinksar_url_en' => old('sinksar_url_en', $daily->sinksar_url_en ?? $daily->sinksar_url ?? ''),
+        'sinksar_url_am' => old('sinksar_url_am', $daily->sinksar_url_am ?? $daily->sinksar_url ?? ''),
         'sinksar_description_am' => old('sinksar_description_am', $daily->sinksar_description_am ?? ''),
         'sinksar_description_en' => old('sinksar_description_en', $daily->sinksar_description_en ?? ''),
         'books' => $initialBooks,
@@ -339,7 +345,7 @@
                     <template x-for="(mezmur, index) in form.mezmurs" :key="'mezmur-' + index">
                         <div class="p-4 rounded-xl bg-accent-secondary/5 border border-accent-secondary/20 space-y-3">
                             <div class="flex items-center justify-between gap-2">
-                                <span class="text-sm font-semibold text-accent-secondary" x-text="'{{ __('app.mezmur_label') }} ' + (index + 1)"></span>
+                            <span class="text-sm font-semibold text-accent-secondary" x-text="'{{ __('app.mezmur_label') }} ' + (index + 1)"></span>
                                 <button
                                     type="button"
                                     @click="removeMezmur(index)"
@@ -351,7 +357,8 @@
                             </div>
                             <input type="text" x-model="mezmur.title_am" placeholder="{{ __('app.name_amharic_label') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
                             <input type="text" x-model="mezmur.title_en" placeholder="{{ __('app.name_english_label') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
-                            <input type="url" x-model="mezmur.url" placeholder="{{ __('app.url_placeholder') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                            <input type="url" x-model="mezmur.url_am" placeholder="{{ __('app.url_placeholder') }} ({{ __('app.amharic') }})" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                            <input type="url" x-model="mezmur.url_en" placeholder="{{ __('app.url_placeholder') }} ({{ __('app.english') }})" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
                             <textarea x-model="mezmur.description_am" rows="2" placeholder="{{ __('app.description_label') }} ({{ __('app.amharic') }})" class="w-full min-h-[4rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
                             <textarea x-model="mezmur.description_en" rows="2" placeholder="{{ __('app.description_label') }} ({{ __('app.english') }})" class="w-full min-h-[4rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
                         </div>
@@ -370,7 +377,8 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-secondary mb-1.5">{{ __('app.url_video_label') }}</label>
-                        <input type="url" x-model="form.sinksar_url" placeholder="{{ __('app.youtube_url_placeholder') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                        <input type="url" x-model="form.sinksar_url_am" placeholder="{{ __('app.youtube_url_placeholder') }} ({{ __('app.amharic') }})" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                        <input type="url" x-model="form.sinksar_url_en" placeholder="{{ __('app.youtube_url_placeholder') }} ({{ __('app.english') }})" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
                     </div>
                     <div class="space-y-3">
                         <label class="block text-sm font-medium text-secondary">{{ __('app.description_label') }}</label>
@@ -420,7 +428,8 @@
                                 </div>
                                 <input type="text" x-model="book.title_am" placeholder="{{ __('app.name_amharic_label') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
                                 <input type="text" x-model="book.title_en" placeholder="{{ __('app.name_english_label') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
-                                <input type="url" x-model="book.url" placeholder="{{ __('app.url_placeholder') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                                <input type="url" x-model="book.url_am" placeholder="{{ __('app.url_placeholder') }} ({{ __('app.amharic') }})" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                                <input type="url" x-model="book.url_en" placeholder="{{ __('app.url_placeholder') }} ({{ __('app.english') }})" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
                                 <textarea x-model="book.description_am" rows="2" placeholder="{{ __('app.description_label') }} ({{ __('app.amharic') }})" class="w-full min-h-[4rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
                                 <textarea x-model="book.description_en" rows="2" placeholder="{{ __('app.description_label') }} ({{ __('app.english') }})" class="w-full min-h-[4rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
                             </div>
@@ -456,7 +465,8 @@
                                 </div>
                                 <input type="text" x-model="reference.name_am" placeholder="{{ __('app.name_amharic_label') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
                                 <input type="text" x-model="reference.name_en" placeholder="{{ __('app.name_english_label') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
-                                <input type="url" x-model="reference.url" placeholder="{{ __('app.url_placeholder') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                                <input type="url" x-model="reference.url_am" placeholder="{{ __('app.url_placeholder') }} ({{ __('app.amharic') }})" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                                <input type="url" x-model="reference.url_en" placeholder="{{ __('app.url_placeholder') }} ({{ __('app.english') }})" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
                                 <div>
                                     <label class="block text-xs font-medium text-secondary mb-1">{{ __('app.reference_type_label') }}</label>
                                     <select x-model="reference.type" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
@@ -571,10 +581,10 @@
 
                     init() {
                         if (!Array.isArray(this.form.mezmurs) || this.form.mezmurs.length === 0) {
-                            this.form.mezmurs = [{ title_en: '', title_am: '', url: '', description_en: '', description_am: '' }];
+                            this.form.mezmurs = [{ title_en: '', title_am: '', url_en: '', url_am: '', description_en: '', description_am: '' }];
                         }
                         if (!Array.isArray(this.form.references) || this.form.references.length === 0) {
-                            this.form.references = [{ name_en: '', name_am: '', url: '', type: 'website' }];
+                            this.form.references = [{ name_en: '', name_am: '', url_en: '', url_am: '', type: 'website' }];
                         }
                         if (!Array.isArray(this.form.books)) {
                             this.form.books = [];
@@ -608,7 +618,8 @@
                         this.form.mezmurs.push({
                             title_en: '',
                             title_am: '',
-                            url: '',
+                            url_en: '',
+                            url_am: '',
                             description_en: '',
                             description_am: '',
                         });
@@ -619,7 +630,8 @@
                             this.form.mezmurs[0] = {
                                 title_en: '',
                                 title_am: '',
-                                url: '',
+                                url_en: '',
+                                url_am: '',
                                 description_en: '',
                                 description_am: '',
                             };
@@ -632,14 +644,15 @@
                         this.form.references.push({
                             name_en: '',
                             name_am: '',
-                            url: '',
+                            url_en: '',
+                            url_am: '',
                             type: 'website',
                         });
                     },
 
                     removeReference(index) {
                         if (this.form.references.length === 1) {
-                            this.form.references[0] = { name_en: '', name_am: '', url: '', type: 'website' };
+                            this.form.references[0] = { name_en: '', name_am: '', url_en: '', url_am: '', type: 'website' };
                             return;
                         }
                         this.form.references.splice(index, 1);
@@ -649,7 +662,8 @@
                         this.form.books.push({
                             title_en: '',
                             title_am: '',
-                            url: '',
+                            url_en: '',
+                            url_am: '',
                             description_en: '',
                             description_am: '',
                         });
@@ -663,7 +677,8 @@
                         this.form.books.push({
                             title_en: bookData.title_en || '',
                             title_am: bookData.title_am || '',
-                            url: bookData.url || '',
+                            url_en: bookData.url_en || bookData.url || '',
+                            url_am: bookData.url_am || bookData.url || '',
                             description_en: bookData.description_en || '',
                             description_am: bookData.description_am || '',
                         });
@@ -699,7 +714,8 @@
                             this.form.bible_text_am = data.bible_text_am ?? '';
                             this.form.sinksar_title_en = data.sinksar_title_en ?? '';
                             this.form.sinksar_title_am = data.sinksar_title_am ?? '';
-                            this.form.sinksar_url = data.sinksar_url ?? '';
+                            this.form.sinksar_url_en = data.sinksar_url_en ?? data.sinksar_url ?? '';
+                            this.form.sinksar_url_am = data.sinksar_url_am ?? data.sinksar_url ?? '';
                             this.form.sinksar_description_en = data.sinksar_description_en ?? '';
                             this.form.sinksar_description_am = data.sinksar_description_am ?? '';
                             this.form.reflection_en = data.reflection_en ?? '';
@@ -708,23 +724,26 @@
                                 ? data.mezmurs.map((m) => ({
                                     title_en: m.title_en ?? '',
                                     title_am: m.title_am ?? '',
-                                    url: m.url ?? '',
+                                    url_en: m.url_en ?? m.url ?? '',
+                                    url_am: m.url_am ?? m.url ?? '',
                                     description_en: m.description_en ?? '',
                                     description_am: m.description_am ?? '',
                                 }))
-                                : [{ title_en: '', title_am: '', url: '', description_en: '', description_am: '' }];
+                                : [{ title_en: '', title_am: '', url_en: '', url_am: '', description_en: '', description_am: '' }];
                             this.form.references = Array.isArray(data.references) && data.references.length > 0
                                 ? data.references.map((r) => ({
                                     name_en: r.name_en ?? '',
                                     name_am: r.name_am ?? '',
-                                    url: r.url ?? '',
+                                    url_en: r.url_en ?? r.url ?? '',
+                                    url_am: r.url_am ?? r.url ?? '',
                                     type: r.type ?? 'website',
                                 }))
-                                : [{ name_en: '', name_am: '', url: '', type: 'website' }];
+                                : [{ name_en: '', name_am: '', url_en: '', url_am: '', type: 'website' }];
                             this.form.books = Array.isArray(data.books) ? data.books.map((b) => ({
                                 title_en: b.title_en ?? '',
                                 title_am: b.title_am ?? '',
-                                url: b.url ?? '',
+                                url_en: b.url_en ?? b.url ?? '',
+                                url_am: b.url_am ?? b.url ?? '',
                                 description_en: b.description_en ?? '',
                                 description_am: b.description_am ?? '',
                             })) : [];
@@ -858,21 +877,24 @@
                             payload.mezmurs = (this.form.mezmurs || []).map((item) => ({
                                 title_en: item.title_en || '',
                                 title_am: item.title_am || '',
-                                url: item.url || '',
+                                url_en: item.url_en || '',
+                                url_am: item.url_am || '',
                                 description_en: item.description_en || '',
                                 description_am: item.description_am || '',
                             }));
                         } else if (step === 4) {
                             payload.sinksar_title_am = this.form.sinksar_title_am;
                             payload.sinksar_title_en = this.form.sinksar_title_en;
-                            payload.sinksar_url = this.form.sinksar_url;
+                            payload.sinksar_url_en = this.form.sinksar_url_en;
+                            payload.sinksar_url_am = this.form.sinksar_url_am;
                             payload.sinksar_description_am = this.form.sinksar_description_am;
                             payload.sinksar_description_en = this.form.sinksar_description_en;
                         } else if (step === 5) {
                             payload.books = (this.form.books || []).map((item) => ({
                                 title_en: item.title_en || '',
                                 title_am: item.title_am || '',
-                                url: item.url || '',
+                                url_en: item.url_en || '',
+                                url_am: item.url_am || '',
                                 description_en: item.description_en || '',
                                 description_am: item.description_am || '',
                             }));
@@ -882,7 +904,8 @@
                             payload.references = (this.form.references || []).map((item) => ({
                                 name_en: item.name_en || '',
                                 name_am: item.name_am || '',
-                                url: item.url || '',
+                                url_en: item.url_en || '',
+                                url_am: item.url_am || '',
                                 type: item.type || 'website',
                             }));
                         } else if (step === 7) {
