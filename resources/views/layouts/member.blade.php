@@ -54,8 +54,21 @@
     @if(isset($currentMember) && request()->routeIs('member.*'))
     <header class="sticky top-0 z-40 bg-card border-b border-border safe-area-top overflow-visible">
         <div class="max-w-lg mx-auto px-4 py-3 flex items-center justify-between overflow-visible">
-            <h1 class="text-lg font-bold text-primary truncate pr-2">
-                {{ __('app.welcome') }}, <span class="text-accent">{{ $currentMember->baptism_name ?? '' }}</span>
+            @php $baptismName = trim((string) ($currentMember->baptism_name ?? '')); @endphp
+            <h1 class="flex-1 min-w-0 pr-2 text-sm sm:text-base lg:text-lg font-bold text-primary leading-tight break-words">
+                @if(app()->getLocale() === 'am')
+                    @if($baptismName !== '')
+                        <span class="text-accent">{{ $baptismName }}</span>
+                        <span> እንኳን ደህና መጡ</span>
+                    @else
+                        <span>እንኳን ደህና መጡ</span>
+                    @endif
+                @else
+                    <span>Welcome</span>
+                    @if($baptismName !== '')
+                        <span> </span><span class="text-accent">{{ $baptismName }}</span>
+                    @endif
+                @endif
             </h1>
             <div class="flex items-center gap-1 shrink-0">
                 @if($currentMember->passcode_enabled ?? false)
