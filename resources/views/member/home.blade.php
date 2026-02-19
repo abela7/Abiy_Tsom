@@ -149,18 +149,24 @@
             <h2 class="text-xs font-bold text-muted-text uppercase tracking-wider">{{ __('app.announcements_section') }}</h2>
             <div class="inline-flex items-center rounded-full border border-border bg-muted p-1">
                 <button type="button"
-                        class="px-3 py-1.5 text-xs sm:text-sm rounded-full font-semibold transition"
+                        class="px-3 py-1.5 rounded-full font-semibold transition"
                         :class="mode === 'list' ? 'bg-accent text-white shadow-sm' : 'text-muted-text hover:text-primary'"
                         @click="setMode('list')"
                         aria-pressed="mode === 'list'">
-                    List
+                    <span class="sr-only">List view</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 6h13M8 12h13M8 18h13M3 6h1m0 6h1m0 6h1M4 5h1.5a2 2 0 012 2v2a2 2 0 01-2 2H4a2 2 0 01-2-2V7a2 2 0 012-2zm0 12h1.5a2 2 0 012 2v2a2 2 0 01-2 2H4a2 2 0 01-2-2v-2a2 2 0 012-2z"/>
+                    </svg>
                 </button>
                 <button type="button"
-                        class="px-3 py-1.5 text-xs sm:text-sm rounded-full font-semibold transition"
+                        class="px-3 py-1.5 rounded-full font-semibold transition"
                         :class="mode === 'carousel' ? 'bg-accent text-white shadow-sm' : 'text-muted-text hover:text-primary'"
                         @click="setMode('carousel')"
                         aria-pressed="mode === 'carousel'">
-                    Carousel
+                    <span class="sr-only">Carousel</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h8M4 14h12M4 18h7M17 10h3M17 14h3M17 18h3"/>
+                    </svg>
                 </button>
             </div>
         </div>
