@@ -147,26 +147,24 @@
     <section x-data="announcementDisplay({{ $announcements->count() }})" x-init="init()">
         <div class="flex items-center justify-between gap-2 mb-4">
             <h2 class="text-xs font-bold text-muted-text uppercase tracking-wider">{{ __('app.announcements_section') }}</h2>
-            <div class="inline-flex items-center rounded-xl bg-muted/50 p-1 gap-0.5 border border-border/50">
+            <div class="inline-flex items-center rounded-full border border-border bg-muted/30 p-0.5">
                 <button type="button"
-                        class="w-8 h-8 rounded-lg transition-all duration-200 flex items-center justify-center"
-                        :class="mode === 'list' ? 'bg-accent text-on-accent shadow-sm' : 'text-muted-text hover:text-primary hover:bg-muted'"
+                        class="w-9 h-9 rounded-full transition flex items-center justify-center"
+                        :class="mode === 'list' ? 'text-primary bg-card' : 'text-muted-text hover:text-primary'"
                         @click="setMode('list')"
                         aria-label="List view"
-                        :aria-pressed="mode === 'list'">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
-                    </svg>
+                        title="List view"
+                        aria-pressed="mode === 'list'">
+                    <i class="bi bi-view-list text-base leading-none" aria-hidden="true"></i>
                 </button>
                 <button type="button"
-                        class="w-8 h-8 rounded-lg transition-all duration-200 flex items-center justify-center"
-                        :class="mode === 'carousel' ? 'bg-accent text-on-accent shadow-sm' : 'text-muted-text hover:text-primary hover:bg-muted'"
+                        class="w-9 h-9 rounded-full transition flex items-center justify-center"
+                        :class="mode === 'carousel' ? 'text-primary bg-card' : 'text-muted-text hover:text-primary'"
                         @click="setMode('carousel')"
                         aria-label="Carousel view"
-                        :aria-pressed="mode === 'carousel'">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 7a2 2 0 012-2h4a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7zm10-1h8m-8 5h8m-8 5h8"/>
-                    </svg>
+                        title="Carousel view"
+                        aria-pressed="mode === 'carousel'">
+                    <i class="bi bi-collection-play text-base leading-none" aria-hidden="true"></i>
                 </button>
             </div>
         </div>
