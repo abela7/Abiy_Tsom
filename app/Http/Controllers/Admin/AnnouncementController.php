@@ -36,12 +36,15 @@ class AnnouncementController extends Controller
     {
         $validated = $request->validate([
             'photo' => ['nullable', 'image', 'max:2048'],
+            'photo_en' => ['nullable', 'image', 'max:2048'],
             'title' => ['required', 'string', 'max:255'],
             'title_en' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:5000'],
             'description_en' => ['nullable', 'string', 'max:5000'],
             'youtube_url' => ['nullable', 'string', 'max:500'],
             'youtube_position' => ['nullable', 'string', 'in:top,end'],
+            'youtube_url_en' => ['nullable', 'string', 'max:500'],
+            'youtube_position_en' => ['nullable', 'string', 'in:top,end'],
             'button_enabled' => ['boolean'],
             'button_label' => ['nullable', 'required_if:button_enabled,true', 'string', 'max:100'],
             'button_label_en' => ['nullable', 'string', 'max:100'],
@@ -54,6 +57,10 @@ class AnnouncementController extends Controller
 
         if ($request->hasFile('photo')) {
             $validated['photo'] = $request->file('photo')
+                ->store('announcements', 'public');
+        }
+        if ($request->hasFile('photo_en')) {
+            $validated['photo_en'] = $request->file('photo_en')
                 ->store('announcements', 'public');
         }
 
@@ -73,12 +80,15 @@ class AnnouncementController extends Controller
     {
         $validated = $request->validate([
             'photo' => ['nullable', 'image', 'max:2048'],
+            'photo_en' => ['nullable', 'image', 'max:2048'],
             'title' => ['required', 'string', 'max:255'],
             'title_en' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:5000'],
             'description_en' => ['nullable', 'string', 'max:5000'],
             'youtube_url' => ['nullable', 'string', 'max:500'],
             'youtube_position' => ['nullable', 'string', 'in:top,end'],
+            'youtube_url_en' => ['nullable', 'string', 'max:500'],
+            'youtube_position_en' => ['nullable', 'string', 'in:top,end'],
             'button_enabled' => ['boolean'],
             'button_label' => ['nullable', 'required_if:button_enabled,true', 'string', 'max:100'],
             'button_label_en' => ['nullable', 'string', 'max:100'],
@@ -95,6 +105,13 @@ class AnnouncementController extends Controller
             $validated['photo'] = $request->file('photo')
                 ->store('announcements', 'public');
         }
+        if ($request->hasFile('photo_en')) {
+            if ($announcement->photo_en) {
+                Storage::disk('public')->delete($announcement->photo_en);
+            }
+            $validated['photo_en'] = $request->file('photo_en')
+                ->store('announcements', 'public');
+        }
 
         $announcement->update($validated);
 
@@ -107,6 +124,9 @@ class AnnouncementController extends Controller
     {
         if ($announcement->photo) {
             Storage::disk('public')->delete($announcement->photo);
+        }
+        if ($announcement->photo_en) {
+            Storage::disk('public')->delete($announcement->photo_en);
         }
 
         $announcement->delete();

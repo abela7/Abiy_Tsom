@@ -5,6 +5,8 @@
 @section('content')
 @php
     $navToken = isset($currentMember) ? '?token=' . e($currentMember->token) : '';
+    $announcementPhotoUrl = $announcement->photoUrlForLocale();
+    $youtubePosition = $announcement->youtubePositionForLocale();
 @endphp
 <article class="min-h-screen bg-surface">
     {{-- Back link --}}
@@ -21,9 +23,9 @@
     </div>
 
     {{-- Hero image --}}
-    @if($announcement->photo)
+    @if($announcementPhotoUrl)
         <div class="relative w-full aspect-[16/9] sm:aspect-[21/9] overflow-hidden bg-muted">
-            <img src="{{ $announcement->photo_url }}" alt=""
+            <img src="{{ $announcementPhotoUrl }}" alt=""
                  class="absolute inset-0 w-full h-full object-cover object-center">
             <div class="absolute inset-0 bg-gradient-to-t from-surface/60 via-transparent to-transparent"></div>
         </div>
@@ -40,7 +42,7 @@
             </p>
         </header>
 
-        @if($announcement->hasYoutubeVideo() && $announcement->youtube_position === 'top')
+        @if($announcement->hasYoutubeVideo() && $youtubePosition === 'top')
             @include('member.announcement._youtube-embed', ['announcement' => $announcement])
         @endif
 
@@ -50,7 +52,7 @@
             </div>
         @endif
 
-        @if($announcement->hasYoutubeVideo() && $announcement->youtube_position === 'end')
+        @if($announcement->hasYoutubeVideo() && $youtubePosition === 'end')
             @include('member.announcement._youtube-embed', ['announcement' => $announcement])
         @endif
 
@@ -79,3 +81,4 @@
     </div>
 </article>
 @endsection
+

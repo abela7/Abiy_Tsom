@@ -24,8 +24,11 @@
             @forelse($announcements as $announcement)
                 <tr class="hover:bg-muted">
                     <td class="px-4 py-3">
-                        @if($announcement->photo)
-                            <img src="{{ $announcement->photo_url }}" alt="" class="w-12 h-12 object-cover rounded-lg">
+                        @php
+                            $announcementPhotoUrl = $announcement->photoUrlForLocale();
+                        @endphp
+                        @if($announcementPhotoUrl)
+                            <img src="{{ $announcementPhotoUrl }}" alt="" class="w-12 h-12 object-cover rounded-lg">
                         @else
                             <div class="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
                                 <svg class="w-6 h-6 text-muted-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">

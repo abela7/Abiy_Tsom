@@ -16,12 +16,15 @@ class Announcement extends Model
     /** @var list<string> */
     protected $fillable = [
         'photo',
+        'photo_en',
         'title',
         'title_en',
         'description',
         'description_en',
         'youtube_url',
+        'youtube_url_en',
         'youtube_position',
+        'youtube_position_en',
         'button_label',
         'button_label_en',
         'button_url',
@@ -49,11 +52,7 @@ class Announcement extends Model
      */
     public function getPhotoUrlAttribute(): ?string
     {
-        if (! $this->photo) {
-            return null;
-        }
-
-        return Storage::disk('public')->url($this->photo);
+        return $this->photoUrlForLocale();
     }
 
     /**
@@ -110,12 +109,62 @@ class Announcement extends Model
     }
 
     /**
+     * Localized photo path for current locale (falls back to legacy photo).
+     */
+    public function photoForLocale(?string $locale = null): ?string
+    {
+        return $this->localizedField($locale, $this->photo_en, $this->photo);
+    }
+
+    /**
+     * Localized photo URL for current locale (falls back to legacy photo).
+     */
+    public function photoUrlForLocale(?string $locale = null): ?string
+    {
+        $photo = $this->photoForLocale($locale);
+        if (! $photo) {
+            return null;
+        }
+
+        return Storage::disk('public')->url($photo);
+    }
+
+    /**
+     * Localized YouTube URL for current locale (falls back to legacy URL).
+     */
+    public function youtubeUrlForLocale(?string $locale = null): ?string
+    {
+        $locale = $locale ?? app()->getLocale();
+        if ($locale === 'en' && is_string($this->youtube_url_en) && trim($this->youtube_url_en) !== '') {
+            return $this->youtube_url_en;
+        }
+
+        return $this->youtube_url;
+    }
+
+    /**
+     * Localized YouTube position for current locale (falls back to legacy position).
+     */
+    public function youtubePositionForLocale(?string $locale = null): string
+    {
+        $locale = $locale ?? app()->getLocale();
+        $value = $this->youtube_position;
+        if ($locale === 'en' && is_string($this->youtube_position_en) && trim($this->youtube_position_en) !== '') {
+            $value = $this->youtube_position_en;
+        }
+
+        return in_array($value, ['top', 'end'], true) ? $value : 'end';
+    }
+
+    /**
      * Whether this announcement has a YouTube video.
      */
-    public function hasYoutubeVideo(): bool
+    public function hasYoutubeVideo(?string $locale = null): bool
     {
-        return ! empty(trim((string) $this->youtube_url))
-            && $this->youtubeVideoId() !== null;
+        $youtubeUrl = $this->youtubeUrlForLocale($locale);
+
+        return ! empty(trim((string) $youtubeUrl))
+            && $this->youtubeVideoIdForLocale($locale) !== null;
     }
 
     /**
@@ -123,10 +172,21 @@ class Announcement extends Model
      */
     public function youtubeVideoId(): ?string
     {
-        if (! $this->youtube_url) {
+        return $this->youtubeVideoIdForLocale();
+    }
+
+    /**
+     * Extract YouTube video ID from localized url, or null if invalid.
+     */
+    public function youtubeVideoIdForLocale(?string $locale = null): ?string
+    {
+        $youtubeUrl = $this->youtubeUrlForLocale($locale);
+
+        if (! $youtubeUrl) {
             return null;
         }
-        if (preg_match('/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/', $this->youtube_url, $m)) {
+
+        if (preg_match('/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/', $youtubeUrl, $m)) {
             return $m[1];
         }
 

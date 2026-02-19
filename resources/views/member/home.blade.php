@@ -161,6 +161,7 @@
                 @php
                     $announcementTitle = $announcement->titleForLocale();
                     $announcementDescription = $announcement->descriptionForLocale();
+                    $announcementPhotoUrl = $announcement->photoUrlForLocale();
                 @endphp
                 <article class="carousel-card absolute top-0 left-0 w-full rounded-2xl shadow-lg border border-border overflow-hidden transition-all duration-500 ease-out"
                          :class="getCardClasses({{ $index }})"
@@ -169,9 +170,9 @@
                     <a href="{{ route('member.announcement.show', $announcement) }}{{ $navToken }}"
                        class="block group"
                        @click.prevent>
-                        @if($announcement->photo)
+                        @if($announcementPhotoUrl)
                             <div class="relative w-full aspect-[16/9] overflow-hidden bg-muted">
-                                <img src="{{ $announcement->photo_url }}" alt=""
+                                <img src="{{ $announcementPhotoUrl }}" alt=""
                                      class="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-[1.02] transition-transform duration-300"
                                      loading="{{ $index === 0 ? 'eager' : 'lazy' }}">
                                 @if($announcement->hasYoutubeVideo())

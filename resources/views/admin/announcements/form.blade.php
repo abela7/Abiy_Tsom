@@ -17,16 +17,38 @@
         @endif
 
         {{-- Photo --}}
+        @php
+            $amharicPhotoUrl = $announcement->photoUrlForLocale('am');
+            $englishPhotoUrl = $announcement->photoUrlForLocale('en');
+        @endphp
         <div class="bg-card rounded-xl p-4 shadow-sm border border-border">
             <label class="block text-sm font-medium text-secondary mb-2">{{ __('app.photo') }}</label>
-            @if($announcement->photo)
-                <div class="mb-3">
-                    <img src="{{ $announcement->photo_url }}" alt="" class="w-32 h-32 object-cover rounded-lg border border-border">
-                    <p class="text-xs text-muted-text mt-1">{{ __('app.current_photo') }}</p>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div>
+                    <p class="text-xs font-semibold text-secondary mb-1">{{ __('app.photo') }} ({{ __('app.amharic') }})</p>
+                    @if($amharicPhotoUrl)
+                        <div class="mb-3">
+                            <img src="{{ $amharicPhotoUrl }}" alt="" class="w-32 h-32 object-cover rounded-lg border border-border">
+                            <p class="text-xs text-muted-text mt-1">{{ __('app.current_photo') }}</p>
+                        </div>
+                    @endif
+                    <input type="file" name="photo" accept="image/*"
+                           class="block w-full text-sm text-secondary file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-accent file:text-on-accent">
                 </div>
-            @endif
-            <input type="file" name="photo" accept="image/*"
-                   class="block w-full text-sm text-secondary file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-accent file:text-on-accent">
+
+                <div>
+                    <p class="text-xs font-semibold text-secondary mb-1">{{ __('app.photo') }} ({{ __('app.english') }})</p>
+                    @if($englishPhotoUrl)
+                        <div class="mb-3">
+                            <img src="{{ $englishPhotoUrl }}" alt="" class="w-32 h-32 object-cover rounded-lg border border-border">
+                            <p class="text-xs text-muted-text mt-1">{{ __('app.current_photo') }}</p>
+                        </div>
+                    @endif
+                    <input type="file" name="photo_en" accept="image/*"
+                           class="block w-full text-sm text-secondary file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-accent file:text-on-accent">
+                    <p class="mt-1 text-xs text-muted-text">{{ __('app.shown_when_english') }}</p>
+                </div>
+            </div>
         </div>
 
         {{-- Title --}}
@@ -61,26 +83,56 @@
 
         {{-- YouTube video (optional) --}}
         <div class="bg-card rounded-xl p-4 shadow-sm border border-border">
-            <label for="youtube_url" class="block text-sm font-medium text-secondary mb-2">{{ __('app.youtube_url') }}</label>
-            <input type="url" name="youtube_url" id="youtube_url" value="{{ old('youtube_url', $announcement->youtube_url) }}"
-                   maxlength="500"
-                   class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none bg-card text-primary"
-                   placeholder="{{ __('app.youtube_url_placeholder') }}">
-            <p class="mt-1 text-xs text-muted-text">{{ __('app.youtube_url_placeholder') }}</p>
+            <label class="block text-sm font-medium text-secondary mb-2">{{ __('app.youtube_url') }}</label>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div>
+                    <label for="youtube_url" class="block text-xs text-secondary mb-2">{{ __('app.youtube_url') }} ({{ __('app.amharic') }})</label>
+                    <input type="url" name="youtube_url" id="youtube_url" value="{{ old('youtube_url', $announcement->youtube_url) }}"
+                           maxlength="500"
+                           class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none bg-card text-primary"
+                           placeholder="{{ __('app.youtube_url_placeholder') }}">
+                    <p class="mt-1 text-xs text-muted-text">{{ __('app.youtube_url_placeholder') }}</p>
 
-            <div class="mt-4">
-                <label class="block text-sm font-medium text-secondary mb-2">{{ __('app.youtube_position') }}</label>
-                <div class="flex flex-wrap gap-4">
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="radio" name="youtube_position" value="top"
-                               {{ old('youtube_position', $announcement->youtube_position) === 'top' ? 'checked' : '' }}>
-                        <span class="text-sm text-secondary">{{ __('app.youtube_position_top') }}</span>
-                    </label>
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="radio" name="youtube_position" value="end"
-                               {{ old('youtube_position', $announcement->youtube_position) === 'end' ? 'checked' : '' }}>
-                        <span class="text-sm text-secondary">{{ __('app.youtube_position_end') }}</span>
-                    </label>
+                    <div class="mt-4">
+                        <label class="block text-xs text-secondary mb-2">{{ __('app.youtube_position') }}</label>
+                        <div class="flex flex-wrap gap-4">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="youtube_position" value="top"
+                                       {{ old('youtube_position', $announcement->youtube_position) === 'top' ? 'checked' : '' }}>
+                                <span class="text-sm text-secondary">{{ __('app.youtube_position_top') }}</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="youtube_position" value="end"
+                                       {{ old('youtube_position', $announcement->youtube_position) === 'end' ? 'checked' : '' }}>
+                                <span class="text-sm text-secondary">{{ __('app.youtube_position_end') }}</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="youtube_url_en" class="block text-xs text-secondary mb-2">{{ __('app.youtube_url') }} ({{ __('app.english') }})</label>
+                    <input type="url" name="youtube_url_en" id="youtube_url_en" value="{{ old('youtube_url_en', $announcement->youtube_url_en ?? '') }}"
+                           maxlength="500"
+                           class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none bg-card text-primary"
+                           placeholder="{{ __('app.youtube_url_placeholder') }}">
+                    <p class="mt-1 text-xs text-muted-text">{{ __('app.shown_when_english') }}</p>
+
+                    <div class="mt-4">
+                        <label class="block text-xs text-secondary mb-2">{{ __('app.youtube_position') }}</label>
+                        <div class="flex flex-wrap gap-4">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="youtube_position_en" value="top"
+                                       {{ old('youtube_position_en', $announcement->youtube_position_en) === 'top' ? 'checked' : '' }}>
+                                <span class="text-sm text-secondary">{{ __('app.youtube_position_top') }}</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="youtube_position_en" value="end"
+                                       {{ old('youtube_position_en', $announcement->youtube_position_en) === 'end' ? 'checked' : '' }}>
+                                <span class="text-sm text-secondary">{{ __('app.youtube_position_end') }}</span>
+                            </label>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
