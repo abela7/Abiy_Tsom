@@ -2,17 +2,17 @@
 @section('title', __('app.daily_content'))
 
 @section('content')
-<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-    <h1 class="text-xl sm:text-2xl font-bold text-primary">{{ __('app.daily_content') }}</h1>
+<div class="flex flex-col gap-3 mb-6 sm:flex-row sm:items-center sm:justify-between">
+    <h1 class="text-2xl sm:text-3xl font-bold text-primary leading-tight">{{ __('app.daily_content') }}</h1>
     @if($season)
-        <div class="flex flex-wrap gap-2">
+        <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
             <a href="{{ route('admin.day-assignments.index') }}"
-               class="px-3.5 py-2 bg-muted text-secondary rounded-lg text-sm font-medium hover:bg-border transition whitespace-nowrap">
+               class="inline-flex w-full items-center justify-center rounded-xl border border-border bg-muted px-4 py-2.5 text-sm font-semibold text-secondary transition hover:bg-border sm:w-auto">
                 {{ __('app.day_assignments') }}
             </a>
             <a href="{{ route('admin.daily.create') }}"
-               class="px-3.5 py-2 bg-accent text-on-accent rounded-lg text-sm font-medium hover:bg-accent-hover transition whitespace-nowrap">
-                + {{ __('app.create') }}
+               class="inline-flex w-full items-center justify-center rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-on-accent transition hover:bg-accent-hover sm:w-auto">
+                {{ __('app.create') }}
             </a>
         </div>
     @endif
