@@ -7,9 +7,18 @@
         {{ $announcement->exists ? __('app.edit') : __('app.create') }} {{ __('app.announcement') }}
     </h1>
 
+    @php
+        $amharicPhotoUrl = $announcement->photoUrlForLocale('am');
+        $englishPhotoUrl = $announcement->photoUrlForLocale('en');
+    @endphp
+
     <form method="POST"
           action="{{ $announcement->exists ? route('admin.announcements.update', $announcement) : route('admin.announcements.store') }}"
           enctype="multipart/form-data"
+          x-data="announcementImagePreview({
+              amharicPhoto: @js($amharicPhotoUrl),
+              englishPhoto: @js($englishPhotoUrl),
+          })"
           class="space-y-6">
         @csrf
         @if($announcement->exists)
@@ -17,34 +26,28 @@
         @endif
 
         {{-- Photo --}}
-        @php
-            $amharicPhotoUrl = $announcement->photoUrlForLocale('am');
-            $englishPhotoUrl = $announcement->photoUrlForLocale('en');
-        @endphp
         <div class="bg-card rounded-xl p-4 shadow-sm border border-border">
             <label class="block text-sm font-medium text-secondary mb-2">{{ __('app.photo') }}</label>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div>
                     <p class="text-xs font-semibold text-secondary mb-1">{{ __('app.photo') }} ({{ __('app.amharic') }})</p>
-                    @if($amharicPhotoUrl)
-                        <div class="mb-3">
-                            <img src="{{ $amharicPhotoUrl }}" alt="" class="w-32 h-32 object-cover rounded-lg border border-border">
-                            <p class="text-xs text-muted-text mt-1">{{ __('app.current_photo') }}</p>
-                        </div>
-                    @endif
+                    <div class="mb-3" x-show="amharicPhotoPreview">
+                        <img :src="amharicPhotoPreview" alt="" class="w-32 h-32 object-cover rounded-lg border border-border">
+                        <p class="text-xs text-muted-text mt-1">{{ __('app.current_photo') }}</p>
+                    </div>
                     <input type="file" name="photo" accept="image/*"
+                           @change="previewFile($event, 'am')"
                            class="block w-full text-sm text-secondary file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-accent file:text-on-accent">
                 </div>
 
                 <div>
                     <p class="text-xs font-semibold text-secondary mb-1">{{ __('app.photo') }} ({{ __('app.english') }})</p>
-                    @if($englishPhotoUrl)
-                        <div class="mb-3">
-                            <img src="{{ $englishPhotoUrl }}" alt="" class="w-32 h-32 object-cover rounded-lg border border-border">
-                            <p class="text-xs text-muted-text mt-1">{{ __('app.current_photo') }}</p>
-                        </div>
-                    @endif
+                    <div class="mb-3" x-show="englishPhotoPreview">
+                        <img :src="englishPhotoPreview" alt="" class="w-32 h-32 object-cover rounded-lg border border-border">
+                        <p class="text-xs text-muted-text mt-1">{{ __('app.current_photo') }}</p>
+                    </div>
                     <input type="file" name="photo_en" accept="image/*"
+                           @change="previewFile($event, 'en')"
                            class="block w-full text-sm text-secondary file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-accent file:text-on-accent">
                     <p class="mt-1 text-xs text-muted-text">{{ __('app.shown_when_english') }}</p>
                 </div>
@@ -192,3 +195,40 @@
     </form>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+function announcementImagePreview(initial) {
+    return {
+        amharicPhotoPreview: initial?.amharicPhoto || '',
+        englishPhotoPreview: initial?.englishPhoto || '',
+        amharicObjectUrl: null,
+        englishObjectUrl: null,
+
+        previewFile(event, locale) {
+            const file = event?.target?.files?.[0] || null;
+            if (!file || !file.type || !file.type.startsWith('image/')) {
+                return;
+            }
+
+            const objectUrl = URL.createObjectURL(file);
+
+            if (locale === 'am') {
+                if (this.amharicObjectUrl) {
+                    URL.revokeObjectURL(this.amharicObjectUrl);
+                }
+                this.amharicObjectUrl = objectUrl;
+                this.amharicPhotoPreview = objectUrl;
+                return;
+            }
+
+            if (this.englishObjectUrl) {
+                URL.revokeObjectURL(this.englishObjectUrl);
+            }
+            this.englishObjectUrl = objectUrl;
+            this.englishPhotoPreview = objectUrl;
+        },
+    };
+}
+</script>
+@endpush
