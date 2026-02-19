@@ -1,6 +1,8 @@
 @extends('layouts.admin')
 
 @php
+    $locale = app()->getLocale();
+
     $isEdit = isset($daily) && $daily->exists;
     $totalSteps = 7;
     $currentStep = max(1, min($totalSteps, (int) ($initialStep ?? 1)));
@@ -70,6 +72,7 @@
         ->map(fn ($theme) => [
             'id' => $theme->id,
             'name_en' => $theme->name_en,
+            'name_am' => $theme->name_am,
         ])
         ->toArray();
 
@@ -133,6 +136,7 @@
                 seasonStart: @js($season?->start_date?->format('Y-m-d') ?? ''),
                 dayRangesByWeek: @js($dayRangesByWeek ?? []),
                 themesByWeek: @js($themesByWeek),
+                locale: @js($locale),
                 stepLabels: @js($stepLabels),
                 recentBooks: @js($recentBooks),
                 state: @js($wizardState),
@@ -237,14 +241,16 @@
                                 x-model="form.weekly_theme_id"
                                 class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"
                             >
-                                <option value="">{{ __('app.select_placeholder') }}</option>
-                                @foreach($themes as $theme)
-                                    @php($range = \App\Services\AbiyTsomStructure::getDayRangeForWeek($theme->week_number))
-                                    <option value="{{ $theme->id }}">
-                                        {{ __('app.week_label') }} {{ $theme->week_number }} - {{ $theme->name_en }} ({{ $range[0] }}-{{ $range[1] }})
-                                    </option>
-                                @endforeach
-                            </select>
+                            <option value="">{{ __('app.select_placeholder') }}</option>
+                            @foreach($themes as $theme)
+                                @php($range = \App\Services\AbiyTsomStructure::getDayRangeForWeek($theme->week_number))
+                                <option value="{{ $theme->id }}">
+                                    {{ __('app.week_label') }} {{ $theme->week_number }}
+                                    - {{ $locale === 'en' ? ($theme->name_en ?: $theme->name_am ?: '-') : ($theme->name_am ?: $theme->name_en ?: '-') }}
+                                    ({{ $range[0] }}-{{ $range[1] }})
+                                </option>
+                            @endforeach
+                        </select>
                         </div>
                     </div>
 
@@ -387,7 +393,10 @@
                             <button type="button"
                                     @click="addBookFromRecommendation(@js($rb))"
                                     class="text-left p-3 rounded-xl border border-border bg-muted/30 hover:bg-accent/10 hover:border-accent/40 transition text-sm touch-manipulation">
-                                <span class="font-medium text-primary line-clamp-2">{{ ($rb['title_am'] ?? '') ?: ($rb['title_en'] ?? '-') }}</span>
+                                @php($recommendedBookTitle = $locale === 'en'
+                                    ? (($rb['title_en'] ?? '') ?: ($rb['title_am'] ?? '-'))
+                                    : (($rb['title_am'] ?? '') ?: ($rb['title_en'] ?? '-')))
+                                <span class="font-medium text-primary line-clamp-2">{{ $recommendedBookTitle }}</span>
                                 <span class="text-xs text-muted-text mt-1 block">{{ __('app.day_label') }} {{ $rb['day_number'] ?? '-' }}</span>
                             </button>
                             @endforeach
@@ -483,7 +492,7 @@
                         </div>
                         <div class="p-4 rounded-xl border border-border bg-muted/40">
                             <p class="text-xs text-muted-text mb-1">{{ __('app.bible_reading_label') }}</p>
-                            <p class="text-base font-medium text-primary" x-text="form.bible_reference_am || form.bible_reference_en || '-'"></p>
+                            <p class="text-base font-medium text-primary" x-text="(locale === 'en' ? (form.bible_reference_en || form.bible_reference_am) : (form.bible_reference_am || form.bible_reference_en)) || '-'"></p>
                         </div>
                         <div class="p-4 rounded-xl border border-border bg-muted/40">
                             <p class="text-xs text-muted-text mb-1">{{ __('app.mezmur_label') }}</p>
@@ -553,6 +562,7 @@
                     urls: config.urls || {},
                     messages: config.messages || {},
                     daysWithContent: Array.isArray(config.daysWithContent) ? config.daysWithContent : [],
+                    locale: config.locale || 'am',
                     resolvedInfo: null,
                     form: config.state || {},
                     copySourceDay: '',
@@ -807,7 +817,9 @@
                     selectedThemeName() {
                         const selectedId = Number(this.form.weekly_theme_id || 0);
                         const themeEntry = Object.values(this.themesByWeek || {}).find((theme) => Number(theme.id) === selectedId);
-                        return themeEntry?.name_en || '-';
+                        const enName = themeEntry?.name_en || '';
+                        const amName = themeEntry?.name_am || '';
+                        return (this.locale === 'en' ? enName : amName) || enName || amName || '-';
                     },
 
                     activeMezmurCount() {
