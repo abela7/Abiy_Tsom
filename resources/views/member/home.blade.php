@@ -144,7 +144,7 @@
     {{-- Announcements --}}
     @if($announcements->isNotEmpty())
     @php $navToken = isset($currentMember) ? '?token=' . e($currentMember->token) : ''; @endphp
-    <section x-data="announcementDisplay({{ $announcements->count() }})" x-init="init()">
+    <section x-data="announcementDisplay({{ $announcements->count() }})">
         <div class="flex items-center justify-between gap-2 mb-4">
             <h2 class="text-xs font-bold text-muted-text uppercase tracking-wider">{{ __('app.announcements_section') }}</h2>
             <div class="inline-flex items-center gap-1 rounded-full border border-border bg-muted/30 p-1">
@@ -415,7 +415,10 @@ document.addEventListener('alpine:init', function() {
                     } catch (error) {}
 
                     if (value === 'carousel') {
-                        this.startAutoplay();
+                        this.$nextTick(function() {
+                            this.updateHeight();
+                            this.startAutoplay();
+                        }.bind(this));
                     } else {
                         this.pauseAutoplay();
                     }
@@ -428,6 +431,7 @@ document.addEventListener('alpine:init', function() {
             },
 
             setMode: function(mode) {
+                if (this.mode === mode) return;
                 this.mode = mode;
             },
 
@@ -446,6 +450,7 @@ document.addEventListener('alpine:init', function() {
                 if (this.total <= 1 || this.mode !== 'carousel') return;
 
                 var self = this;
+                this.updateHeight();
                 this.pauseAutoplay();
                 this.autoplayInterval = setInterval(function() {
                     self.next();
@@ -541,7 +546,7 @@ document.addEventListener('alpine:init', function() {
                 var offset = this.getOffset(index);
                 var absOffset = Math.min(Math.abs(offset), this.total - Math.abs(offset));
                 if (absOffset === 1) {
-                    return 'transform: translate(6px,-8px) scale(0.97) rotate(1.5deg); opacity: 0.5; pointer-events: auto;';
+                    return 'transform: translate(6px,-8px) scale(0.97) rotate(1.5deg); opacity: 0.5; pointer-events: none;';
                 }
                 if (absOffset === 2) {
                     return 'transform: translate(12px,-16px) scale(0.94) rotate(2.5deg); opacity: 0.25; pointer-events: none;';
