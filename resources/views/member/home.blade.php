@@ -147,25 +147,26 @@
     <section x-data="announcementDisplay({{ $announcements->count() }})" x-init="init()">
         <div class="flex items-center justify-between gap-2 mb-4">
             <h2 class="text-xs font-bold text-muted-text uppercase tracking-wider">{{ __('app.announcements_section') }}</h2>
-            <div class="inline-flex items-center rounded-full border border-border bg-muted p-1">
+            <div class="inline-flex items-center rounded-full border border-border bg-muted/40">
                 <button type="button"
-                        class="px-3 py-1.5 rounded-full font-semibold transition"
-                        :class="mode === 'list' ? 'bg-accent text-white shadow-sm' : 'text-muted-text hover:text-primary'"
+                        class="p-2 rounded-full transition"
+                        :class="mode === 'list' ? 'text-accent' : 'text-muted-text hover:text-primary'"
                         @click="setMode('list')"
                         aria-pressed="mode === 'list'">
                     <span class="sr-only">List view</span>
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 6h13M8 12h13M8 18h13M3 6h1m0 6h1m0 6h1M4 5h1.5a2 2 0 012 2v2a2 2 0 01-2 2H4a2 2 0 01-2-2V7a2 2 0 012-2zm0 12h1.5a2 2 0 012 2v2a2 2 0 01-2 2H4a2 2 0 01-2-2v-2a2 2 0 012-2z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7h16M4 12h16M4 17h16"/>
                     </svg>
                 </button>
                 <button type="button"
-                        class="px-3 py-1.5 rounded-full font-semibold transition"
-                        :class="mode === 'carousel' ? 'bg-accent text-white shadow-sm' : 'text-muted-text hover:text-primary'"
+                        class="p-2 rounded-full transition"
+                        :class="mode === 'carousel' ? 'text-accent' : 'text-muted-text hover:text-primary'"
                         @click="setMode('carousel')"
                         aria-pressed="mode === 'carousel'">
                     <span class="sr-only">Carousel</span>
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h8M4 14h12M4 18h7M17 10h3M17 14h3M17 18h3"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6h18M3 12h12M3 18h10M18 12h3M18 18h3"/>
+                        <rect x="6" y="4" width="12" height="16" rx="1.5" stroke-width="2"/>
                     </svg>
                 </button>
             </div>
