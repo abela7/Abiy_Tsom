@@ -59,7 +59,6 @@ class Announcement extends Model
     /**
      * Whether this announcement has an action button.
      */
-    public function hasButton(): bool
     public function hasButton(?string $locale = null): bool
     {
         $buttonLabel = $this->buttonLabelForLocale($locale);
