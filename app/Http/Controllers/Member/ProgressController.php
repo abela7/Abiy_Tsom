@@ -36,7 +36,7 @@ class ProgressController extends Controller
     }
 
     /**
-     * API endpoint — returns chart data for the progress graphs.
+     * API endpoint returns chart data for the progress graphs.
      *
      * Accepts ?period=daily|weekly|monthly|all (default: all).
      */
@@ -68,12 +68,9 @@ class ProgressController extends Controller
 
         $today = Carbon::today();
 
-        // Find today's content to determine current week
-        $todayContent = $allDays->first(
-            fn (DailyContent $d) => $d->date && $d->date->isSameDay($today)
-        );
+        $referenceDay = $this->getReferenceDay($allDays, $today);
 
-        $periodDays = $this->filterByPeriod($allDays, $period, $todayContent, $dayParam, $weekParam);
+        $periodDays = $this->filterByPeriod($allDays, $period, $referenceDay, $dayParam, $weekParam);
 
         $activities = Activity::where('lent_season_id', $season->id)
             ->where('is_active', true)
@@ -158,8 +155,9 @@ class ProgressController extends Controller
             ? (int) round(($totalChecks / ($periodDayCount * $totalActivities)) * 100)
             : 0;
 
-        // Suggestions: bottom 3 activities
+        // Suggestions: bottom 3 activities that are not already complete.
         $suggestions = collect($activityRates)
+            ->filter(fn (array $a) => (int) $a['rate'] < 100)
             ->sortBy('rate')
             ->take(3)
             ->values()
@@ -182,7 +180,7 @@ class ProgressController extends Controller
             $worstDay = $sorted->last();
         }
 
-        // Heatmap: all 55 days with rate (always computed so
+        // Heatmap: all published days with rate (always computed so
         // frontend can show/hide based on period tab)
         $heatmap = [];
         foreach ($allDays as $day) {
@@ -203,17 +201,17 @@ class ProgressController extends Controller
             $viewDayContentId = $periodDays->first()?->id;
         }
 
-        // Day picker options (1-55 with dates)
-        $startDate = Carbon::parse($season->start_date);
+        // Day picker options from available published days
         $dayOptions = [];
-        for ($d = 1; $d <= 55; $d++) {
-            $date = $startDate->copy()->addDays($d - 1);
-            $content = $allDays->firstWhere('day_number', $d);
+        foreach ($allDays as $dayItem) {
+            $dayDate = $dayItem->date?->locale('en')->translatedFormat('M j');
             $dayOptions[] = [
-                'day' => $d,
-                'date' => $date->locale('en')->translatedFormat('M j'),
-                'label' => "Day {$d} · " . $date->locale('en')->translatedFormat('M j'),
-                'has_content' => (bool) $content,
+                'day' => $dayItem->day_number,
+                'date' => $dayDate ?? '',
+                'label' => $dayDate !== null
+                    ? ('Day ' . $dayItem->day_number . ' (' . $dayDate . ')')
+                    : ('Day ' . $dayItem->day_number),
+                'has_content' => true,
             ];
         }
 
@@ -228,7 +226,7 @@ class ProgressController extends Controller
                 'name' => $name,
                 'day_start' => $info['day_start'],
                 'day_end' => $info['day_end'],
-                'label' => "Week {$wn} · {$name} (Days {$info['day_start']}-{$info['day_end']})",
+                'label' => "Week {$wn} - {$name} (Days {$info['day_start']}-{$info['day_end']})",
             ];
         }
 
@@ -253,23 +251,21 @@ class ProgressController extends Controller
      * Filter days by the requested period.
      *
      * @param  Collection<int, DailyContent>  $allDays
-     * @param  int|null  $dayParam  Specific day number (1-55) when period=daily
+     * @param  int|null  $dayParam  Specific day number when period=daily
      * @param  int|null  $weekParam  Specific week number (1-8) when period=weekly
      * @return Collection<int, DailyContent>
      */
     private function filterByPeriod(
         Collection $allDays,
         string $period,
-        ?DailyContent $todayContent,
+        ?DailyContent $referenceDay,
         ?string $dayParam = null,
         ?string $weekParam = null
     ): Collection {
-        $today = Carbon::today();
-
         return match ($period) {
-            'daily' => $this->filterDaily($allDays, $today, $todayContent, $dayParam),
-            'weekly' => $this->filterWeekly($allDays, $todayContent, $weekParam),
-            'monthly' => $this->getMonthlyDays($allDays, $todayContent),
+            'daily' => $this->filterDaily($allDays, $referenceDay, $dayParam),
+            'weekly' => $this->filterWeekly($allDays, $referenceDay, $weekParam),
+            'monthly' => $this->getMonthlyDays($allDays, $referenceDay),
             default => $allDays,
         };
     }
@@ -278,17 +274,24 @@ class ProgressController extends Controller
      * @param  Collection<int, DailyContent>  $allDays
      * @return Collection<int, DailyContent>
      */
-    private function filterDaily(Collection $allDays, Carbon $today, ?DailyContent $todayContent, ?string $dayParam): Collection
+    private function filterDaily(Collection $allDays, ?DailyContent $referenceDay, ?string $dayParam): Collection
     {
+        $maxDay = $allDays->max('day_number');
+        $minDay = $allDays->min('day_number');
+
         if ($dayParam !== null && $dayParam !== '') {
             $dayNum = (int) $dayParam;
-            if ($dayNum >= 1 && $dayNum <= 55) {
+            if ($minDay !== null && $maxDay !== null && $dayNum >= (int) $minDay && $dayNum <= (int) $maxDay) {
                 return $allDays->where('day_number', $dayNum)->values();
             }
         }
 
+        if (! $referenceDay) {
+            return $allDays->take(0);
+        }
+
         return $allDays->filter(
-            fn (DailyContent $d) => $d->date && $d->date->isSameDay($today)
+            fn (DailyContent $d) => $d->day_number === $referenceDay->day_number
         )->values();
     }
 
@@ -296,7 +299,7 @@ class ProgressController extends Controller
      * @param  Collection<int, DailyContent>  $allDays
      * @return Collection<int, DailyContent>
      */
-    private function filterWeekly(Collection $allDays, ?DailyContent $todayContent, ?string $weekParam): Collection
+    private function filterWeekly(Collection $allDays, ?DailyContent $referenceDay, ?string $weekParam): Collection
     {
         if ($weekParam !== null && $weekParam !== '') {
             $weekNum = (int) $weekParam;
@@ -307,49 +310,84 @@ class ProgressController extends Controller
             }
         }
 
-        if ($todayContent) {
-            return $allDays->where('weekly_theme_id', $todayContent->weekly_theme_id)->values();
+        if ($referenceDay) {
+            return $allDays->where('weekly_theme_id', $referenceDay->weekly_theme_id)->values();
         }
 
-        return collect();
+        if ($allDays->isEmpty()) {
+            return collect();
+        }
+
+        $firstDayNumber = $allDays->min('day_number');
+        $lastDayNumber = $allDays->max('day_number');
+        if ($firstDayNumber === null || $lastDayNumber === null) {
+            return collect();
+        }
+
+        return $allDays->filter(
+            fn (DailyContent $d) => $d->day_number >= $firstDayNumber && $d->day_number <= min($firstDayNumber + 6, $lastDayNumber)
+        )->values();
     }
 
     /**
-     * Get days for the current 4-week block (weeks 1-4 or 5-8).
+     * Get days for the month of the reference day.
      *
      * @param  Collection<int, DailyContent>  $allDays
      * @return Collection<int, DailyContent>
      */
     private function getMonthlyDays(
         Collection $allDays,
-        ?DailyContent $todayContent
+        ?DailyContent $referenceDay
     ): Collection {
-        if (! $todayContent || ! $todayContent->weekly_theme_id) {
-            return $allDays;
+        if ($allDays->isEmpty()) {
+            return collect();
         }
 
-        $currentWeekTheme = $todayContent->weeklyTheme;
-        if (! $currentWeekTheme) {
-            return $allDays;
+        $monthDate = $referenceDay?->date ?? $allDays->sortBy('date')->first()?->date;
+        if (! $monthDate) {
+            return collect();
         }
 
-        $weekNum = $currentWeekTheme->week_number;
-        // Block 1 = weeks 1-4, Block 2 = weeks 5-8
-        $blockStart = $weekNum <= 4 ? 1 : 5;
-        $blockEnd = $weekNum <= 4 ? 4 : 8;
+        $monthItems = $allDays->filter(
+            fn (DailyContent $d) => $d->date && $d->date->isSameMonth($monthDate)
+        )->values();
 
-        // Get theme IDs in this block
-        $themeIds = $allDays
-            ->load('weeklyTheme')
-            ->pluck('weeklyTheme')
-            ->filter()
-            ->unique('id')
-            ->filter(fn ($t) => $t->week_number >= $blockStart && $t->week_number <= $blockEnd)
-            ->pluck('id');
+        if ($monthItems->isNotEmpty()) {
+            return $monthItems;
+        }
+
+        return $allDays->take(0);
+    }
+
+    /**
+     * Best available reference day for period defaults.
+     */
+    private function getReferenceDay(Collection $allDays, Carbon $anchorDate): ?DailyContent
+    {
+        if ($allDays->isEmpty()) {
+            return null;
+        }
+
+        $todayContent = $allDays->first(
+            fn (DailyContent $d) => $d->date && $d->date->isSameDay($anchorDate)
+        );
+        if ($todayContent) {
+            return $todayContent;
+        }
+
+        $previousContent = $allDays
+            ->filter(fn (DailyContent $d) => $d->date && $d->date->isBefore($anchorDate))
+            ->sortByDesc('date')
+            ->first();
+
+        if ($previousContent) {
+            return $previousContent;
+        }
 
         return $allDays
-            ->whereIn('weekly_theme_id', $themeIds)
-            ->values();
+            ->filter(fn (DailyContent $d) => $d->date && $d->date->isAfter($anchorDate))
+            ->sortBy('date')
+            ->first();
     }
 
     /**
@@ -384,3 +422,4 @@ class ProgressController extends Controller
         return $streak;
     }
 }
+
