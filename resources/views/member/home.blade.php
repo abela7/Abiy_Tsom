@@ -147,10 +147,10 @@
     <section x-data="announcementDisplay({{ $announcements->count() }})" x-init="init()">
         <div class="flex items-center justify-between gap-2 mb-4">
             <h2 class="text-xs font-bold text-muted-text uppercase tracking-wider">{{ __('app.announcements_section') }}</h2>
-            <div class="inline-flex items-center rounded-full border border-border bg-muted/30 p-0.5">
+            <div class="inline-flex items-center gap-1 rounded-full border border-border bg-muted/30 p-1">
                 <button type="button"
                         class="w-9 h-9 rounded-full transition flex items-center justify-center"
-                        :class="mode === 'list' ? 'text-primary bg-card' : 'text-muted-text hover:text-primary'"
+                        :class="mode === 'list' ? 'text-accent bg-accent/15 ring-1 ring-accent/30' : 'text-muted-text hover:text-primary hover:bg-card/70'"
                         @click="setMode('list')"
                         aria-label="List view"
                         title="List view"
@@ -159,7 +159,7 @@
                 </button>
                 <button type="button"
                         class="w-9 h-9 rounded-full transition flex items-center justify-center"
-                        :class="mode === 'carousel' ? 'text-primary bg-card' : 'text-muted-text hover:text-primary'"
+                        :class="mode === 'carousel' ? 'text-accent bg-accent/15 ring-1 ring-accent/30' : 'text-muted-text hover:text-primary hover:bg-card/70'"
                         @click="setMode('carousel')"
                         aria-label="Carousel view"
                         title="Carousel view"
@@ -613,4 +613,3 @@ document.addEventListener('alpine:init', function() {
 
 </script>
 @endpush
-
