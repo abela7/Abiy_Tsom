@@ -462,9 +462,17 @@
                 {{-- Step 6: Reflection and references --}}
                 <section x-show="step === 6" x-cloak class="space-y-5">
                     <div class="space-y-3">
-                        <label class="block text-sm font-medium text-secondary">{{ __('app.reflection_label') }}</label>
-                        <textarea x-model="form.reflection_am" rows="4" placeholder="{{ __('app.amharic_default') }}" class="w-full min-h-[6rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
-                        <textarea x-model="form.reflection_en" rows="4" placeholder="{{ __('app.english_fallback') }}" class="w-full min-h-[6rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
+                        <p class="text-xs font-semibold text-muted-text">{{ __('app.reflection_label') }}</p>
+                        <div class="space-y-2 rounded-lg bg-muted border border-border p-3">
+                            <p class="text-xs font-semibold text-accent-secondary">{{ __('app.amharic') }}</p>
+                            <label class="block text-sm font-medium text-secondary">{{ __('app.reflection_label') }}</label>
+                            <textarea x-model="form.reflection_am" rows="4" placeholder="{{ __('app.amharic_default') }}" class="w-full min-h-[6rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
+                        </div>
+                        <div class="space-y-2 rounded-lg bg-muted border border-border p-3">
+                            <p class="text-xs font-semibold text-accent-secondary">{{ __('app.english') }}</p>
+                            <label class="block text-sm font-medium text-secondary">{{ __('app.reflection_label') }}</label>
+                            <textarea x-model="form.reflection_en" rows="4" placeholder="{{ __('app.english_fallback') }}" class="w-full min-h-[6rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
+                        </div>
                     </div>
 
                     <div class="space-y-4">
