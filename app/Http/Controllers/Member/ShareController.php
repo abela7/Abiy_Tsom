@@ -67,32 +67,23 @@ class ShareController extends Controller
             abort(404);
         }
 
-        $daily->load('weeklyTheme');
-        $locale = app()->getLocale();
+        $member = null;
+        $publicPreview = true;
 
-        $dayTitle = localized($daily, 'day_title')
-            ?? __('app.day_x', ['day' => $daily->day_number]);
+        $daily->load(['weeklyTheme', 'mezmurs', 'references', 'books']);
+        $activities = collect();
+        $checklist = collect();
+        $customActivities = collect();
+        $customChecklist = collect();
 
-        $weekName = $daily->weeklyTheme
-            ? (localized($daily->weeklyTheme, 'name')
-                ?? $daily->weeklyTheme->name_en
-                ?? '-')
-            : null;
-
-        $bibleReference = $locale === 'am'
-            ? ($daily->bible_reference_am ?: $daily->bible_reference_en)
-            : ($daily->bible_reference_en ?: $daily->bible_reference_am);
-
-        $reflection = $locale === 'am'
-            ? ($daily->reflection_am ?: $daily->reflection_en)
-            : ($daily->reflection_en ?: $daily->reflection_am);
-
-        return view('member.share-day-public', compact(
+        return view('member.day', compact(
+            'member',
             'daily',
-            'dayTitle',
-            'weekName',
-            'bibleReference',
-            'reflection',
+            'activities',
+            'checklist',
+            'customActivities',
+            'customChecklist',
+            'publicPreview',
         ));
     }
 }

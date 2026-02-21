@@ -2,6 +2,8 @@
 
 @php
     $locale = app()->getLocale();
+    $publicPreview = (bool) ($publicPreview ?? false);
+    $backUrl = $publicPreview ? route('home') : route('member.calendar');
     $weekName = $daily->weeklyTheme ? (localized($daily->weeklyTheme, 'name') ?? $daily->weeklyTheme->name_en ?? '-') : '';
     $dayTitle = localized($daily, 'day_title') ?? __('app.day_x', ['day' => $daily->day_number]);
     $sinksarUrl = $daily->sinksarUrl($locale);
@@ -35,7 +37,7 @@
 
     {{-- Back + day info + share --}}
     <div class="flex items-center gap-3">
-        <a href="{{ route('member.calendar') }}" class="p-2 rounded-lg bg-muted shrink-0">
+        <a href="{{ $backUrl }}" class="p-2 rounded-lg bg-muted shrink-0">
             <svg class="w-5 h-5 text-muted-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
         </a>
         <div class="flex-1 min-w-0">
@@ -304,7 +306,7 @@
     @php
         $customChecklistCompleted = ($customChecklist ?? collect())->mapWithKeys(fn ($c) => [(string) $c->member_custom_activity_id => $c->completed])->all();
     @endphp
-    @if($activities->isNotEmpty() || ($customActivities ?? collect())->isNotEmpty() || $member)
+    @if(!$publicPreview && ($activities->isNotEmpty() || ($customActivities ?? collect())->isNotEmpty() || $member))
     <div class="rounded-2xl p-5 shadow-sm border-2 transition-all duration-300"
          x-data="{
              allDone: false,
