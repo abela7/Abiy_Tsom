@@ -39,26 +39,25 @@
     <meta name="twitter:image" content="{{ $ogImageUrl }}">
 
     <noscript>
-        <meta http-equiv="refresh" content="0;url={{ $memberUrl }}">
+        <meta http-equiv="refresh" content="0;url={{ $publicDayUrl }}">
     </noscript>
 </head>
 <body style="font-family:system-ui,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#0d1117;color:#e6edf3;">
-    <p>{{ __('app.redirecting') }}... <a href="{{ $memberUrl }}" id="fallback-link" style="color:#58a6ff;">{{ $ogTitle }}</a></p>
+    <p>{{ __('app.redirecting') }}... <a href="{{ $publicDayUrl }}" id="fallback-link" style="color:#58a6ff;">{{ $ogTitle }}</a></p>
 
     <script>
         (function() {
-            var memberUrl = @js($memberUrl);
             var memberPath = @js($memberPath ?? '/member/home');
+            var publicDayUrl = @js($publicDayUrl);
             var token = new URLSearchParams(window.location.search).get('token');
 
             if (token && /^[A-Za-z0-9]{20,128}$/.test(token)) {
-                var accessBase = @js(url('/member/access'));
-                var accessUrl = accessBase + '/' + encodeURIComponent(token) + '?next=' + encodeURIComponent(memberPath);
+                var accessUrl = '/member/access/' + encodeURIComponent(token) + '?next=' + encodeURIComponent(memberPath);
                 window.location.replace(accessUrl);
                 return;
             }
 
-            window.location.replace(memberUrl);
+            window.location.replace(publicDayUrl);
         })();
     </script>
 </body>

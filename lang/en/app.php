@@ -189,6 +189,8 @@ return [
     'custom_activity_added' => 'Activity added!',
     'custom_activity_deleted' => 'Activity removed.',
     'no_custom_activities' => 'No custom activities yet. Add one above.',
+    // Day page: add activity form (member/day checklist section)
+    'add_activity_day_btn' => 'Add activity',
     'add' => 'Add',
     'language' => 'Language',
     'theme' => 'Theme',

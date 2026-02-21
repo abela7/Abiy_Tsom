@@ -357,7 +357,7 @@
                        class="min-w-0 flex-1 basis-24 px-4 py-2.5 border border-border rounded-xl bg-muted text-primary text-sm outline-none focus:ring-2 focus:ring-accent">
                 <button type="submit" :disabled="!addActivityName.trim() || addActivityLoading"
                         class="shrink-0 px-4 py-2.5 bg-accent text-on-accent rounded-xl font-medium text-sm disabled:opacity-50 transition">
-                    <span x-show="!addActivityLoading">{{ __('app.add') }}</span>
+                    <span x-show="!addActivityLoading">{{ __('app.add_activity_day_btn') }}</span>
                     <span x-show="addActivityLoading" x-cloak>{{ __('app.loading') }}...</span>
                 </button>
             </form>

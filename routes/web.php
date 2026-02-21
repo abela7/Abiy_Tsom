@@ -26,6 +26,7 @@ Route::post('/webhooks/ultramsg', [Webhook\UltraMsgWebhookController::class, 'ha
 
 // Public share page — serves OG meta for social crawlers, then redirects
 Route::get('/share/day/{daily}', [Member\ShareController::class, 'day'])->name('share.day');
+Route::get('/share/day/{daily}/public', [Member\ShareController::class, 'publicDay'])->name('share.day.public');
 
 // Passcode routes (member-identified but before passcode check)
 Route::middleware('member')->group(function () {
@@ -175,4 +176,5 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         });
     });
 });
+
 

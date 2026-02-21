@@ -190,6 +190,8 @@ return [
     'custom_activities_desc' => 'በዕለት ይከታተሉባቸው ዘንድ የራስዎን እንቅስቃሴዎች ይጨምሩ። በዕለታዊ ዝርዝርዎ ውስጥ ይታያሉ።',
     'custom_activity_placeholder' => 'ምሳሌ፡ ተጨማሪ ጸሎት፣ መጽሐፍ ቅዱስ አንብብ',
     'custom_activity_added' => 'እንቅስቃሴ ተጨምሯል!',
+    // Day page: add activity form (member/day checklist section)
+    'add_activity_day_btn' => 'እንቅስቃሴ ጨምር',
     'custom_activity_deleted' => 'እንቅስቃሴ ተሰርዟል።',
     'no_custom_activities' => 'ገና ብጁ እንቅስቃሴዎች የሉም። ከላይ ይጨምሩ።',
     'add' => 'ጨምር',

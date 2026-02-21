@@ -165,6 +165,8 @@ class OnboardingController extends Controller
      */
     public function access(Request $request, string $token): RedirectResponse
     {
+        $next = $this->sanitizeNextPath((string) $request->query('next', '/member/home'));
+
         if (! preg_match('/^[A-Za-z0-9]{20,128}$/', $token)) {
             return redirect('/');
         }
@@ -175,7 +177,9 @@ class OnboardingController extends Controller
         }
 
         if (! $this->sessions->establishSession($member, $request)) {
-            return redirect('/');
+            $fallback = $this->fallbackUrlForNext($next);
+
+            return redirect($fallback ?? '/');
         }
 
         session()->forget("member_unlocked_{$member->id}");
@@ -183,8 +187,6 @@ class OnboardingController extends Controller
         if ($member->passcode_enabled) {
             return redirect()->route('member.passcode');
         }
-
-        $next = $this->sanitizeNextPath((string) $request->query('next', '/member/home'));
 
         return redirect($next);
     }
@@ -210,10 +212,54 @@ class OnboardingController extends Controller
 
     private function sanitizeNextPath(string $next): string
     {
+        $next = trim($next);
+        if ($next === '') {
+            return '/member/home';
+        }
+
+        if (preg_match('#^https?://#i', $next) === 1) {
+            $parsed = parse_url($next);
+            if (! is_array($parsed)) {
+                return '/member/home';
+            }
+
+            $host = $parsed['host'] ?? null;
+            if (! is_string($host) || strcasecmp($host, request()->getHost()) !== 0) {
+                return '/member/home';
+            }
+
+            $path = $parsed['path'] ?? '';
+            $query = $parsed['query'] ?? '';
+            $next = (string) $path;
+            if (is_string($query) && $query !== '') {
+                $next .= '?'.$query;
+            }
+        }
+
+        if (str_starts_with($next, 'member/')) {
+            $next = '/'.$next;
+        }
+
         if (str_starts_with($next, '/member/')) {
             return $next;
         }
 
         return '/member/home';
+    }
+
+    private function fallbackUrlForNext(string $next): ?string
+    {
+        $path = parse_url($next, PHP_URL_PATH);
+        if (! is_string($path) || trim($path) === '') {
+            $path = $next;
+        }
+
+        $path = '/'.ltrim($path, '/');
+
+        if (preg_match('#^/member/day/(\\d+)$#', $path, $matches)) {
+            return route('share.day.public', ['daily' => (int) $matches[1]]);
+        }
+
+        return null;
     }
 }
