@@ -80,4 +80,3 @@ class SeoController extends Controller
             ->with('success', __('app.seo_saved'));
     }
 }
-

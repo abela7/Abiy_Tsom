@@ -65,6 +65,7 @@ class Activity extends Model
         }
 
         $fallback = trim((string) $fallbackValue);
+
         return $fallback !== '' ? $fallbackValue : null;
     }
 

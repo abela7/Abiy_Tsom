@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
 use App\Models\Member;
+use App\Services\MemberSessionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,45 +19,45 @@ use Illuminate\View\View;
 class PasscodeController extends Controller
 {
     /**
-     * Lock the app by clearing the session and redirecting to passcode screen.
+     * Lock the app by clearing the passcode-unlocked session state.
      */
     public function lock(Request $request): RedirectResponse
     {
-        $token = $request->query('token');
-        $member = $token ? Member::where('token', $token)->first() : null;
+        /** @var Member|null $member */
+        $member = $request->attributes->get('member');
 
         if ($member && $member->passcode_enabled) {
             session()->forget("member_unlocked_{$member->id}");
         }
 
-        return redirect()->route('member.passcode', ['token' => $token]);
+        return redirect()->route('member.passcode');
     }
 
     /**
      * Show the passcode entry screen.
      */
-    public function show(Request $request): View
+    public function show(): View
     {
         return view('member.passcode');
     }
 
     /**
-     * Verify the passcode.
+     * Verify the passcode for the authenticated member session.
      */
     public function verify(Request $request): JsonResponse
     {
         $request->validate([
-            'token' => ['required', 'string'],
             'passcode' => ['required', 'string'],
         ]);
 
-        $member = Member::where('token', $request->input('token'))->first();
+        /** @var Member|null $member */
+        $member = $request->attributes->get('member');
 
         if (! $member || ! $member->passcode_enabled) {
             return response()->json(['success' => false, 'message' => 'Invalid request.'], 400);
         }
 
-        if (Hash::check($request->input('passcode'), $member->passcode)) {
+        if (Hash::check($request->input('passcode'), (string) $member->passcode)) {
             session(["member_unlocked_{$member->id}" => true]);
 
             return response()->json(['success' => true]);
@@ -66,17 +67,17 @@ class PasscodeController extends Controller
     }
 
     /**
-     * Set or update the passcode.
+     * Set or update the passcode for the authenticated member session.
      */
     public function update(Request $request): JsonResponse
     {
         $request->validate([
-            'token' => ['required', 'string'],
             'passcode' => ['nullable', 'string', 'min:4', 'max:6'],
             'enabled' => ['required', 'boolean'],
         ]);
 
-        $member = Member::where('token', $request->input('token'))->first();
+        /** @var Member|null $member */
+        $member = $request->attributes->get('member');
 
         if (! $member) {
             return response()->json(['success' => false, 'message' => 'Member not found.'], 404);
@@ -84,7 +85,7 @@ class PasscodeController extends Controller
 
         if ($request->boolean('enabled') && $request->filled('passcode')) {
             $member->update([
-                'passcode' => Hash::make($request->input('passcode')),
+                'passcode' => Hash::make((string) $request->input('passcode')),
                 'passcode_enabled' => true,
             ]);
         } else {
@@ -93,6 +94,25 @@ class PasscodeController extends Controller
                 'passcode_enabled' => false,
             ]);
         }
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Reset app access for this member on this device.
+     */
+    public function reset(Request $request, MemberSessionService $sessions): JsonResponse
+    {
+        /** @var Member|null $member */
+        $member = $request->attributes->get('member');
+
+        if ($member) {
+            $sessions->revokeAllMemberSessions($member, releaseTrustedDevice: true);
+            session()->forget("member_unlocked_{$member->id}");
+        }
+
+        $sessions->revokeCurrentSession($request);
+        $sessions->forgetCookies();
 
         return response()->json(['success' => true]);
     }

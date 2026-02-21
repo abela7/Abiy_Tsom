@@ -9,7 +9,6 @@ use App\Models\DailyContent;
 use App\Models\LentSeason;
 use App\Models\Member;
 use App\Models\MemberChecklist;
-use App\Models\MemberCustomActivity;
 use App\Models\MemberCustomChecklist;
 use Illuminate\Database\Seeder;
 
@@ -114,11 +113,7 @@ class ProgressSampleDataSeeder extends Seeder
             $member->baptism_name,
             $days->count()
         ));
-        $this->command->info(sprintf(
-            '  View progress: /member/home?token=%s (or /member/progress?token=%s)',
-            self::DEMO_TOKEN,
-            self::DEMO_TOKEN
-        ));
+        $this->command->info('  View progress: /member/home (or /member/progress) after member login');
         if ($days->count() < 30) {
             $this->command->warn('  Tip: Scaffold more days in Admin > Daily Content for a richer report.');
         }

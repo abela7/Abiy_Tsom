@@ -92,7 +92,7 @@ class AdminUserController extends Controller
 
         $rules = [
             'name' => ['required', 'string', 'max:255'],
-            'username' => ['required', 'string', 'max:64', 'unique:users,username,' . $admin->id],
+            'username' => ['required', 'string', 'max:64', 'unique:users,username,'.$admin->id],
             'email' => ['nullable', 'email', 'max:255'],
             'whatsapp_phone' => ['nullable', 'string', 'max:20'],
             'role' => ['required', 'in:admin,editor,writer'],

@@ -468,7 +468,7 @@ function dataManagement() {
             this.dataLoading = true;
             this.dataMsg = '';
             try {
-                const url = AbiyTsom.baseUrl + '/api/member/data/export?token=' + encodeURIComponent(AbiyTsom.token);
+                const url = AbiyTsom.baseUrl + '/api/member/data/export';
                 window.location.href = url;
                 this.dataMsg = '{{ __("app.export_success") }}';
                 this.dataMsgError = false;
@@ -713,7 +713,7 @@ function settingsPage() {
         async setLocale(lang) {
             this.locale = lang;
             await AbiyTsom.api('/api/member/settings', { locale: lang });
-            window.location.replace(AbiyTsom.baseUrl + '/member/settings?lang=' + lang + '&token=' + AbiyTsom.token);
+            window.location.replace(AbiyTsom.baseUrl + '/member/settings?lang=' + lang);
         },
         async saveBaptismName() {
             const name = this.baptismName.trim();

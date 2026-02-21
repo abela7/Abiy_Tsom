@@ -30,9 +30,7 @@ class ProgressController extends Controller
     {
         $member = $request->attributes->get('member');
         $season = LentSeason::active();
-        $dayToken = $member ? '?token=' . $member->token : '';
-
-        return view('member.progress', compact('member', 'season', 'dayToken'));
+        return view('member.progress', compact('member', 'season'));
     }
 
     /**
@@ -129,7 +127,7 @@ class ProgressController extends Controller
                 ? (int) round(($doneCount / $periodDayCount) * 100)
                 : 0;
             $activityRates[] = [
-                'key' => 'a-' . $activity->id,
+                'key' => 'a-'.$activity->id,
                 'name' => localized($activity, 'name', $memberLocale) ?? $activity->name,
                 'rate' => $rate,
             ];
@@ -143,7 +141,7 @@ class ProgressController extends Controller
                 ? (int) round(($doneCount / $periodDayCount) * 100)
                 : 0;
             $activityRates[] = [
-                'key' => 'c-' . $ca->id,
+                'key' => 'c-'.$ca->id,
                 'name' => $ca->name,
                 'rate' => $rate,
             ];
@@ -209,8 +207,8 @@ class ProgressController extends Controller
                 'day' => $dayItem->day_number,
                 'date' => $dayDate ?? '',
                 'label' => $dayDate !== null
-                    ? ('Day ' . $dayItem->day_number . ' (' . $dayDate . ')')
-                    : ('Day ' . $dayItem->day_number),
+                    ? ('Day '.$dayItem->day_number.' ('.$dayDate.')')
+                    : ('Day '.$dayItem->day_number),
                 'has_content' => true,
             ];
         }
@@ -422,4 +420,3 @@ class ProgressController extends Controller
         return $streak;
     }
 }
-

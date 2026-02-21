@@ -16,7 +16,10 @@ use Illuminate\Support\Facades\Route;
 // Welcome / onboarding (no auth required)
 Route::get('/', [Member\OnboardingController::class, 'welcome'])->name('home');
 Route::post('/member/register', [Member\OnboardingController::class, 'register'])->name('member.register');
-Route::post('/member/identify', [Member\OnboardingController::class, 'identify'])->name('member.identify');
+Route::post('/member/identify', [Member\OnboardingController::class, 'identify'])
+    ->middleware('member')
+    ->name('member.identify');
+Route::get('/member/access/{token}', [Member\OnboardingController::class, 'access'])->name('member.access');
 Route::post('/webhooks/ultramsg', [Webhook\UltraMsgWebhookController::class, 'handle'])
     ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class])
     ->name('webhooks.ultramsg');
@@ -25,10 +28,13 @@ Route::post('/webhooks/ultramsg', [Webhook\UltraMsgWebhookController::class, 'ha
 Route::get('/share/day/{daily}', [Member\ShareController::class, 'day'])->name('share.day');
 
 // Passcode routes (member-identified but before passcode check)
-Route::get('/member/passcode', [Member\PasscodeController::class, 'show'])->name('member.passcode');
-Route::get('/member/passcode/lock', [Member\PasscodeController::class, 'lock'])->name('member.passcode.lock');
-Route::post('/member/passcode/verify', [Member\PasscodeController::class, 'verify'])->name('member.passcode.verify');
-Route::post('/member/passcode/update', [Member\PasscodeController::class, 'update'])->name('member.passcode.update');
+Route::middleware('member')->group(function () {
+    Route::get('/member/passcode', [Member\PasscodeController::class, 'show'])->name('member.passcode');
+    Route::get('/member/passcode/lock', [Member\PasscodeController::class, 'lock'])->name('member.passcode.lock');
+    Route::post('/member/passcode/verify', [Member\PasscodeController::class, 'verify'])->name('member.passcode.verify');
+    Route::post('/member/passcode/update', [Member\PasscodeController::class, 'update'])->name('member.passcode.update');
+    Route::post('/member/passcode/reset', [Member\PasscodeController::class, 'reset'])->name('member.passcode.reset');
+});
 
 // Member-protected routes (identified + passcode cleared)
 Route::middleware(['member', 'member.passcode'])->prefix('member')->name('member.')->group(function () {
@@ -44,7 +50,7 @@ Route::middleware(['member', 'member.passcode'])->prefix('member')->name('member
     Route::get('/settings', [Member\SettingsController::class, 'index'])->name('settings');
 });
 
-// API-style routes for AJAX calls (JSON responses) — member resolved from token only
+// API-style routes for AJAX calls (JSON responses) — member resolved from secure session
 Route::prefix('api/member')->middleware('api.member')->name('api.member.')->group(function () {
     Route::post('/checklist/toggle', [Member\ChecklistController::class, 'toggle'])->name('checklist.toggle');
     Route::post('/checklist/custom-toggle', [Member\CustomActivityController::class, 'toggle'])->name('checklist.custom-toggle');
@@ -169,3 +175,4 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         });
     });
 });
+

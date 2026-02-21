@@ -29,7 +29,7 @@ class CheckMemberPasscode
                 return $next($request);
             }
 
-            return redirect('/member/passcode?token='.$member->token);
+            return redirect('/member/passcode');
         }
 
         return $next($request);

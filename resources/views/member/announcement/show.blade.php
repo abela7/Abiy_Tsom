@@ -4,7 +4,6 @@
 
 @section('content')
 @php
-    $navToken = isset($currentMember) ? '?token=' . e($currentMember->token) : '';
     $announcementPhotoUrl = $announcement->photoUrlForLocale();
     $youtubePosition = $announcement->youtubePositionForLocale();
 @endphp
@@ -12,7 +11,7 @@
     {{-- Back link --}}
     <div class="sticky top-0 z-10 bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-surface/80 border-b border-border">
         <div class="max-w-2xl mx-auto px-4 py-3 flex items-center gap-2">
-            <a href="{{ route('member.home') }}{{ $navToken }}"
+            <a href="{{ route('member.home') }}"
                class="p-2 -ml-2 rounded-lg text-muted-text hover:text-primary hover:bg-muted transition flex items-center gap-1">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
@@ -70,7 +69,7 @@
 
         {{-- Back to home --}}
         <div class="mt-10">
-            <a href="{{ route('member.home') }}{{ $navToken }}"
+            <a href="{{ route('member.home') }}"
                class="inline-flex items-center gap-2 text-sm text-accent font-medium hover:underline">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>

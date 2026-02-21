@@ -7,8 +7,10 @@ namespace App\Http\Controllers\Member;
 use App\Http\Controllers\Controller;
 use App\Models\LentSeason;
 use App\Models\Member;
+use App\Services\MemberSessionService;
 use App\Services\WhatsAppReminderConfirmationService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -19,7 +21,8 @@ use Illuminate\View\View;
 class OnboardingController extends Controller
 {
     public function __construct(
-        private readonly WhatsAppReminderConfirmationService $confirmation
+        private readonly WhatsAppReminderConfirmationService $confirmation,
+        private readonly MemberSessionService $sessions,
     ) {}
 
     /**
@@ -63,14 +66,9 @@ class OnboardingController extends Controller
             ], 422);
         }
 
-        $token = Str::random(64);
-        while (Member::where('token', $token)->exists()) {
-            $token = Str::random(64);
-        }
-
         $memberPayload = [
             'baptism_name' => $validated['baptism_name'],
-            'token' => $token,
+            'token' => $this->generateUniqueToken(),
             'locale' => app()->getLocale(),
             'theme' => 'light',
             'whatsapp_reminder_enabled' => false,
@@ -93,7 +91,14 @@ class OnboardingController extends Controller
 
         $member = Member::create($memberPayload);
 
-        // Send "reply YES/NO" prompt immediately after registration.
+        // Bind and persist this browser as the trusted member device.
+        if (! $this->sessions->establishSession($member, $request)) {
+            return response()->json([
+                'success' => false,
+                'message' => __('app.failed'),
+            ], 500);
+        }
+
         $promptSent = false;
         $confirmationPending = $reminderRequested;
         if ($reminderRequested && $reminderPhone) {
@@ -102,7 +107,7 @@ class OnboardingController extends Controller
 
         return response()->json([
             'success' => true,
-            'token' => $member->token,
+            'redirect_url' => route('member.home'),
             'whatsapp_confirmation_pending' => $confirmationPending,
             'whatsapp_confirmation_prompt_sent' => $promptSent,
             'message' => $confirmationPending
@@ -113,6 +118,7 @@ class OnboardingController extends Controller
             'member' => [
                 'id' => $member->id,
                 'baptism_name' => $member->baptism_name,
+                'passcode_enabled' => $member->passcode_enabled,
                 'whatsapp_reminder_enabled' => $member->whatsapp_reminder_enabled,
                 'whatsapp_phone' => $member->whatsapp_phone,
                 'whatsapp_reminder_time' => $member->whatsapp_reminder_time,
@@ -123,18 +129,18 @@ class OnboardingController extends Controller
     }
 
     /**
-     * Identify an existing member by their token.
+     * Identify the currently authenticated member session.
      */
     public function identify(Request $request): JsonResponse
     {
-        $request->validate([
-            'token' => ['required', 'string', 'size:64'],
-        ]);
-
-        $member = Member::where('token', $request->input('token'))->first();
+        /** @var Member|null $member */
+        $member = $request->attributes->get('member');
 
         if (! $member) {
-            return response()->json(['success' => false, 'message' => 'Member not found.'], 404);
+            return response()->json([
+                'success' => false,
+                'message' => 'Not authenticated.',
+            ], 401);
         }
 
         return response()->json([
@@ -154,6 +160,35 @@ class OnboardingController extends Controller
         ]);
     }
 
+    /**
+     * Authenticate from member access token and attach secure device session.
+     */
+    public function access(Request $request, string $token): RedirectResponse
+    {
+        if (! preg_match('/^[A-Za-z0-9]{20,128}$/', $token)) {
+            return redirect('/');
+        }
+
+        $member = Member::where('token', $token)->first();
+        if (! $member) {
+            return redirect('/');
+        }
+
+        if (! $this->sessions->establishSession($member, $request)) {
+            return redirect('/');
+        }
+
+        session()->forget("member_unlocked_{$member->id}");
+
+        if ($member->passcode_enabled) {
+            return redirect()->route('member.passcode');
+        }
+
+        $next = $this->sanitizeNextPath((string) $request->query('next', '/member/home'));
+
+        return redirect($next);
+    }
+
     private function normalizeReminderTime(?string $time): ?string
     {
         if (! is_string($time) || trim($time) === '') {
@@ -161,5 +196,24 @@ class OnboardingController extends Controller
         }
 
         return $time.':00';
+    }
+
+    private function generateUniqueToken(): string
+    {
+        $token = Str::random(64);
+        while (Member::where('token', $token)->exists()) {
+            $token = Str::random(64);
+        }
+
+        return $token;
+    }
+
+    private function sanitizeNextPath(string $next): string
+    {
+        if (str_starts_with($next, '/member/')) {
+            return $next;
+        }
+
+        return '/member/home';
     }
 }

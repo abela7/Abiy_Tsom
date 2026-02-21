@@ -6,9 +6,8 @@
 <div class="px-4 pt-4 space-y-4">
 
     {{-- View Today — hero CTA card --}}
-    @php $dayToken = isset($member) && $member?->token ? '?token=' . e($member->token) : ''; @endphp
     @if(isset($viewTodayTarget) && $viewTodayTarget)
-    <a href="{{ route('member.day', $viewTodayTarget) }}{{ $dayToken }}"
+    <a href="{{ route('member.day', $viewTodayTarget) }}"
        class="group relative block overflow-hidden rounded-3xl bg-gradient-to-br from-accent via-accent to-accent-hover dark:from-accent-hover dark:via-accent-hover dark:to-[#7a5a08] transition-all duration-300 active:scale-[0.98]">
 
         <div class="relative flex items-center gap-4 p-5 sm:p-6">
@@ -44,7 +43,7 @@
         </div>
     </a>
     @else
-    <a href="{{ route('member.calendar') }}{{ $dayToken }}"
+    <a href="{{ route('member.calendar') }}"
        class="group relative block overflow-hidden rounded-3xl bg-card border border-border shadow-md hover:shadow-lg transition-all duration-300 active:scale-[0.98]">
         <div class="relative flex items-center gap-4 p-5 sm:p-6">
             <div class="flex-1 min-w-0">
@@ -143,7 +142,6 @@
 
     {{-- Announcements --}}
     @if($announcements->isNotEmpty())
-    @php $navToken = isset($currentMember) ? '?token=' . e($currentMember->token) : ''; @endphp
     <section x-data="announcementDisplay({{ $announcements->count() }})">
         <div class="flex items-center justify-between gap-2 mb-4">
             <h2 class="text-xs font-bold text-muted-text uppercase tracking-wider">{{ __('app.announcements_section') }}</h2>
@@ -178,7 +176,7 @@
                     $announcementPhotoUrl = $announcement->photoUrlForLocale();
                 @endphp
                 <article class="rounded-2xl shadow-lg border border-border overflow-hidden bg-card">
-                    <a href="{{ route('member.announcement.show', $announcement) }}{{ $navToken }}" class="block group">
+                    <a href="{{ route('member.announcement.show', $announcement) }}" class="block group">
                         @if($announcementPhotoUrl)
                             <div class="relative w-full aspect-[16/9] overflow-hidden bg-muted">
                                 <img src="{{ $announcementPhotoUrl }}" alt=""
@@ -240,8 +238,8 @@
                 <article class="carousel-card absolute top-0 left-0 w-full rounded-2xl shadow-lg border border-border overflow-hidden transition-all duration-500 ease-out"
                          :class="getCardClasses({{ $index }})"
                          :style="getCardStyles({{ $index }})"
-                         @click="handleCardClick({{ $index }}, '{{ route('member.announcement.show', $announcement) }}{{ $navToken }}')">
-                    <a href="{{ route('member.announcement.show', $announcement) }}{{ $navToken }}"
+                         @click="handleCardClick({{ $index }}, '{{ route('member.announcement.show', $announcement) }}')">
+                    <a href="{{ route('member.announcement.show', $announcement) }}"
                        class="block group"
                        @click.prevent>
                         @if($announcementPhotoUrl)

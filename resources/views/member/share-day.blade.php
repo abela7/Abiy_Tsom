@@ -6,7 +6,7 @@
     <title>{{ $ogTitle }} - {{ __('app.app_name') }}</title>
     <meta name="description" content="{{ $ogDescription }}">
 
-    {{-- No <meta refresh> — JS handles redirect so we can restore the member token first --}}
+    {{-- No <meta refresh> - JS handles redirect so we can preserve app flow --}}
 
     @php
         $storedOgImage = seo('og_image');
@@ -38,34 +38,27 @@
     <meta name="twitter:description" content="{{ $ogDescription }}">
     <meta name="twitter:image" content="{{ $ogImageUrl }}">
 
-    {{--
-        Noscript fallback: if JS is disabled, use meta-refresh.
-        Social crawlers ignore JS and will read OG tags above.
-    --}}
     <noscript>
         <meta http-equiv="refresh" content="0;url={{ $memberUrl }}">
     </noscript>
 </head>
 <body style="font-family:system-ui,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#0d1117;color:#e6edf3;">
-    <p>{{ __('app.redirecting') }}… <a href="{{ $memberUrl }}" id="fallback-link" style="color:#58a6ff;">{{ $ogTitle }}</a></p>
+    <p>{{ __('app.redirecting') }}... <a href="{{ $memberUrl }}" id="fallback-link" style="color:#58a6ff;">{{ $ogTitle }}</a></p>
 
     <script>
         (function() {
             var memberUrl = @js($memberUrl);
-            var homeUrl = @js(url('/'));
+            var memberPath = @js($memberPath ?? '/member/home');
+            var token = new URLSearchParams(window.location.search).get('token');
 
-            // Restore member_token cookie from localStorage (mirrors layout script)
-            var token = null;
-            try { token = localStorage.getItem('member_token'); } catch(_e) {}
-
-            if (token) {
-                // Ensure cookie is set so middleware recognises the member
-                document.cookie = 'member_token=' + token + ';path=/;SameSite=Lax';
-                window.location.replace(memberUrl);
-            } else {
-                // Not registered on this device — send to welcome/onboarding
-                window.location.replace(homeUrl);
+            if (token && /^[A-Za-z0-9]{20,128}$/.test(token)) {
+                var accessBase = @js(url('/member/access'));
+                var accessUrl = accessBase + '/' + encodeURIComponent(token) + '?next=' + encodeURIComponent(memberPath);
+                window.location.replace(accessUrl);
+                return;
             }
+
+            window.location.replace(memberUrl);
         })();
     </script>
 </body>

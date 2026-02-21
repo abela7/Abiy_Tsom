@@ -114,7 +114,7 @@ class SendWhatsAppReminders extends Command
                 &$failedCount
             ): void {
                 foreach ($members as $member) {
-                    $dayUrl = route('member.day', ['daily' => $dailyContent]).'?token='.urlencode((string) $member->token);
+                    $dayUrl = route('share.day', ['daily' => $dailyContent, 'token' => $member->token]);
                     $dayUrl = $this->ensureHttpsUrl($dayUrl);
                     $locale = in_array((string) $member->whatsapp_language, ['en', 'am'], true)
                         ? (string) $member->whatsapp_language

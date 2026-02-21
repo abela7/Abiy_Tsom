@@ -15,7 +15,6 @@ class EnsureAdminRole
 {
     /**
      * @param  list<string>  ...$roles
-     * @return Response
      */
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {

@@ -25,7 +25,7 @@ class DatabaseSeeder extends Seeder
                 'is_super_admin' => true,
             ]
         );
-        if (!$admin->is_super_admin && User::where('is_super_admin', true)->count() === 0) {
+        if (! $admin->is_super_admin && User::where('is_super_admin', true)->count() === 0) {
             $admin->update(['username' => 'superadmin', 'is_super_admin' => true]);
         }
 

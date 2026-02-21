@@ -279,28 +279,24 @@ function onboarding() {
         },
 
         checkExisting() {
-            const token = localStorage.getItem('member_token');
-            if (token) {
-                this.hasToken = true;
-                AbiyTsom.token = token;
-                AbiyTsom.api('/member/identify', { token })
-                    .then(data => {
-                        if (data.success) {
-                            if (data.member.passcode_enabled) {
-                                window.location.href = AbiyTsom.baseUrl + '/member/passcode';
-                            } else {
-                                window.location.href = AbiyTsom.baseUrl + '/member/home?token=' + token;
-                            }
+            this.hasToken = true;
+            AbiyTsom.api('/member/identify', {})
+                .then(data => {
+                    if (data.success) {
+                        if (data.member.passcode_enabled) {
+                            window.location.href = AbiyTsom.baseUrl + '/member/passcode';
                         } else {
-                            localStorage.removeItem('member_token');
-                            this.hasToken = false;
+                            window.location.href = AbiyTsom.baseUrl + '/member/home';
                         }
-                    })
-                    .catch(() => {
+                    } else {
                         localStorage.removeItem('member_token');
                         this.hasToken = false;
-                    });
-            }
+                    }
+                })
+                .catch(() => {
+                    localStorage.removeItem('member_token');
+                    this.hasToken = false;
+                });
         },
 
         register() {
@@ -325,10 +321,8 @@ function onboarding() {
                         if (data.whatsapp_confirmation_pending && data.message) {
                             alert(data.message);
                         }
-                        localStorage.setItem('member_token', data.token);
                         localStorage.setItem('member_name', data.member.baptism_name);
-                        AbiyTsom.token = data.token;
-                        window.location.href = AbiyTsom.baseUrl + '/member/home?token=' + data.token;
+                        window.location.href = data.redirect_url || (AbiyTsom.baseUrl + '/member/home');
                     } else {
                         this.errorMessage = data.message || '{{ __('app.wizard_error') }}';
                         this.isLoading = false;

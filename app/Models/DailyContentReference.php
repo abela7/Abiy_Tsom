@@ -13,7 +13,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class DailyContentReference extends Model
 {
     public const TYPE_VIDEO = 'video';
+
     public const TYPE_WEBSITE = 'website';
+
     public const TYPE_FILE = 'file';
 
     /** @var list<string> */

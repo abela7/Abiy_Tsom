@@ -92,4 +92,3 @@ class SeoSetting extends Model
         Cache::forget('seo_settings.all');
     }
 }
-

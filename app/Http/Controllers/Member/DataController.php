@@ -93,7 +93,7 @@ class DataController extends Controller
             'checklists' => $exportChecklists,
         ];
 
-        $filename = 'abiy-tsom-data-' . now()->format('Y-m-d-His') . '.json';
+        $filename = 'abiy-tsom-data-'.now()->format('Y-m-d-His').'.json';
 
         return response()->streamDownload(
             function () use ($export): void {
@@ -102,7 +102,7 @@ class DataController extends Controller
             $filename,
             [
                 'Content-Type' => 'application/json',
-                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+                'Content-Disposition' => 'attachment; filename="'.$filename.'"',
             ]
         );
     }

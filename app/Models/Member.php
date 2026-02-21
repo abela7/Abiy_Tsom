@@ -19,6 +19,7 @@ class Member extends Model
     protected $fillable = [
         'baptism_name',
         'token',
+        'trusted_device_hash',
         'passcode',
         'passcode_enabled',
         'locale',
@@ -36,6 +37,7 @@ class Member extends Model
     /** @var list<string> */
     protected $hidden = [
         'passcode',
+        'trusted_device_hash',
     ];
 
     /** @return array<string, string> */
@@ -72,5 +74,10 @@ class Member extends Model
     public function customChecklists(): HasMany
     {
         return $this->hasMany(MemberCustomChecklist::class);
+    }
+
+    public function sessions(): HasMany
+    {
+        return $this->hasMany(MemberSession::class);
     }
 }

@@ -164,9 +164,7 @@ class HomeController extends Controller
             ? Activity::where('lent_season_id', $season->id)->where('is_active', true)->get()
             : collect();
 
-        $dayToken = $member?->token;
-
-        return view('member.calendar', compact('member', 'season', 'weeks', 'activities', 'dayToken'));
+        return view('member.calendar', compact('member', 'season', 'weeks', 'activities'));
     }
 
     /**

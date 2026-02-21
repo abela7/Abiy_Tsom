@@ -104,33 +104,19 @@
         </div>
     </div>
 
-    {{-- Member token management --}}
+    {{-- Member session helpers --}}
     <script>
-        (function() {
-            var token = localStorage.getItem('member_token');
-            var fromUrl = new URLSearchParams(window.location.search).get('token');
-            if (fromUrl) {
-                token = fromUrl;
-                localStorage.setItem('member_token', fromUrl);
-            }
-            if (token) {
-                document.cookie = 'member_token=' + token + ';path=/;SameSite=Lax';
-            }
-        })();
         window.AbiyTsom = {
-            get token() { return localStorage.getItem('member_token'); },
-            set token(v) { if (v) localStorage.setItem('member_token', v); },
             csrfToken: document.querySelector('meta[name="csrf-token"]').content,
             baseUrl: '{{ url('/') }}',
 
             async api(url, data = {}) {
-                data.token = this.token;
                 const response = await fetch(this.baseUrl + url, {
                     method: 'POST',
+                    credentials: 'same-origin',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': this.csrfToken,
-                        'X-Member-Token': this.token || '',
                         'Accept': 'application/json',
                     },
                     body: JSON.stringify(data),
@@ -139,14 +125,11 @@
             },
 
             async get(url) {
-                const separator = url.includes('?') ? '&' : '?';
-                const tokenParam = this.token ? separator + 'token=' + encodeURIComponent(this.token) : '';
-                const response = await fetch(this.baseUrl + url + tokenParam, {
+                const response = await fetch(this.baseUrl + url, {
                     method: 'GET',
                     credentials: 'same-origin',
                     headers: {
                         'Accept': 'application/json',
-                        'X-Member-Token': this.token || '',
                     },
                 });
                 return response.json();

@@ -223,7 +223,7 @@ class WhatsAppRemindersController extends Controller
             : 'en';
         Translation::loadFromDb($lang);
 
-        $dayUrl = route('member.day', ['daily' => $dailyContent]).'?token='.urlencode((string) $member->token);
+        $dayUrl = route('share.day', ['daily' => $dailyContent, 'token' => $member->token]);
         $dayUrl = $this->ensureHttpsUrl($dayUrl);
 
         $header = Lang::get('app.whatsapp_daily_reminder_header', [

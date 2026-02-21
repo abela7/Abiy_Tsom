@@ -21,6 +21,7 @@ class MemberChecklist extends Model
             }
         });
     }
+
     /** @var list<string> */
     protected $fillable = [
         'member_id',

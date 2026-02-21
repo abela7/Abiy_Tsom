@@ -21,6 +21,7 @@ class MemberCustomChecklist extends Model
             }
         });
     }
+
     protected $table = 'member_custom_checklists';
 
     /** @var list<string> */

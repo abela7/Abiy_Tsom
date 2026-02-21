@@ -40,17 +40,19 @@ class ShareController extends Controller
             ?? __('app.day_x', ['day' => $daily->day_number]);
 
         $ogTitle = $weekName
-            ? ($weekName . ' - ' . $dayTitle)
+            ? ($weekName.' - '.$dayTitle)
             : $dayTitle;
 
         $ogDescription = __('app.share_day_description');
         $memberUrl = route('member.day', $daily);
+        $memberPath = route('member.day', $daily, false);
 
         return view('member.share-day', compact(
             'daily',
             'ogTitle',
             'ogDescription',
             'memberUrl',
+            'memberPath',
         ));
     }
 }

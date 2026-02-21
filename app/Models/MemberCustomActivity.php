@@ -22,6 +22,7 @@ class MemberCustomActivity extends Model
             }
         });
     }
+
     protected $table = 'member_custom_activities';
 
     /** @var list<string> */

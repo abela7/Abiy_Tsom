@@ -159,7 +159,7 @@
 
         {{-- View day content (when viewing single day) --}}
         <div x-show="viewDayContentId" class="flex justify-center">
-            <a :href="`{{ url('/member/day') }}/${viewDayContentId}{{ $dayToken ?? '' }}`"
+            <a :href="`{{ url('/member/day') }}/${viewDayContentId}`"
                class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-accent text-on-accent text-sm font-semibold hover:bg-accent-hover transition shadow-sm">
                 {{ __('app.view_day_content') }}
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

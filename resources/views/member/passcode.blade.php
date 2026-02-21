@@ -58,7 +58,7 @@ function passcodeScreen() {
                     passcode: this.passcode,
                 });
                 if (data.success) {
-                    window.location.href = AbiyTsom.baseUrl + '/member/home?token=' + AbiyTsom.token;
+                    window.location.href = AbiyTsom.baseUrl + '/member/home';
                 } else {
                     this.error = data.message || '{{ __("app.incorrect_passcode") }}';
                 }
@@ -68,10 +68,12 @@ function passcodeScreen() {
             this.isLoading = false;
         },
 
-        resetAndStartFresh() {
+        async resetAndStartFresh() {
+            try {
+                await AbiyTsom.api('/member/passcode/reset');
+            } catch (_e) {}
             localStorage.removeItem('member_token');
             localStorage.removeItem('member_name');
-            document.cookie = 'member_token=;path=/;SameSite=Lax;Max-Age=0';
             window.location.href = AbiyTsom.baseUrl + '/';
         }
     };
