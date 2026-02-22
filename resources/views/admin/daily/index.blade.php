@@ -58,7 +58,11 @@
                             <div class="text-muted-text">{{ __('app.updated_by') }}: {{ optional($content->updatedBy)->name ?: '-' }}</div>
                         </td>
                         <td class="px-4 py-3">
-                            <a href="{{ route('admin.daily.edit', $content) }}" class="text-accent hover:underline">{{ __('app.edit') }}</a>
+                            <span class="inline-flex items-center gap-2">
+                                <a href="{{ route('admin.daily.preview', $content) }}" target="_blank" rel="noopener" class="text-accent hover:underline">{{ __('app.view') }}</a>
+                                <span class="text-muted-text">|</span>
+                                <a href="{{ route('admin.daily.edit', $content) }}" class="text-accent hover:underline">{{ __('app.edit') }}</a>
+                            </span>
                         </td>
                     </tr>
                 @empty
@@ -71,8 +75,9 @@
     {{-- ═══ Mobile card list (hidden on desktop) ═══ --}}
     <div class="md:hidden space-y-3">
         @forelse($contents as $content)
+            <div class="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
             <a href="{{ route('admin.daily.edit', $content) }}"
-               class="block bg-card rounded-xl border border-border shadow-sm hover:shadow-md hover:border-accent/30 transition-all active:scale-[0.99]">
+               class="block hover:bg-muted/30 transition-colors active:scale-[0.99]">
                 <div class="p-4 space-y-3">
                     {{-- Top row: day number + status --}}
                     <div class="flex items-center justify-between">
@@ -111,6 +116,11 @@
                     @endif
                 </div>
             </a>
+            <div class="flex border-t border-border">
+                <a href="{{ route('admin.daily.preview', $content) }}" target="_blank" rel="noopener" class="flex-1 py-2.5 text-center text-sm font-medium text-accent hover:bg-muted/50 transition">{{ __('app.view') }}</a>
+                <a href="{{ route('admin.daily.edit', $content) }}" class="flex-1 py-2.5 text-center text-sm font-medium text-accent hover:bg-muted/50 transition border-l border-border">{{ __('app.edit') }}</a>
+            </div>
+            </div>
         @empty
             <div class="bg-card rounded-xl border border-border p-8 text-center text-muted-text">
                 {{ __('app.no_daily_content_yet') }}

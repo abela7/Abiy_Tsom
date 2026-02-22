@@ -3,7 +3,7 @@
 @php
     $locale = app()->getLocale();
     $publicPreview = (bool) ($publicPreview ?? false);
-    $backUrl = $publicPreview ? route('home') : route('member.calendar');
+    $backUrl = $backUrl ?? ($publicPreview ? route('home') : route('member.calendar'));
     $weekName = $daily->weeklyTheme ? (localized($daily->weeklyTheme, 'name') ?? $daily->weeklyTheme->name_en ?? '-') : '';
     $dayTitle = localized($daily, 'day_title') ?? __('app.day_x', ['day' => $daily->day_number]);
     $sinksarUrl = $daily->sinksarUrl($locale);

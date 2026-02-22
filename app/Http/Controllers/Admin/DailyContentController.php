@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Activity;
 use App\Models\DailyContent;
 use App\Models\DailyContentBook;
 use App\Models\LentSeason;
@@ -63,6 +64,36 @@ class DailyContentController extends Controller
             : collect();
 
         return view('admin.daily.index', compact('season', 'contents'));
+    }
+
+    /**
+     * Preview a day as members would see it (works for drafts too).
+     */
+    public function preview(DailyContent $daily): View
+    {
+        $daily->load(['weeklyTheme', 'mezmurs', 'references', 'books']);
+        $activities = Activity::where('lent_season_id', $daily->lent_season_id)
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->get();
+
+        $member = null;
+        $checklist = collect();
+        $customActivities = collect();
+        $customChecklist = collect();
+        $publicPreview = true;
+        $backUrl = route('admin.daily.index');
+
+        return view('member.day', compact(
+            'member',
+            'daily',
+            'activities',
+            'checklist',
+            'customActivities',
+            'customChecklist',
+            'publicPreview',
+            'backUrl',
+        ));
     }
 
     public function create(): View
