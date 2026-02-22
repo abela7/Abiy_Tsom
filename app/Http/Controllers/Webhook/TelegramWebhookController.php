@@ -138,7 +138,11 @@ class TelegramWebhookController extends Controller
             return $this->reply(
                 $telegramService,
                 $chatId,
-                "Send /connect <code> to bind this Telegram account.\nUse a one-time code from your admin/member login link or legacy member token."
+                "Send /connect <code> to bind this Telegram account.\n"
+                . "Use one of these codes:\n"
+                . "1) Admin code from /admin/telegram/settings, or\n"
+                . "2) A member share token from a URL like /share/day/6?token=<CODE>.\n"
+                . "Example: /connect VhPwfsnpnRNYHh3XgNGDyZBKaFCVvpDtD8f31MfS5NC"
             );
         }
 
@@ -155,7 +159,10 @@ class TelegramWebhookController extends Controller
             return $this->reply(
                 $telegramService,
                 $chatId,
-                "Your Telegram account is not linked yet.\nUse /connect <code> with one of your one-time codes."
+                "Your Telegram account is not linked yet.\n"
+                . "Send /connect <code> with:\n"
+                . "an admin one-time code from /admin/telegram/settings, or\n"
+                . "a member token from /share/day/{day}?token={CODE}."
             );
         }
 
@@ -518,7 +525,9 @@ class TelegramWebhookController extends Controller
     private function welcomeMessage(): string
     {
         return "Welcome to Abiy Tsom.\n\n"
-            . "Use one-time Telegram link from admin/member section, or a legacy member token.\n\n"
+            . "If you are a member: copy your token from a share link\n"
+            . "like /share/day/6?token=VhPw... and send /connect <that token>.\n"
+            . "If you are an admin: get one-time code from /admin/telegram/settings.\n\n"
             . "Available commands:\n"
             . "/home (linked members)\n"
             . "/admin (linked admins)\n"
@@ -540,7 +549,7 @@ class TelegramWebhookController extends Controller
             . "/menu - Open quick links\n"
             . "/home - Open member home\n"
             . "/admin - Open admin panel\n"
-            . "/connect <code> - Link this Telegram to your account\n"
+            . "/connect <code> - Link this Telegram to your account using either admin code or member share token\n"
             . "/me - Get a secure one-time login link\n"
             . "/day - Open today\n"
             . "/help - Show this help";
@@ -549,6 +558,6 @@ class TelegramWebhookController extends Controller
     private function notLinkedMessage(): string
     {
         return "Your Telegram account is not linked yet.\n"
-            . "Use /connect <code> with a code from your member/admin flow.";
+            . "Use /connect <code> with an admin one-time code, or a member token from /share/day/{day}?token={CODE}.";
     }
 }
