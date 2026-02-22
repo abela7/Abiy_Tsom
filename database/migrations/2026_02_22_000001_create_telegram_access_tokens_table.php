@@ -21,7 +21,10 @@ return new class extends Migration
             $table->timestamp('consumed_at')->nullable()->index();
             $table->timestamps();
 
-            $table->index(['purpose', 'actor_type', 'actor_id', 'expires_at']);
+            $table->index(
+                ['purpose', 'actor_type', 'actor_id', 'expires_at'],
+                'toks_purpose_actor_expires_idx'
+            );
         });
     }
 
@@ -30,4 +33,3 @@ return new class extends Migration
         Schema::dropIfExists('telegram_access_tokens');
     }
 };
-
