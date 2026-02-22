@@ -24,30 +24,46 @@ class ContentSuggestionController extends Controller
     }
 
     /**
-     * Store a new content suggestion submitted by the public.
+     * Store one or more content suggestions submitted from the multi-item form.
      */
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'type'           => ['required', Rule::in(['bible', 'mezmur', 'sinksar', 'book', 'reference'])],
-            'language'       => ['required', Rule::in(['en', 'am'])],
-            'submitter_name' => ['nullable', 'string', 'max:100'],
-            'title'          => ['nullable', 'string', 'max:255'],
-            'reference'      => ['nullable', 'string', 'max:500'],
-            'author'         => ['nullable', 'string', 'max:255'],
-            'content_detail' => ['nullable', 'string', 'max:5000'],
-            'notes'          => ['nullable', 'string', 'max:2000'],
+            'language'                => ['required', Rule::in(['en', 'am'])],
+            'submitter_name'          => ['nullable', 'string', 'max:100'],
+            'notes'                   => ['nullable', 'string', 'max:2000'],
+            'items'                   => ['required', 'array', 'min:1', 'max:20'],
+            'items.*.type'            => ['required', Rule::in(['bible', 'mezmur', 'sinksar', 'book', 'reference'])],
+            'items.*.title'           => ['nullable', 'string', 'max:255'],
+            'items.*.reference'       => ['nullable', 'string', 'max:500'],
+            'items.*.author'          => ['nullable', 'string', 'max:255'],
+            'items.*.content_detail'  => ['nullable', 'string', 'max:5000'],
         ]);
 
-        ContentSuggestion::create([
-            ...$validated,
-            'user_id'    => Auth::id(),
-            'ip_address' => $request->ip(),
-        ]);
+        $shared = [
+            'language'       => $validated['language'],
+            'submitter_name' => $validated['submitter_name'] ?? null,
+            'notes'          => $validated['notes'] ?? null,
+            'user_id'        => Auth::id(),
+            'ip_address'     => $request->ip(),
+        ];
+
+        $count = 0;
+        foreach ($validated['items'] as $item) {
+            ContentSuggestion::create([
+                ...$shared,
+                'type'           => $item['type'],
+                'title'          => $item['title'] ?? null,
+                'reference'      => $item['reference'] ?? null,
+                'author'         => $item['author'] ?? null,
+                'content_detail' => $item['content_detail'] ?? null,
+            ]);
+            $count++;
+        }
 
         return redirect()
             ->route('suggest')
-            ->with('success', true);
+            ->with('success', $count);
     }
 
     /**
