@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin;
 use App\Http\Controllers\ContentSuggestionController;
 use App\Http\Controllers\Member;
 use App\Http\Controllers\Webhook;
+use App\Http\Controllers\TelegramAuthController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -20,7 +21,6 @@ Route::post('/member/register', [Member\OnboardingController::class, 'register']
 Route::post('/member/identify', [Member\OnboardingController::class, 'identify'])
     ->middleware('member')
     ->name('member.identify');
-Route::get('/member/access/{token}', [Member\OnboardingController::class, 'access'])->name('member.access');
 Route::post('/webhooks/ultramsg', [Webhook\UltraMsgWebhookController::class, 'handle'])
     ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class])
     ->name('webhooks.ultramsg');
@@ -28,6 +28,9 @@ Route::post('/webhooks/ultramsg', [Webhook\UltraMsgWebhookController::class, 'ha
 // Public share page — serves OG meta for social crawlers, then redirects
 Route::get('/share/day/{daily}', [Member\ShareController::class, 'day'])->name('share.day');
 Route::get('/share/day/{daily}/public', [Member\ShareController::class, 'publicDay'])->name('share.day.public');
+Route::get('/telegram/access', [TelegramAuthController::class, 'access'])
+    ->middleware('throttle:60,1')
+    ->name('telegram.access');
 
 // Public content suggestion form (no auth required)
 Route::get('/suggest', [ContentSuggestionController::class, 'show'])->name('suggest');
@@ -182,6 +185,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/telegram/settings', [Admin\TelegramSettingsController::class, 'settings'])->name('telegram.settings');
         Route::put('/telegram', [Admin\TelegramSettingsController::class, 'update'])->name('telegram.update');
         Route::post('/telegram/test', [Admin\TelegramSettingsController::class, 'test'])->name('telegram.test');
+        Route::post('/telegram/login-link', [TelegramAuthController::class, 'createAdminLoginLink'])->name('telegram.login-link');
 
         // Admin users
         Route::prefix('admins')->name('admins.')->group(function () {
@@ -195,4 +199,3 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         });
     });
 });
-

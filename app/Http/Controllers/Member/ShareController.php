@@ -44,16 +44,12 @@ class ShareController extends Controller
             : $dayTitle;
 
         $ogDescription = __('app.share_day_description');
-        $memberUrl = route('member.day', $daily);
-        $memberPath = route('member.day', $daily, false);
         $publicDayUrl = route('share.day.public', $daily);
 
         return view('member.share-day', compact(
             'daily',
             'ogTitle',
             'ogDescription',
-            'memberUrl',
-            'memberPath',
             'publicDayUrl',
         ));
     }

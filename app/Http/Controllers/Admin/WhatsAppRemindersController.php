@@ -9,6 +9,7 @@ use App\Models\DailyContent;
 use App\Models\LentSeason;
 use App\Models\Member;
 use App\Models\Translation;
+use App\Services\TelegramAuthService;
 use App\Services\UltraMsgService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
@@ -183,7 +184,11 @@ class WhatsAppRemindersController extends Controller
     /**
      * Send today's reminder to a member on demand (admin-triggered).
      */
-    public function sendReminder(Member $member, UltraMsgService $ultraMsg): JsonResponse
+    public function sendReminder(
+        Member $member,
+        UltraMsgService $ultraMsg,
+        TelegramAuthService $telegramAuthService
+    ): JsonResponse
     {
         $this->ensureOptedIn($member);
 
@@ -223,8 +228,16 @@ class WhatsAppRemindersController extends Controller
             : 'en';
         Translation::loadFromDb($lang);
 
-        $dayUrl = route('share.day', ['daily' => $dailyContent, 'token' => $member->token]);
-        $dayUrl = $this->ensureHttpsUrl($dayUrl);
+            $code = $telegramAuthService->createCode(
+                $member,
+                TelegramAuthService::PURPOSE_MEMBER_ACCESS,
+                route('member.day', ['daily' => $dailyContent], false)
+            );
+            $dayUrl = route('share.day', [
+                'daily' => $dailyContent,
+                'code' => $code,
+            ]);
+            $dayUrl = $this->ensureHttpsUrl($dayUrl);
 
         $header = Lang::get('app.whatsapp_daily_reminder_header', [
             'baptism_name' => $member->baptism_name ?? '',

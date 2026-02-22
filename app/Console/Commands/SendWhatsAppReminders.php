@@ -8,6 +8,7 @@ use App\Models\DailyContent;
 use App\Models\LentSeason;
 use App\Models\Member;
 use App\Models\Translation;
+use App\Services\TelegramAuthService;
 use App\Services\UltraMsgService;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
@@ -29,7 +30,10 @@ class SendWhatsAppReminders extends Command
      */
     protected $description = 'Send daily WhatsApp reminders to members';
 
-    public function handle(UltraMsgService $ultraMsgService): int
+    public function handle(
+        UltraMsgService $ultraMsgService,
+        TelegramAuthService $telegramAuthService
+    ): int
     {
         if (! $ultraMsgService->isConfigured()) {
             $this->error('UltraMsg is not configured. Set ULTRAMSG_INSTANCE_ID and ULTRAMSG_TOKEN.');
@@ -114,7 +118,15 @@ class SendWhatsAppReminders extends Command
                 &$failedCount
             ): void {
                 foreach ($members as $member) {
-                    $dayUrl = route('share.day', ['daily' => $dailyContent, 'token' => $member->token]);
+                    $code = $telegramAuthService->createCode(
+                        $member,
+                        TelegramAuthService::PURPOSE_MEMBER_ACCESS,
+                        route('member.day', ['daily' => $dailyContent], false)
+                    );
+                    $dayUrl = route('share.day', [
+                        'daily' => $dailyContent,
+                        'code' => $code,
+                    ]);
                     $dayUrl = $this->ensureHttpsUrl($dayUrl);
                     $locale = in_array((string) $member->whatsapp_language, ['en', 'am'], true)
                         ? (string) $member->whatsapp_language

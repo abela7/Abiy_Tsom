@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
-use App\Models\Member;
 use App\Services\MemberSessionService;
 use Closure;
 use Illuminate\Http\Request;
@@ -22,21 +21,6 @@ class IdentifyMember
     public function handle(Request $request, Closure $next): Response
     {
         $member = $this->sessions->resolveMember($request);
-
-        // One-time login via URL token, then strip token from URL.
-        if (! $member && $request->isMethod('GET')) {
-            $token = $request->query('token');
-            if (is_string($token) && preg_match('/^[A-Za-z0-9]{20,128}$/', $token)) {
-                $memberFromLink = Member::where('token', $token)->first();
-                if ($memberFromLink && $this->sessions->establishSession($memberFromLink, $request)) {
-                    $query = $request->query();
-                    unset($query['token']);
-                    $targetUrl = $request->url().(empty($query) ? '' : ('?'.http_build_query($query)));
-
-                    return redirect()->to($targetUrl);
-                }
-            }
-        }
 
         if ($member) {
             $request->attributes->set('member', $member);

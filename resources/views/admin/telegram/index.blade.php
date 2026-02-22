@@ -2,6 +2,11 @@
 @section('title', __('app.telegram_settings'))
 
 @section('content')
+@php
+    $telegramLoginUrl = session('telegram_access_url');
+    $telegramLoginExpires = (int) (session('telegram_access_expires') ?? 0);
+@endphp
+
 <div class="mb-6">
     <h1 class="text-2xl font-bold text-primary">{{ __('app.telegram_settings') }}</h1>
     <p class="text-sm text-muted-text mt-1">{{ __('app.telegram_settings_help') }}</p>
@@ -163,6 +168,25 @@
     </form>
 
     <div class="bg-card rounded-xl p-6 shadow-sm border border-border lg:col-span-1">
+        @if ($telegramLoginUrl)
+            <div class="rounded-xl border border-green-600/40 bg-green-950/20 text-green-100 p-4 mb-4">
+                <h3 class="text-sm font-semibold text-green-200 mb-3">
+                    One-time admin Telegram login link (expires in {{ $telegramLoginExpires }} minutes)
+                </h3>
+                <div class="space-y-2">
+                    <input id="telegramLoginUrl"
+                           value="{{ $telegramLoginUrl }}"
+                           readonly
+                           class="w-full text-xs bg-surface border border-border rounded-lg px-2.5 py-2 text-secondary">
+                    <button type="button"
+                            class="px-3 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition"
+                            onclick="navigator.clipboard.writeText(document.getElementById('telegramLoginUrl').value).then(() => alert('Copied'));">
+                        Copy link
+                    </button>
+                </div>
+            </div>
+        @endif
+
         <h3 class="text-sm font-semibold text-primary mb-2">{{ __('app.telegram_how_to_get_credentials') }}</h3>
         <ol class="text-xs text-secondary space-y-2 list-decimal list-inside">
             <li>{{ __('app.telegram_step_1') }}</li>
@@ -176,6 +200,29 @@
                 {{ __('app.open_botfather') }} &rarr;
             </a>
         </div>
+
+        <form method="POST"
+              action="{{ route('admin.telegram.login-link') }}"
+              class="mt-5 pt-4 border-t border-border space-y-3">
+            @csrf
+            <h3 class="text-sm font-semibold text-primary">Generate secure Telegram admin login</h3>
+            <div>
+                <label for="telegram_expires_in" class="block text-xs font-medium text-secondary mb-1">
+                    Expires in minutes (1-120)
+                </label>
+                <input id="telegram_expires_in"
+                       type="number"
+                       name="expires_in"
+                       min="1"
+                       max="120"
+                       value="15"
+                       class="w-full px-3 py-2 border border-border rounded-lg bg-card text-primary focus:ring-2 focus:ring-accent outline-none">
+            </div>
+            <button type="submit" class="px-4 py-2 bg-accent text-on-accent rounded-lg text-sm font-medium hover:bg-accent-hover transition">
+                Create one-time login link
+            </button>
+            <p class="text-[11px] text-muted-text">Keep this link private. It can be used once.</p>
+        </form>
     </div>
 </div>
 @endsection

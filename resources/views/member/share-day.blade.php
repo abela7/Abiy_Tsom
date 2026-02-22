@@ -47,12 +47,11 @@
 
     <script>
         (function() {
-            var memberPath = @js($memberPath ?? '/member/home');
             var publicDayUrl = @js($publicDayUrl);
-            var token = new URLSearchParams(window.location.search).get('token');
+            var code = new URLSearchParams(window.location.search).get('code');
 
-            if (token && /^[A-Za-z0-9]{20,128}$/.test(token)) {
-                var accessUrl = '/member/access/' + encodeURIComponent(token) + '?next=' + encodeURIComponent(memberPath);
+            if (code && /^[A-Za-z0-9]{20,128}$/.test(code)) {
+                var accessUrl = '/telegram/access?code=' + encodeURIComponent(code);
                 window.location.replace(accessUrl);
                 return;
             }
