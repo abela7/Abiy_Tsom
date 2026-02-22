@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Admin;
+use App\Http\Controllers\ContentSuggestionController;
 use App\Http\Controllers\Member;
 use App\Http\Controllers\Webhook;
 use Illuminate\Support\Facades\Route;
@@ -27,6 +28,10 @@ Route::post('/webhooks/ultramsg', [Webhook\UltraMsgWebhookController::class, 'ha
 // Public share page — serves OG meta for social crawlers, then redirects
 Route::get('/share/day/{daily}', [Member\ShareController::class, 'day'])->name('share.day');
 Route::get('/share/day/{daily}/public', [Member\ShareController::class, 'publicDay'])->name('share.day.public');
+
+// Public content suggestion form (no auth required)
+Route::get('/suggest', [ContentSuggestionController::class, 'show'])->name('suggest');
+Route::post('/suggest', [ContentSuggestionController::class, 'store'])->name('suggest.store');
 
 // Passcode routes (member-identified but before passcode check)
 Route::middleware('member')->group(function () {
