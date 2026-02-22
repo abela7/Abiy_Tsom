@@ -44,7 +44,7 @@ final class TelegramAuthService
             'purpose' => $purpose,
             'actor_type' => get_class($actor),
             'actor_id' => $actor->getKey(),
-            'redirect_to' => $this->normalizeRedirectPath($redirectTo),
+            'redirect_to' => $this->sanitizeRedirectPath($redirectTo, '/'),
             'expires_at' => CarbonImmutable::now()->addMinutes($ttl),
         ]);
 
