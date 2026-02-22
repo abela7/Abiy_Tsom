@@ -25,15 +25,15 @@ class ContentSuggestionController extends Controller
 
     /**
      * Store one or more content suggestions submitted from the multi-item form.
+     * Each item carries its own language so users can mix EN/AM in one batch.
      */
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'language'                => ['required', Rule::in(['en', 'am'])],
             'submitter_name'          => ['nullable', 'string', 'max:100'],
-            'notes'                   => ['nullable', 'string', 'max:2000'],
             'items'                   => ['required', 'array', 'min:1', 'max:20'],
             'items.*.type'            => ['required', Rule::in(['bible', 'mezmur', 'sinksar', 'book', 'reference'])],
+            'items.*.language'        => ['required', Rule::in(['en', 'am'])],
             'items.*.title'           => ['nullable', 'string', 'max:255'],
             'items.*.reference'       => ['nullable', 'string', 'max:500'],
             'items.*.author'          => ['nullable', 'string', 'max:255'],
@@ -41,9 +41,7 @@ class ContentSuggestionController extends Controller
         ]);
 
         $shared = [
-            'language'       => $validated['language'],
             'submitter_name' => $validated['submitter_name'] ?? null,
-            'notes'          => $validated['notes'] ?? null,
             'user_id'        => Auth::id(),
             'ip_address'     => $request->ip(),
         ];
@@ -53,6 +51,7 @@ class ContentSuggestionController extends Controller
             ContentSuggestion::create([
                 ...$shared,
                 'type'           => $item['type'],
+                'language'       => $item['language'],
                 'title'          => $item['title'] ?? null,
                 'reference'      => $item['reference'] ?? null,
                 'author'         => $item['author'] ?? null,
