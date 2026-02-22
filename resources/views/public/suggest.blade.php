@@ -239,12 +239,14 @@
                                            class="w-full h-11 px-3 rounded-xl border border-border bg-surface text-primary text-sm placeholder:text-muted-text/50 focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent transition">
                                 </div>
 
-                                {{-- Reference (bible) --}}
+                                {{-- Reference (bible only) --}}
                                 <div x-show="item.type === 'bible'" x-cloak>
                                     <label class="block text-[11px] font-bold text-muted-text uppercase tracking-widest mb-1">
                                         {{ __('app.suggest_reference_label') }}
                                     </label>
-                                    <input type="text" :name="'items[' + idx + '][reference]'"
+                                    <input type="text"
+                                           :name="item.type === 'bible' ? 'items[' + idx + '][reference]' : ''"
+                                           :disabled="item.type !== 'bible'"
                                            x-model="item.reference"
                                            placeholder="{{ __('app.suggest_reference_ph') }}"
                                            maxlength="500"
@@ -256,19 +258,23 @@
                                     <label class="block text-[11px] font-bold text-muted-text uppercase tracking-widest mb-1">
                                         {{ __('app.suggest_author_label') }}
                                     </label>
-                                    <input type="text" :name="'items[' + idx + '][author]'"
+                                    <input type="text"
+                                           :name="(item.type === 'mezmur' || item.type === 'book') ? 'items[' + idx + '][author]' : ''"
+                                           :disabled="item.type !== 'mezmur' && item.type !== 'book'"
                                            x-model="item.author"
                                            placeholder="{{ __('app.suggest_author_ph') }}"
                                            maxlength="255"
                                            class="w-full h-11 px-3 rounded-xl border border-border bg-surface text-primary text-sm placeholder:text-muted-text/50 focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent transition">
                                 </div>
 
-                                {{-- URL (mezmur / book / reference) --}}
+                                {{-- URL (mezmur / book / reference) — type="text" to avoid browser URL constraint validation --}}
                                 <div x-show="item.type === 'mezmur' || item.type === 'book' || item.type === 'reference'" x-cloak>
                                     <label class="block text-[11px] font-bold text-muted-text uppercase tracking-widest mb-1">
                                         {{ __('app.suggest_url_label') }}
                                     </label>
-                                    <input type="url" :name="'items[' + idx + '][reference]'"
+                                    <input type="text"
+                                           :name="(item.type === 'mezmur' || item.type === 'book' || item.type === 'reference') ? 'items[' + idx + '][reference]' : ''"
+                                           :disabled="item.type !== 'mezmur' && item.type !== 'book' && item.type !== 'reference'"
                                            x-model="item.reference"
                                            placeholder="{{ __('app.suggest_url_ph') }}"
                                            maxlength="500"
