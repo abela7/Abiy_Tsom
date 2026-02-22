@@ -10,6 +10,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('telegram_access_tokens')) {
+            return;
+        }
+
         Schema::create('telegram_access_tokens', function (Blueprint $table): void {
             $table->id();
             $table->string('token_hash', 64)->unique();
