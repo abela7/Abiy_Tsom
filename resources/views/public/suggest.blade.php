@@ -78,26 +78,71 @@
                     </button>
                 </div>
 
-                {{-- Recent submissions from localStorage --}}
-                <div x-show="history.length > 0" x-cloak class="mt-8">
-                    <h3 class="text-xs font-bold text-muted-text uppercase tracking-widest mb-3">{{ __('app.suggest_your_recent') }}</h3>
-                    <div class="space-y-2">
-                        <template x-for="h in history" :key="h.time">
-                            <div class="flex items-center gap-3 px-3.5 py-3 bg-card rounded-xl border border-border">
-                                <div class="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
-                                    <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="iconFor(h.type)"/>
-                                    </svg>
-                                </div>
-                                <div class="min-w-0 flex-1">
-                                    <p class="text-sm font-medium text-primary truncate" x-text="h.title"></p>
-                                    <p class="text-[11px] text-muted-text" x-text="h.typeLabel + ' · ' + h.lang.toUpperCase() + ' · ' + timeAgo(h.time)"></p>
-                                </div>
-                                <span class="px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[10px] font-bold uppercase shrink-0">{{ __('app.suggest_status_pending') }}</span>
-                            </div>
-                        </template>
+                {{-- Recent submissions: from server (logged-in) or localStorage (anonymous) --}}
+                @if($authUser && $recentSuggestions->isNotEmpty())
+                    <div class="mt-8">
+                        <h3 class="text-xs font-bold text-muted-text uppercase tracking-widest mb-3">{{ __('app.suggest_your_recent') }}</h3>
+                        <div class="space-y-2">
+                            @foreach($recentSuggestions as $s)
+                                @php
+                                    $iconColor = $s->isUsed() ? 'text-green-600 dark:text-green-400' : ($s->status === 'rejected' ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400');
+                                    $iconBg = $s->isUsed() ? 'bg-green-100 dark:bg-green-900/30' : ($s->status === 'rejected' ? 'bg-red-100 dark:bg-red-900/30' : 'bg-amber-100 dark:bg-amber-900/30');
+                                @endphp
+                                <a href="{{ route('admin.suggestions.my') }}" class="flex items-center gap-3 px-3.5 py-3 bg-card rounded-xl border border-border hover:bg-muted/50 transition block">
+                                    <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 {{ $iconBg }}">
+                                        @switch($s->type)
+                                            @case('bible')
+                                                <svg class="w-4 h-4 {{ $iconColor }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                                                @break
+                                            @case('mezmur')
+                                                <svg class="w-4 h-4 {{ $iconColor }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
+                                                @break
+                                            @case('sinksar')
+                                                <svg class="w-4 h-4 {{ $iconColor }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                                                @break
+                                            @case('book')
+                                                <svg class="w-4 h-4 {{ $iconColor }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+                                                @break
+                                            @default
+                                                <svg class="w-4 h-4 {{ $iconColor }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                                        @endswitch
+                                    </div>
+                                    <div class="min-w-0 flex-1">
+                                        <p class="text-sm font-medium text-primary truncate">{{ $s->title }}</p>
+                                        <p class="text-[11px] text-muted-text">{{ $s->typeLabel() }} · {{ strtoupper($s->language) }} · {{ $s->created_at->diffForHumans() }}</p>
+                                    </div>
+                                    @if($s->isUsed())
+                                        <span class="px-2 py-0.5 rounded-md bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-[10px] font-bold uppercase shrink-0">{{ __('app.suggest_status_used') }}</span>
+                                    @elseif($s->status === 'rejected')
+                                        <span class="px-2 py-0.5 rounded-md bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-[10px] font-bold uppercase shrink-0">{{ __('app.suggest_status_rejected') }}</span>
+                                    @else
+                                        <span class="px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[10px] font-bold uppercase shrink-0">{{ __('app.suggest_status_pending') }}</span>
+                                    @endif
+                                </a>
+                            @endforeach
+                        </div>
                     </div>
-                </div>
+                @else
+                    <div x-show="history.length > 0" x-cloak class="mt-8">
+                        <h3 class="text-xs font-bold text-muted-text uppercase tracking-widest mb-3">{{ __('app.suggest_your_recent') }}</h3>
+                        <div class="space-y-2">
+                            <template x-for="h in history" :key="h.time">
+                                <div class="flex items-center gap-3 px-3.5 py-3 bg-card rounded-xl border border-border">
+                                    <div class="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
+                                        <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="iconFor(h.type)"/>
+                                        </svg>
+                                    </div>
+                                    <div class="min-w-0 flex-1">
+                                        <p class="text-sm font-medium text-primary truncate" x-text="h.title"></p>
+                                        <p class="text-[11px] text-muted-text" x-text="h.typeLabel + ' · ' + h.lang.toUpperCase() + ' · ' + timeAgo(h.time)"></p>
+                                    </div>
+                                    <span class="px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[10px] font-bold uppercase shrink-0">{{ __('app.suggest_status_pending') }}</span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                @endif
             </div>
 
             {{-- ════════════════════════════════════════════════════════════════ --}}

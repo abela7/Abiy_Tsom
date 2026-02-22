@@ -15,12 +15,19 @@ class ContentSuggestionController extends Controller
 {
     /**
      * Show the public suggestion form.
+     * For logged-in users, pass their recent suggestions with real status.
      */
     public function show(): View
     {
         $authUser = Auth::user();
+        $recentSuggestions = $authUser
+            ? ContentSuggestion::where('user_id', $authUser->id)
+                ->orderByDesc('created_at')
+                ->limit(10)
+                ->get()
+            : collect();
 
-        return view('public.suggest', compact('authUser'));
+        return view('public.suggest', compact('authUser', 'recentSuggestions'));
     }
 
     /**
