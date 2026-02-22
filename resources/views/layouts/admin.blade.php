@@ -124,6 +124,7 @@
                 ['route' => 'admin.translations.index', 'label' => __('app.translations'), 'icon' => 'M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129', 'super_admin' => true],
                 ['route' => 'admin.seo.index', 'label' => __('app.seo'), 'icon' => 'M21 12a9 9 0 11-18 0 9 9 0 0118 0zM3.6 9h16.8M3.6 15h16.8M12 3a15.3 15.3 0 010 18M12 3a15.3 15.3 0 000 18', 'super_admin' => true],
                 ['route' => 'admin.whatsapp.settings', 'label' => __('app.whatsapp_settings'), 'icon' => 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z', 'super_admin' => true, 'match' => 'admin.whatsapp.*'],
+                ['route' => 'admin.telegram.settings', 'label' => __('app.telegram_settings'), 'icon' => 'M8 12h.01M12 12h.01M16 12h.01M4 4a2 2 0 012-2h12a2 2 0 012 2v16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z', 'super_admin' => true, 'match' => 'admin.telegram.*'],
             ];
         @endphp
 

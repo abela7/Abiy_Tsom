@@ -34,13 +34,14 @@
     </div>
 
     {{-- Quick link --}}
-    <div class="bg-accent rounded-xl p-4 shadow-sm text-on-accent">
-        <p class="text-sm text-on-accent/70 mb-1">{{ __('app.quick_actions') }}</p>
-        <div class="space-y-2 mt-2">
-            <a href="{{ route('admin.daily.create') }}" class="block text-sm font-medium hover:text-accent-secondary transition">+ {{ __('app.add_daily_content') }}</a>
-            <a href="{{ route('admin.activities.create') }}" class="block text-sm font-medium hover:text-accent-secondary transition">+ {{ __('app.add_activity') }}</a>
-            <a href="{{ route('admin.translations.index') }}" class="block text-sm font-medium hover:text-accent-secondary transition">{{ __('app.manage_translations') }}</a>
+        <div class="bg-accent rounded-xl p-4 shadow-sm text-on-accent">
+            <p class="text-sm text-on-accent/70 mb-1">{{ __('app.quick_actions') }}</p>
+            <div class="space-y-2 mt-2">
+                <a href="{{ route('admin.daily.create') }}" class="block text-sm font-medium hover:text-accent-secondary transition">+ {{ __('app.add_daily_content') }}</a>
+                <a href="{{ route('admin.activities.create') }}" class="block text-sm font-medium hover:text-accent-secondary transition">+ {{ __('app.add_activity') }}</a>
+                <a href="{{ route('admin.translations.index') }}" class="block text-sm font-medium hover:text-accent-secondary transition">{{ __('app.manage_translations') }}</a>
+                <a href="{{ route('admin.telegram.settings') }}" class="block text-sm font-medium hover:text-accent-secondary transition">{{ __('app.telegram_settings') }}</a>
+            </div>
         </div>
-    </div>
 </div>
 @endsection

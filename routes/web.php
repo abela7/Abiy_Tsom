@@ -178,6 +178,10 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::post('/whatsapp/reminders/{member}/confirm', [Admin\WhatsAppRemindersController::class, 'confirm'])->name('whatsapp.reminders.confirm');
         Route::delete('/whatsapp/reminders/{member}', [Admin\WhatsAppRemindersController::class, 'destroy'])->name('whatsapp.reminders.destroy');
         Route::get('/whatsapp/cron', [Admin\WhatsAppCronController::class, 'index'])->name('whatsapp.cron');
+        Route::get('/telegram', fn () => redirect()->route('admin.telegram.settings'))->name('telegram.index');
+        Route::get('/telegram/settings', [Admin\TelegramSettingsController::class, 'settings'])->name('telegram.settings');
+        Route::put('/telegram', [Admin\TelegramSettingsController::class, 'update'])->name('telegram.update');
+        Route::post('/telegram/test', [Admin\TelegramSettingsController::class, 'test'])->name('telegram.test');
 
         // Admin users
         Route::prefix('admins')->name('admins.')->group(function () {
@@ -191,5 +195,4 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         });
     });
 });
-
 
