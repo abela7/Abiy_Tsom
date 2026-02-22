@@ -73,6 +73,18 @@ final class TelegramService
         return $this->apiCall('setMyCommands', $payload);
     }
 
+    /**
+     * Acknowledge callback button taps from inline keyboards.
+     */
+    public function answerCallbackQuery(string $callbackQueryId, string $text = '', bool $showAlert = false): bool
+    {
+        return $this->apiCall('answerCallbackQuery', [
+            'callback_query_id' => $callbackQueryId,
+            'text' => $text,
+            'show_alert' => $showAlert,
+        ]);
+    }
+
     private function apiCall(string $method, array $payload): bool
     {
         if (! $this->isConfigured()) {

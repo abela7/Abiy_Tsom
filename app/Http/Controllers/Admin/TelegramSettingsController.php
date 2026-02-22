@@ -111,12 +111,8 @@ class TelegramSettingsController extends Controller
 
         $commands = [
             ['command' => 'menu', 'description' => __('app.telegram_menu_command_desc')],
-            ['command' => 'home', 'description' => __('app.telegram_home_command_desc')],
-            ['command' => 'admin', 'description' => __('app.telegram_admin_command_desc')],
-            ['command' => 'day', 'description' => __('app.telegram_day_command_desc')],
-            ['command' => 'me', 'description' => __('app.telegram_me_command_desc')],
-            ['command' => 'connect', 'description' => __('app.telegram_connect_command_desc')],
             ['command' => 'help', 'description' => __('app.telegram_help_command_desc')],
+            ['command' => 'connect', 'description' => __('app.telegram_connect_command_desc')],
         ];
 
         if (! $telegramService->setMyCommands($commands)) {
