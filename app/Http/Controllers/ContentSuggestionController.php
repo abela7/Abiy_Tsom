@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Models\ContentSuggestion;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -17,7 +18,9 @@ class ContentSuggestionController extends Controller
      */
     public function show(): View
     {
-        return view('public.suggest');
+        $authUser = Auth::user();
+
+        return view('public.suggest', compact('authUser'));
     }
 
     /**
@@ -38,11 +41,24 @@ class ContentSuggestionController extends Controller
 
         ContentSuggestion::create([
             ...$validated,
+            'user_id'    => Auth::id(),
             'ip_address' => $request->ip(),
         ]);
 
         return redirect()
             ->route('suggest')
             ->with('success', true);
+    }
+
+    /**
+     * "My Suggestions" — logged-in writer/editor sees their own submissions.
+     */
+    public function my(): View
+    {
+        $suggestions = ContentSuggestion::where('user_id', Auth::id())
+            ->orderByDesc('created_at')
+            ->get();
+
+        return view('admin.suggestions.my', compact('suggestions'));
     }
 }

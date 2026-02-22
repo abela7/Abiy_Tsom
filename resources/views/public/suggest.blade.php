@@ -62,6 +62,17 @@
                 </p>
             </div>
 
+            @if($authUser)
+                <div class="flex items-center justify-between gap-2 p-3 rounded-xl bg-accent/5 border border-accent/20">
+                    <span class="text-xs font-medium text-accent">
+                        {{ __('app.suggest_logged_in_as', ['name' => $authUser->name]) }}
+                    </span>
+                    <a href="{{ route('admin.suggestions.my') }}" class="text-xs font-semibold text-accent hover:underline">
+                        {{ __('app.suggest_my_suggestions') }}
+                    </a>
+                </div>
+            @endif
+
             {{-- Validation errors --}}
             @if($errors->any())
                 <div class="p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
@@ -154,10 +165,11 @@
                         <input
                             type="text"
                             name="submitter_name"
-                            value="{{ old('submitter_name') }}"
+                            value="{{ old('submitter_name', $authUser?->name ?? '') }}"
                             placeholder="{{ __('app.suggest_submitter_ph') }}"
                             maxlength="100"
-                            class="w-full px-3.5 py-2.5 rounded-xl border border-border bg-surface text-primary text-sm placeholder:text-muted-text/60 focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent transition"
+                            @if($authUser) readonly @endif
+                            class="w-full px-3.5 py-2.5 rounded-xl border border-border bg-surface text-primary text-sm placeholder:text-muted-text/60 focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent transition {{ $authUser ? 'bg-muted/50' : '' }}"
                         >
                     </div>
 

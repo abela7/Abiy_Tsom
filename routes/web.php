@@ -89,6 +89,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     // Writer/editor/admin routes
     Route::middleware('admin_role:writer,editor,admin')->group(function () {
+        // My suggestions (writer sees their own submissions)
+        Route::get('/suggestions/my', [App\Http\Controllers\ContentSuggestionController::class, 'my'])->name('suggestions.my');
+
         // Daily content
         Route::get('/daily', [Admin\DailyContentController::class, 'index'])->name('daily.index');
         Route::post('/daily/scaffold', [Admin\DailyContentController::class, 'scaffold'])->name('daily.scaffold');
@@ -114,6 +117,12 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
 
     // Editor/admin routes
     Route::middleware('admin_role:editor,admin')->group(function () {
+        // Content suggestions review
+        Route::get('/suggestions', [Admin\ContentSuggestionController::class, 'index'])->name('suggestions.index');
+        Route::post('/suggestions/{suggestion}/use', [Admin\ContentSuggestionController::class, 'markUsed'])->name('suggestions.mark-used');
+        Route::post('/suggestions/{suggestion}/unuse', [Admin\ContentSuggestionController::class, 'unmarkUsed'])->name('suggestions.unmark-used');
+        Route::post('/suggestions/{suggestion}/reject', [Admin\ContentSuggestionController::class, 'reject'])->name('suggestions.reject');
+
         // Seasons
         Route::get('/seasons', [Admin\LentSeasonController::class, 'index'])->name('seasons.index');
         Route::get('/seasons/create', [Admin\LentSeasonController::class, 'create'])->name('seasons.create');
