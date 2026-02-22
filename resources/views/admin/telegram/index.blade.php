@@ -5,6 +5,8 @@
 @php
     $telegramLoginUrl = session('telegram_access_url');
     $telegramLoginExpires = (int) (session('telegram_access_expires') ?? 0);
+    $publicBotLink = $publicBotName ? ('https://t.me/' . $publicBotName) : '';
+    $botStatusLine = $publicBotName ? __('app.telegram_bot_ready') : __('app.telegram_bot_username_missing');
 @endphp
 
 <div class="mb-6">
@@ -18,6 +20,7 @@
           class="lg:col-span-2 space-y-6"
           x-data="{
             botToken: @js($botToken),
+            botUsername: @js($botUsername),
             defaultChatId: @js($defaultChatId),
             testChatId: '',
             testing: false,
@@ -81,8 +84,22 @@
 
         <div class="bg-card rounded-xl p-6 shadow-sm border border-border">
             <h2 class="text-base font-semibold text-primary mb-4">{{ __('app.telegram_credentials') }}</h2>
-
             <div class="space-y-4">
+                <div>
+                    <label for="bot_username" class="block text-sm font-medium text-secondary mb-1.5">
+                        {{ __('app.telegram_bot_username') }}
+                    </label>
+                    <input type="text"
+                           id="bot_username"
+                           name="bot_username"
+                           x-model="botUsername"
+                           value="{{ old('bot_username', $botUsername) }}"
+                           placeholder="abiytsombot"
+                           maxlength="255"
+                           class="w-full px-3 py-2 border border-border rounded-lg bg-card text-primary focus:ring-2 focus:ring-accent outline-none font-mono text-sm">
+                    <p class="text-xs text-muted-text mt-1.5">{{ __('app.telegram_bot_username_help') }}</p>
+                </div>
+
                 <div>
                     <label for="bot_token" class="block text-sm font-medium text-secondary mb-1.5">
                         {{ __('app.telegram_bot_token') }}
@@ -167,9 +184,71 @@
         </div>
     </form>
 
-    <div class="bg-card rounded-xl p-6 shadow-sm border border-border lg:col-span-1">
+    <div class="bg-card rounded-xl p-6 shadow-sm border border-border lg:col-span-1 space-y-4">
+        <h3 class="text-sm font-semibold text-primary mb-1">{{ __('app.telegram_bot_connection') }}</h3>
+        <p class="text-xs text-secondary">{{ $botStatusLine }}</p>
+
+        @if ($publicBotName)
+            <div class="rounded-xl border border-border bg-surface text-xs space-y-2 p-3">
+                <p class="text-secondary">{{ __('app.telegram_bot_deep_link') }}</p>
+                <input id="telegramBotLink"
+                       value="{{ $publicBotLink }}"
+                       readonly
+                       class="w-full text-xs bg-card border border-border rounded-lg px-2.5 py-2 text-secondary">
+                <a href="{{ $publicBotLink }}"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="inline-block px-3 py-2 bg-accent text-on-accent rounded-lg text-xs hover:bg-accent-hover">
+                    {{ __('app.telegram_open_bot') }}
+                </a>
+            </div>
+
+            <div class="rounded-xl border border-border bg-surface text-xs space-y-2 p-3">
+                <p class="text-secondary">Telegram deep-link entry points</p>
+                <a href="{{ $telegramMenuStartLink }}"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="block text-accent hover:text-accent-hover underline">
+                    Menu entry point
+                </a>
+                <a href="{{ $telegramHomeStartLink }}"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="block text-accent hover:text-accent-hover underline">
+                    Member home entry point
+                </a>
+                <a href="{{ $telegramTodayStartLink }}"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="block text-accent hover:text-accent-hover underline">
+                    Today entry point
+                </a>
+                <a href="{{ $telegramAdminStartLink }}"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="block text-accent hover:text-accent-hover underline">
+                    Admin entry point
+                </a>
+            </div>
+        @endif
+
+        <div>
+            <p class="text-xs text-secondary">{{ __('app.telegram_menu_note') }}</p>
+            <p class="text-xs text-muted-text mt-1">Webhook URL:</p>
+            <p class="text-xs font-mono break-all text-secondary">{{ $webhookUrl }}</p>
+            <form method="POST"
+                  action="{{ route('admin.telegram.sync-menu') }}"
+                  class="mt-3">
+                @csrf
+                <button type="submit"
+                        class="w-full px-3 py-2 bg-accent text-on-accent rounded-lg text-sm font-medium hover:bg-accent-hover transition">
+                    {{ __('app.telegram_sync_menu') }}
+                </button>
+            </form>
+        </div>
+
         @if ($telegramLoginUrl)
-            <div class="rounded-xl border border-green-600/40 bg-green-950/20 text-green-100 p-4 mb-4">
+            <div class="rounded-xl border border-green-600/40 bg-green-950/20 text-green-100 p-4">
                 <h3 class="text-sm font-semibold text-green-200 mb-3">
                     One-time admin Telegram login link (expires in {{ $telegramLoginExpires }} minutes)
                 </h3>
@@ -180,30 +259,17 @@
                            class="w-full text-xs bg-surface border border-border rounded-lg px-2.5 py-2 text-secondary">
                     <button type="button"
                             class="px-3 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition"
-                            onclick="navigator.clipboard.writeText(document.getElementById('telegramLoginUrl').value).then(() => alert('Copied'));">
+                            onclick="navigator.clipboard.writeText(document.getElementById('telegramLoginUrl').value).then(() => alert('Copied'));"
+                    >
                         Copy link
                     </button>
                 </div>
             </div>
         @endif
 
-        <h3 class="text-sm font-semibold text-primary mb-2">{{ __('app.telegram_how_to_get_credentials') }}</h3>
-        <ol class="text-xs text-secondary space-y-2 list-decimal list-inside">
-            <li>{{ __('app.telegram_step_1') }}</li>
-            <li>{{ __('app.telegram_step_2') }}</li>
-            <li>{{ __('app.telegram_step_3') }}</li>
-            <li>{{ __('app.telegram_step_4') }}</li>
-        </ol>
-
-        <div class="pt-4 border-t border-border mt-4">
-            <a href="https://t.me/BotFather" target="_blank" rel="noopener noreferrer" class="text-xs text-accent hover:text-accent-hover">
-                {{ __('app.open_botfather') }} &rarr;
-            </a>
-        </div>
-
         <form method="POST"
               action="{{ route('admin.telegram.login-link') }}"
-              class="mt-5 pt-4 border-t border-border space-y-3">
+              class="pt-2 border-t border-border space-y-3">
             @csrf
             <h3 class="text-sm font-semibold text-primary">Generate secure Telegram admin login</h3>
             <div>

@@ -15,6 +15,7 @@ final class TelegramAuthService
 {
     public const PURPOSE_MEMBER_ACCESS = 'member_access';
     public const PURPOSE_ADMIN_ACCESS = 'admin_access';
+    private const CODE_LENGTH = 32;
 
     private const DEFAULT_TTL_MINUTES = [
         self::PURPOSE_MEMBER_ACCESS => 1440, // 24h
@@ -33,7 +34,7 @@ final class TelegramAuthService
             throw new \InvalidArgumentException('Invalid Telegram access purpose.');
         }
 
-        $plainToken = Str::random(80);
+        $plainToken = Str::random(self::CODE_LENGTH);
         $ttl = $ttlMinutes !== null
             ? max(1, $ttlMinutes)
             : self::DEFAULT_TTL_MINUTES[$purpose];

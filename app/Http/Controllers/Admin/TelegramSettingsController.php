@@ -27,14 +27,33 @@ class TelegramSettingsController extends Controller
         $envExists = File::exists($envPath);
 
         $botToken = '';
+        $botUsername = '';
         $defaultChatId = '';
 
         if ($envExists) {
             $botToken = config('services.telegram.bot_token') ?? '';
+            $botUsername = config('services.telegram.bot_username') ?? '';
             $defaultChatId = config('services.telegram.default_chat_id') ?? '';
         }
 
-        return view('admin.telegram.index', compact('botToken', 'defaultChatId'));
+        $publicBotName = $this->publicBotUsername($botUsername);
+        $webhookUrl = route('webhooks.telegram');
+        $telegramMenuStartLink = $publicBotName ? ('https://t.me/' . $publicBotName . '?start=menu') : '';
+        $telegramHomeStartLink = $publicBotName ? ('https://t.me/' . $publicBotName . '?start=home') : '';
+        $telegramAdminStartLink = $publicBotName ? ('https://t.me/' . $publicBotName . '?start=admin') : '';
+        $telegramTodayStartLink = $publicBotName ? ('https://t.me/' . $publicBotName . '?start=today') : '';
+
+        return view('admin.telegram.index', compact(
+            'botToken',
+            'botUsername',
+            'defaultChatId',
+            'publicBotName',
+            'webhookUrl',
+            'telegramMenuStartLink',
+            'telegramHomeStartLink',
+            'telegramAdminStartLink',
+            'telegramTodayStartLink'
+        ));
     }
 
     /**
@@ -44,6 +63,7 @@ class TelegramSettingsController extends Controller
     {
         $validated = $request->validate([
             'bot_token' => ['nullable', 'string', 'max:255'],
+            'bot_username' => ['nullable', 'string', 'max:255'],
             'default_chat_id' => ['nullable', 'string', 'max:255'],
         ]);
 
@@ -56,14 +76,17 @@ class TelegramSettingsController extends Controller
 
         $envContent = File::get($envPath);
 
-        $botToken = trim($validated['bot_token'] ?? '');
+        $botToken = trim((string) ($validated['bot_token'] ?? ''));
+        $botUsername = trim((string) ($validated['bot_username'] ?? ''));
         $defaultChatId = trim((string) ($validated['default_chat_id'] ?? ''));
 
         $envContent = $this->updateEnvVariable($envContent, 'TELEGRAM_BOT_TOKEN', $botToken);
+        $envContent = $this->updateEnvVariable($envContent, 'TELEGRAM_BOT_USERNAME', $this->publicBotUsername($botUsername));
         $envContent = $this->updateEnvVariable($envContent, 'TELEGRAM_DEFAULT_CHAT_ID', $defaultChatId);
         File::put($envPath, $envContent);
 
         config()->set('services.telegram.bot_token', $botToken);
+        config()->set('services.telegram.bot_username', $this->publicBotUsername($botUsername));
         config()->set('services.telegram.default_chat_id', $defaultChatId);
 
         if (is_file(base_path('bootstrap/cache/config.php'))) {
@@ -73,6 +96,38 @@ class TelegramSettingsController extends Controller
         return redirect()
             ->route('admin.telegram.settings')
             ->with('success', __('app.telegram_settings_saved'));
+    }
+
+    /**
+     * Push Telegram command menu to show in the chat UI.
+     */
+    public function syncMenu(TelegramService $telegramService): RedirectResponse
+    {
+        if (! $telegramService->isConfigured()) {
+            return redirect()
+                ->route('admin.telegram.settings')
+                ->with('error', __('app.telegram_not_configured_for_menu'));
+        }
+
+        $commands = [
+            ['command' => 'menu', 'description' => __('app.telegram_menu_command_desc')],
+            ['command' => 'home', 'description' => __('app.telegram_home_command_desc')],
+            ['command' => 'admin', 'description' => __('app.telegram_admin_command_desc')],
+            ['command' => 'day', 'description' => __('app.telegram_day_command_desc')],
+            ['command' => 'me', 'description' => __('app.telegram_me_command_desc')],
+            ['command' => 'connect', 'description' => __('app.telegram_connect_command_desc')],
+            ['command' => 'help', 'description' => __('app.telegram_help_command_desc')],
+        ];
+
+        if (! $telegramService->setMyCommands($commands)) {
+            return redirect()
+                ->route('admin.telegram.settings')
+                ->with('error', __('app.telegram_menu_sync_failed'));
+        }
+
+        return redirect()
+            ->route('admin.telegram.settings')
+            ->with('success', __('app.telegram_menu_synced'));
     }
 
     /**
@@ -153,5 +208,15 @@ class TelegramSettingsController extends Controller
         }
 
         return $value;
+    }
+
+    private function publicBotUsername(?string $username): string
+    {
+        $trimmed = trim((string) $username);
+        if ($trimmed === '') {
+            return '';
+        }
+
+        return ltrim($trimmed, '@');
     }
 }

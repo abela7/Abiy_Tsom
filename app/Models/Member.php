@@ -19,6 +19,7 @@ class Member extends Model
     protected $fillable = [
         'baptism_name',
         'token',
+        'telegram_chat_id',
         'trusted_device_hash',
         'passcode',
         'passcode_enabled',

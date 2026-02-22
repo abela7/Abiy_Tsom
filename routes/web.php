@@ -21,6 +21,9 @@ Route::post('/member/register', [Member\OnboardingController::class, 'register']
 Route::post('/member/identify', [Member\OnboardingController::class, 'identify'])
     ->middleware('member')
     ->name('member.identify');
+Route::post('/webhooks/telegram', [Webhook\TelegramWebhookController::class, 'handle'])
+    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class])
+    ->name('webhooks.telegram');
 Route::post('/webhooks/ultramsg', [Webhook\UltraMsgWebhookController::class, 'handle'])
     ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class])
     ->name('webhooks.ultramsg');
@@ -184,6 +187,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/telegram', fn () => redirect()->route('admin.telegram.settings'))->name('telegram.index');
         Route::get('/telegram/settings', [Admin\TelegramSettingsController::class, 'settings'])->name('telegram.settings');
         Route::put('/telegram', [Admin\TelegramSettingsController::class, 'update'])->name('telegram.update');
+        Route::post('/telegram/sync-menu', [Admin\TelegramSettingsController::class, 'syncMenu'])->name('telegram.sync-menu');
         Route::post('/telegram/test', [Admin\TelegramSettingsController::class, 'test'])->name('telegram.test');
         Route::post('/telegram/login-link', [TelegramAuthController::class, 'createAdminLoginLink'])->name('telegram.login-link');
 

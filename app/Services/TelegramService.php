@@ -23,7 +23,7 @@ final class TelegramService
     /**
      * Send a text message to a Telegram chat.
      */
-    public function sendTextMessage(string $chatId, string $body): bool
+    public function sendTextMessage(string $chatId, string $body, array $options = []): bool
     {
         if (! $this->isConfigured() || $chatId === '') {
             return false;
@@ -31,10 +31,10 @@ final class TelegramService
 
         $response = Http::acceptJson()
             ->timeout(20)
-            ->post($this->sendMessageEndpoint(), [
+            ->post($this->apiEndpoint('sendMessage'), array_merge([
                 'chat_id' => trim($chatId),
                 'text' => $body,
-            ]);
+            ], $options));
 
         if (! $response->successful()) {
             Log::warning('Telegram sendMessage failed.', [
@@ -59,9 +59,54 @@ final class TelegramService
         return $sent;
     }
 
-    private function sendMessageEndpoint(): string
+    /**
+     * Register bot command menu for all chat users.
+     *
+     * @param array<int, array{command:string,description:string}> $commands
+     */
+    public function setMyCommands(array $commands): bool
     {
-        return sprintf('https://api.telegram.org/bot%s/sendMessage', $this->botToken());
+        $payload = [
+            'commands' => $commands,
+        ];
+
+        return $this->apiCall('setMyCommands', $payload);
+    }
+
+    private function apiCall(string $method, array $payload): bool
+    {
+        if (! $this->isConfigured()) {
+            return false;
+        }
+
+        $response = Http::acceptJson()
+            ->timeout(20)
+            ->post($this->apiEndpoint($method), $payload);
+
+        if (! $response->successful()) {
+            Log::warning("Telegram API method {$method} failed.", [
+                'status' => $response->status(),
+                'response' => $response->body(),
+            ]);
+
+            return false;
+        }
+
+        $payloadJson = $response->json();
+        $ok = is_array($payloadJson) ? (bool) ($payloadJson['ok'] ?? false) : false;
+
+        if (! $ok) {
+            Log::warning("Telegram API method {$method} returned ok=false.", [
+                'response' => $payloadJson,
+            ]);
+        }
+
+        return $ok;
+    }
+
+    private function apiEndpoint(string $method): string
+    {
+        return sprintf('https://api.telegram.org/bot%s/%s', $this->botToken(), ltrim($method, '/'));
     }
 
     private function botToken(): string
