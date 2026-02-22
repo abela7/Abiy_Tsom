@@ -714,8 +714,10 @@ return [
     // Content Suggestion page
     'suggest_page_title'          => 'Suggest Content',
     'suggest_page_subtitle'       => 'Help us enrich daily content by sharing your recommendations',
+    'suggest_step1_hint'          => 'What language is the content in?',
+    'suggest_your_recent'         => 'Your Recent Suggestions',
     'suggest_type_label'          => 'Content Type',
-    'suggest_type_placeholder'    => 'Select a content type',
+    'suggest_type_placeholder'    => 'What would you like to suggest?',
     'suggest_type_bible'          => 'Bible Chapter',
     'suggest_type_mezmur'         => 'Mezmur / Hymn',
     'suggest_type_sinksar'        => 'Sinksar',
