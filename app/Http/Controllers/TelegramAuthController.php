@@ -47,7 +47,7 @@ class TelegramAuthController extends Controller
 
     /**
      * Embed page for Telegram Web App — shows YouTube video inline so user stays in Telegram.
-     * No auth required; vid param is the YouTube video ID.
+     * Optional: title (text below player), img (image URL for thumbnail/photo).
      */
     public function embed(Request $request): \Illuminate\View\View|\Illuminate\Http\RedirectResponse
     {
@@ -56,7 +56,14 @@ class TelegramAuthController extends Controller
             return redirect()->route('home');
         }
 
-        return view('telegram.embed', ['videoId' => $vid]);
+        $title = trim((string) $request->query('title', ''));
+        $img = trim((string) $request->query('img', ''));
+
+        return view('telegram.embed', [
+            'videoId' => $vid,
+            'title' => $title,
+            'img' => $img,
+        ]);
     }
 
     public function miniConnect(Request $request): View

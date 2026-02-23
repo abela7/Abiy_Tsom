@@ -285,15 +285,16 @@ final class TelegramContentFormatter
                     continue;
                 }
                 $vid = $this->youtubeVideoId($url);
-                $title = localized($m, 'title', $locale) ?? __('app.listen');
-                $title = mb_strlen($title) > 25 ? mb_substr($title, 0, 22).'…' : $title;
+                $fullTitle = localized($m, 'title', $locale) ?? __('app.listen');
+                $btnTitle = mb_strlen($fullTitle) > 25 ? mb_substr($fullTitle, 0, 22).'…' : $fullTitle;
                 if ($vid) {
+                    $embedUrl = $embedBase.'?vid='.$vid.'&title='.rawurlencode($fullTitle);
                     $buttons[] = [
-                        'text' => '▶ '.$title,
-                        'web_app' => ['url' => $embedBase.'?vid='.$vid],
+                        'text' => '▶ '.$btnTitle,
+                        'web_app' => ['url' => $embedUrl],
                     ];
                 } else {
-                    $buttons[] = ['text' => '▶ '.$title, 'url' => $this->hUrl($url)];
+                    $buttons[] = ['text' => '▶ '.$btnTitle, 'url' => $this->hUrl($url)];
                 }
             }
         }
@@ -303,9 +304,11 @@ final class TelegramContentFormatter
             if ($url) {
                 $vid = $this->youtubeVideoId($url);
                 if ($vid) {
+                    $sinksarTitle = localized($daily, 'sinksar_title', $locale) ?? __('app.sinksar');
+                    $embedUrl = $embedBase.'?vid='.$vid.'&title='.rawurlencode($sinksarTitle);
                     $buttons[] = [
                         'text' => '▶ '.__('app.listen'),
-                        'web_app' => ['url' => $embedBase.'?vid='.$vid],
+                        'web_app' => ['url' => $embedUrl],
                     ];
                 } else {
                     $buttons[] = ['text' => '▶ '.__('app.listen'), 'url' => $this->hUrl($url)];
@@ -324,9 +327,10 @@ final class TelegramContentFormatter
                 $refType = $ref->type ?? 'website';
                 $vid = $this->youtubeVideoId($url);
                 if ($vid && $refType === 'video') {
+                    $embedUrl = $embedBase.'?vid='.$vid.'&title='.rawurlencode($name);
                     $buttons[] = [
                         'text' => '▶ '.$name,
-                        'web_app' => ['url' => $embedBase.'?vid='.$vid],
+                        'web_app' => ['url' => $embedUrl],
                     ];
                 } else {
                     $label = match ($refType) {
@@ -346,12 +350,13 @@ final class TelegramContentFormatter
                     continue;
                 }
                 $vid = $this->youtubeVideoId($url);
-                $title = localized($book, 'title', $locale) ?? __('app.read_more');
-                $title = mb_strlen($title) > 25 ? mb_substr($title, 0, 22).'…' : $title;
+                $fullTitle = localized($book, 'title', $locale) ?? __('app.read_more');
+                $btnTitle = mb_strlen($fullTitle) > 25 ? mb_substr($fullTitle, 0, 22).'…' : $fullTitle;
                 if ($vid) {
+                    $embedUrl = $embedBase.'?vid='.$vid.'&title='.rawurlencode($fullTitle);
                     $buttons[] = [
-                        'text' => '▶ '.$title,
-                        'web_app' => ['url' => $embedBase.'?vid='.$vid],
+                        'text' => '▶ '.$btnTitle,
+                        'web_app' => ['url' => $embedUrl],
                     ];
                 } else {
                     $buttons[] = ['text' => __('app.read_more').' →', 'url' => $this->hUrl($url)];
