@@ -1143,15 +1143,14 @@ class TelegramWebhookController extends Controller
     ): JsonResponse {
         if ($messageId > 0) {
             $ok = $telegramService->editMessageText($chatId, $messageId, $text, $replyMarkup, $parseMode);
-        } else {
-            return $this->reply($telegramService, $chatId, $text, $replyMarkup, $parseMode);
+            if ($ok) {
+                return response()->json(['success' => true]);
+            }
+            // Fallback: delete old message and send fresh one
+            $telegramService->deleteMessage($chatId, $messageId);
         }
 
-        return response()->json([
-            'success' => $ok,
-            'delivered' => $ok,
-            'sent' => $ok,
-        ]);
+        return $this->reply($telegramService, $chatId, $text, $replyMarkup, $parseMode);
     }
 
     /**

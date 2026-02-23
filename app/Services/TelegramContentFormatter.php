@@ -621,6 +621,7 @@ final class TelegramContentFormatter
 
         $parts = [];
         $parts[] = '<b>📊 '.__('app.progress').' — '.$periodLabel.'</b>';
+        $parts[] = '<i>'.now()->format('H:i').' · '.$periodDayCount.' '.($periodDayCount === 1 ? 'day' : 'days').'</i>';
         $parts[] = '';
         $parts[] = __('app.overall_completion', ['pct' => $overall]);
         $parts[] = __('app.streak_days', ['count' => $streak]);
