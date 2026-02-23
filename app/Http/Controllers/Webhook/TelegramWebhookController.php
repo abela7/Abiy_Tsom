@@ -115,7 +115,8 @@ class TelegramWebhookController extends Controller
         }
 
         if ($callbackId !== '') {
-            $telegramService->answerCallbackQuery($callbackId, '');
+            $feedback = str_starts_with($action, 'progress_') ? __('app.loading') : '';
+            $telegramService->answerCallbackQuery($callbackId, $feedback);
         }
 
         if (str_starts_with($action, 'check_')) {

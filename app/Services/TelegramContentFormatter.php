@@ -13,6 +13,7 @@ use App\Models\MemberCustomChecklist;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Format member content for Telegram. Uses HTML with expandable sections
@@ -569,19 +570,20 @@ final class TelegramContentFormatter
             ];
         }
 
-        $allDays = DailyContent::where('lent_season_id', $season->id)
+        $cacheKey = 'telegram_progress_meta_'.$season->id;
+        $allDays = Cache::remember($cacheKey.'_days', 60, fn () => DailyContent::where('lent_season_id', $season->id)
             ->where('is_published', true)
             ->orderBy('day_number')
-            ->get();
+            ->get(['id', 'day_number', 'date', 'weekly_theme_id']));
 
         $today = Carbon::today();
         $referenceDay = $this->getProgressReferenceDay($allDays, $today);
         $periodDays = $this->filterProgressByPeriod($allDays, $period, $referenceDay);
 
-        $activities = Activity::where('lent_season_id', $season->id)
+        $activities = Cache::remember($cacheKey.'_activities', 60, fn () => Activity::where('lent_season_id', $season->id)
             ->where('is_active', true)
             ->orderBy('sort_order')
-            ->get();
+            ->get());
 
         $customActivities = $member->customActivities()->orderBy('sort_order')->get();
         $totalActivities = $activities->count() + $customActivities->count();
@@ -590,12 +592,12 @@ final class TelegramContentFormatter
         $allChecks = MemberChecklist::where('member_id', $member->id)
             ->whereIn('daily_content_id', $allDayIds)
             ->where('completed', true)
-            ->get();
+            ->get(['daily_content_id', 'activity_id']);
 
         $allCustomChecks = MemberCustomChecklist::where('member_id', $member->id)
             ->whereIn('daily_content_id', $allDayIds)
             ->where('completed', true)
-            ->get();
+            ->get(['daily_content_id', 'member_custom_activity_id']);
 
         $periodDayIds = $periodDays->pluck('id');
         $checks = $allChecks->whereIn('daily_content_id', $periodDayIds);
