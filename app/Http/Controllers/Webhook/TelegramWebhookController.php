@@ -482,7 +482,7 @@ class TelegramWebhookController extends Controller
             $telegramService,
             $chatId,
             $messageId,
-            'Your secure launch links:',
+            __('app.telegram_quick_links_heading'),
             $this->quickLinksKeyboard($actor, $telegramAuthService)
         );
     }
@@ -1150,7 +1150,7 @@ class TelegramWebhookController extends Controller
 
     private function fallbackMessage(): string
     {
-        return 'I did not recognize this input. Use the buttons below.';
+        return __('app.telegram_fallback_message');
     }
 
     private function helpMessage(): string
@@ -1175,7 +1175,7 @@ class TelegramWebhookController extends Controller
 
     private function menuHeading(): string
     {
-        return 'Quick actions:';
+        return __('app.telegram_menu_heading');
     }
 
     private function launchKeyboard(): array
@@ -1224,7 +1224,7 @@ class TelegramWebhookController extends Controller
 
         if ($actor instanceof Member) {
             $rows[] = [
-                ['text' => $this->telegramBotBuilder->buttonLabel('today', 'member', 'Today'), 'callback_data' => 'today'],
+                ['text' => $this->telegramBotBuilder->buttonLabel('today', 'member', __('app.today')), 'callback_data' => 'today'],
                 ['text' => __('app.progress'), 'callback_data' => 'progress'],
                 ['text' => __('app.checklist'), 'callback_data' => 'checklist'],
             ];

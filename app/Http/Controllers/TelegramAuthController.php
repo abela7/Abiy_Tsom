@@ -58,19 +58,9 @@ class TelegramAuthController extends Controller
 
         $title = trim((string) $request->query('title', ''));
 
-        $storedOgImage = \App\Models\SeoSetting::cached('og_image');
-        $mainImageUrl = $storedOgImage
-            ? \Illuminate\Support\Facades\Storage::disk('public')->url($storedOgImage)
-            : asset('images/og-cover.png');
-        $mainImageUrl = str_starts_with($mainImageUrl, 'http')
-            ? $mainImageUrl
-            : url($mainImageUrl);
-
-        return view('telegram.embed', [
-            'videoId' => $vid,
-            'title' => $title,
-            'mainImageUrl' => $mainImageUrl,
-        ]);
+        return response()
+            ->view('telegram.embed', ['videoId' => $vid, 'title' => $title])
+            ->header('Cache-Control', 'public, max-age=300');
     }
 
     public function miniConnect(Request $request): View

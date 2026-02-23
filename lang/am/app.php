@@ -363,6 +363,8 @@ return [
     'telegram_bot_unlink_not_linked' => 'Your account is not linked.',
     'telegram_bot_unlinked' => 'You have been unlinked. All Telegram data has been removed.',
     'telegram_menu_heading' => 'Tap a button below to open the app:',
+    'telegram_fallback_message' => 'I did not recognise that. Use the buttons below.',
+    'telegram_quick_links_heading' => 'Your secure launch links:',
     'open_botfather' => 'Open BotFather',
     'whatsapp_settings_saved' => 'WhatsApp settings saved successfully.',
     'ultramsg_credentials' => 'UltraMsg API Credentials',
