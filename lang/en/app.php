@@ -294,6 +294,7 @@ return [
     'telegram_day_command_desc' => 'Open today’s content',
     'telegram_connect_command_desc' => 'Link Telegram with your account',
     'telegram_help_command_desc' => 'Show command help',
+    'telegram_help_contact_us' => 'Contact us',
     'telegram_credentials' => 'Telegram Bot Credentials',
     'telegram_bot_token' => 'Bot Token',
     'telegram_bot_token_help' => 'Telegram bot token from @BotFather (for example: 123456789:ABCdEfGh...).',

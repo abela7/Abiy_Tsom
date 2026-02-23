@@ -90,7 +90,7 @@ class TelegramWebhookController extends Controller
         return match ($command) {
             '/start' => $this->handleStart($chatId, $argument, $telegramAuthService, $telegramService),
             '/home' => $this->handleHome($chatId, $telegramAuthService, $telegramService),
-            '/help' => $this->reply($telegramService, $chatId, $this->helpMessage(), $this->launchKeyboard()),
+            '/help' => $this->reply($telegramService, $chatId, $this->helpMessage(), $this->helpKeyboard()),
             '/menu' => $this->handleMenu($chatId, $telegramAuthService, $telegramService),
             '/admin' => $this->handleAdmin($chatId, $telegramAuthService, $telegramService),
             '/me' => $this->handleMe($chatId, $telegramAuthService, $telegramService),
@@ -202,7 +202,7 @@ class TelegramWebhookController extends Controller
             'progress' => $this->handleProgress($chatId, 0, $telegramAuthService, $telegramService),
             'checklist' => $this->handleChecklist($chatId, 0, $telegramAuthService, $telegramService),
             'admin' => $this->handleAdmin($chatId, $telegramAuthService, $telegramService),
-            'help' => $this->reply($telegramService, $chatId, $this->helpMessage(), $this->launchKeyboard()),
+            'help' => $this->reply($telegramService, $chatId, $this->helpMessage(), $this->helpKeyboard()),
             'menu' => $this->handleMenu($chatId, $telegramAuthService, $telegramService),
             'unlink' => $this->handleUnlink($chatId, 0, $telegramAuthService, $telegramService),
             'suggest' => $this->handleSuggestCallback($chatId, 0, 'suggest', $telegramAuthService, $telegramService),
@@ -353,7 +353,7 @@ class TelegramWebhookController extends Controller
                 'today' => $this->handleToday($chatId, $telegramAuthService, $telegramService),
                 'admin' => $this->handleAdmin($chatId, $telegramAuthService, $telegramService),
                 'me' => $this->handleMe($chatId, $telegramAuthService, $telegramService),
-                'help' => $this->reply($telegramService, $chatId, $this->helpMessage(), $this->launchKeyboard()),
+                'help' => $this->reply($telegramService, $chatId, $this->helpMessage(), $this->helpKeyboard()),
                 default => $this->reply(
                     $telegramService,
                     $chatId,
@@ -406,7 +406,7 @@ class TelegramWebhookController extends Controller
             Translation::loadFromDb('en');
         }
 
-        return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->helpMessage(), $this->launchKeyboard());
+        return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->helpMessage(), $this->helpKeyboard());
     }
 
     private function handleLanguageChange(
@@ -1348,6 +1348,16 @@ class TelegramWebhookController extends Controller
         }
 
         return ['inline_keyboard' => $rows];
+    }
+
+    /** Keyboard shown with the help message — includes Contact us button. */
+    private function helpKeyboard(): array
+    {
+        $launch = $this->launchKeyboard();
+        $contactRow = [['text' => '📞 '.__('app.telegram_help_contact_us'), 'url' => 'https://abuneteklehaymanot.org/contact-us/']];
+        $launch['inline_keyboard'] = array_merge([$contactRow], $launch['inline_keyboard']);
+
+        return $launch;
     }
 
     private function miniConnectKeyboard(?string $purpose = null): array
