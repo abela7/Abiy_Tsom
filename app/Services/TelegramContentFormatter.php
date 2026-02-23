@@ -210,9 +210,8 @@ final class TelegramContentFormatter
     }
 
     /**
-     * Build section nav keyboard. Current section at top (so user sees where they are),
-     * then other sections in 2 rows. For Mezmur/Sinksar/Reference with YouTube,
-     * add Web App Listen buttons.
+     * Build section nav keyboard. Listen/content buttons at top (if any),
+     * then section nav, then menu. No redundant "selected section" button.
      */
     private function sectionNavKeyboard(DailyContent $daily, Member $member, string $currentSection, string $dailyId): array
     {
@@ -220,25 +219,11 @@ final class TelegramContentFormatter
         $rows = [];
 
         $sectionsWithContent = $this->sectionsWithContent($daily, $locale);
-        $currentCode = array_search($currentSection, self::SECTIONS, true);
-        if ($currentCode === false) {
-            $currentCode = 'b';
-        }
+
         $listenButtons = $this->listenButtonsForSection($daily, $locale, $currentSection);
         foreach ($listenButtons as $btn) {
             $rows[] = [$btn];
         }
-
-        $currentLabel = match ($currentSection) {
-            'bible' => '📜 '.__('app.telegram_nav_bible'),
-            'mezmur' => '🎵 '.__('app.telegram_nav_mezmur'),
-            'sinksar' => '📿 '.__('app.telegram_nav_sinksar'),
-            'books' => '📚 '.__('app.telegram_nav_books'),
-            'reference' => '🔗 '.__('app.telegram_nav_references'),
-            'reflection' => '💭 '.__('app.telegram_nav_reflection'),
-            default => $currentSection,
-        };
-        $rows[] = [['text' => '▶ '.$currentLabel, 'callback_data' => $this->callbackData('today_sec', $currentCode, $dailyId)]];
 
         $navButtons = [];
         foreach (self::SECTIONS as $code => $name) {
