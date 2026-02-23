@@ -5,13 +5,17 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Webhook;
 
 use App\Http\Controllers\Controller;
+use App\Models\Activity;
 use App\Models\DailyContent;
 use App\Models\LentSeason;
 use App\Models\Member;
+use App\Models\MemberChecklist;
+use App\Models\MemberCustomChecklist;
 use App\Models\TelegramAccessToken;
 use App\Models\User;
 use App\Services\TelegramAuthService;
 use App\Services\TelegramBotBuilderService;
+use App\Services\TelegramContentFormatter;
 use App\Services\TelegramService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
@@ -24,7 +28,8 @@ use Illuminate\Support\Facades\Log;
 class TelegramWebhookController extends Controller
 {
     public function __construct(
-        private readonly TelegramBotBuilderService $telegramBotBuilder
+        private readonly TelegramBotBuilderService $telegramBotBuilder,
+        private readonly TelegramContentFormatter $contentFormatter
     ) {}
 
     public function handle(
@@ -112,12 +117,18 @@ class TelegramWebhookController extends Controller
             $telegramService->answerCallbackQuery($callbackId, '');
         }
 
+        if (str_starts_with($action, 'check_')) {
+            return $this->handleChecklistToggle($chatId, $messageId, $action, $telegramAuthService, $telegramService);
+        }
+
         return match ($action) {
             'have_account' => $this->handleHaveAccount($chatId, $messageId, $telegramService),
             'unlink' => $this->handleUnlink($chatId, $messageId, $telegramAuthService, $telegramService),
             'menu' => $this->handleMenu($chatId, $telegramAuthService, $telegramService, $messageId),
             'home' => $this->handleHome($chatId, $telegramAuthService, $telegramService, $messageId),
             'today' => $this->handleToday($chatId, $telegramAuthService, $telegramService, $messageId),
+            'progress' => $this->handleProgress($chatId, $messageId, $telegramAuthService, $telegramService),
+            'checklist' => $this->handleChecklist($chatId, $messageId, $telegramAuthService, $telegramService),
             'admin' => $this->handleAdmin($chatId, $telegramAuthService, $telegramService, $messageId),
             'me' => $this->handleMe($chatId, $telegramAuthService, $telegramService, $messageId),
             'help' => $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->helpMessage(), $this->launchKeyboard()),
@@ -137,6 +148,8 @@ class TelegramWebhookController extends Controller
             'home' => $this->handleHome($chatId, $telegramAuthService, $telegramService),
             'today',
             'day' => $this->handleToday($chatId, $telegramAuthService, $telegramService),
+            'progress' => $this->handleProgress($chatId, 0, $telegramAuthService, $telegramService),
+            'checklist' => $this->handleChecklist($chatId, 0, $telegramAuthService, $telegramService),
             'admin' => $this->handleAdmin($chatId, $telegramAuthService, $telegramService),
             'help' => $this->reply($telegramService, $chatId, $this->helpMessage(), $this->launchKeyboard()),
             'menu' => $this->handleMenu($chatId, $telegramAuthService, $telegramService),
@@ -178,7 +191,6 @@ class TelegramWebhookController extends Controller
         $this->syncTelegramChatId($member, $chatId);
 
         $keyboard = $this->mainMenuKeyboard($member, $telegramAuthService);
-        $keyboard = $this->ensureMenuHasOpenAppButton($keyboard, $member, $telegramAuthService);
 
         return $this->reply(
             $telegramService,
@@ -186,53 +198,6 @@ class TelegramWebhookController extends Controller
             __('app.telegram_linked_success')."\n\n".__('app.telegram_menu_heading'),
             $keyboard
         );
-    }
-
-    /**
-     * Ensure the menu always has at least one working "Open app" button.
-     */
-    private function ensureMenuHasOpenAppButton(array $keyboard, Member|User $actor, TelegramAuthService $telegramAuthService): array
-    {
-        $rows = $keyboard['inline_keyboard'] ?? [];
-        if ($rows === []) {
-            $openUrl = $this->actorOpenAppUrl($actor, $telegramAuthService);
-
-            return ['inline_keyboard' => [
-                [['text' => $this->telegramBotBuilder->menuButtonLabel(), 'web_app' => ['url' => $openUrl]]],
-            ]];
-        }
-
-        $hasWebApp = false;
-        foreach ($rows as $row) {
-            foreach ($row as $btn) {
-                if (isset($btn['web_app']['url'])) {
-                    $hasWebApp = true;
-                    break 2;
-                }
-            }
-        }
-
-        if (! $hasWebApp) {
-            $openUrl = $this->actorOpenAppUrl($actor, $telegramAuthService);
-            $rows[] = [['text' => $this->telegramBotBuilder->menuButtonLabel(), 'web_app' => ['url' => $openUrl]]];
-        }
-
-        return ['inline_keyboard' => $rows];
-    }
-
-    private function actorOpenAppUrl(Member|User $actor, TelegramAuthService $telegramAuthService): string
-    {
-        $code = $telegramAuthService->createCode(
-            $actor,
-            $actor instanceof Member ? TelegramAuthService::PURPOSE_MEMBER_ACCESS : TelegramAuthService::PURPOSE_ADMIN_ACCESS,
-            $actor instanceof Member ? route('member.home') : $this->adminFallbackPath($actor),
-            $actor instanceof Member ? 120 : 30
-        );
-
-        return url(route('telegram.access', [
-            'code' => $code,
-            'purpose' => $actor instanceof Member ? TelegramAuthService::PURPOSE_MEMBER_ACCESS : TelegramAuthService::PURPOSE_ADMIN_ACCESS,
-        ]));
     }
 
     private function handleStart(
@@ -466,31 +431,177 @@ class TelegramWebhookController extends Controller
             ->where('lent_season_id', $season->id)
             ->whereDate('date', $today->toDateString())
             ->where('is_published', true)
+            ->with(['weeklyTheme', 'mezmurs'])
             ->first();
 
         if (! $daily) {
             return $this->replyAfterDelete($telegramService, $chatId, $messageId, 'No published content available for today yet.', []);
         }
 
-        $code = $telegramAuthService->createCode(
+        $text = $this->contentFormatter->formatDayContent($daily, $actor);
+        $keyboard = $this->mainMenuKeyboard($actor, $telegramAuthService);
+
+        return $this->replyAfterDelete($telegramService, $chatId, $messageId, $text, $keyboard, 'HTML');
+    }
+
+    private function handleProgress(
+        string $chatId,
+        int $messageId,
+        TelegramAuthService $telegramAuthService,
+        TelegramService $telegramService
+    ): JsonResponse {
+        $actor = $this->actorFromChatId($chatId);
+        if (! $actor instanceof Member) {
+            return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->notLinkedMessage(), $this->startChoiceKeyboard());
+        }
+
+        $text = $this->contentFormatter->formatProgressSummary($actor);
+        $keyboard = $this->mainMenuKeyboard($actor, $telegramAuthService);
+
+        return $this->replyAfterDelete($telegramService, $chatId, $messageId, $text, $keyboard, 'HTML');
+    }
+
+    private function handleChecklist(
+        string $chatId,
+        int $messageId,
+        TelegramAuthService $telegramAuthService,
+        TelegramService $telegramService
+    ): JsonResponse {
+        $actor = $this->actorFromChatId($chatId);
+        if (! $actor instanceof Member) {
+            return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->notLinkedMessage(), $this->startChoiceKeyboard());
+        }
+
+        $season = LentSeason::query()->latest('id')->where('is_active', true)->first();
+        if (! $season) {
+            return $this->replyAfterDelete($telegramService, $chatId, $messageId, __('app.no_active_season'), []);
+        }
+
+        $today = CarbonImmutable::now();
+        $daily = DailyContent::query()
+            ->where('lent_season_id', $season->id)
+            ->whereDate('date', $today->toDateString())
+            ->where('is_published', true)
+            ->first();
+
+        if (! $daily) {
+            return $this->replyAfterDelete($telegramService, $chatId, $messageId, 'No published content for today yet.', []);
+        }
+
+        $activities = Activity::where('lent_season_id', $daily->lent_season_id)
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->get();
+
+        $customActivities = $actor->customActivities()->orderBy('sort_order')->get();
+
+        $checklist = MemberChecklist::where('member_id', $actor->id)
+            ->where('daily_content_id', $daily->id)
+            ->get()
+            ->keyBy('activity_id');
+
+        $customChecklist = MemberCustomChecklist::where('member_id', $actor->id)
+            ->where('daily_content_id', $daily->id)
+            ->get()
+            ->keyBy('member_custom_activity_id');
+
+        $formatted = $this->contentFormatter->formatChecklistMessage(
+            $daily,
             $actor,
-            TelegramAuthService::PURPOSE_MEMBER_ACCESS,
-            route('member.day', ['daily' => $daily]),
-            30
+            $activities,
+            $customActivities,
+            $checklist,
+            $customChecklist
         );
 
-        $link = url(route('telegram.access', [
-            'code' => $code,
-            'purpose' => TelegramAuthService::PURPOSE_MEMBER_ACCESS,
-        ]));
+        return $this->replyAfterDelete($telegramService, $chatId, $messageId, $formatted['text'], $formatted['keyboard'], 'HTML');
+    }
 
-        $label = $this->telegramBotBuilder->buttonLabel('today', 'member', 'Today');
+    private function handleChecklistToggle(
+        string $chatId,
+        int $messageId,
+        string $action,
+        TelegramAuthService $telegramAuthService,
+        TelegramService $telegramService
+    ): JsonResponse {
+        $actor = $this->actorFromChatId($chatId);
+        if (! $actor instanceof Member) {
+            return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->notLinkedMessage(), $this->startChoiceKeyboard());
+        }
 
-        return $this->replyAfterDelete($telegramService, $chatId, $messageId, "Day {$daily->day_number} content:", [
-            'inline_keyboard' => [
-                [['text' => $label, 'web_app' => ['url' => $link]]],
-            ],
-        ]);
+        $parts = explode('_', $action);
+        if (count($parts) !== 4 || ($parts[0] ?? '') !== 'check' || ! in_array($parts[1] ?? '', ['a', 'c'], true)) {
+            return response()->json(['success' => true]);
+        }
+
+        $dailyId = (int) ($parts[2] ?? 0);
+        $itemId = (int) ($parts[3] ?? 0);
+        $isCustom = $parts[1] === 'c';
+
+        $daily = DailyContent::query()->find($dailyId);
+        if (! $daily || ! $daily->is_published) {
+            return response()->json(['success' => true]);
+        }
+
+        if ($isCustom) {
+            $entry = MemberCustomChecklist::where('member_id', $actor->id)
+                ->where('daily_content_id', $dailyId)
+                ->where('member_custom_activity_id', $itemId)
+                ->first();
+            $newState = $entry ? ! $entry->completed : true;
+            MemberCustomChecklist::updateOrCreate(
+                [
+                    'member_id' => $actor->id,
+                    'daily_content_id' => $dailyId,
+                    'member_custom_activity_id' => $itemId,
+                ],
+                ['completed' => $newState]
+            );
+        } else {
+            $entry = MemberChecklist::where('member_id', $actor->id)
+                ->where('daily_content_id', $dailyId)
+                ->where('activity_id', $itemId)
+                ->first();
+            $newState = $entry ? ! $entry->completed : true;
+            MemberChecklist::updateOrCreate(
+                [
+                    'member_id' => $actor->id,
+                    'daily_content_id' => $dailyId,
+                    'activity_id' => $itemId,
+                ],
+                ['completed' => $newState]
+            );
+        }
+
+        $activities = Activity::where('lent_season_id', $daily->lent_season_id)
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->get();
+
+        $customActivities = $actor->customActivities()->orderBy('sort_order')->get();
+
+        $checklist = MemberChecklist::where('member_id', $actor->id)
+            ->where('daily_content_id', $daily->id)
+            ->get()
+            ->keyBy('activity_id');
+
+        $customChecklist = MemberCustomChecklist::where('member_id', $actor->id)
+            ->where('daily_content_id', $daily->id)
+            ->get()
+            ->keyBy('member_custom_activity_id');
+
+        $formatted = $this->contentFormatter->formatChecklistMessage(
+            $daily,
+            $actor,
+            $activities,
+            $customActivities,
+            $checklist,
+            $customChecklist
+        );
+
+        $telegramService->editMessageText($chatId, $messageId, $formatted['text'], $formatted['keyboard'], 'HTML');
+
+        return response()->json(['success' => true]);
     }
 
     private function bindFromCode(
@@ -504,12 +615,15 @@ class TelegramWebhookController extends Controller
         $token = $telegramAuthService->consumeCode($code);
         if ($token && $token->actor) {
             $this->syncTelegramChatId($token->actor, $chatId);
+            $keyboard = $token->actor instanceof Member
+                ? $this->mainMenuKeyboard($token->actor, $telegramAuthService)
+                : $this->quickLinksKeyboard($token->actor, $telegramAuthService);
 
             return $this->reply(
                 $telegramService,
                 $chatId,
-                "Telegram account linked via {$source}.",
-                $this->quickLinksKeyboard($token->actor, $telegramAuthService)
+                __('app.telegram_linked_success')."\n\n".__('app.telegram_menu_heading'),
+                $keyboard
             );
         }
 
@@ -521,8 +635,8 @@ class TelegramWebhookController extends Controller
                 return $this->reply(
                     $telegramService,
                     $chatId,
-                    "Telegram account linked to {$this->actorDisplayName($member)}.",
-                    $this->quickLinksKeyboard($member, $telegramAuthService)
+                    __('app.telegram_linked_success')."\n\n".__('app.telegram_menu_heading'),
+                    $this->mainMenuKeyboard($member, $telegramAuthService)
                 );
             }
         }
@@ -720,11 +834,15 @@ class TelegramWebhookController extends Controller
         TelegramService $telegramService,
         string $chatId,
         string $text,
-        array $replyMarkup = []
+        array $replyMarkup = [],
+        ?string $parseMode = null
     ): JsonResponse {
         $options = [];
         if (! empty($replyMarkup)) {
             $options['reply_markup'] = $replyMarkup;
+        }
+        if ($parseMode !== null) {
+            $options['parse_mode'] = $parseMode;
         }
 
         $ok = $telegramService->sendTextMessage($chatId, $text, $options);
@@ -764,13 +882,14 @@ class TelegramWebhookController extends Controller
         string $chatId,
         int $messageId,
         string $text,
-        array $replyMarkup = []
+        array $replyMarkup = [],
+        ?string $parseMode = null
     ): JsonResponse {
         if ($messageId > 0) {
             $telegramService->deleteMessage($chatId, $messageId);
         }
 
-        return $this->reply($telegramService, $chatId, $text, $replyMarkup);
+        return $this->reply($telegramService, $chatId, $text, $replyMarkup, $parseMode);
     }
 
     private function startChoiceKeyboard(): array
@@ -864,36 +983,15 @@ class TelegramWebhookController extends Controller
         $rows = [];
 
         if ($actor instanceof Member) {
-            $homeLink = $this->memberHomeSecureLink($actor, $telegramAuthService);
-            $todayLink = $this->memberTodaySecureLink($actor, $telegramAuthService);
-
-            $memberRow = [];
-            if ($this->telegramBotBuilder->buttonEnabled('home', 'member')) {
-                $memberRow[] = ['text' => $this->telegramBotBuilder->buttonLabel('home', 'member', 'Home'), 'web_app' => ['url' => $homeLink]];
-            }
-
-            if ($this->telegramBotBuilder->buttonEnabled('today', 'member') && $todayLink !== null) {
-                $memberRow[] = ['text' => $this->telegramBotBuilder->buttonLabel('today', 'member', 'Today'), 'web_app' => ['url' => (string) $todayLink]];
-            }
-
-            if ($memberRow !== []) {
-                $rows[] = $memberRow;
-            }
-
-            if ($this->telegramBotBuilder->buttonEnabled('me', 'member')) {
-                $rows[] = [['text' => $this->telegramBotBuilder->buttonLabel('me', 'member', 'My links'), 'callback_data' => 'me']];
-            }
-
+            $rows[] = [
+                ['text' => $this->telegramBotBuilder->buttonLabel('today', 'member', 'Today'), 'callback_data' => 'today'],
+                ['text' => __('app.progress'), 'callback_data' => 'progress'],
+                ['text' => __('app.checklist'), 'callback_data' => 'checklist'],
+            ];
             if ($this->telegramBotBuilder->buttonEnabled('help', 'member')) {
                 $rows[] = [['text' => $this->telegramBotBuilder->buttonLabel('help', 'member', 'Help'), 'callback_data' => 'help']];
             }
-
             $rows[] = [['text' => __('app.telegram_bot_unlink'), 'callback_data' => 'unlink']];
-
-            if ($rows === []) {
-                $homeLink = $this->memberHomeSecureLink($actor, $telegramAuthService);
-                $rows[] = [['text' => $this->telegramBotBuilder->buttonLabel('home', 'member', 'Home'), 'web_app' => ['url' => $homeLink]]];
-            }
 
             return ['inline_keyboard' => $rows];
         }

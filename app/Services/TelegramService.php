@@ -62,7 +62,7 @@ final class TelegramService
     /**
      * Register bot command menu for all chat users.
      *
-     * @param array<int, array{command:string,description:string}> $commands
+     * @param  array<int, array{command:string,description:string}>  $commands
      */
     public function setMyCommands(array $commands): bool
     {
@@ -107,7 +107,7 @@ final class TelegramService
     /**
      * Edit an existing message's text and optional reply markup.
      */
-    public function editMessageText(string $chatId, int $messageId, string $text, array $replyMarkup = []): bool
+    public function editMessageText(string $chatId, int $messageId, string $text, array $replyMarkup = [], ?string $parseMode = null): bool
     {
         if (! $this->isConfigured() || $chatId === '' || $messageId <= 0) {
             return false;
@@ -121,6 +121,9 @@ final class TelegramService
 
         if (! empty($replyMarkup)) {
             $payload['reply_markup'] = $replyMarkup;
+        }
+        if ($parseMode !== null) {
+            $payload['parse_mode'] = $parseMode;
         }
 
         return $this->apiCall('editMessageText', $payload);
