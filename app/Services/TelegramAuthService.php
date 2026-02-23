@@ -94,6 +94,87 @@ final class TelegramAuthService
         return $this->resolveCode($code, $purpose);
     }
 
+    /**
+     * Create a member link code with a short display code for typing in the bot.
+     * Returns [full_token, short_code].
+     *
+     * @return array{0: string, 1: string}
+     */
+    public function createMemberLinkCode(Member $member, ?string $redirectTo = null, int $ttlMinutes = 30): array
+    {
+        $this->cleanupExpiredTokens();
+
+        $plainToken = Str::random(self::CODE_LENGTH);
+        $shortCode = $this->generateUniqueShortCode();
+
+        TelegramAccessToken::create([
+            'token_hash' => hash('sha256', $plainToken),
+            'short_code' => strtoupper($shortCode),
+            'purpose' => self::PURPOSE_MEMBER_ACCESS,
+            'actor_type' => Member::class,
+            'actor_id' => $member->getKey(),
+            'redirect_to' => $this->sanitizeRedirectPath($redirectTo, '/'),
+            'expires_at' => CarbonImmutable::now()->addMinutes($ttlMinutes),
+        ]);
+
+        return [$plainToken, strtoupper($shortCode)];
+    }
+
+    /**
+     * Consume a token by its short code (6–8 alphanumeric).
+     */
+    public function consumeByShortCode(string $shortCode): ?TelegramAccessToken
+    {
+        $this->cleanupExpiredTokens();
+
+        $normalized = strtoupper(trim($shortCode));
+        if (! preg_match('/^[A-Z0-9]{6,8}$/', $normalized)) {
+            return null;
+        }
+
+        $token = TelegramAccessToken::query()
+            ->where('short_code', $normalized)
+            ->where('purpose', self::PURPOSE_MEMBER_ACCESS)
+            ->whereNull('consumed_at')
+            ->where('expires_at', '>', now())
+            ->first();
+
+        if (! $token) {
+            return null;
+        }
+
+        $consumed = TelegramAccessToken::query()
+            ->whereKey($token->getKey())
+            ->whereNull('consumed_at')
+            ->update(['consumed_at' => now()]);
+
+        if (! $consumed) {
+            return null;
+        }
+
+        $token->forceFill(['consumed_at' => now()]);
+
+        return $token->load('actor');
+    }
+
+    private function generateUniqueShortCode(): string
+    {
+        $chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        $maxAttempts = 20;
+
+        for ($i = 0; $i < $maxAttempts; $i++) {
+            $code = '';
+            for ($j = 0; $j < 6; $j++) {
+                $code .= $chars[random_int(0, strlen($chars) - 1)];
+            }
+            if (! TelegramAccessToken::query()->where('short_code', strtoupper($code))->exists()) {
+                return $code;
+            }
+        }
+
+        return strtoupper(Str::random(6));
+    }
+
     public function actorTypeFromModel(Model $actor): string
     {
         return get_class($actor);

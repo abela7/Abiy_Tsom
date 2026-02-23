@@ -301,14 +301,25 @@
                         {{ __('app.loading') }}
                     </span>
                 </button>
-                <div x-show="telegramLink" class="space-y-2">
+                <div x-show="telegramLink || telegramCode" class="space-y-3">
                     <p class="text-xs text-success" x-text="telegramMsg"></p>
-                    <input type="text" :value="telegramLink" readonly
-                           class="w-full px-4 py-2.5 border border-border rounded-xl bg-muted text-primary text-xs font-mono">
-                    <button type="button" @click="copyLink()"
-                            class="w-full py-2.5 bg-muted text-primary rounded-xl text-sm font-medium border border-border hover:bg-muted/80 transition">
-                        Copy link
-                    </button>
+                    <template x-if="telegramCode">
+                        <div class="p-4 rounded-xl bg-accent/10 border-2 border-accent/30 text-center">
+                            <p class="text-xs text-muted-text mb-1">{{ __('app.telegram_settings_code_instructions') }}</p>
+                            <p class="text-2xl font-bold tracking-[0.3em] text-primary font-mono" x-text="telegramCode"></p>
+                            <p class="text-xs text-muted-text mt-2">Type this in the Telegram bot</p>
+                        </div>
+                    </template>
+                    <div class="flex gap-2">
+                        <button type="button" @click="copyCode()" x-show="telegramCode"
+                                class="flex-1 py-2.5 bg-accent text-on-accent rounded-xl text-sm font-medium hover:bg-accent-hover transition">
+                            Copy code
+                        </button>
+                        <button type="button" @click="copyLink()" x-show="telegramLink"
+                                class="flex-1 py-2.5 bg-muted text-primary rounded-xl text-sm font-medium border border-border hover:bg-muted/80 transition">
+                            Copy link
+                        </button>
+                    </div>
                 </div>
                 <p x-show="telegramError" x-text="telegramError" class="text-xs text-error"></p>
             </div>
@@ -582,6 +593,7 @@ function settingsPage() {
     return {
         locale: '{{ $member?->locale ?? 'en' }}',
         telegramLink: '',
+        telegramCode: '',
         telegramLoading: false,
         telegramMsg: '',
         telegramError: '',
@@ -658,16 +670,19 @@ function settingsPage() {
             return this.waEnabled ? '{{ __("app.settings_whatsapp_desc_on") }}' : '{{ __("app.settings_whatsapp_desc_off") }}';
         },
         get telegramStatusLabel() {
-            return this.telegramLink ? '{{ __("app.telegram_settings_link_generated") }}' : '{{ __("app.telegram_settings_link_desc") }}';
+            return (this.telegramLink || this.telegramCode) ? '{{ __("app.telegram_settings_link_generated") }}' : '{{ __("app.telegram_settings_link_desc") }}';
         },
         async generateLink() {
             this.telegramLoading = true;
             this.telegramError = '';
             this.telegramMsg = '';
+            this.telegramCode = '';
+            this.telegramLink = '';
             try {
                 const data = await AbiyTsom.api('/api/member/telegram-link', {});
-                if (data.success && data.link) {
-                    this.telegramLink = data.link;
+                if (data.success) {
+                    this.telegramLink = data.link || '';
+                    this.telegramCode = data.code || '';
                     this.telegramMsg = data.message || '{{ __("app.telegram_settings_link_generated") }}';
                 } else {
                     this.telegramError = data.message || '{{ __("app.failed") }}';
@@ -678,10 +693,17 @@ function settingsPage() {
                 this.telegramLoading = false;
             }
         },
+        copyCode() {
+            if (!this.telegramCode) return;
+            navigator.clipboard.writeText(this.telegramCode).then(() => {
+                this.telegramMsg = 'Code copied. Type it in the Telegram bot.';
+                setTimeout(() => { this.telegramMsg = '{{ __("app.telegram_settings_link_generated") }}'; }, 2000);
+            });
+        },
         copyLink() {
             if (!this.telegramLink) return;
             navigator.clipboard.writeText(this.telegramLink).then(() => {
-                this.telegramMsg = 'Copied to clipboard. Open it in Telegram.';
+                this.telegramMsg = 'Link copied. Open it in Telegram.';
                 setTimeout(() => { this.telegramMsg = '{{ __("app.telegram_settings_link_generated") }}'; }, 2000);
             });
         },

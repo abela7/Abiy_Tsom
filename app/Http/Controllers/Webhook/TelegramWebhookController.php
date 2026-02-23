@@ -132,15 +132,55 @@ class TelegramWebhookController extends Controller
     ): JsonResponse {
         $normalized = strtolower(trim($text));
 
-        return match ($normalized) {
+        $linked = match ($normalized) {
             'home' => $this->handleHome($chatId, $telegramAuthService, $telegramService),
             'today',
             'day' => $this->handleToday($chatId, $telegramAuthService, $telegramService),
             'admin' => $this->handleAdmin($chatId, $telegramAuthService, $telegramService),
             'help' => $this->reply($telegramService, $chatId, $this->helpMessage(), $this->launchKeyboard()),
             'menu' => $this->handleMenu($chatId, $telegramAuthService, $telegramService),
-            default => $this->reply($telegramService, $chatId, $this->fallbackMessage(), $this->launchKeyboard()),
+            default => null,
         };
+
+        if ($linked !== null) {
+            return $linked;
+        }
+
+        $codeAttempt = preg_replace('/\s+/', '', $text);
+        if (preg_match('/^[A-Za-z0-9]{6,8}$/', $codeAttempt)) {
+            $linkResult = $this->tryLinkByShortCode($chatId, $codeAttempt, $telegramAuthService, $telegramService);
+            if ($linkResult !== null) {
+                return $linkResult;
+            }
+        }
+
+        return $this->reply($telegramService, $chatId, $this->fallbackMessage(), $this->launchKeyboard());
+    }
+
+    private function tryLinkByShortCode(
+        string $chatId,
+        string $code,
+        TelegramAuthService $telegramAuthService,
+        TelegramService $telegramService
+    ): ?JsonResponse {
+        $actor = $this->actorFromChatId($chatId);
+        if ($actor) {
+            return null;
+        }
+
+        $token = $telegramAuthService->consumeByShortCode($code);
+        if (! $token || ! $token->actor) {
+            return null;
+        }
+
+        $this->syncTelegramChatId($token->actor, $chatId);
+
+        return $this->reply(
+            $telegramService,
+            $chatId,
+            __('app.telegram_linked_success'),
+            $this->mainMenuKeyboard($token->actor, $telegramAuthService)
+        );
     }
 
     private function handleStart(
@@ -211,7 +251,7 @@ class TelegramWebhookController extends Controller
 
     private function handleHaveAccount(string $chatId, int $messageId, TelegramService $telegramService): JsonResponse
     {
-        $text = __('app.telegram_start_have_account_instructions');
+        $text = __('app.telegram_start_have_account_code_instructions');
         $keyboard = ['inline_keyboard' => [
             [['text' => __('app.telegram_start_open_app'), 'web_app' => ['url' => route('home')]]],
         ]];

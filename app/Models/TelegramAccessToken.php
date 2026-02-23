@@ -14,6 +14,7 @@ class TelegramAccessToken extends Model
 
     protected $fillable = [
         'token_hash',
+        'short_code',
         'purpose',
         'actor_type',
         'actor_id',

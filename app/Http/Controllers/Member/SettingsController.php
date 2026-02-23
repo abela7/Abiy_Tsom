@@ -178,19 +178,19 @@ class SettingsController extends Controller
         /** @var \App\Models\Member $member */
         $member = $request->attributes->get('member');
 
-        $code = $telegramAuthService->createCode(
+        [$fullToken, $shortCode] = $telegramAuthService->createMemberLinkCode(
             $member,
-            TelegramAuthService::PURPOSE_MEMBER_ACCESS,
             route('member.home'),
             30
         );
 
-        $payload = 'member:' . $code;
+        $payload = 'member:' . $fullToken;
         $link = 'https://t.me/' . $botUsername . '?start=' . rawurlencode($payload);
 
         return response()->json([
             'success' => true,
             'link' => $link,
+            'code' => $shortCode,
             'expires_in' => 30,
             'message' => __('app.telegram_settings_link_generated'),
         ]);
