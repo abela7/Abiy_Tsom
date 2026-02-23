@@ -41,7 +41,7 @@ final class TelegramContentFormatter
     {
         $locale = $this->memberLocale($member);
         $dailyId = (string) $daily->id;
-        $parts = $this->buildSectionHeader($daily, $member, $locale);
+        $parts = $this->buildSectionHeader($daily, $member, $locale, $section);
 
         $content = match ($section) {
             'bible' => $this->sectionBible($daily, $locale),
@@ -64,10 +64,15 @@ final class TelegramContentFormatter
         ];
     }
 
-    private function buildSectionHeader(DailyContent $daily, Member $member, string $locale): array
+    private function buildSectionHeader(DailyContent $daily, Member $member, string $locale, string $section): array
     {
         $dateStr = $daily->date?->locale('en')->translatedFormat('l, F j, Y') ?? '';
         $parts = [];
+
+        $sectionLabel = $this->sectionLabel($section);
+        $parts[] = '<b>▶ '.$sectionLabel.'</b>';
+        $parts[] = self::DIVIDER;
+        $parts[] = '';
         $parts[] = '<b>📖 Day '.$daily->day_number.' of 55</b>';
         $parts[] = '<i>'.$dateStr.'</i>';
         if ($daily->weeklyTheme) {
@@ -83,6 +88,19 @@ final class TelegramContentFormatter
         return $parts;
     }
 
+    private function sectionLabel(string $section): string
+    {
+        return match ($section) {
+            'bible' => __('app.telegram_nav_bible'),
+            'mezmur' => __('app.telegram_nav_mezmur'),
+            'sinksar' => __('app.telegram_nav_sinksar'),
+            'books' => __('app.telegram_nav_books'),
+            'reference' => __('app.telegram_nav_references'),
+            'reflection' => __('app.telegram_nav_reflection'),
+            default => $section,
+        };
+    }
+
     private function sectionBible(DailyContent $daily, string $locale): array
     {
         $parts = [];
@@ -91,10 +109,11 @@ final class TelegramContentFormatter
 
             return $parts;
         }
-        $parts[] = '<b>📜 '.__('app.bible_reading').'</b>';
         $parts[] = $this->h(localized($daily, 'bible_reference', $locale));
+        $parts[] = '';
         if (localized($daily, 'bible_summary', $locale)) {
             $parts[] = $this->h(localized($daily, 'bible_summary', $locale));
+            $parts[] = '';
         }
         $bibleText = localized($daily, 'bible_text', $locale);
         if ($bibleText) {
@@ -109,15 +128,13 @@ final class TelegramContentFormatter
     {
         $parts = [];
         if ($daily->mezmurs->isEmpty()) {
-            $parts[] = '<b>🎵 '.__('app.mezmur').'</b>';
             $parts[] = __('app.no_content');
 
             return $parts;
         }
-        $parts[] = '<b>🎵 '.__('app.mezmur').'</b>';
         foreach ($daily->mezmurs as $m) {
             $title = $this->h(localized($m, 'title', $locale) ?? '-');
-            $parts[] = '• '.$title;
+            $parts[] = '  • '.$title;
         }
 
         return $parts;
@@ -127,13 +144,12 @@ final class TelegramContentFormatter
     {
         $parts = [];
         if (! localized($daily, 'sinksar_title', $locale)) {
-            $parts[] = '<b>📿 '.__('app.sinksar').'</b>';
             $parts[] = __('app.no_content');
 
             return $parts;
         }
-        $parts[] = '<b>📿 '.__('app.sinksar').'</b>';
         $parts[] = $this->h(localized($daily, 'sinksar_title', $locale));
+        $parts[] = '';
         if (localized($daily, 'sinksar_description', $locale)) {
             $parts[] = $this->h(localized($daily, 'sinksar_description', $locale));
         }
@@ -145,20 +161,18 @@ final class TelegramContentFormatter
     {
         $parts = [];
         if (! $daily->books || $daily->books->isEmpty()) {
-            $parts[] = '<b>📚 '.__('app.spiritual_book').'</b>';
             $parts[] = __('app.no_content');
 
             return $parts;
         }
-        $parts[] = '<b>📚 '.__('app.spiritual_book').'</b>';
         foreach ($daily->books as $book) {
             $title = $this->h(localized($book, 'title', $locale));
             if ($title === '') {
                 continue;
             }
-            $parts[] = $title;
+            $parts[] = '  • '.$title;
             if (localized($book, 'description', $locale)) {
-                $parts[] = $this->h(localized($book, 'description', $locale));
+                $parts[] = '    '.$this->h(localized($book, 'description', $locale));
             }
         }
 
@@ -169,15 +183,13 @@ final class TelegramContentFormatter
     {
         $parts = [];
         if (! $daily->references || $daily->references->isEmpty()) {
-            $parts[] = '<b>🔗 '.__('app.references').'</b>';
             $parts[] = __('app.no_content');
 
             return $parts;
         }
-        $parts[] = '<b>🔗 '.__('app.references').'</b>';
         foreach ($daily->references as $ref) {
             $name = $this->h(localized($ref, 'name', $locale) ?? '-');
-            $parts[] = '• '.$name;
+            $parts[] = '  • '.$name;
         }
 
         return $parts;
@@ -187,12 +199,10 @@ final class TelegramContentFormatter
     {
         $parts = [];
         if (! localized($daily, 'reflection', $locale)) {
-            $parts[] = '<b>💭 '.__('app.reflection').'</b>';
             $parts[] = __('app.no_content');
 
             return $parts;
         }
-        $parts[] = '<b>💭 '.__('app.reflection').'</b>';
         $reflection = $this->h(localized($daily, 'reflection', $locale));
         $parts[] = $this->expandableQuote($reflection, 1000);
 
@@ -200,22 +210,34 @@ final class TelegramContentFormatter
     }
 
     /**
-     * Build section nav keyboard. Uses short labels and 2 rows (max 3 per row)
-     * so buttons stay visible on narrow screens. For Mezmur/Sinksar/Reference
-     * sections with YouTube URLs, add Web App Listen buttons.
+     * Build section nav keyboard. Current section at top (so user sees where they are),
+     * then other sections in 2 rows. For Mezmur/Sinksar/Reference with YouTube,
+     * add Web App Listen buttons.
      */
     private function sectionNavKeyboard(DailyContent $daily, Member $member, string $currentSection, string $dailyId): array
     {
         $locale = $this->memberLocale($member);
         $rows = [];
 
-        $navButtons = [];
         $sectionsWithContent = $this->sectionsWithContent($daily, $locale);
+        $currentCode = array_search($currentSection, self::SECTIONS, true);
+        if ($currentCode === false) {
+            $currentCode = 'b';
+        }
+        $currentLabel = match ($currentSection) {
+            'bible' => '📜 '.__('app.telegram_nav_bible'),
+            'mezmur' => '🎵 '.__('app.telegram_nav_mezmur'),
+            'sinksar' => '📿 '.__('app.telegram_nav_sinksar'),
+            'books' => '📚 '.__('app.telegram_nav_books'),
+            'reference' => '🔗 '.__('app.telegram_nav_references'),
+            'reflection' => '💭 '.__('app.telegram_nav_reflection'),
+            default => $currentSection,
+        };
+        $rows[] = [['text' => '▶ '.$currentLabel, 'callback_data' => $this->callbackData('today_sec', $currentCode, $dailyId)]];
+
+        $navButtons = [];
         foreach (self::SECTIONS as $code => $name) {
-            if (! ($sectionsWithContent[$name] ?? false)) {
-                continue;
-            }
-            if ($name === $currentSection) {
+            if (! ($sectionsWithContent[$name] ?? false) || $name === $currentSection) {
                 continue;
             }
             $cb = $this->callbackData('today_sec', $code, $dailyId);

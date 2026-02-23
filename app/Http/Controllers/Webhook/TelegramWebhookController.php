@@ -173,7 +173,7 @@ class TelegramWebhookController extends Controller
             }
         }
 
-        return $this->reply($telegramService, $chatId, $this->fallbackMessage(), $this->launchKeyboard());
+        return response()->json(['success' => true]);
     }
 
     private function tryLinkByShortCode(
