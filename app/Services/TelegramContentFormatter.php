@@ -10,6 +10,7 @@ use App\Models\LentSeason;
 use App\Models\Member;
 use App\Models\MemberChecklist;
 use App\Models\MemberCustomChecklist;
+use App\Services\AbiyTsomStructure;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
@@ -718,40 +719,55 @@ final class TelegramContentFormatter
     }
 
     /**
-     * Mirrors ProgressController::filterWeekly() — uses weekly_theme_id
-     * when no explicit week param is provided, with a day-range fallback.
+     * Filter days to the canonical week that contains the reference day.
+     *
+     * Telegram has no week picker, so we always use the hardcoded
+     * AbiyTsomStructure ranges as the primary source of truth —
+     * this is reliable regardless of whether weekly_theme_id is
+     * assigned in the database.  The theme-ID approach is kept
+     * only as a last-resort fallback.
      *
      * @param  Collection<int, DailyContent>  $allDays
      */
     private function filterProgressWeekly(Collection $allDays, ?DailyContent $referenceDay): Collection
     {
-        if ($referenceDay) {
+        if (! $referenceDay) {
+            if ($allDays->isEmpty()) {
+                return collect();
+            }
+
+            $firstDay = (int) $allDays->min('day_number');
+            $lastDay = (int) $allDays->max('day_number');
+
+            return $allDays->filter(
+                fn (DailyContent $d) => $d->day_number >= $firstDay
+                    && $d->day_number <= min($firstDay + 6, $lastDay)
+            )->values();
+        }
+
+        // Primary: canonical week range from AbiyTsomStructure
+        $weekNum = AbiyTsomStructure::getWeekForDay($referenceDay->day_number);
+        [$start, $end] = AbiyTsomStructure::getDayRangeForWeek($weekNum);
+
+        $byRange = $allDays->filter(
+            fn (DailyContent $d) => $d->day_number >= $start && $d->day_number <= $end
+        )->values();
+
+        if ($byRange->isNotEmpty()) {
+            return $byRange;
+        }
+
+        // Fallback: weekly_theme_id (in case day_number is out of range)
+        if ($referenceDay->weekly_theme_id) {
             $byTheme = $allDays
                 ->where('weekly_theme_id', $referenceDay->weekly_theme_id)
                 ->values();
             if ($byTheme->isNotEmpty()) {
                 return $byTheme;
             }
-
-            $weekNum = AbiyTsomStructure::getWeekForDay($referenceDay->day_number);
-            [$start, $end] = AbiyTsomStructure::getDayRangeForWeek($weekNum);
-
-            return $allDays->filter(
-                fn (DailyContent $d) => $d->day_number >= $start && $d->day_number <= $end
-            )->values();
         }
 
-        if ($allDays->isEmpty()) {
-            return collect();
-        }
-
-        $firstDay = (int) $allDays->min('day_number');
-        $lastDay = (int) $allDays->max('day_number');
-
-        return $allDays->filter(
-            fn (DailyContent $d) => $d->day_number >= $firstDay
-                && $d->day_number <= min($firstDay + 6, $lastDay)
-        )->values();
+        return collect();
     }
 
     /**
