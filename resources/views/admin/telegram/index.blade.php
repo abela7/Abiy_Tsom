@@ -229,6 +229,20 @@
                    class="block text-accent hover:text-accent-hover underline">
                     Admin entry point
                 </a>
+                <a href="{{ $telegramMiniConnectLink }}"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="block text-accent hover:text-accent-hover underline">
+                    Mini-app connect entry point
+                </a>
+                @if ($telegramMiniWebAppUrl)
+                    <a href="{{ $telegramMiniWebAppUrl }}"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="block text-accent hover:text-accent-hover underline">
+                        Mini app direct
+                    </a>
+                @endif
             </div>
         @endif
 

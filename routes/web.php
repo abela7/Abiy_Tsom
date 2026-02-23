@@ -34,6 +34,7 @@ Route::get('/share/day/{daily}/public', [Member\ShareController::class, 'publicD
 Route::get('/telegram/access', [TelegramAuthController::class, 'access'])
     ->middleware('throttle:60,1')
     ->name('telegram.access');
+Route::get('/telegram/mini/connect', [TelegramAuthController::class, 'miniConnect'])->name('telegram.mini.connect');
 
 // Public content suggestion form (no auth required)
 Route::get('/suggest', [ContentSuggestionController::class, 'show'])->name('suggest');

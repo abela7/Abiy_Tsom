@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 declare(strict_types=1);
 
@@ -125,8 +125,8 @@ class TelegramWebhookController extends Controller
             'connect' => $this->reply(
                 $telegramService,
                 $chatId,
-                "Send /connect <code> to link this Telegram account.\n"
-                . "Use an admin code from /admin/telegram/settings, or a member token from a share link."
+                $this->notLinkedMessage(),
+                $this->miniConnectKeyboard()
             ),
             default => $this->reply($telegramService, $chatId, $this->fallbackMessage()),
         };
@@ -142,8 +142,7 @@ class TelegramWebhookController extends Controller
 
         return match ($normalized) {
             'home' => $this->handleHome($chatId, $telegramAuthService, $telegramService),
-            'today',
-            'day' => $this->handleToday($chatId, $telegramAuthService, $telegramService),
+            'today', 'day' => $this->handleToday($chatId, $telegramAuthService, $telegramService),
             'connect' => $this->handleConnect(
                 $chatId,
                 '',
@@ -151,9 +150,9 @@ class TelegramWebhookController extends Controller
                 $telegramService
             ),
             'admin' => $this->handleAdmin($chatId, $telegramAuthService, $telegramService),
-            'help' => $this->reply($telegramService, $chatId, $this->helpMessage()),
+            'help' => $this->reply($telegramService, $chatId, $this->helpMessage(), $this->launchKeyboard()),
             'menu' => $this->handleMenu($chatId, $telegramAuthService, $telegramService),
-            default => $this->reply($telegramService, $chatId, $this->fallbackMessage()),
+            default => $this->reply($telegramService, $chatId, $this->fallbackMessage(), $this->launchKeyboard()),
         };
     }
 
@@ -190,6 +189,12 @@ class TelegramWebhookController extends Controller
                 'today' => $this->handleToday($chatId, $telegramAuthService, $telegramService),
                 'admin' => $this->handleAdmin($chatId, $telegramAuthService, $telegramService),
                 'me' => $this->handleMe($chatId, $telegramAuthService, $telegramService),
+                'connect' => $this->reply(
+                    $telegramService,
+                    $chatId,
+                    $this->notLinkedMessage(),
+                    $this->miniConnectKeyboard()
+                ),
                 default => $this->reply(
                     $telegramService,
                     $chatId,
@@ -211,11 +216,8 @@ class TelegramWebhookController extends Controller
             return $this->reply(
                 $telegramService,
                 $chatId,
-                "Send /connect <code> to bind this Telegram account.\n"
-                . "Use one of these codes:\n"
-                . "1) Admin code from /admin/telegram/settings, or\n"
-                . "2) A member share token from a URL like /share/day/6?token=<CODE>.\n"
-                . "Example: /connect VhPwfsnpnRNYHh3XgNGDyZBKaFCVvpDtD8f31MfS5NC"
+                $this->notLinkedMessage(),
+                $this->miniConnectKeyboard()
             );
         }
 
@@ -232,10 +234,8 @@ class TelegramWebhookController extends Controller
             return $this->reply(
                 $telegramService,
                 $chatId,
-                "Your Telegram account is not linked yet.\n"
-                . "Send /connect <code> with:\n"
-                . "an admin one-time code from /admin/telegram/settings, or\n"
-                . "a member token from /share/day/{day}?token={CODE}."
+                $this->notLinkedMessage(),
+                $this->miniConnectKeyboard()
             );
         }
 
@@ -257,7 +257,8 @@ class TelegramWebhookController extends Controller
             return $this->reply(
                 $telegramService,
                 $chatId,
-                $this->notLinkedMessage()
+                $this->notLinkedMessage(),
+                $this->miniConnectKeyboard()
             );
         }
 
@@ -280,10 +281,13 @@ class TelegramWebhookController extends Controller
         }
 
         $homeLink = $this->memberHomeSecureLink($actor, $telegramAuthService);
+        if (! $homeLink) {
+            return $this->reply($telegramService, $chatId, 'Could not generate secure member home link right now.');
+        }
 
         return $this->reply($telegramService, $chatId, 'Open your member home:', [
             'inline_keyboard' => [
-                [['text' => 'Open member home', 'url' => $homeLink]],
+                [['text' => 'Open member home', 'web_app' => ['url' => $homeLink]]],
             ],
         ]);
     }
@@ -302,7 +306,7 @@ class TelegramWebhookController extends Controller
 
         return $this->reply($telegramService, $chatId, 'Open your admin panel:', [
             'inline_keyboard' => [
-                [['text' => 'Open admin panel', 'url' => $adminLink]],
+                [['text' => 'Open admin panel', 'web_app' => ['url' => $adminLink]]],
             ],
         ]);
     }
@@ -351,7 +355,7 @@ class TelegramWebhookController extends Controller
 
         return $this->reply($telegramService, $chatId, "Day {$daily->day_number} content:", [
             'inline_keyboard' => [
-                [['text' => 'Open today', 'url' => $link]],
+                [['text' => 'Open today', 'web_app' => ['url' => $link]]],
             ],
         ]);
     }
@@ -403,15 +407,14 @@ class TelegramWebhookController extends Controller
 
         if ($actor instanceof Member) {
             $homeLink = $this->memberHomeSecureLink($actor, $telegramAuthService);
-
             $keyboard[] = [
-                ['text' => 'Open member home', 'url' => $homeLink],
+                ['text' => 'Open member home', 'web_app' => ['url' => $homeLink]],
             ];
 
             $todayLink = $this->memberTodaySecureLink($actor, $telegramAuthService);
             if ($todayLink !== null) {
                 $keyboard[] = [
-                    ['text' => 'Open today', 'url' => $todayLink],
+                    ['text' => 'Open today', 'web_app' => ['url' => $todayLink]],
                 ];
             }
 
@@ -419,9 +422,8 @@ class TelegramWebhookController extends Controller
         }
 
         $adminLink = $this->adminSecureLink($actor, $telegramAuthService);
-
         $keyboard[] = [
-            ['text' => 'Open admin panel', 'url' => $adminLink],
+            ['text' => 'Open admin panel', 'web_app' => ['url' => $adminLink]],
         ];
 
         return ['inline_keyboard' => $keyboard];
@@ -556,6 +558,7 @@ class TelegramWebhookController extends Controller
             'today', 'day' => 'today',
             'admin' => 'admin',
             'me' => 'me',
+            'connect' => 'connect',
             default => null,
         };
     }
@@ -598,29 +601,22 @@ class TelegramWebhookController extends Controller
     private function welcomeMessage(): string
     {
         return "Welcome to Abiy Tsom.\n\n"
-            . "If you are a member: copy your token from a share link\n"
-            . "like /share/day/6?token=VhPw... and send /connect <that token>.\n"
-            . "If you are an admin: get one-time code from /admin/telegram/settings.\n\n"
-            . "Then use buttons to move around.";
+            . "Use the menu below to connect or open the mini app securely.";
     }
 
     private function fallbackMessage(): string
     {
-        return 'Unknown command. Tap Menu to see options.';
+        return 'I did not recognize this input. Use the buttons below.';
     }
 
     private function helpMessage(): string
     {
-        return "Abiy Tsom menu:\n"
-            . "Tap /menu to see options.\n"
-            . "Send /connect <code> to link from admin/member flow.\n"
-            . "Use link buttons after you are connected.";
+        return 'Use the buttons in chat. If you are linked, I can open your member or admin views in one tap.';
     }
 
     private function notLinkedMessage(): string
     {
-        return "Your Telegram account is not linked yet.\n"
-            . "Use /connect <code> with an admin one-time code, or a member token from /share/day/{day}?token={CODE}.";
+        return 'Your Telegram account is not linked. Tap Connect account and paste your one-time link code.';
     }
 
     private function menuHeading(): string
@@ -631,33 +627,48 @@ class TelegramWebhookController extends Controller
     private function launchKeyboard(): array
     {
         return ['inline_keyboard' => [
-            [['text' => 'Connect with code', 'callback_data' => 'connect']],
-            [['text' => 'Help', 'callback_data' => 'help']],
+            [['text' => 'Connect account', 'web_app' => ['url' => $this->miniConnectUrl()]]],
+            [['text' => 'Open menu', 'callback_data' => 'menu']],
+            [['text' => 'Open website', 'web_app' => ['url' => route('home')]]],
         ]];
+    }
+
+    private function miniConnectKeyboard(): array
+    {
+        return ['inline_keyboard' => [
+            [['text' => 'Open connect screen', 'web_app' => ['url' => $this->miniConnectUrl()]]],
+            [['text' => 'Open website', 'web_app' => ['url' => route('home')]]],
+        ]];
+    }
+
+    private function miniConnectUrl(): string
+    {
+        return route('telegram.mini.connect');
     }
 
     private function mainMenuKeyboard(Member|User $actor, TelegramAuthService $telegramAuthService): array
     {
         if ($actor instanceof Member) {
+            $homeLink = $this->memberHomeSecureLink($actor, $telegramAuthService);
+            $todayLink = $this->memberTodaySecureLink($actor, $telegramAuthService);
+            $dayButtons = [['text' => 'Home', 'web_app' => ['url' => $homeLink]]];
+            if ($todayLink !== null) {
+                $dayButtons[] = ['text' => 'Today', 'web_app' => ['url' => (string) $todayLink]];
+            }
+
             return ['inline_keyboard' => [
-                [
-                    ['text' => 'Home', 'callback_data' => 'home'],
-                    ['text' => 'Today', 'callback_data' => 'today'],
-                ],
-                [
-                    ['text' => 'Profile Link', 'callback_data' => 'me'],
-                ],
+                $dayButtons,
+                [['text' => 'Open website', 'web_app' => ['url' => route('member.home')]]],
             ]];
         }
 
+        $adminLink = $this->adminSecureLink($actor, $telegramAuthService);
+        $adminFallback = $this->adminFallbackPath($actor);
+
         return ['inline_keyboard' => [
-            [
-                ['text' => 'Admin panel', 'callback_data' => 'admin'],
-            ],
-            [
-                ['text' => 'Profile Link', 'callback_data' => 'me'],
-            ],
+            [['text' => 'Admin panel', 'web_app' => ['url' => $adminLink]]],
+            [['text' => 'Open website', 'web_app' => ['url' => $adminFallback]]],
+            [['text' => 'Profile', 'callback_data' => 'me']],
         ]];
     }
 }
-

@@ -12,6 +12,7 @@ use App\Services\TelegramAuthService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 
 class TelegramAuthController extends Controller
 {
@@ -41,6 +42,21 @@ class TelegramAuthController extends Controller
         }
 
         return redirect()->route('home');
+    }
+
+    public function miniConnect(Request $request): View
+    {
+        $code = trim((string) $request->query('code', ''));
+        $purpose = trim((string) $request->query('purpose', ''));
+        if (! in_array($purpose, [TelegramAuthService::PURPOSE_MEMBER_ACCESS, TelegramAuthService::PURPOSE_ADMIN_ACCESS], true)) {
+            $purpose = '';
+        }
+
+        return view('telegram.mini-connect', [
+            'prefilledCode' => $code,
+            'purposeHint' => $purpose,
+            'telegramAccessUrl' => route('telegram.access'),
+        ]);
     }
 
     /**

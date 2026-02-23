@@ -42,6 +42,8 @@ class TelegramSettingsController extends Controller
         $telegramHomeStartLink = $publicBotName ? ('https://t.me/' . $publicBotName . '?start=home') : '';
         $telegramAdminStartLink = $publicBotName ? ('https://t.me/' . $publicBotName . '?start=admin') : '';
         $telegramTodayStartLink = $publicBotName ? ('https://t.me/' . $publicBotName . '?start=today') : '';
+        $telegramMiniConnectLink = $publicBotName ? ('https://t.me/' . $publicBotName . '?start=connect') : '';
+        $telegramMiniWebAppUrl = route('telegram.mini.connect');
 
         return view('admin.telegram.index', compact(
             'botToken',
@@ -52,7 +54,9 @@ class TelegramSettingsController extends Controller
             'telegramMenuStartLink',
             'telegramHomeStartLink',
             'telegramAdminStartLink',
-            'telegramTodayStartLink'
+            'telegramTodayStartLink',
+            'telegramMiniConnectLink',
+            'telegramMiniWebAppUrl'
         ));
     }
 
@@ -112,7 +116,9 @@ class TelegramSettingsController extends Controller
         $commands = [
             ['command' => 'menu', 'description' => __('app.telegram_menu_command_desc')],
             ['command' => 'help', 'description' => __('app.telegram_help_command_desc')],
-            ['command' => 'connect', 'description' => __('app.telegram_connect_command_desc')],
+            ['command' => 'home', 'description' => __('app.telegram_home_command_desc')],
+            ['command' => 'admin', 'description' => __('app.telegram_admin_command_desc')],
+            ['command' => 'day', 'description' => __('app.telegram_day_command_desc')],
         ];
 
         if (! $telegramService->setMyCommands($commands)) {

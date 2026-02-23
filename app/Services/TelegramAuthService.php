@@ -88,25 +88,6 @@ final class TelegramAuthService
         return $token->load('actor');
     }
 
-    public function sanitizeRedirectPath(?string $path, string $fallback): string
-    {
-        if (! is_string($path) || trim($path) === '') {
-            return $fallback;
-        }
-
-        $path = trim($path);
-        if (! str_starts_with($path, '/')) {
-            return $fallback;
-        }
-
-        $parts = parse_url($path);
-        if (! is_array($parts) || ($parts['path'] ?? null) === null) {
-            return $fallback;
-        }
-
-        return $path;
-    }
-
     public function consumeCode(string $code, ?string $purpose = null): ?TelegramAccessToken
     {
         return $this->resolveCode($code, $purpose);
@@ -140,5 +121,52 @@ final class TelegramAuthService
     private function isValidPurpose(string $purpose): bool
     {
         return in_array($purpose, [self::PURPOSE_MEMBER_ACCESS, self::PURPOSE_ADMIN_ACCESS], true);
+    }
+
+    private function isPotentialAbsoluteUrl(string $path): bool
+    {
+        return preg_match('/^[a-z][a-z0-9+.-]*:\/\//i', $path) === 1;
+    }
+
+    public function sanitizeRedirectPath(?string $path, string $fallback): string
+    {
+        if (! is_string($path) || trim($path) === '') {
+            return $fallback;
+        }
+
+        $path = trim($path);
+        if (str_starts_with($path, '/')) {
+            return $path;
+        }
+
+        if (! $this->isPotentialAbsoluteUrl($path)) {
+            return $fallback;
+        }
+
+        $parsed = parse_url($path);
+        if (! is_array($parsed)) {
+            return $fallback;
+        }
+
+        $normalizedPath = (string) ($parsed['path'] ?? '');
+        if ($normalizedPath === '') {
+            return $fallback;
+        }
+
+        if (! str_starts_with($normalizedPath, '/')) {
+            return $fallback;
+        }
+
+        $host = (string) ($parsed['host'] ?? '');
+        if ($host !== '' && strtolower($host) !== strtolower((string) request()->getHost())) {
+            return $fallback;
+        }
+
+        $query = (string) ($parsed['query'] ?? '');
+        if ($query !== '') {
+            $normalizedPath .= '?'.$query;
+        }
+
+        return $normalizedPath;
     }
 }
