@@ -6,18 +6,21 @@ namespace App\Http\Controllers\Webhook;
 
 use App\Http\Controllers\Controller;
 use App\Models\Activity;
+use App\Models\ContentSuggestion;
 use App\Models\DailyContent;
 use App\Models\LentSeason;
 use App\Models\Member;
 use App\Models\MemberChecklist;
 use App\Models\MemberCustomChecklist;
 use App\Models\TelegramAccessToken;
+use App\Models\TelegramBotState;
 use App\Models\Translation;
 use App\Models\User;
 use App\Services\TelegramAuthService;
 use App\Services\TelegramBotBuilderService;
 use App\Services\TelegramContentFormatter;
 use App\Services\TelegramService;
+use App\Services\UltraMsgService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -30,7 +33,8 @@ class TelegramWebhookController extends Controller
 {
     public function __construct(
         private readonly TelegramBotBuilderService $telegramBotBuilder,
-        private readonly TelegramContentFormatter $contentFormatter
+        private readonly TelegramContentFormatter $contentFormatter,
+        private readonly UltraMsgService $ultraMsg
     ) {}
 
     public function handle(
@@ -134,6 +138,14 @@ class TelegramWebhookController extends Controller
             return $this->handleLanguageChange($chatId, $messageId, $action, $telegramAuthService, $telegramService);
         }
 
+        if (str_starts_with($action, 'suggest_') || $action === 'suggest' || $action === 'my_suggestions') {
+            return $this->handleSuggestCallback($chatId, $messageId, $action, $telegramAuthService, $telegramService);
+        }
+
+        if ($action === 'link_admin_start') {
+            return $this->handleLinkAdminStart($chatId, $messageId, $telegramService);
+        }
+
         return match ($action) {
             'have_account' => $this->handleHaveAccount($chatId, $messageId, $telegramService),
             'unlink' => $this->handleUnlink($chatId, $messageId, $telegramAuthService, $telegramService),
@@ -157,6 +169,31 @@ class TelegramWebhookController extends Controller
     ): JsonResponse {
         $normalized = strtolower(trim($text));
 
+        // Check for an active wizard state first — wizard input takes priority
+        $activeState = TelegramBotState::getAnyActive($chatId);
+        if ($activeState !== null) {
+            // Universal cancel keyword
+            if ($normalized === 'cancel') {
+                $activeState->clear();
+
+                return $this->reply(
+                    $telegramService,
+                    $chatId,
+                    $activeState->action === 'link_admin'
+                        ? __('app.telegram_link_cancelled')
+                        : __('app.telegram_suggest_cancelled')
+                );
+            }
+
+            if ($activeState->action === 'link_admin') {
+                return $this->handleLinkAdminText($chatId, $text, $activeState, $telegramAuthService, $telegramService);
+            }
+
+            if ($activeState->action === 'suggest') {
+                return $this->handleSuggestTextInput($chatId, $text, $activeState, $telegramAuthService, $telegramService);
+            }
+        }
+
         $linked = match ($normalized) {
             'home' => $this->handleHome($chatId, $telegramAuthService, $telegramService),
             'today',
@@ -167,6 +204,8 @@ class TelegramWebhookController extends Controller
             'help' => $this->reply($telegramService, $chatId, $this->helpMessage(), $this->launchKeyboard()),
             'menu' => $this->handleMenu($chatId, $telegramAuthService, $telegramService),
             'unlink' => $this->handleUnlink($chatId, 0, $telegramAuthService, $telegramService),
+            'suggest' => $this->handleSuggestCallback($chatId, 0, 'suggest', $telegramAuthService, $telegramService),
+            'my suggestions', 'my_suggestions' => $this->handleSuggestCallback($chatId, 0, 'my_suggestions', $telegramAuthService, $telegramService),
             default => null,
         };
 
@@ -1273,6 +1312,608 @@ class TelegramWebhookController extends Controller
         };
     }
 
+    // =========================================================================
+    // Admin WhatsApp Linking
+    // =========================================================================
+
+    /**
+     * Entry point when an unlinked user tries to use a feature that requires
+     * an admin/editor/writer account. Creates a link_admin wizard state and
+     * prompts for username.
+     */
+    private function handleLinkAdminStart(
+        string $chatId,
+        int $messageId,
+        TelegramService $telegramService
+    ): JsonResponse {
+        TelegramBotState::startFor($chatId, 'link_admin', 'ask_username');
+
+        $text = '<b>🔗 '.__('app.telegram_link_heading')."</b>\n\n"
+            .__('app.telegram_link_intro')."\n\n"
+            .__('app.telegram_link_enter_username');
+
+        return $this->replyOrEdit($telegramService, $chatId, $text, [], $messageId, 'HTML');
+    }
+
+    /**
+     * Handles plain-text input during the link_admin wizard.
+     */
+    private function handleLinkAdminText(
+        string $chatId,
+        string $text,
+        TelegramBotState $state,
+        TelegramAuthService $telegramAuthService,
+        TelegramService $telegramService
+    ): JsonResponse {
+        return match ($state->step) {
+            'ask_username' => $this->handleLinkAdminUsername($chatId, $text, $state, $telegramAuthService, $telegramService),
+            'verify_code' => $this->handleLinkAdminCode($chatId, $text, $state, $telegramAuthService, $telegramService),
+            default => response()->json(['success' => true]),
+        };
+    }
+
+    private function handleLinkAdminUsername(
+        string $chatId,
+        string $username,
+        TelegramBotState $state,
+        TelegramAuthService $telegramAuthService,
+        TelegramService $telegramService
+    ): JsonResponse {
+        $user = User::query()->where('username', trim($username))->first();
+
+        if (! $user instanceof User) {
+            return $this->reply(
+                $telegramService,
+                $chatId,
+                __('app.telegram_link_user_not_found')
+            );
+        }
+
+        $phone = $user->whatsapp_phone ?? '';
+        if ($phone === '') {
+            $state->clear();
+
+            return $this->reply(
+                $telegramService,
+                $chatId,
+                __('app.telegram_link_no_whatsapp')
+            );
+        }
+
+        // Generate a 6-digit numeric code
+        $code = (string) random_int(100000, 999999);
+
+        $sent = $this->ultraMsg->sendTextMessage(
+            $phone,
+            "Your Abiy Tsom Telegram link code is: *{$code}*\n\nIt expires in 10 minutes. Do not share it."
+        );
+
+        if (! $sent) {
+            return $this->reply(
+                $telegramService,
+                $chatId,
+                __('app.telegram_link_whatsapp_failed')
+            );
+        }
+
+        $state->advance('verify_code', [
+            'user_id' => $user->id,
+            'code' => $code,
+            'code_expires_at' => now()->addMinutes(10)->toIso8601String(),
+        ]);
+
+        return $this->reply(
+            $telegramService,
+            $chatId,
+            __('app.telegram_link_code_sent')
+        );
+    }
+
+    private function handleLinkAdminCode(
+        string $chatId,
+        string $input,
+        TelegramBotState $state,
+        TelegramAuthService $telegramAuthService,
+        TelegramService $telegramService
+    ): JsonResponse {
+        $expectedCode = (string) $state->get('code', '');
+        $codeExpiresAt = $state->get('code_expires_at');
+        $userId = (int) $state->get('user_id', 0);
+
+        // Check code expiry
+        if ($codeExpiresAt && now()->isAfter($codeExpiresAt)) {
+            $state->clear();
+
+            return $this->reply(
+                $telegramService,
+                $chatId,
+                "Code expired. Please start the linking process again by tapping 'Suggest'."
+            );
+        }
+
+        if (trim($input) !== $expectedCode) {
+            return $this->reply(
+                $telegramService,
+                $chatId,
+                __('app.telegram_link_wrong_code')
+            );
+        }
+
+        $user = User::query()->find($userId);
+        if (! $user instanceof User) {
+            $state->clear();
+
+            return $this->reply($telegramService, $chatId, 'User not found. Please try again.');
+        }
+
+        $this->syncTelegramChatId($user, $chatId);
+
+        // Was there a pending next action?
+        $pendingAction = $state->get('pending_action', '');
+        $state->clear();
+
+        $successText = '✅ '.__('app.telegram_link_success')."\n\n".__('app.telegram_menu_heading');
+        $keyboard = $this->mainMenuKeyboard($user, $telegramAuthService);
+
+        // If they were trying to suggest, immediately start the wizard
+        if ($pendingAction === 'suggest') {
+            return $this->reply($telegramService, $chatId, $successText, $keyboard);
+        }
+
+        return $this->reply($telegramService, $chatId, $successText, $keyboard);
+    }
+
+    // =========================================================================
+    // Suggestion Wizard & My Suggestions
+    // =========================================================================
+
+    /**
+     * Central router for all suggest-related callbacks and actions.
+     */
+    private function handleSuggestCallback(
+        string $chatId,
+        int $messageId,
+        string $action,
+        TelegramAuthService $telegramAuthService,
+        TelegramService $telegramService
+    ): JsonResponse {
+        $actor = $this->actorFromChatId($chatId);
+
+        // Must be a linked admin/editor/writer User — not a Member
+        if (! $actor instanceof User) {
+            // Start WhatsApp linking inline, remembering that they wanted to suggest
+            TelegramBotState::startFor($chatId, 'link_admin', 'ask_username', [
+                'pending_action' => str_starts_with($action, 'suggest') ? 'suggest' : $action,
+            ]);
+
+            $text = '🔗 '.__('app.telegram_link_heading')."\n\n"
+                .__('app.telegram_link_intro')."\n\n"
+                .__('app.telegram_link_enter_username');
+
+            return $this->replyOrEdit($telegramService, $chatId, $text, [], $messageId);
+        }
+
+        // ── My Suggestions ────────────────────────────────────────────────
+        if ($action === 'my_suggestions') {
+            return $this->handleMySuggestions($chatId, $messageId, $actor, $telegramAuthService, $telegramService);
+        }
+
+        // ── Entry: start wizard ───────────────────────────────────────────
+        if ($action === 'suggest') {
+            return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+        }
+
+        // ── Language chosen ───────────────────────────────────────────────
+        if (str_starts_with($action, 'suggest_lang_')) {
+            $lang = str_replace('suggest_lang_', '', $action); // 'en' or 'am'
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+            $state->advance('choose_type', ['language' => $lang]);
+
+            return $this->replyOrEdit(
+                $telegramService,
+                $chatId,
+                __('app.telegram_suggest_choose_type'),
+                $this->suggestTypeKeyboard(),
+                $messageId
+            );
+        }
+
+        // ── Type chosen ───────────────────────────────────────────────────
+        if (str_starts_with($action, 'suggest_type_')) {
+            $type = str_replace('suggest_type_', '', $action);
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+
+            $nextStep = $this->suggestFirstStep($type);
+            $state->advance($nextStep, ['type' => $type]);
+
+            return $this->replyOrEdit(
+                $telegramService,
+                $chatId,
+                $this->suggestStepPrompt($nextStep, $type),
+                [],
+                $messageId
+            );
+        }
+
+        // ── Skip optional field ───────────────────────────────────────────
+        if ($action === 'suggest_skip') {
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+
+            return $this->advanceSuggestStep($chatId, $messageId, '', $state, $telegramService);
+        }
+
+        // ── Confirm ───────────────────────────────────────────────────────
+        if ($action === 'suggest_confirm') {
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+
+            return $this->confirmSuggestion($chatId, $messageId, $actor, $state, $telegramAuthService, $telegramService);
+        }
+
+        // ── Cancel ────────────────────────────────────────────────────────
+        if ($action === 'suggest_cancel') {
+            TelegramBotState::query()->where('chat_id', $chatId)->where('action', 'suggest')->delete();
+
+            $keyboard = $this->mainMenuKeyboard($actor, $telegramAuthService);
+
+            return $this->replyOrEdit(
+                $telegramService,
+                $chatId,
+                __('app.telegram_suggest_cancelled'),
+                $keyboard,
+                $messageId
+            );
+        }
+
+        return response()->json(['success' => true]);
+    }
+
+    private function startSuggestWizard(
+        string $chatId,
+        int $messageId,
+        TelegramService $telegramService
+    ): JsonResponse {
+        TelegramBotState::startFor($chatId, 'suggest', 'choose_language');
+
+        $keyboard = ['inline_keyboard' => [
+            [
+                ['text' => '🇬🇧 English', 'callback_data' => 'suggest_lang_en'],
+                ['text' => '🇪🇹 አማርኛ', 'callback_data' => 'suggest_lang_am'],
+            ],
+            [['text' => __('app.telegram_suggest_cancel'), 'callback_data' => 'suggest_cancel']],
+        ]];
+
+        return $this->replyOrEdit(
+            $telegramService,
+            $chatId,
+            '💡 '.__('app.telegram_suggest')."\n\n".__('app.telegram_suggest_choose_language'),
+            $keyboard,
+            $messageId
+        );
+    }
+
+    /**
+     * Handles plain-text input during an active suggestion wizard step.
+     */
+    private function handleSuggestTextInput(
+        string $chatId,
+        string $text,
+        TelegramBotState $state,
+        TelegramAuthService $telegramAuthService,
+        TelegramService $telegramService
+    ): JsonResponse {
+        return $this->advanceSuggestStep($chatId, 0, $text, $state, $telegramService);
+    }
+
+    /**
+     * Advance the suggestion wizard by one step, saving input and prompting
+     * for the next field, or showing the preview when all fields are collected.
+     */
+    private function advanceSuggestStep(
+        string $chatId,
+        int $messageId,
+        string $input,
+        TelegramBotState $state,
+        TelegramService $telegramService
+    ): JsonResponse {
+        $type = (string) $state->get('type', '');
+        $currentStep = $state->step;
+
+        // Map current step to the data field it fills
+        $fieldForStep = [
+            'enter_reference' => 'reference',
+            'enter_title' => 'title',
+            'enter_author' => 'author',
+            'enter_url' => 'url_reference',
+            'enter_detail' => 'content_detail',
+        ];
+
+        $mergeData = [];
+        if (isset($fieldForStep[$currentStep]) && $input !== '') {
+            $mergeData[$fieldForStep[$currentStep]] = $input;
+        }
+
+        $nextStep = $this->suggestNextStep($type, $currentStep);
+
+        if ($nextStep === 'preview') {
+            $state->advance('preview', $mergeData);
+
+            return $this->showSuggestPreview($chatId, $messageId, $state, $telegramService);
+        }
+
+        $state->advance($nextStep, $mergeData);
+
+        $isOptional = in_array($nextStep, ['enter_author', 'enter_detail'], true);
+        $skipBtn = $isOptional
+            ? [['text' => '⏭ '.__('app.telegram_suggest_skip'), 'callback_data' => 'suggest_skip']]
+            : [];
+
+        $keyboard = ['inline_keyboard' => array_filter([
+            $skipBtn ?: null,
+            [['text' => __('app.telegram_suggest_cancel'), 'callback_data' => 'suggest_cancel']],
+        ])];
+
+        return $this->replyOrEdit(
+            $telegramService,
+            $chatId,
+            $this->suggestStepPrompt($nextStep, $type),
+            $keyboard,
+            $messageId
+        );
+    }
+
+    private function showSuggestPreview(
+        string $chatId,
+        int $messageId,
+        TelegramBotState $state,
+        TelegramService $telegramService
+    ): JsonResponse {
+        $data = $state->data ?? [];
+        $type = $data['type'] ?? '?';
+        $lang = strtoupper($data['language'] ?? '?');
+
+        $typeLabel = match ($type) {
+            'bible' => '📖 Bible',
+            'mezmur' => '🎵 Mezmur',
+            'sinksar' => '📖 Sinksar',
+            'book' => '📚 Book',
+            'reference' => '🔗 Reference',
+            default => ucfirst($type),
+        };
+
+        $lines = [
+            '<b>📋 '.__('app.telegram_suggest_preview').'</b>',
+            '',
+            "<b>Type:</b> {$typeLabel} [{$lang}]",
+        ];
+
+        if (! empty($data['reference']) && $type === 'bible') {
+            $lines[] = '<b>Reference:</b> '.htmlspecialchars($data['reference'], ENT_QUOTES, 'UTF-8');
+        }
+        if (! empty($data['title'])) {
+            $lines[] = '<b>Title:</b> '.htmlspecialchars($data['title'], ENT_QUOTES, 'UTF-8');
+        }
+        if (! empty($data['author'])) {
+            $lines[] = '<b>Author:</b> '.htmlspecialchars($data['author'], ENT_QUOTES, 'UTF-8');
+        }
+        if (! empty($data['url_reference'])) {
+            $lines[] = '<b>URL:</b> '.htmlspecialchars($data['url_reference'], ENT_QUOTES, 'UTF-8');
+        }
+        if (! empty($data['content_detail'])) {
+            $lines[] = '<b>Notes:</b> '.htmlspecialchars($data['content_detail'], ENT_QUOTES, 'UTF-8');
+        }
+
+        $keyboard = ['inline_keyboard' => [
+            [
+                ['text' => '✅ '.__('app.telegram_suggest_confirm'), 'callback_data' => 'suggest_confirm'],
+                ['text' => '❌ '.__('app.telegram_suggest_cancel'), 'callback_data' => 'suggest_cancel'],
+            ],
+        ]];
+
+        return $this->replyOrEdit(
+            $telegramService,
+            $chatId,
+            implode("\n", $lines),
+            $keyboard,
+            $messageId,
+            'HTML'
+        );
+    }
+
+    private function confirmSuggestion(
+        string $chatId,
+        int $messageId,
+        User $user,
+        TelegramBotState $state,
+        TelegramAuthService $telegramAuthService,
+        TelegramService $telegramService
+    ): JsonResponse {
+        $data = $state->data ?? [];
+        $type = $data['type'] ?? 'reference';
+        $language = $data['language'] ?? 'en';
+
+        // Map url_reference to the reference field for non-bible types
+        $referenceValue = $type === 'bible'
+            ? ($data['reference'] ?? null)
+            : ($data['url_reference'] ?? null);
+
+        ContentSuggestion::create([
+            'user_id' => $user->id,
+            'type' => $type,
+            'language' => $language,
+            'title' => $data['title'] ?? null,
+            'reference' => $referenceValue,
+            'author' => $data['author'] ?? null,
+            'content_detail' => $data['content_detail'] ?? null,
+            'submitter_name' => $user->name,
+            'status' => 'pending',
+        ]);
+
+        $state->clear();
+
+        $keyboard = $this->mainMenuKeyboard($user, $telegramAuthService);
+
+        return $this->replyOrEdit(
+            $telegramService,
+            $chatId,
+            '✅ '.__('app.telegram_suggest_submitted'),
+            $keyboard,
+            $messageId
+        );
+    }
+
+    private function handleMySuggestions(
+        string $chatId,
+        int $messageId,
+        User $user,
+        TelegramAuthService $telegramAuthService,
+        TelegramService $telegramService
+    ): JsonResponse {
+        $suggestions = ContentSuggestion::query()
+            ->where('user_id', $user->id)
+            ->latest()
+            ->take(10)
+            ->get();
+
+        if ($suggestions->isEmpty()) {
+            $keyboard = ['inline_keyboard' => [
+                [['text' => '💡 '.__('app.telegram_suggest'), 'callback_data' => 'suggest']],
+                [['text' => '◀️ '.__('app.menu'), 'callback_data' => 'menu']],
+            ]];
+
+            return $this->replyOrEdit(
+                $telegramService,
+                $chatId,
+                '📋 '.__('app.telegram_my_suggestions')."\n\n".__('app.telegram_suggest_no_suggestions'),
+                $keyboard,
+                $messageId
+            );
+        }
+
+        $statusIcon = [
+            'pending' => '⏳',
+            'reviewed' => '👀',
+            'approved' => '✅',
+            'rejected' => '❌',
+            'used' => '⭐',
+        ];
+
+        $typeIcon = [
+            'bible' => '📖',
+            'mezmur' => '🎵',
+            'sinksar' => '📖',
+            'book' => '📚',
+            'reference' => '🔗',
+        ];
+
+        $lines = ['<b>📋 '.__('app.telegram_my_suggestions').'</b>', ''];
+
+        foreach ($suggestions as $s) {
+            $icon = $statusIcon[$s->status] ?? '•';
+            $tIcon = $typeIcon[$s->type] ?? '•';
+            $label = $s->title ?? $s->reference ?? $s->type;
+            $label = mb_strlen((string) $label) > 40
+                ? mb_substr((string) $label, 0, 37).'…'
+                : (string) $label;
+            $lines[] = "{$icon} {$tIcon} ".htmlspecialchars($label, ENT_QUOTES, 'UTF-8')
+                .' <i>'.ucfirst($s->status).'</i>';
+        }
+
+        $keyboard = ['inline_keyboard' => [
+            [['text' => '💡 '.__('app.telegram_suggest'), 'callback_data' => 'suggest']],
+            [['text' => '◀️ '.__('app.menu'), 'callback_data' => 'menu']],
+        ]];
+
+        return $this->replyOrEdit(
+            $telegramService,
+            $chatId,
+            implode("\n", $lines),
+            $keyboard,
+            $messageId,
+            'HTML'
+        );
+    }
+
+    // ---- Suggestion wizard step helpers ─────────────────────────────────────
+
+    /** Returns the first text-input step for a given suggestion type. */
+    private function suggestFirstStep(string $type): string
+    {
+        return match ($type) {
+            'bible' => 'enter_reference',
+            'reference' => 'enter_title',
+            default => 'enter_title', // mezmur, sinksar, book
+        };
+    }
+
+    /**
+     * Returns the next wizard step after the current one for the given type.
+     * Returns 'preview' when there are no more fields.
+     */
+    private function suggestNextStep(string $type, string $currentStep): string
+    {
+        $flow = match ($type) {
+            'bible' => ['enter_reference', 'enter_detail', 'preview'],
+            'sinksar' => ['enter_title', 'enter_detail', 'preview'],
+            'mezmur', 'book' => ['enter_title', 'enter_author', 'enter_detail', 'preview'],
+            'reference' => ['enter_title', 'enter_url', 'enter_detail', 'preview'],
+            default => ['enter_title', 'enter_detail', 'preview'],
+        };
+
+        $idx = array_search($currentStep, $flow, true);
+        if ($idx === false) {
+            return 'preview';
+        }
+
+        return $flow[$idx + 1] ?? 'preview';
+    }
+
+    /** Returns the prompt text for a given wizard step. */
+    private function suggestStepPrompt(string $step, string $type): string
+    {
+        return match ($step) {
+            'enter_reference' => __('app.telegram_suggest_enter_reference'),
+            'enter_title' => __('app.telegram_suggest_enter_title'),
+            'enter_author' => __('app.telegram_suggest_enter_author'),
+            'enter_url' => __('app.telegram_suggest_enter_url'),
+            'enter_detail' => __('app.telegram_suggest_enter_detail'),
+            default => __('app.telegram_suggest_enter_detail'),
+        };
+    }
+
+    private function suggestTypeKeyboard(): array
+    {
+        return ['inline_keyboard' => [
+            [
+                ['text' => '📖 Bible', 'callback_data' => 'suggest_type_bible'],
+                ['text' => '🎵 Mezmur', 'callback_data' => 'suggest_type_mezmur'],
+            ],
+            [
+                ['text' => '📖 Sinksar', 'callback_data' => 'suggest_type_sinksar'],
+                ['text' => '📚 Book', 'callback_data' => 'suggest_type_book'],
+            ],
+            [
+                ['text' => '🔗 Reference', 'callback_data' => 'suggest_type_reference'],
+            ],
+            [['text' => __('app.telegram_suggest_cancel'), 'callback_data' => 'suggest_cancel']],
+        ]];
+    }
+
+    // =========================================================================
+    // Main menu keyboard
+    // =========================================================================
+
     private function mainMenuKeyboard(Member|User $actor, TelegramAuthService $telegramAuthService): array
     {
         $rows = [];
@@ -1300,15 +1941,22 @@ class TelegramWebhookController extends Controller
             $rows[] = [['text' => $this->telegramBotBuilder->buttonLabel('admin', 'admin', 'Admin panel'), 'web_app' => ['url' => $adminLink]]];
         }
 
+        // Suggest + My Suggestions — always shown for linked admin/editor/writer users
+        $rows[] = [
+            ['text' => '💡 '.__('app.telegram_suggest'), 'callback_data' => 'suggest'],
+            ['text' => '📋 '.__('app.telegram_my_suggestions'), 'callback_data' => 'my_suggestions'],
+        ];
+
         if ($this->telegramBotBuilder->buttonEnabled('help', 'admin')) {
             $rows[] = [['text' => $this->telegramBotBuilder->buttonLabel('help', 'admin', 'Help'), 'callback_data' => 'help']];
         }
 
         $rows[] = [['text' => __('app.telegram_bot_unlink'), 'callback_data' => 'unlink']];
 
-        if ($rows === []) {
+        if (count($rows) === 2) {
+            // Only the suggest row + unlink row — add admin panel fallback
             $adminLink = $this->adminSecureLink($actor, $telegramAuthService);
-            $rows[] = [['text' => $this->telegramBotBuilder->buttonLabel('admin', 'admin', 'Admin panel'), 'web_app' => ['url' => $adminLink]]];
+            array_unshift($rows, [['text' => $this->telegramBotBuilder->buttonLabel('admin', 'admin', 'Admin panel'), 'web_app' => ['url' => $adminLink]]]);
         }
 
         return ['inline_keyboard' => $rows];
