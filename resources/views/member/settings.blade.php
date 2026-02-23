@@ -292,6 +292,16 @@
             x-transition:leave-start="opacity-100"
             x-transition:leave-end="opacity-0" class="px-4 pb-4 pt-0 space-y-4">
                 <p class="text-sm text-muted-text">{{ __('app.telegram_settings_link_desc') }}</p>
+                @if ($member?->telegram_chat_id)
+                <div class="flex items-center justify-between p-3 rounded-xl bg-green-500/10 border border-green-500/20">
+                    <span class="text-sm text-green-700 dark:text-green-400">{{ __('app.telegram_settings_link_title') }} — {{ __('app.telegram_settings_linked') }}</span>
+                    <button type="button" @click="unlinkTelegram()"
+                            :disabled="telegramLoading"
+                            class="px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-500/10 rounded-lg transition disabled:opacity-50">
+                        {{ __('app.telegram_settings_unlink') }}
+                    </button>
+                </div>
+                @endif
                 <button type="button" @click="generateLink()"
                         :disabled="telegramLoading"
                         class="w-full py-2.5 bg-accent text-on-accent rounded-xl font-medium text-sm disabled:opacity-50 transition flex items-center justify-center gap-2">
@@ -706,6 +716,27 @@ function settingsPage() {
                 this.telegramMsg = 'Link copied. Open it in Telegram.';
                 setTimeout(() => { this.telegramMsg = '{{ __("app.telegram_settings_link_generated") }}'; }, 2000);
             });
+        },
+        async unlinkTelegram() {
+            if (!confirm('{{ __("app.telegram_settings_unlink_confirm") }}')) return;
+            this.telegramLoading = true;
+            this.telegramError = '';
+            this.telegramMsg = '';
+            try {
+                const data = await AbiyTsom.api('/api/member/telegram-unlink', {});
+                if (data.success) {
+                    this.telegramMsg = data.message || '{{ __("app.telegram_settings_unlinked") }}';
+                    this.telegramLink = '';
+                    this.telegramCode = '';
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    this.telegramError = data.message || '{{ __("app.failed") }}';
+                }
+            } catch (e) {
+                this.telegramError = '{{ __("app.failed") }}';
+            } finally {
+                this.telegramLoading = false;
+            }
         },
 
         async enableWhatsApp() {

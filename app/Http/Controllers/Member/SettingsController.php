@@ -196,6 +196,22 @@ class SettingsController extends Controller
         ]);
     }
 
+    /**
+     * Unlink Telegram from the current member's account.
+     */
+    public function unlinkTelegram(Request $request): JsonResponse
+    {
+        /** @var \App\Models\Member $member */
+        $member = $request->attributes->get('member');
+
+        $member->forceFill(['telegram_chat_id' => null])->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => __('app.telegram_settings_unlinked'),
+        ]);
+    }
+
     private function normalizeReminderTime(mixed $time): ?string
     {
         if (! is_string($time)) {
