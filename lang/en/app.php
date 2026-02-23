@@ -124,7 +124,7 @@ return [
     'tap_to_collapse' => 'Tap to collapse',
     'references' => 'References',
 
-    // Telegram Today nav — short labels for inline buttons (avoid truncation)
+    // Telegram Today nav — short labels for inline buttons (avoid truncation on mobile)
     'telegram_nav_bible' => 'Bible',
     'telegram_nav_mezmur' => 'Mezmur',
     'telegram_nav_sinksar' => 'Sinksar',

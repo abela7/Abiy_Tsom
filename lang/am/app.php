@@ -127,8 +127,8 @@ return [
     'tap_to_collapse' => 'ለመዝጋት ይንኩ',
     'references' => 'ማጣቀሻዎች',
 
-    // Telegram Today nav — short labels for inline buttons (avoid truncation)
-    'telegram_nav_bible' => 'መጽሐፍ ቅዱስ',
+    // Telegram Today nav — short labels for inline buttons (avoid truncation on mobile)
+    'telegram_nav_bible' => 'ቅዱስ መጽሐፍ',
     'telegram_nav_mezmur' => 'መዝሙር',
     'telegram_nav_sinksar' => 'ስንክሳር',
     'telegram_nav_books' => 'መጽሐፍ',

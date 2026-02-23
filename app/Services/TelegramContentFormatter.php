@@ -243,9 +243,8 @@ final class TelegramContentFormatter
             $navButtons[] = ['text' => $label, 'callback_data' => $cb];
         }
         if ($navButtons !== []) {
-            $rows[] = array_slice($navButtons, 0, 3);
-            if (count($navButtons) > 3) {
-                $rows[] = array_slice($navButtons, 3, 3);
+            foreach (array_chunk($navButtons, 2) as $chunk) {
+                $rows[] = $chunk;
             }
         }
 
