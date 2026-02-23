@@ -345,10 +345,7 @@ return [
     'telegram_start_new' => 'New — Register',
     'telegram_start_have_account' => 'I have an account',
     'telegram_start_have_account_instructions' => "To link your existing account:\n\n1. Open the app in your browser\n2. Go to Settings\n3. Tap \"Link Telegram\"\n4. Generate the link and open it in Telegram\n\nYour account will be linked when you open that link.",
-    'telegram_have_account_choose_role' => "Are you a member or an admin/writer/editor?",
-    'telegram_have_account_member' => 'Member (regular account)',
-    'telegram_have_account_admin' => 'Admin / Writer / Editor',
-    'telegram_start_have_account_code_instructions' => "To link your member account:\n\n1. Tap the button below to open the app\n2. Go to Settings → Link Telegram\n3. Tap \"Generate link\" to get your code\n4. Type the 6-character code here in this chat\n\nExample: ABC123",
+    'telegram_start_have_account_code_instructions' => "To link your account:\n\n1. Tap the button below to open the app\n2. Go to Settings → Link Telegram\n3. Tap \"Generate link\" to get your code\n4. Type the 6-character code here in this chat\n\nExample: ABC123",
     'telegram_start_open_app' => 'Open app',
     'telegram_settings_link_title' => 'Link Telegram',
     'telegram_settings_link_desc' => 'Link this Telegram account to your member profile. Generate a one-time link and open it in Telegram.',
@@ -913,7 +910,7 @@ return [
     'telegram_suggest_no_suggestions' => 'You have not submitted any suggestions yet.',
 
     // Telegram bot — admin account linking via WhatsApp
-    'telegram_link_enter_username' => 'Type your admin username to link your account:',
+    'telegram_link_enter_username' => 'Please type your username:',
     'telegram_link_code_sent' => 'A 6-digit code has been sent to your WhatsApp. Type it here:',
     'telegram_link_success' => 'Account linked successfully!',
     'telegram_link_wrong_code' => "Wrong code. Try again or type 'cancel' to abort.",
@@ -921,7 +918,7 @@ return [
     'telegram_link_user_not_found' => "Username not found. Try again or type 'cancel' to abort.",
     'telegram_link_whatsapp_failed' => 'Could not send WhatsApp code. Please try again later.',
     'telegram_link_cancelled' => 'Linking cancelled.',
-    'telegram_link_heading' => 'Link your admin account',
-    'telegram_link_intro' => 'To use this feature, link your admin account via WhatsApp verification.',
+    'telegram_link_heading' => 'Link your account',
+    'telegram_link_intro' => 'Enter your username to link your account.',
     'telegram_link_start' => 'Start Linking',
 ];
