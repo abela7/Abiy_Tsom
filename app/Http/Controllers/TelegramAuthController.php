@@ -58,6 +58,9 @@ class TelegramAuthController extends Controller
 
         $title = trim((string) $request->query('title', ''));
         $img = trim((string) $request->query('img', ''));
+        if ($img !== '' && ! str_starts_with($img, 'https://')) {
+            $img = '';
+        }
 
         return view('telegram.embed', [
             'videoId' => $vid,
