@@ -431,7 +431,7 @@ class TelegramWebhookController extends Controller
             ->where('lent_season_id', $season->id)
             ->whereDate('date', $today->toDateString())
             ->where('is_published', true)
-            ->with(['weeklyTheme', 'mezmurs'])
+            ->with(['weeklyTheme', 'mezmurs', 'books', 'references'])
             ->first();
 
         if (! $daily) {

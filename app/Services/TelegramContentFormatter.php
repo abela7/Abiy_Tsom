@@ -62,7 +62,12 @@ final class TelegramContentFormatter
             $parts[] = '<b>🎵 '.__('app.mezmur').'</b>';
             foreach ($daily->mezmurs as $m) {
                 $title = $this->h(localized($m, 'title', $locale) ?? '-');
-                $parts[] = '• '.$title;
+                $url = $m->mediaUrl($locale);
+                if ($url) {
+                    $parts[] = '• '.$title.' <a href="'.$this->hUrl($url).'">▶ '.__('app.listen').'</a>';
+                } else {
+                    $parts[] = '• '.$title;
+                }
             }
             $parts[] = '';
             $parts[] = self::DIVIDER;
@@ -73,6 +78,50 @@ final class TelegramContentFormatter
             $parts[] = $this->h(localized($daily, 'sinksar_title', $locale));
             if (localized($daily, 'sinksar_description', $locale)) {
                 $parts[] = $this->h(localized($daily, 'sinksar_description', $locale));
+            }
+            $sinksarUrl = $daily->sinksarUrl($locale);
+            if ($sinksarUrl) {
+                $parts[] = '<a href="'.$this->hUrl($sinksarUrl).'">▶ '.__('app.listen').'</a>';
+            }
+            $parts[] = '';
+            $parts[] = self::DIVIDER;
+        }
+
+        if ($daily->books && $daily->books->isNotEmpty()) {
+            $parts[] = '<b>📚 '.__('app.spiritual_book').'</b>';
+            foreach ($daily->books as $book) {
+                $title = $this->h(localized($book, 'title', $locale));
+                if ($title === '') {
+                    continue;
+                }
+                $parts[] = $title;
+                if (localized($book, 'description', $locale)) {
+                    $parts[] = $this->h(localized($book, 'description', $locale));
+                }
+                $bookUrl = $book->mediaUrl($locale);
+                if ($bookUrl) {
+                    $parts[] = '<a href="'.$this->hUrl($bookUrl).'">'.__('app.read_more').' →</a>';
+                }
+            }
+            $parts[] = '';
+            $parts[] = self::DIVIDER;
+        }
+
+        if ($daily->references && $daily->references->isNotEmpty()) {
+            $parts[] = '<b>🔗 '.__('app.references').'</b>';
+            foreach ($daily->references as $ref) {
+                $refUrl = $ref->mediaUrl($locale);
+                if (! $refUrl) {
+                    continue;
+                }
+                $name = $this->h(localized($ref, 'name', $locale) ?? '-');
+                $refType = $ref->type ?? 'website';
+                $label = match ($refType) {
+                    'video' => __('app.view_video'),
+                    'file' => __('app.view_file'),
+                    default => __('app.read_more'),
+                };
+                $parts[] = '• '.$name.' <a href="'.$this->hUrl($refUrl).'">'.$this->h($label).'</a>';
             }
             $parts[] = '';
             $parts[] = self::DIVIDER;
@@ -132,6 +181,16 @@ final class TelegramContentFormatter
         $s = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $s);
 
         return str_replace(['&', '<', '>', '"'], ['&amp;', '&lt;', '&gt;', '&quot;'], trim($s));
+    }
+
+    /** Escape URL for use in HTML href attribute. */
+    private function hUrl(?string $url): string
+    {
+        if ($url === null || $url === '') {
+            return '#';
+        }
+
+        return str_replace(['&', '"', "'", '<', '>'], ['&amp;', '&quot;', '&#39;', '&lt;', '&gt;'], trim($url));
     }
 
     public function formatProgressSummary(Member $member): string
