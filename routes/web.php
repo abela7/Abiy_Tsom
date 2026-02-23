@@ -83,6 +83,9 @@ Route::prefix('api/member')->middleware('api.member')->name('api.member.')->grou
     Route::post('/data/clear', [Member\DataController::class, 'clear'])->name('data.clear');
     Route::post('/telegram-link', [Member\SettingsController::class, 'generateTelegramLink'])->name('telegram-link');
     Route::post('/telegram-unlink', [Member\SettingsController::class, 'unlinkTelegram'])->name('telegram-unlink');
+    Route::get('/fundraising/popup', [Member\FundraisingController::class, 'popup'])->name('fundraising.popup');
+    Route::post('/fundraising/snooze', [Member\FundraisingController::class, 'snooze'])->name('fundraising.snooze');
+    Route::post('/fundraising/interested', [Member\FundraisingController::class, 'interested'])->name('fundraising.interested');
 });
 
 /*
@@ -133,6 +136,10 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
 
     // Editor/admin routes
     Route::middleware('admin_role:editor,admin')->group(function () {
+        // Fundraising campaign popup management
+        Route::get('/fundraising', [Admin\FundraisingController::class, 'index'])->name('fundraising.index');
+        Route::post('/fundraising', [Admin\FundraisingController::class, 'store'])->name('fundraising.store');
+
         // Content suggestions review
         Route::get('/suggestions', [Admin\ContentSuggestionController::class, 'index'])->name('suggestions.index');
         Route::post('/suggestions/{suggestion}/use', [Admin\ContentSuggestionController::class, 'markUsed'])->name('suggestions.mark-used');

@@ -169,6 +169,11 @@
         </nav>
     @endif
 
+    {{-- Fundraising popup (lazy-loaded, shown once per day until member expresses interest) --}}
+    @if(isset($currentMember) && request()->routeIs('member.*'))
+        @include('member.partials.fundraising-popup')
+    @endif
+
     {{-- Member session helpers --}}
     <script>
         window.AbiyTsom = {
