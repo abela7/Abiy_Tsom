@@ -9,6 +9,7 @@ use App\Models\TelegramBotBuilder;
 final class TelegramBotBuilderService
 {
     private const CONFIG_KEY = 'builder';
+
     private const DEFAULT_KEYBOARD_LABELS = [
         'menu' => 'Menu',
         'home' => 'Home',
@@ -103,8 +104,12 @@ final class TelegramBotBuilderService
     public function buttonLabel(string $key, string $scope, string $fallback): string
     {
         $buttons = $scope === 'admin' ? $this->adminButtons() : $this->memberButtons();
-        $label = trim((string) data_get($buttons, $key . '.label', ''));
+        $label = trim((string) data_get($buttons, $key.'.label', ''));
         if ($label === '') {
+            return $fallback;
+        }
+        // If label matches default English, treat as uncustomized — use translated fallback
+        if (isset(self::DEFAULT_KEYBOARD_LABELS[$key]) && $label === self::DEFAULT_KEYBOARD_LABELS[$key]) {
             return $fallback;
         }
 
@@ -114,13 +119,15 @@ final class TelegramBotBuilderService
     public function commandEnabled(string $command): bool
     {
         $commands = (array) data_get($this->getConfig(), 'commands', []);
-        return (bool) data_get($commands, $command . '.enabled', false);
+
+        return (bool) data_get($commands, $command.'.enabled', false);
     }
 
     public function buttonEnabled(string $key, string $scope): bool
     {
         $buttons = $scope === 'admin' ? $this->adminButtons() : $this->memberButtons();
-        return (bool) data_get($buttons, $key . '.enabled', false);
+
+        return (bool) data_get($buttons, $key.'.enabled', false);
     }
 
     private function normalize(array $payload): array
@@ -133,6 +140,7 @@ final class TelegramBotBuilderService
             foreach ($items as $key => $item) {
                 if (! is_array($item)) {
                     unset($items[$key]);
+
                     continue;
                 }
 
@@ -248,6 +256,7 @@ final class TelegramBotBuilderService
                         $result[$group][$key] = $value;
                     }
                 }
+
                 continue;
             }
 

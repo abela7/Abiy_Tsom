@@ -64,6 +64,7 @@ return [
 
     // Navigation
     'nav_home' => 'Home',
+    'help' => 'Help',
     'nav_calendar' => 'Calendar',
     'nav_progress' => 'Progress',
     'nav_settings' => 'Settings',

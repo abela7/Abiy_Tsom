@@ -1243,7 +1243,7 @@ class TelegramWebhookController extends Controller
             $firstRow[] = ['text' => __('app.checklist'), 'callback_data' => 'checklist'];
             $rows[] = $firstRow;
             if ($this->telegramBotBuilder->buttonEnabled('help', 'member')) {
-                $rows[] = [['text' => $this->telegramBotBuilder->buttonLabel('help', 'member', 'Help'), 'callback_data' => 'help']];
+                $rows[] = [['text' => $this->telegramBotBuilder->buttonLabel('help', 'member', __('app.help')), 'callback_data' => 'help']];
             }
             $rows[] = [['text' => __('app.telegram_bot_unlink'), 'callback_data' => 'unlink']];
             $rows[] = [$this->languageToggleButton($actor)];
