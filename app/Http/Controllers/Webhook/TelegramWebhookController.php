@@ -119,8 +119,8 @@ class TelegramWebhookController extends Controller
             'today' => $this->handleToday($chatId, $telegramAuthService, $telegramService, $messageId),
             'admin' => $this->handleAdmin($chatId, $telegramAuthService, $telegramService, $messageId),
             'me' => $this->handleMe($chatId, $telegramAuthService, $telegramService, $messageId),
-            'help' => $this->replyOrEdit($telegramService, $chatId, $this->helpMessage(), $this->launchKeyboard(), $messageId),
-            default => $this->replyOrEdit($telegramService, $chatId, $this->fallbackMessage(), $this->launchKeyboard(), $messageId),
+            'help' => $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->helpMessage(), $this->launchKeyboard()),
+            default => $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->fallbackMessage(), $this->launchKeyboard()),
         };
     }
 
@@ -302,16 +302,10 @@ class TelegramWebhookController extends Controller
     {
         $text = __('app.telegram_start_have_account_code_instructions');
         $keyboard = ['inline_keyboard' => [
-            [['text' => __('app.telegram_start_open_app'), 'web_app' => ['url' => route('home')]]],
+            [['text' => __('app.telegram_start_open_app'), 'web_app' => ['url' => url(route('home'))]]],
         ]];
 
-        if ($messageId > 0) {
-            $ok = $telegramService->editMessageText($chatId, $messageId, $text, $keyboard);
-        } else {
-            $ok = $telegramService->sendTextMessage($chatId, $text, ['reply_markup' => $keyboard]);
-        }
-
-        return response()->json(['success' => $ok, 'delivered' => $ok, 'sent' => $ok]);
+        return $this->replyAfterDelete($telegramService, $chatId, $messageId, $text, $keyboard);
     }
 
     private function handleMenu(
@@ -322,15 +316,15 @@ class TelegramWebhookController extends Controller
     ): JsonResponse {
         $actor = $this->actorFromChatId($chatId);
         if (! $actor) {
-            return $this->replyOrEdit($telegramService, $chatId, $this->notLinkedMessage(), $this->startChoiceKeyboard(), $messageId);
+            return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->notLinkedMessage(), $this->startChoiceKeyboard());
         }
 
-        return $this->replyOrEdit(
+        return $this->replyAfterDelete(
             $telegramService,
             $chatId,
+            $messageId,
             $this->menuHeading(),
-            $this->mainMenuKeyboard($actor, $telegramAuthService),
-            $messageId
+            $this->mainMenuKeyboard($actor, $telegramAuthService)
         );
     }
 
@@ -341,20 +335,20 @@ class TelegramWebhookController extends Controller
         int $messageId = 0
     ): JsonResponse {
         if (! $this->telegramBotBuilder->buttonEnabled('me', 'member')) {
-            return $this->replyOrEdit($telegramService, $chatId, $this->fallbackMessage(), $this->launchKeyboard(), $messageId);
+            return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->fallbackMessage(), $this->launchKeyboard());
         }
 
         $actor = $this->actorFromChatId($chatId);
         if (! $actor) {
-            return $this->replyOrEdit($telegramService, $chatId, $this->notLinkedMessage(), $this->startChoiceKeyboard(), $messageId);
+            return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->notLinkedMessage(), $this->startChoiceKeyboard());
         }
 
-        return $this->replyOrEdit(
+        return $this->replyAfterDelete(
             $telegramService,
             $chatId,
+            $messageId,
             'Your secure launch links:',
-            $this->quickLinksKeyboard($actor, $telegramAuthService),
-            $messageId
+            $this->quickLinksKeyboard($actor, $telegramAuthService)
         );
     }
 
@@ -365,26 +359,26 @@ class TelegramWebhookController extends Controller
         int $messageId = 0
     ): JsonResponse {
         if (! $this->telegramBotBuilder->commandEnabled('home')) {
-            return $this->replyOrEdit($telegramService, $chatId, $this->fallbackMessage(), $this->launchKeyboard(), $messageId);
+            return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->fallbackMessage(), $this->launchKeyboard());
         }
 
         $actor = $this->actorFromChatId($chatId);
         if (! $actor instanceof Member) {
-            return $this->replyOrEdit($telegramService, $chatId, $this->notLinkedMessage(), $this->startChoiceKeyboard(), $messageId);
+            return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->notLinkedMessage(), $this->startChoiceKeyboard());
         }
 
         $homeLink = $this->memberHomeSecureLink($actor, $telegramAuthService);
         if (! $homeLink) {
-            return $this->replyOrEdit($telegramService, $chatId, 'Could not generate secure member home link right now.', [], $messageId);
+            return $this->replyAfterDelete($telegramService, $chatId, $messageId, 'Could not generate secure member home link right now.', []);
         }
 
         $homeLabel = $this->telegramBotBuilder->buttonLabel('home', 'member', 'Home');
 
-        return $this->replyOrEdit($telegramService, $chatId, $homeLabel . ':', [
+        return $this->replyAfterDelete($telegramService, $chatId, $messageId, $homeLabel . ':', [
             'inline_keyboard' => [
                 [['text' => $homeLabel, 'web_app' => ['url' => $homeLink]]],
             ],
-        ], $messageId);
+        ]);
     }
 
     private function handleAdmin(
@@ -394,22 +388,22 @@ class TelegramWebhookController extends Controller
         int $messageId = 0
     ): JsonResponse {
         if (! $this->telegramBotBuilder->commandEnabled('admin')) {
-            return $this->replyOrEdit($telegramService, $chatId, $this->fallbackMessage(), $this->launchKeyboard(), $messageId);
+            return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->fallbackMessage(), $this->launchKeyboard());
         }
 
         $actor = $this->actorFromChatId($chatId);
         if (! $actor instanceof User) {
-            return $this->replyOrEdit($telegramService, $chatId, $this->notLinkedMessage(), $this->miniConnectKeyboard(TelegramAuthService::PURPOSE_ADMIN_ACCESS), $messageId);
+            return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->notLinkedMessage(), $this->miniConnectKeyboard(TelegramAuthService::PURPOSE_ADMIN_ACCESS));
         }
 
         $adminLink = $this->adminSecureLink($actor, $telegramAuthService);
         $adminLabel = $this->telegramBotBuilder->buttonLabel('admin', 'admin', 'Admin panel');
 
-        return $this->replyOrEdit($telegramService, $chatId, $adminLabel . ':', [
+        return $this->replyAfterDelete($telegramService, $chatId, $messageId, $adminLabel . ':', [
             'inline_keyboard' => [
                 [['text' => $adminLabel, 'web_app' => ['url' => $adminLink]]],
             ],
-        ], $messageId);
+        ]);
     }
 
     private function handleToday(
@@ -419,17 +413,17 @@ class TelegramWebhookController extends Controller
         int $messageId = 0
     ): JsonResponse {
         if (! $this->telegramBotBuilder->commandEnabled('day')) {
-            return $this->replyOrEdit($telegramService, $chatId, $this->fallbackMessage(), $this->launchKeyboard(), $messageId);
+            return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->fallbackMessage(), $this->launchKeyboard());
         }
 
         $actor = $this->actorFromChatId($chatId);
         if (! $actor instanceof Member) {
-            return $this->replyOrEdit($telegramService, $chatId, $this->notLinkedMessage(), $this->startChoiceKeyboard(), $messageId);
+            return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->notLinkedMessage(), $this->startChoiceKeyboard());
         }
 
         $season = LentSeason::query()->latest('id')->where('is_active', true)->first();
         if (! $season) {
-            return $this->replyOrEdit($telegramService, $chatId, 'No active season configured yet.', [], $messageId);
+            return $this->replyAfterDelete($telegramService, $chatId, $messageId, 'No active season configured yet.', []);
         }
 
         $today = CarbonImmutable::now();
@@ -440,7 +434,7 @@ class TelegramWebhookController extends Controller
             ->first();
 
         if (! $daily) {
-            return $this->replyOrEdit($telegramService, $chatId, 'No published content available for today yet.', [], $messageId);
+            return $this->replyAfterDelete($telegramService, $chatId, $messageId, 'No published content available for today yet.', []);
         }
 
         $code = $telegramAuthService->createCode(
@@ -450,18 +444,18 @@ class TelegramWebhookController extends Controller
             30
         );
 
-        $link = route('telegram.access', [
+        $link = url(route('telegram.access', [
             'code' => $code,
             'purpose' => TelegramAuthService::PURPOSE_MEMBER_ACCESS,
-        ]);
+        ]));
 
         $label = $this->telegramBotBuilder->buttonLabel('today', 'member', 'Today');
 
-        return $this->replyOrEdit($telegramService, $chatId, "Day {$daily->day_number} content:", [
+        return $this->replyAfterDelete($telegramService, $chatId, $messageId, "Day {$daily->day_number} content:", [
             'inline_keyboard' => [
                 [['text' => $label, 'web_app' => ['url' => $link]]],
             ],
-        ], $messageId);
+        ]);
     }
 
     private function bindFromCode(
@@ -725,6 +719,23 @@ class TelegramWebhookController extends Controller
             'delivered' => $ok,
             'sent' => $ok,
         ]);
+    }
+
+    /**
+     * Delete the previous message and send a new one. Keeps chat clean (no history).
+     */
+    private function replyAfterDelete(
+        TelegramService $telegramService,
+        string $chatId,
+        int $messageId,
+        string $text,
+        array $replyMarkup = []
+    ): JsonResponse {
+        if ($messageId > 0) {
+            $telegramService->deleteMessage($chatId, $messageId);
+        }
+
+        return $this->reply($telegramService, $chatId, $text, $replyMarkup);
     }
 
     private function startChoiceKeyboard(): array
