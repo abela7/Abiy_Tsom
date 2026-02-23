@@ -129,10 +129,10 @@ return [
     'references' => 'ማጣቀሻዎች',
 
     // Telegram Today nav — short labels for inline buttons (avoid truncation on mobile)
-    'telegram_nav_bible' => 'ቅዱስ መጽሐፍ',
+    'telegram_nav_bible' => 'መጽሐፍ ቅዱስ',
     'telegram_nav_mezmur' => 'መዝሙር',
     'telegram_nav_sinksar' => 'ስንክሳር',
-    'telegram_nav_books' => 'መጽሐፍ',
+    'telegram_nav_books' => 'መንፈሳዊ መጽሐፍ',
     'telegram_nav_references' => 'ማጣቀሻ',
     'telegram_nav_reflection' => 'ነጸብራቅ',
     'telegram_choose_language' => 'ቋንቋዎን ይምረጡ',
