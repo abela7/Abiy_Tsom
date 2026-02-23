@@ -35,6 +35,7 @@ Route::get('/telegram/access', [TelegramAuthController::class, 'access'])
     ->middleware('throttle:60,1')
     ->name('telegram.access');
 Route::get('/telegram/mini/connect', [TelegramAuthController::class, 'miniConnect'])->name('telegram.mini.connect');
+Route::get('/telegram/embed', [TelegramAuthController::class, 'embed'])->name('telegram.embed');
 Route::post('/telegram/mini/connect', [TelegramAuthController::class, 'miniConnectSubmit'])
     ->middleware('throttle:60,1')
     ->name('telegram.mini.connect.submit');

@@ -98,6 +98,7 @@ return [
     'redirecting' => 'Redirecting to',
     'week' => 'ሳምንት :number',
     'this_week' => 'በዚህ ሳምንት',
+    'no_content' => 'No content',
     'no_content_today' => 'ለዛሬ ገና ይዘት የለም።',
     'checklist' => 'ዕለታዊ ዝርዝር',
     'mark_complete' => 'ተከናውኗል ምልክት አድርግ',

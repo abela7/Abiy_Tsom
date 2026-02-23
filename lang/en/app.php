@@ -94,6 +94,7 @@ return [
     'redirecting' => 'Redirecting to',
     'week' => 'Week :number',
     'this_week' => 'This Week',
+    'no_content' => 'No content',
     'no_content_today' => 'No content available for today yet.',
     'checklist' => 'Daily Checklist',
     'mark_complete' => 'Mark as complete',

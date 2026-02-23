@@ -21,6 +21,348 @@ final class TelegramContentFormatter
 
     private const DIVIDER = '▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬';
 
+    /** Section codes for callback_data (≤64 bytes). */
+    private const SECTIONS = [
+        'b' => 'bible',
+        'm' => 'mezmur',
+        's' => 'sinksar',
+        'k' => 'books',
+        'r' => 'reference',
+        'f' => 'reflection',
+    ];
+
+    /**
+     * Format a single Today section with navigation. For YouTube content,
+     * uses Web App buttons so user can watch inline without leaving Telegram.
+     *
+     * @return array{text: string, use_html: bool, keyboard: array}
+     */
+    public function formatDaySection(DailyContent $daily, Member $member, string $section): array
+    {
+        $locale = $this->memberLocale($member);
+        $dailyId = (string) $daily->id;
+        $parts = $this->buildSectionHeader($daily, $member, $locale);
+
+        $content = match ($section) {
+            'bible' => $this->sectionBible($daily, $locale),
+            'mezmur' => $this->sectionMezmur($daily, $locale),
+            'sinksar' => $this->sectionSinksar($daily, $locale),
+            'books' => $this->sectionBooks($daily, $locale),
+            'reference' => $this->sectionReference($daily, $locale),
+            'reflection' => $this->sectionReflection($daily, $locale),
+            default => [],
+        };
+
+        $parts = array_merge($parts, $content);
+        $text = implode("\n", $parts);
+        $keyboard = $this->sectionNavKeyboard($daily, $member, $section, $dailyId);
+
+        return [
+            'text' => mb_substr($text, 0, self::MAX_MESSAGE_LENGTH),
+            'use_html' => true,
+            'keyboard' => $keyboard,
+        ];
+    }
+
+    private function buildSectionHeader(DailyContent $daily, Member $member, string $locale): array
+    {
+        $dateStr = $daily->date?->locale('en')->translatedFormat('l, F j, Y') ?? '';
+        $parts = [];
+        $parts[] = '<b>📖 Day '.$daily->day_number.' of 55</b>';
+        $parts[] = '<i>'.$dateStr.'</i>';
+        if ($daily->weeklyTheme) {
+            $themeName = $this->h(localized($daily->weeklyTheme, 'name', $locale) ?? $daily->weeklyTheme->name_en ?? '-');
+            $parts[] = '<i>'.$themeName.'</i>';
+        }
+        $dayTitle = $this->h(localized($daily, 'day_title', $locale) ?? __('app.day_x', ['day' => $daily->day_number]));
+        $parts[] = '';
+        $parts[] = $dayTitle;
+        $parts[] = '';
+        $parts[] = self::DIVIDER;
+
+        return $parts;
+    }
+
+    private function sectionBible(DailyContent $daily, string $locale): array
+    {
+        $parts = [];
+        if (! localized($daily, 'bible_reference', $locale)) {
+            $parts[] = __('app.no_content');
+
+            return $parts;
+        }
+        $parts[] = '<b>📜 '.__('app.bible_reading').'</b>';
+        $parts[] = $this->h(localized($daily, 'bible_reference', $locale));
+        if (localized($daily, 'bible_summary', $locale)) {
+            $parts[] = $this->h(localized($daily, 'bible_summary', $locale));
+        }
+        $bibleText = localized($daily, 'bible_text', $locale);
+        if ($bibleText) {
+            $escaped = $this->h($bibleText);
+            $parts[] = $this->expandableQuote($escaped, 1200);
+        }
+
+        return $parts;
+    }
+
+    private function sectionMezmur(DailyContent $daily, string $locale): array
+    {
+        $parts = [];
+        if ($daily->mezmurs->isEmpty()) {
+            $parts[] = '<b>🎵 '.__('app.mezmur').'</b>';
+            $parts[] = __('app.no_content');
+
+            return $parts;
+        }
+        $parts[] = '<b>🎵 '.__('app.mezmur').'</b>';
+        foreach ($daily->mezmurs as $m) {
+            $title = $this->h(localized($m, 'title', $locale) ?? '-');
+            $parts[] = '• '.$title;
+        }
+
+        return $parts;
+    }
+
+    private function sectionSinksar(DailyContent $daily, string $locale): array
+    {
+        $parts = [];
+        if (! localized($daily, 'sinksar_title', $locale)) {
+            $parts[] = '<b>📿 '.__('app.sinksar').'</b>';
+            $parts[] = __('app.no_content');
+
+            return $parts;
+        }
+        $parts[] = '<b>📿 '.__('app.sinksar').'</b>';
+        $parts[] = $this->h(localized($daily, 'sinksar_title', $locale));
+        if (localized($daily, 'sinksar_description', $locale)) {
+            $parts[] = $this->h(localized($daily, 'sinksar_description', $locale));
+        }
+
+        return $parts;
+    }
+
+    private function sectionBooks(DailyContent $daily, string $locale): array
+    {
+        $parts = [];
+        if (! $daily->books || $daily->books->isEmpty()) {
+            $parts[] = '<b>📚 '.__('app.spiritual_book').'</b>';
+            $parts[] = __('app.no_content');
+
+            return $parts;
+        }
+        $parts[] = '<b>📚 '.__('app.spiritual_book').'</b>';
+        foreach ($daily->books as $book) {
+            $title = $this->h(localized($book, 'title', $locale));
+            if ($title === '') {
+                continue;
+            }
+            $parts[] = $title;
+            if (localized($book, 'description', $locale)) {
+                $parts[] = $this->h(localized($book, 'description', $locale));
+            }
+        }
+
+        return $parts;
+    }
+
+    private function sectionReference(DailyContent $daily, string $locale): array
+    {
+        $parts = [];
+        if (! $daily->references || $daily->references->isEmpty()) {
+            $parts[] = '<b>🔗 '.__('app.references').'</b>';
+            $parts[] = __('app.no_content');
+
+            return $parts;
+        }
+        $parts[] = '<b>🔗 '.__('app.references').'</b>';
+        foreach ($daily->references as $ref) {
+            $name = $this->h(localized($ref, 'name', $locale) ?? '-');
+            $parts[] = '• '.$name;
+        }
+
+        return $parts;
+    }
+
+    private function sectionReflection(DailyContent $daily, string $locale): array
+    {
+        $parts = [];
+        if (! localized($daily, 'reflection', $locale)) {
+            $parts[] = '<b>💭 '.__('app.reflection').'</b>';
+            $parts[] = __('app.no_content');
+
+            return $parts;
+        }
+        $parts[] = '<b>💭 '.__('app.reflection').'</b>';
+        $reflection = $this->h(localized($daily, 'reflection', $locale));
+        $parts[] = $this->expandableQuote($reflection, 1000);
+
+        return $parts;
+    }
+
+    /**
+     * Build section nav keyboard: Mezmur | Sinksar | Books | Reference | Reflection, then Menu.
+     * For Mezmur/Sinksar/Reference sections with YouTube URLs, add Web App Listen buttons.
+     */
+    private function sectionNavKeyboard(DailyContent $daily, Member $member, string $currentSection, string $dailyId): array
+    {
+        $locale = $this->memberLocale($member);
+        $rows = [];
+
+        $navButtons = [];
+        $sectionsWithContent = $this->sectionsWithContent($daily, $locale);
+        foreach (self::SECTIONS as $code => $name) {
+            if (! ($sectionsWithContent[$name] ?? false)) {
+                continue;
+            }
+            if ($name === $currentSection) {
+                continue;
+            }
+            $cb = $this->callbackData('today_sec', $code, $dailyId);
+            $label = match ($name) {
+                'bible' => '📜 '.__('app.bible_reading'),
+                'mezmur' => '🎵 '.__('app.mezmur'),
+                'sinksar' => '📿 '.__('app.sinksar'),
+                'books' => '📚 '.__('app.spiritual_book'),
+                'reference' => '🔗 '.__('app.references'),
+                'reflection' => '💭 '.__('app.reflection'),
+                default => $name,
+            };
+            $navButtons[] = ['text' => $label, 'callback_data' => $cb];
+        }
+        if ($navButtons !== []) {
+            $rows[] = $navButtons;
+        }
+
+        $listenButtons = $this->listenButtonsForSection($daily, $locale, $currentSection);
+        foreach ($listenButtons as $btn) {
+            $rows[] = [$btn];
+        }
+
+        $rows[] = [['text' => '◀️ '.__('app.menu'), 'callback_data' => 'menu']];
+
+        return ['inline_keyboard' => $rows];
+    }
+
+    /** @return array<string, bool> */
+    private function sectionsWithContent(DailyContent $daily, string $locale): array
+    {
+        return [
+            'bible' => (bool) localized($daily, 'bible_reference', $locale),
+            'mezmur' => $daily->mezmurs->isNotEmpty(),
+            'sinksar' => (bool) localized($daily, 'sinksar_title', $locale),
+            'books' => $daily->books && $daily->books->isNotEmpty(),
+            'reference' => $daily->references && $daily->references->isNotEmpty(),
+            'reflection' => (bool) localized($daily, 'reflection', $locale),
+        ];
+    }
+
+    /**
+     * Listen/View buttons for the current section. YouTube uses Web App (inline);
+     * non-YouTube uses url (opens externally).
+     *
+     * @return list<array{text: string, web_app?: array{url: string}, url?: string}>
+     */
+    private function listenButtonsForSection(DailyContent $daily, string $locale, string $section): array
+    {
+        $buttons = [];
+        $embedBase = url(route('telegram.embed'));
+
+        if ($section === 'mezmur') {
+            foreach ($daily->mezmurs as $m) {
+                $url = $m->mediaUrl($locale);
+                if (! $url) {
+                    continue;
+                }
+                $vid = $this->youtubeVideoId($url);
+                $title = localized($m, 'title', $locale) ?? __('app.listen');
+                $title = mb_strlen($title) > 25 ? mb_substr($title, 0, 22).'…' : $title;
+                if ($vid) {
+                    $buttons[] = [
+                        'text' => '▶ '.$title,
+                        'web_app' => ['url' => $embedBase.'?vid='.$vid],
+                    ];
+                } else {
+                    $buttons[] = ['text' => '▶ '.$title, 'url' => $this->hUrl($url)];
+                }
+            }
+        }
+
+        if ($section === 'sinksar') {
+            $url = $daily->sinksarUrl($locale);
+            if ($url) {
+                $vid = $this->youtubeVideoId($url);
+                if ($vid) {
+                    $buttons[] = [
+                        'text' => '▶ '.__('app.listen'),
+                        'web_app' => ['url' => $embedBase.'?vid='.$vid],
+                    ];
+                } else {
+                    $buttons[] = ['text' => '▶ '.__('app.listen'), 'url' => $this->hUrl($url)];
+                }
+            }
+        }
+
+        if ($section === 'reference') {
+            foreach ($daily->references ?? [] as $ref) {
+                $url = $ref->mediaUrl($locale);
+                if (! $url) {
+                    continue;
+                }
+                $name = localized($ref, 'name', $locale) ?? __('app.view_video');
+                $name = mb_strlen($name) > 25 ? mb_substr($name, 0, 22).'…' : $name;
+                $refType = $ref->type ?? 'website';
+                $vid = $this->youtubeVideoId($url);
+                if ($vid && $refType === 'video') {
+                    $buttons[] = [
+                        'text' => '▶ '.$name,
+                        'web_app' => ['url' => $embedBase.'?vid='.$vid],
+                    ];
+                } else {
+                    $label = match ($refType) {
+                        'video' => __('app.view_video'),
+                        'file' => __('app.view_file'),
+                        default => __('app.read_more'),
+                    };
+                    $buttons[] = ['text' => '▶ '.$name, 'url' => $this->hUrl($url)];
+                }
+            }
+        }
+
+        if ($section === 'books') {
+            foreach ($daily->books ?? [] as $book) {
+                $url = $book->mediaUrl($locale);
+                if (! $url) {
+                    continue;
+                }
+                $vid = $this->youtubeVideoId($url);
+                $title = localized($book, 'title', $locale) ?? __('app.read_more');
+                $title = mb_strlen($title) > 25 ? mb_substr($title, 0, 22).'…' : $title;
+                if ($vid) {
+                    $buttons[] = [
+                        'text' => '▶ '.$title,
+                        'web_app' => ['url' => $embedBase.'?vid='.$vid],
+                    ];
+                } else {
+                    $buttons[] = ['text' => __('app.read_more').' →', 'url' => $this->hUrl($url)];
+                }
+            }
+        }
+
+        return $buttons;
+    }
+
+    private function youtubeVideoId(?string $url): ?string
+    {
+        if ($url === null || $url === '') {
+            return null;
+        }
+        if (preg_match('/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/', $url, $m) === 1) {
+            return $m[1];
+        }
+
+        return null;
+    }
+
     /**
      * @return array{text: string, use_html: bool}
      */

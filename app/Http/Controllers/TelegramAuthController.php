@@ -45,6 +45,20 @@ class TelegramAuthController extends Controller
         return redirect()->route('home');
     }
 
+    /**
+     * Embed page for Telegram Web App — shows YouTube video inline so user stays in Telegram.
+     * No auth required; vid param is the YouTube video ID.
+     */
+    public function embed(Request $request): \Illuminate\View\View|\Illuminate\Http\RedirectResponse
+    {
+        $vid = trim((string) $request->query('vid', ''));
+        if ($vid === '' || ! preg_match('/^[a-zA-Z0-9_-]{11}$/', $vid)) {
+            return redirect()->route('home');
+        }
+
+        return view('telegram.embed', ['videoId' => $vid]);
+    }
+
     public function miniConnect(Request $request): View
     {
         $code = trim((string) $request->query('code', ''));
@@ -194,6 +208,7 @@ class TelegramAuthController extends Controller
             if ($botName !== '') {
                 $botName = ltrim($botName, '@');
                 $payload = $this->buildStartAppPayload('admin', $code);
+
                 return redirect()
                     ->back()
                     ->with('telegram_access_url', route('telegram.access', [
@@ -203,7 +218,7 @@ class TelegramAuthController extends Controller
                     ->with('telegram_access_expires', $ttl)
                     ->with(
                         'telegram_mini_access_url',
-                        'https://t.me/' . $botName . '?startapp=' . rawurlencode($payload)
+                        'https://t.me/'.$botName.'?startapp='.rawurlencode($payload)
                     );
             }
 
@@ -258,8 +273,7 @@ class TelegramAuthController extends Controller
         string $code,
         TelegramAuthService $telegramAuthService,
         ?string $purpose = null
-    ): array
-    {
+    ): array {
         $normalized = trim($code);
         if (! preg_match('/^[A-Za-z0-9]{20,128}$/', $normalized)) {
             return [null, null];
@@ -310,7 +324,7 @@ class TelegramAuthController extends Controller
 
     private function buildStartAppPayload(string $mode, string $code): string
     {
-        return strtolower($mode) . ':' . $code;
+        return strtolower($mode).':'.$code;
     }
 
     private function sameActor(?object $first, ?object $second): bool
@@ -344,6 +358,7 @@ class TelegramAuthController extends Controller
         }
 
         $next = $telegramAuthService->sanitizeRedirectPath($token->redirect_to, '/member/home');
+
         return redirect($next);
     }
 

@@ -121,6 +121,10 @@ class TelegramWebhookController extends Controller
             return $this->handleChecklistToggle($chatId, $messageId, $action, $telegramAuthService, $telegramService);
         }
 
+        if (str_starts_with($action, 'today_sec_')) {
+            return $this->handleTodaySection($chatId, $messageId, $action, $telegramAuthService, $telegramService);
+        }
+
         return match ($action) {
             'have_account' => $this->handleHaveAccount($chatId, $messageId, $telegramService),
             'unlink' => $this->handleUnlink($chatId, $messageId, $telegramAuthService, $telegramService),
@@ -438,11 +442,64 @@ class TelegramWebhookController extends Controller
             return $this->replyAfterDelete($telegramService, $chatId, $messageId, 'No published content available for today yet.', []);
         }
 
-        $formatted = $this->contentFormatter->formatDayContent($daily, $actor);
-        $keyboard = $this->mainMenuKeyboard($actor, $telegramAuthService);
+        $formatted = $this->contentFormatter->formatDaySection($daily, $actor, 'bible');
+        $keyboard = $formatted['keyboard'] ?? $this->mainMenuKeyboard($actor, $telegramAuthService);
         $parseMode = ($formatted['use_html'] ?? false) ? 'HTML' : null;
 
         return $this->replyOrEdit($telegramService, $chatId, $formatted['text'], $keyboard, $messageId, $parseMode);
+    }
+
+    private function handleTodaySection(
+        string $chatId,
+        int $messageId,
+        string $action,
+        TelegramAuthService $telegramAuthService,
+        TelegramService $telegramService
+    ): JsonResponse {
+        $actor = $this->actorFromChatId($chatId);
+        if (! $actor instanceof Member) {
+            return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->notLinkedMessage(), $this->startChoiceKeyboard());
+        }
+
+        $parts = explode('_', $action, 4);
+        if (count($parts) < 4 || ($parts[0] ?? '') !== 'today' || ($parts[1] ?? '') !== 'sec') {
+            return response()->json(['success' => true]);
+        }
+
+        $sectionCode = $parts[2] ?? '';
+        $dailyId = (int) ($parts[3] ?? 0);
+        $sectionMap = [
+            'b' => 'bible',
+            'm' => 'mezmur',
+            's' => 'sinksar',
+            'k' => 'books',
+            'r' => 'reference',
+            'f' => 'reflection',
+        ];
+        $section = $sectionMap[$sectionCode] ?? 'bible';
+
+        $daily = DailyContent::query()
+            ->where('id', $dailyId)
+            ->where('is_published', true)
+            ->with(['weeklyTheme', 'mezmurs', 'books', 'references'])
+            ->first();
+
+        if (! $daily) {
+            return response()->json(['success' => true]);
+        }
+
+        $formatted = $this->contentFormatter->formatDaySection($daily, $actor, $section);
+        $parseMode = ($formatted['use_html'] ?? false) ? 'HTML' : null;
+
+        $telegramService->editMessageText(
+            $chatId,
+            $messageId,
+            $formatted['text'],
+            $formatted['keyboard'] ?? [],
+            $parseMode
+        );
+
+        return response()->json(['success' => true]);
     }
 
     private function handleProgress(
