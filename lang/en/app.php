@@ -914,6 +914,7 @@ return [
     'telegram_suggest_enter_detail' => "Add any details or notes (or type 'skip'):",
     'telegram_suggest_preview' => 'Review your suggestion before submitting:',
     'telegram_suggest_confirm' => 'Confirm & Submit',
+    'telegram_suggest_back' => 'Back',
     'telegram_suggest_cancel' => 'Cancel',
     'telegram_suggest_skip' => 'Skip',
     'telegram_suggest_submitted' => 'Suggestion submitted! Thank you.',

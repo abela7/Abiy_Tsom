@@ -1635,7 +1635,7 @@ class TelegramWebhookController extends Controller
                 $telegramService,
                 $chatId,
                 $this->suggestStepPrompt($nextStep, $type),
-                [],
+                $this->suggestStepKeyboard($nextStep, 'choose_type'),
                 $messageId
             );
         }
@@ -1658,6 +1658,15 @@ class TelegramWebhookController extends Controller
             }
 
             return $this->confirmSuggestion($chatId, $messageId, $actor, $state, $telegramAuthService, $telegramService);
+        }
+
+        // ── Back ──────────────────────────────────────────────────────────
+        if ($action === 'suggest_back') {
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+            return $this->handleSuggestBack($chatId, $messageId, $state, $telegramService);
         }
 
         // ── Cancel ────────────────────────────────────────────────────────
@@ -1685,21 +1694,24 @@ class TelegramWebhookController extends Controller
     ): JsonResponse {
         TelegramBotState::startFor($chatId, 'suggest', 'choose_language');
 
-        $keyboard = ['inline_keyboard' => [
-            [
-                ['text' => '🇬🇧 English', 'callback_data' => 'suggest_lang_en'],
-                ['text' => '🇪🇹 አማርኛ', 'callback_data' => 'suggest_lang_am'],
-            ],
-            [['text' => __('app.telegram_suggest_cancel'), 'callback_data' => 'suggest_cancel']],
-        ]];
-
         return $this->replyOrEdit(
             $telegramService,
             $chatId,
             '💡 '.__('app.telegram_suggest')."\n\n".__('app.telegram_suggest_choose_language'),
-            $keyboard,
+            $this->suggestLanguageKeyboard(),
             $messageId
         );
+    }
+
+    private function suggestLanguageKeyboard(): array
+    {
+        return ['inline_keyboard' => [
+            [
+                ['text' => '🇬🇧 English', 'callback_data' => 'suggest_lang_en'],
+                ['text' => '🇪🇹 አማርኛ', 'callback_data' => 'suggest_lang_am'],
+            ],
+            [['text' => '❌ '.__('app.telegram_suggest_cancel'), 'callback_data' => 'suggest_cancel']],
+        ]];
     }
 
     /**
@@ -1753,22 +1765,13 @@ class TelegramWebhookController extends Controller
 
         $state->advance($nextStep, $mergeData);
 
-        $isOptional = in_array($nextStep, ['enter_author', 'enter_detail'], true);
-        $skipBtn = $isOptional
-            ? [['text' => '⏭ '.__('app.telegram_suggest_skip'), 'callback_data' => 'suggest_skip']]
-            : [];
+        $keyboard = $this->suggestStepKeyboard($nextStep, $currentStep);
 
-        $keyboard = ['inline_keyboard' => array_filter([
-            $skipBtn ?: null,
-            [['text' => __('app.telegram_suggest_cancel'), 'callback_data' => 'suggest_cancel']],
-        ])];
-
-        return $this->replyOrEdit(
+        return $this->reply(
             $telegramService,
             $chatId,
             $this->suggestStepPrompt($nextStep, $type),
-            $keyboard,
-            $messageId
+            $keyboard
         );
     }
 
@@ -1814,8 +1817,9 @@ class TelegramWebhookController extends Controller
         }
 
         $keyboard = ['inline_keyboard' => [
+            [['text' => '✅ '.__('app.telegram_suggest_confirm'), 'callback_data' => 'suggest_confirm']],
             [
-                ['text' => '✅ '.__('app.telegram_suggest_confirm'), 'callback_data' => 'suggest_confirm'],
+                ['text' => '✏️ '.__('app.telegram_suggest_back'), 'callback_data' => 'suggest_back'],
                 ['text' => '❌ '.__('app.telegram_suggest_cancel'), 'callback_data' => 'suggest_cancel'],
             ],
         ]];
@@ -1946,6 +1950,109 @@ class TelegramWebhookController extends Controller
 
     // ---- Suggestion wizard step helpers ─────────────────────────────────────
 
+    /** Go back one step in the wizard, re-prompting with existing value pre-filled. */
+    private function handleSuggestBack(
+        string $chatId,
+        int $messageId,
+        TelegramBotState $state,
+        TelegramService $telegramService
+    ): JsonResponse {
+        $type = (string) $state->get('type', '');
+        $prevStep = $this->suggestPreviousStep($type, $state->step);
+
+        // If we're at (or before) the first text step, go back to the type selector
+        if ($prevStep === 'choose_type' || $state->step === 'choose_type') {
+            // If already on choose_type, go back to language selection
+            if ($state->step === 'choose_type') {
+                $state->advance('choose_language');
+
+                return $this->replyOrEdit(
+                    $telegramService,
+                    $chatId,
+                    '💡 '.__('app.telegram_suggest')."\n\n".__('app.telegram_suggest_choose_language'),
+                    $this->suggestLanguageKeyboard(),
+                    $messageId
+                );
+            }
+
+            $state->advance('choose_type');
+
+            return $this->replyOrEdit(
+                $telegramService,
+                $chatId,
+                __('app.telegram_suggest_choose_type'),
+                $this->suggestTypeKeyboard(),
+                $messageId
+            );
+        }
+
+        $state->advance($prevStep);
+
+        $fieldForStep = [
+            'enter_reference' => 'reference',
+            'enter_title' => 'title',
+            'enter_author' => 'author',
+            'enter_url' => 'url_reference',
+            'enter_detail' => 'content_detail',
+        ];
+
+        $existing = isset($fieldForStep[$prevStep]) ? ((string) $state->get($fieldForStep[$prevStep], '')) : '';
+        $prompt = $this->suggestStepPrompt($prevStep, $type);
+        if ($existing !== '') {
+            $prompt .= "\n\n<i>Current: ".htmlspecialchars($existing, ENT_QUOTES, 'UTF-8')."</i>";
+        }
+
+        return $this->replyOrEdit(
+            $telegramService,
+            $chatId,
+            $prompt,
+            $this->suggestStepKeyboard($prevStep, $this->suggestPreviousStep($type, $prevStep)),
+            $messageId,
+            'HTML'
+        );
+    }
+
+    /** Returns the step before the current one, or 'choose_type' if at the start. */
+    private function suggestPreviousStep(string $type, string $currentStep): string
+    {
+        $flow = match ($type) {
+            'bible' => ['enter_reference', 'enter_detail'],
+            'sinksar' => ['enter_title', 'enter_detail'],
+            'mezmur', 'book' => ['enter_title', 'enter_author', 'enter_detail'],
+            'reference' => ['enter_title', 'enter_url', 'enter_detail'],
+            default => ['enter_title', 'enter_detail'],
+        };
+
+        // When on the preview step, the previous step is the last text-input step
+        if ($currentStep === 'preview') {
+            return end($flow) ?: 'choose_type';
+        }
+
+        $idx = array_search($currentStep, $flow, true);
+        if ($idx === false || $idx === 0) {
+            return 'choose_type';
+        }
+
+        return $flow[$idx - 1];
+    }
+
+    /** Builds the keyboard for a text-input step (Skip for optional, Back, Cancel). */
+    private function suggestStepKeyboard(string $step, string $previousStep): array
+    {
+        $rows = [];
+
+        if (in_array($step, ['enter_author', 'enter_detail'], true)) {
+            $rows[] = [['text' => '⏭ '.__('app.telegram_suggest_skip'), 'callback_data' => 'suggest_skip']];
+        }
+
+        $rows[] = [
+            ['text' => '⬅️ '.__('app.telegram_suggest_back'), 'callback_data' => 'suggest_back'],
+            ['text' => '❌ '.__('app.telegram_suggest_cancel'), 'callback_data' => 'suggest_cancel'],
+        ];
+
+        return ['inline_keyboard' => $rows];
+    }
+
     /** Returns the first text-input step for a given suggestion type. */
     private function suggestFirstStep(string $type): string
     {
@@ -2005,7 +2112,10 @@ class TelegramWebhookController extends Controller
             [
                 ['text' => '🔗 Reference', 'callback_data' => 'suggest_type_reference'],
             ],
-            [['text' => __('app.telegram_suggest_cancel'), 'callback_data' => 'suggest_cancel']],
+            [
+                ['text' => '⬅️ '.__('app.telegram_suggest_back'), 'callback_data' => 'suggest_back'],
+                ['text' => '❌ '.__('app.telegram_suggest_cancel'), 'callback_data' => 'suggest_cancel'],
+            ],
         ]];
     }
 
