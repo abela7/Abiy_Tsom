@@ -196,6 +196,10 @@ class TelegramWebhookController extends Controller
             }
 
             if ($activeState->action === 'suggest') {
+                $actor = $this->actorFromChatId($chatId);
+                if ($actor) {
+                    $this->applyLocaleForActor($actor);
+                }
                 return $this->handleSuggestTextInput($chatId, $text, $activeState, $telegramAuthService, $telegramService);
             }
         }
@@ -1591,6 +1595,9 @@ class TelegramWebhookController extends Controller
 
             return $this->replyOrEdit($telegramService, $chatId, $text, [], $messageId);
         }
+
+        // Apply locale so all suggest UI (Back, Cancel, prompts) is consistently translated
+        $this->applyLocaleForActor($actor);
 
         // ── My Suggestions ────────────────────────────────────────────────
         if ($action === 'my_suggestions') {
