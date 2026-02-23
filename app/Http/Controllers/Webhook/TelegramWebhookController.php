@@ -148,6 +148,7 @@ class TelegramWebhookController extends Controller
 
         return match ($action) {
             'have_account' => $this->handleHaveAccount($chatId, $messageId, $telegramService),
+            'start_over' => $this->replyAfterDelete($telegramService, $chatId, $messageId, __('app.telegram_start_welcome'), $this->startChoiceKeyboard()),
             'unlink' => $this->handleUnlink($chatId, $messageId, $telegramAuthService, $telegramService),
             'menu' => $this->handleMenu($chatId, $telegramAuthService, $telegramService, $messageId),
             'home' => $this->handleHome($chatId, $telegramAuthService, $telegramService, $messageId),
@@ -235,6 +236,15 @@ class TelegramWebhookController extends Controller
             return null;
         }
 
+        // Check for a staff (admin/writer/editor) short code first.
+        // If found, the account is identified — but we require WhatsApp verification
+        // before binding it, to confirm the user owns the account.
+        $staffUser = $telegramAuthService->consumeAdminByShortCode($code);
+        if ($staffUser instanceof User) {
+            return $this->startAdminWhatsAppVerification($chatId, $staffUser, $telegramService);
+        }
+
+        // Fall back to the regular member short code.
         $member = $telegramAuthService->consumeByShortCode($code);
         if (! $member) {
             return null;
@@ -249,6 +259,58 @@ class TelegramWebhookController extends Controller
             $chatId,
             __('app.telegram_linked_success')."\n\n".__('app.telegram_menu_heading'),
             $keyboard
+        );
+    }
+
+    /**
+     * Starts WhatsApp verification for a staff user whose short code was already validated.
+     * We already know WHO they are — just need to confirm via WhatsApp before binding.
+     */
+    private function startAdminWhatsAppVerification(
+        string $chatId,
+        User $user,
+        TelegramService $telegramService
+    ): JsonResponse {
+        $phone = $user->whatsapp_phone ?? '';
+
+        if ($phone === '') {
+            // No WhatsApp on file — bind directly (no verification possible).
+            $this->syncTelegramChatId($user, $chatId);
+            $keyboard = $this->mainMenuKeyboard($user, app(TelegramAuthService::class));
+
+            return $this->reply(
+                $telegramService,
+                $chatId,
+                __('app.telegram_link_success')."\n\n".__('app.telegram_menu_heading'),
+                $keyboard
+            );
+        }
+
+        $code = (string) random_int(100000, 999999);
+
+        $sent = $this->ultraMsg->sendTextMessage(
+            $phone,
+            "Your Abiy Tsom Telegram link code is: *{$code}*\n\nIt expires in 10 minutes. Do not share it."
+        );
+
+        if (! $sent) {
+            return $this->reply(
+                $telegramService,
+                $chatId,
+                __('app.telegram_link_whatsapp_failed')
+            );
+        }
+
+        TelegramBotState::startFor($chatId, 'link_admin', 'verify_code', [
+            'user_id' => $user->id,
+            'code' => $code,
+            'code_expires_at' => now()->addMinutes(10)->toIso8601String(),
+        ]);
+
+        return $this->reply(
+            $telegramService,
+            $chatId,
+            __('app.telegram_link_code_sent')
         );
     }
 
@@ -469,27 +531,13 @@ class TelegramWebhookController extends Controller
 
     private function handleHaveAccount(string $chatId, int $messageId, TelegramService $telegramService): JsonResponse
     {
-        // Start the unified linking wizard — no admin/member labels shown to the user.
-        // The system will silently route based on whether the username belongs to
-        // a staff account (admin/writer/editor) or not.
-        TelegramBotState::startFor($chatId, 'link_admin', 'ask_username');
-
-        $text = '<b>🔗 '.__('app.telegram_link_heading')."</b>\n\n"
-            .__('app.telegram_link_intro')."\n\n"
-            .__('app.telegram_link_enter_username');
-
-        return $this->replyAfterDelete($telegramService, $chatId, $messageId, $text, [], 'HTML');
-    }
-
-    /** Shows member app-linking instructions (used as the fallback when the typed username is not a staff account). */
-    private function showMemberLinkInstructions(string $chatId, TelegramService $telegramService): JsonResponse
-    {
         $text = __('app.telegram_start_have_account_code_instructions');
         $keyboard = ['inline_keyboard' => [
-            [['text' => __('app.telegram_start_open_app'), 'web_app' => ['url' => url(route('home'))]]],
+            [['text' => '🌐 '.__('app.telegram_start_open_app'), 'web_app' => ['url' => url(route('home'))]]],
+            [['text' => '🔄 '.__('app.telegram_cant_access_restart'), 'callback_data' => 'start_over']],
         ]];
 
-        return $this->reply($telegramService, $chatId, $text, $keyboard);
+        return $this->replyAfterDelete($telegramService, $chatId, $messageId, $text, $keyboard, 'HTML');
     }
 
     private function handleMenu(
@@ -1377,11 +1425,11 @@ class TelegramWebhookController extends Controller
         $user = User::query()->where('username', trim($username))->first();
 
         if (! $user instanceof User) {
-            // Username not found as a staff account — silently pivot to the member linking flow.
-            // This hides the admin/staff distinction from regular users.
-            $state->clear();
-
-            return $this->showMemberLinkInstructions($chatId, $telegramService);
+            return $this->reply(
+                $telegramService,
+                $chatId,
+                __('app.telegram_link_user_not_found')
+            );
         }
 
         $phone = $user->whatsapp_phone ?? '';

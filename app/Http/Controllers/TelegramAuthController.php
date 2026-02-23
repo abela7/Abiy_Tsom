@@ -498,4 +498,18 @@ class TelegramAuthController extends Controller
             default => route('admin.dashboard'),
         };
     }
+
+    /**
+     * Show the "Link Telegram" page for the currently logged-in admin/writer/editor.
+     * Generates a fresh short code they can type into the Telegram bot.
+     */
+    public function myTelegramLink(Request $request, TelegramAuthService $telegramAuthService): View
+    {
+        /** @var User $user */
+        $user = $request->user();
+        $code = $telegramAuthService->createUserLinkCode($user, 30);
+        $botUsername = ltrim((string) config('services.telegram.bot_username', ''), '@');
+
+        return view('admin.telegram-link', compact('code', 'botUsername', 'user'));
+    }
 }

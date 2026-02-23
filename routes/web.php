@@ -202,6 +202,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::post('/telegram/sync-menu', [Admin\TelegramSettingsController::class, 'syncMenu'])->name('telegram.sync-menu');
         Route::post('/telegram/test', [Admin\TelegramSettingsController::class, 'test'])->name('telegram.test');
         Route::post('/telegram/login-link', [TelegramAuthController::class, 'createAdminLoginLink'])->name('telegram.login-link');
+        Route::get('/telegram/my-link', [TelegramAuthController::class, 'myTelegramLink'])->name('telegram.my-link');
 
         // Admin users
         Route::prefix('admins')->name('admins.')->group(function () {

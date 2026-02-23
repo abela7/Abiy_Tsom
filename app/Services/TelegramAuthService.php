@@ -190,6 +190,100 @@ final class TelegramAuthService
         return $member;
     }
 
+    /**
+     * Create a short code for a staff user (admin/writer/editor) to link their Telegram account.
+     * Returns the 6-character uppercase short code.
+     */
+    public function createUserLinkCode(User $user, int $ttlMinutes = 30): string
+    {
+        $this->cleanupExpiredTokens();
+
+        // Invalidate any previous unused admin link codes for this user
+        TelegramAccessToken::query()
+            ->where('actor_type', User::class)
+            ->where('actor_id', $user->getKey())
+            ->where('purpose', self::PURPOSE_ADMIN_ACCESS)
+            ->whereNull('consumed_at')
+            ->update(['consumed_at' => now()]);
+
+        $shortCode = $this->generateUniqueShortCode();
+        $expiresAt = CarbonImmutable::now()->addMinutes($ttlMinutes);
+
+        $payload = [
+            'user_id' => $user->getKey(),
+            'expires_at' => $expiresAt->timestamp,
+            'nonce' => Str::random(16),
+        ];
+
+        TelegramAccessToken::create([
+            'token_hash' => hash('sha256', Str::random(self::CODE_LENGTH)),
+            'short_code' => strtoupper($shortCode),
+            'encrypted_payload' => Crypt::encryptString(json_encode($payload)),
+            'purpose' => self::PURPOSE_ADMIN_ACCESS,
+            'actor_type' => User::class,
+            'actor_id' => $user->getKey(),
+            'redirect_to' => '/',
+            'expires_at' => $expiresAt,
+        ]);
+
+        return strtoupper($shortCode);
+    }
+
+    /**
+     * Consume an admin short code, returning the User if valid.
+     * The token is marked consumed so it cannot be reused.
+     */
+    public function consumeAdminByShortCode(string $shortCode): ?User
+    {
+        $this->cleanupExpiredTokens();
+
+        $normalized = strtoupper(trim($shortCode));
+        if (! preg_match('/^[A-Z0-9]{6,8}$/', $normalized)) {
+            return null;
+        }
+
+        $record = TelegramAccessToken::query()
+            ->where('short_code', $normalized)
+            ->where('purpose', self::PURPOSE_ADMIN_ACCESS)
+            ->whereNull('consumed_at')
+            ->where('expires_at', '>', now())
+            ->first();
+
+        if (! $record) {
+            return null;
+        }
+
+        $user = null;
+
+        if (! empty($record->encrypted_payload)) {
+            try {
+                $payload = json_decode(Crypt::decryptString($record->encrypted_payload), true);
+                if (is_array($payload) && isset($payload['user_id'])) {
+                    if (($payload['expires_at'] ?? 0) > time()) {
+                        $user = User::query()->find($payload['user_id']);
+                    }
+                }
+            } catch (\Throwable) {
+                return null;
+            }
+        }
+
+        if (! $user && $record->actor_id) {
+            $user = User::query()->find($record->actor_id);
+        }
+
+        if (! $user) {
+            return null;
+        }
+
+        TelegramAccessToken::query()
+            ->whereKey($record->getKey())
+            ->whereNull('consumed_at')
+            ->update(['consumed_at' => now()]);
+
+        return $user;
+    }
+
     private function generateUniqueShortCode(): string
     {
         $chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
