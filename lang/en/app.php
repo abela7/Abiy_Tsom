@@ -912,6 +912,8 @@ return [
     'telegram_suggest_enter_author' => "Type the author name (or type 'skip'):",
     'telegram_suggest_enter_url' => 'Type the URL or link:',
     'telegram_suggest_enter_detail' => "Add any details or notes (or type 'skip'):",
+    'telegram_suggest_current' => 'Current:',
+    'telegram_suggest_type_to_replace' => 'Type your new value to replace it.',
     'telegram_suggest_preview' => 'Review your suggestion before submitting:',
     'telegram_suggest_confirm' => 'Confirm & Submit',
     'telegram_suggest_back' => 'Back',

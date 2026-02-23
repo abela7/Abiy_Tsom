@@ -1999,7 +1999,8 @@ class TelegramWebhookController extends Controller
         $existing = isset($fieldForStep[$prevStep]) ? ((string) $state->get($fieldForStep[$prevStep], '')) : '';
         $prompt = $this->suggestStepPrompt($prevStep, $type);
         if ($existing !== '') {
-            $prompt .= "\n\n<i>Current: ".htmlspecialchars($existing, ENT_QUOTES, 'UTF-8')."</i>";
+            $prompt .= "\n\n<i>".__('app.telegram_suggest_current')." ".htmlspecialchars($existing, ENT_QUOTES, 'UTF-8')."</i>";
+            $prompt .= "\n".__('app.telegram_suggest_type_to_replace');
         }
 
         return $this->replyOrEdit(
