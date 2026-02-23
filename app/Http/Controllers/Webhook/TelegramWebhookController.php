@@ -438,10 +438,11 @@ class TelegramWebhookController extends Controller
             return $this->replyAfterDelete($telegramService, $chatId, $messageId, 'No published content available for today yet.', []);
         }
 
-        $text = $this->contentFormatter->formatDayContent($daily, $actor);
+        $formatted = $this->contentFormatter->formatDayContent($daily, $actor);
         $keyboard = $this->mainMenuKeyboard($actor, $telegramAuthService);
+        $parseMode = ($formatted['use_html'] ?? false) ? 'HTML' : null;
 
-        return $this->replyOrEdit($telegramService, $chatId, $text, $keyboard, $messageId);
+        return $this->replyOrEdit($telegramService, $chatId, $formatted['text'], $keyboard, $messageId, $parseMode);
     }
 
     private function handleProgress(
@@ -859,12 +860,13 @@ class TelegramWebhookController extends Controller
         string $chatId,
         string $text,
         array $replyMarkup = [],
-        int $messageId = 0
+        int $messageId = 0,
+        ?string $parseMode = null
     ): JsonResponse {
         if ($messageId > 0) {
-            $ok = $telegramService->editMessageText($chatId, $messageId, $text, $replyMarkup);
+            $ok = $telegramService->editMessageText($chatId, $messageId, $text, $replyMarkup, $parseMode);
         } else {
-            return $this->reply($telegramService, $chatId, $text, $replyMarkup);
+            return $this->reply($telegramService, $chatId, $text, $replyMarkup, $parseMode);
         }
 
         return response()->json([
