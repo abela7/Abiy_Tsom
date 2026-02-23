@@ -716,6 +716,7 @@ return [
     'toggle_menu' => 'Toggle menu',
     'toggle_theme' => 'Toggle theme',
     'no_active_season' => 'No active season.',
+    'error_try_again' => 'Something went wrong. Please try again.',
     'create_one_first' => 'Create one first.',
     'email_optional' => 'Email (optional)',
     'editor' => 'Editor',

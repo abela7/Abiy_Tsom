@@ -13,7 +13,6 @@ use App\Models\MemberCustomChecklist;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Cache;
 
 /**
  * Format member content for Telegram. Uses HTML with expandable sections
@@ -557,11 +556,14 @@ final class TelegramContentFormatter
     /**
      * Format progress report for a given period (daily, weekly, monthly, all).
      *
+     * Mirrors ProgressController::data() logic exactly — no caching of
+     * Eloquent models to avoid broken date casts after deserialization.
+     *
      * @return array{text: string, use_html: bool, keyboard: array}
      */
     public function formatProgressForPeriod(Member $member, string $period = 'all'): array
     {
-        $season = LentSeason::query()->latest('id')->where('is_active', true)->first();
+        $season = LentSeason::active();
         if (! $season) {
             return [
                 'text' => __('app.no_active_season'),
@@ -570,20 +572,19 @@ final class TelegramContentFormatter
             ];
         }
 
-        $cacheKey = 'telegram_progress_meta_'.$season->id;
-        $allDays = Cache::remember($cacheKey.'_days', 60, fn () => DailyContent::where('lent_season_id', $season->id)
+        $allDays = DailyContent::where('lent_season_id', $season->id)
             ->where('is_published', true)
             ->orderBy('day_number')
-            ->get());
+            ->get();
 
         $today = Carbon::today();
         $referenceDay = $this->getProgressReferenceDay($allDays, $today);
         $periodDays = $this->filterProgressByPeriod($allDays, $period, $referenceDay);
 
-        $activities = Cache::remember($cacheKey.'_activities', 60, fn () => Activity::where('lent_season_id', $season->id)
+        $activities = Activity::where('lent_season_id', $season->id)
             ->where('is_active', true)
             ->orderBy('sort_order')
-            ->get());
+            ->get();
 
         $customActivities = $member->customActivities()->orderBy('sort_order')->get();
         $totalActivities = $activities->count() + $customActivities->count();
@@ -592,12 +593,12 @@ final class TelegramContentFormatter
         $allChecks = MemberChecklist::where('member_id', $member->id)
             ->whereIn('daily_content_id', $allDayIds)
             ->where('completed', true)
-            ->get(['daily_content_id', 'activity_id']);
+            ->get();
 
         $allCustomChecks = MemberCustomChecklist::where('member_id', $member->id)
             ->whereIn('daily_content_id', $allDayIds)
             ->where('completed', true)
-            ->get(['daily_content_id', 'member_custom_activity_id']);
+            ->get();
 
         $periodDayIds = $periodDays->pluck('id');
         $checks = $allChecks->whereIn('daily_content_id', $periodDayIds);
@@ -621,20 +622,23 @@ final class TelegramContentFormatter
 
         $parts = [];
         $parts[] = '<b>📊 '.__('app.progress').' — '.$periodLabel.'</b>';
-        $parts[] = '<i>'.now()->format('H:i').' · '.$periodDayCount.' '.($periodDayCount === 1 ? 'day' : 'days').'</i>';
+        $parts[] = '<i>'.now()->format('H:i:s').' · '.$periodDayCount.' '.($periodDayCount === 1 ? 'day' : 'days').'</i>';
         $parts[] = '';
         $parts[] = __('app.overall_completion', ['pct' => $overall]);
         $parts[] = __('app.streak_days', ['count' => $streak]);
         $parts[] = '';
 
         $allActivities = $activities->merge($customActivities);
-        foreach ($allActivities->take(5) as $a) {
+        foreach ($allActivities as $a) {
             $isCustom = $a instanceof \App\Models\MemberCustomActivity;
             $done = $isCustom
                 ? $customChecks->where('member_custom_activity_id', $a->id)->count()
                 : $checks->where('activity_id', $a->id)->count();
             $rate = $periodDayCount > 0 ? (int) round(($done / $periodDayCount) * 100) : 0;
-            $name = $this->safeText($isCustom ? ($a->name ?? '-') : (localized($a, 'name', $locale) ?? $a->name ?? '-'));
+            $rawName = $isCustom
+                ? ($a->name ?? '-')
+                : (localized($a, 'name', $locale) ?? $a->name ?? '-');
+            $name = $this->escapeHtml($this->safeText($rawName));
             $bar = $this->progressBar($rate);
             $parts[] = "{$name}: {$bar} {$rate}%";
         }
@@ -649,7 +653,12 @@ final class TelegramContentFormatter
         ];
     }
 
-    /** @param  Collection<int, DailyContent>  $allDays */
+    /**
+     * Best available reference day for period defaults.
+     * Mirrors ProgressController::getReferenceDay() exactly.
+     *
+     * @param  Collection<int, DailyContent>  $allDays
+     */
     private function getProgressReferenceDay(Collection $allDays, Carbon $anchorDate): ?DailyContent
     {
         if ($allDays->isEmpty()) {
@@ -668,12 +677,22 @@ final class TelegramContentFormatter
             ->sortByDesc('date')
             ->first();
 
-        return $previous ?? $allDays->filter(fn (DailyContent $d) => $d->date && $d->date->isAfter($anchorDate))
+        if ($previous) {
+            return $previous;
+        }
+
+        return $allDays
+            ->filter(fn (DailyContent $d) => $d->date && $d->date->isAfter($anchorDate))
             ->sortBy('date')
             ->first();
     }
 
-    /** @param  Collection<int, DailyContent>  $allDays */
+    /**
+     * Filter days by the requested period.
+     * Mirrors ProgressController::filterByPeriod() exactly.
+     *
+     * @param  Collection<int, DailyContent>  $allDays
+     */
     private function filterProgressByPeriod(
         Collection $allDays,
         string $period,
@@ -691,7 +710,7 @@ final class TelegramContentFormatter
     private function filterProgressDaily(Collection $allDays, ?DailyContent $referenceDay): Collection
     {
         if (! $referenceDay) {
-            return collect();
+            return $allDays->take(0);
         }
 
         return $allDays->filter(
@@ -699,20 +718,49 @@ final class TelegramContentFormatter
         )->values();
     }
 
-    /** @param  Collection<int, DailyContent>  $allDays */
+    /**
+     * Mirrors ProgressController::filterWeekly() — uses weekly_theme_id
+     * when no explicit week param is provided, with a day-range fallback.
+     *
+     * @param  Collection<int, DailyContent>  $allDays
+     */
     private function filterProgressWeekly(Collection $allDays, ?DailyContent $referenceDay): Collection
     {
-        if (! $referenceDay) {
-            return $allDays->isEmpty() ? collect() : $allDays->take(7)->values();
+        if ($referenceDay) {
+            $byTheme = $allDays
+                ->where('weekly_theme_id', $referenceDay->weekly_theme_id)
+                ->values();
+            if ($byTheme->isNotEmpty()) {
+                return $byTheme;
+            }
+
+            $weekNum = AbiyTsomStructure::getWeekForDay($referenceDay->day_number);
+            [$start, $end] = AbiyTsomStructure::getDayRangeForWeek($weekNum);
+
+            return $allDays->filter(
+                fn (DailyContent $d) => $d->day_number >= $start && $d->day_number <= $end
+            )->values();
         }
 
-        $weekNum = AbiyTsomStructure::getWeekForDay($referenceDay->day_number);
-        [$start, $end] = AbiyTsomStructure::getDayRangeForWeek($weekNum);
+        if ($allDays->isEmpty()) {
+            return collect();
+        }
 
-        return $allDays->whereBetween('day_number', [$start, $end])->values();
+        $firstDay = (int) $allDays->min('day_number');
+        $lastDay = (int) $allDays->max('day_number');
+
+        return $allDays->filter(
+            fn (DailyContent $d) => $d->day_number >= $firstDay
+                && $d->day_number <= min($firstDay + 6, $lastDay)
+        )->values();
     }
 
-    /** @param  Collection<int, DailyContent>  $allDays */
+    /**
+     * Get days for the month of the reference day.
+     * Mirrors ProgressController::getMonthlyDays() exactly.
+     *
+     * @param  Collection<int, DailyContent>  $allDays
+     */
     private function filterProgressMonthly(Collection $allDays, ?DailyContent $referenceDay): Collection
     {
         if ($allDays->isEmpty()) {
@@ -724,12 +772,19 @@ final class TelegramContentFormatter
             return collect();
         }
 
-        return $allDays->filter(
+        $monthItems = $allDays->filter(
             fn (DailyContent $d) => $d->date && $d->date->isSameMonth($monthDate)
         )->values();
+
+        return $monthItems->isNotEmpty() ? $monthItems : $allDays->take(0);
     }
 
-    /** @param  Collection<int, DailyContent>  $allDays */
+    /**
+     * Consecutive days with >= 1 completion, walking backwards from today.
+     * Mirrors ProgressController::computeStreak() exactly.
+     *
+     * @param  Collection<int, DailyContent>  $allDays
+     */
     private function computeProgressStreak(
         Collection $allDays,
         Collection $checks,
@@ -753,6 +808,14 @@ final class TelegramContentFormatter
         }
 
         return $streak;
+    }
+
+    /**
+     * Escape special HTML characters for Telegram HTML parse mode.
+     */
+    private function escapeHtml(string $text): string
+    {
+        return htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
     }
 
     private function progressPeriodKeyboard(string $currentPeriod): array

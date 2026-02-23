@@ -696,6 +696,7 @@ return [
     'toggle_menu' => 'ማውጫ መቀያየር',
     'toggle_theme' => 'ገጽታ መቀያየር',
     'no_active_season' => 'ንቁ ወቅት የለም።',
+    'error_try_again' => 'Something went wrong. Please try again.',
     'create_one_first' => 'በመጀመሪያ ፍጠር።',
     'email_optional' => 'ኢሜይል (አማራጭ)',
     'editor' => 'አርታዒ',

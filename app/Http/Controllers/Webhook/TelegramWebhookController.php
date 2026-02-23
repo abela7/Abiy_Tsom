@@ -680,7 +680,23 @@ class TelegramWebhookController extends Controller
 
         $this->applyLocaleForActor($actor);
 
-        $formatted = $this->contentFormatter->formatProgressForPeriod($actor, $period);
+        try {
+            $formatted = $this->contentFormatter->formatProgressForPeriod($actor, $period);
+        } catch (\Throwable $e) {
+            Log::error('[TelegramWebhook] Progress formatting failed.', [
+                'period' => $period,
+                'member_id' => $actor->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return $this->replyOrEdit(
+                $telegramService,
+                $chatId,
+                '⚠️ '.__('app.progress').' — '.__('app.error_try_again'),
+                [],
+                $messageId
+            );
+        }
 
         return $this->replyOrEdit(
             $telegramService,
