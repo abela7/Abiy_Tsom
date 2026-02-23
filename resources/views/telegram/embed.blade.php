@@ -42,7 +42,7 @@
         function loadPlayer() {
             var p = document.getElementById('player');
             p.style.cursor = 'default';
-            p.innerHTML = '<iframe src="https://www.youtube.com/embed/{{ $videoId }}?autoplay=1&rel=0&playsinline=1" title="{{ addslashes($title ?: __('app.app_name')) }}" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen style="width:100%;height:100%;border:0;display:block"></iframe>';
+            p.innerHTML = '<iframe src="https://www.youtube.com/embed/{{ $videoId }}?autoplay=1&rel=0&playsinline=1" title="{{ e($title ?: __('app.app_name')) }}" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen style="width:100%;height:100%;border:0;display:block"></iframe>';
         }
         function closePage() {
             var twa = window.Telegram && window.Telegram.WebApp;

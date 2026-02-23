@@ -51,9 +51,9 @@ class TelegramAuthController extends Controller
 
     /**
      * Embed page for Telegram Web App — shows YouTube video inline so user stays in Telegram.
-     * Optional: title (text below player), img (image URL for thumbnail/photo).
+     * Optional: title (text below player).
      */
-    public function embed(Request $request): \Illuminate\View\View|\Illuminate\Http\RedirectResponse
+    public function embed(Request $request): \Illuminate\View\View|\Illuminate\Http\RedirectResponse|\Illuminate\Http\Response
     {
         $vid = trim((string) $request->query('vid', ''));
         if ($vid === '' || ! preg_match('/^[a-zA-Z0-9_-]{11}$/', $vid)) {
@@ -62,9 +62,27 @@ class TelegramAuthController extends Controller
 
         $title = trim((string) $request->query('title', ''));
 
-        return response()
-            ->view('telegram.embed', ['videoId' => $vid, 'title' => $title])
-            ->header('Cache-Control', 'public, max-age=300');
+        try {
+            $html = view('telegram.embed', ['videoId' => $vid, 'title' => $title])->render();
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('[Telegram embed] Render failed.', [
+                'vid' => $vid,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response(
+                '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Error</title></head>'.
+                '<body style="background:#0f172a;color:#f8fafc;font-family:system-ui;padding:24px;text-align:center">'.
+                '<p>Unable to load the video. Please try again.</p>'.
+                '<a href="'.e(route('home')).'" style="color:#0a6286">Go back</a></body></html>',
+                200
+            )->header('Content-Type', 'text/html; charset=UTF-8');
+        }
+
+        return response($html)
+            ->header('Cache-Control', 'public, max-age=300')
+            ->header('Content-Type', 'text/html; charset=UTF-8');
     }
 
     /**
