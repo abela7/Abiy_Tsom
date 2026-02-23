@@ -112,6 +112,11 @@ class TranslationSeeder extends Seeder
                 'data_cleared', 'clear_confirm_label', 'clear_confirm_placeholder',
                 'are_you_sure', 'failed_to_add', 'failed_to_clear',
                 'failed_to_save', 'failed', 'export_failed',
+                // Telegram integration
+                'telegram_settings_link_title', 'telegram_settings_link_desc',
+                'telegram_settings_linked', 'telegram_settings_unlink', 'telegram_settings_generate_link',
+                'telegram_settings_code_instructions', 'telegram_settings_link_generated',
+                'telegram_settings_unlinked', 'telegram_settings_unlink_confirm',
             ],
             'general' => [
                 'loading', 'save', 'cancel', 'edit', 'delete', 'create', 'back',
