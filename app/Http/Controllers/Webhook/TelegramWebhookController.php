@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\DailyContent;
 use App\Models\LentSeason;
 use App\Models\Member;
+use App\Models\TelegramAccessToken;
 use App\Models\User;
 use App\Services\TelegramAuthService;
 use App\Services\TelegramBotBuilderService;
@@ -24,8 +25,7 @@ class TelegramWebhookController extends Controller
 {
     public function __construct(
         private readonly TelegramBotBuilderService $telegramBotBuilder
-    ) {
-    }
+    ) {}
 
     public function handle(
         Request $request,
@@ -114,6 +114,7 @@ class TelegramWebhookController extends Controller
 
         return match ($action) {
             'have_account' => $this->handleHaveAccount($chatId, $messageId, $telegramService),
+            'unlink' => $this->handleUnlink($chatId, $messageId, $telegramAuthService, $telegramService),
             'menu' => $this->handleMenu($chatId, $telegramAuthService, $telegramService, $messageId),
             'home' => $this->handleHome($chatId, $telegramAuthService, $telegramService, $messageId),
             'today' => $this->handleToday($chatId, $telegramAuthService, $telegramService, $messageId),
@@ -139,6 +140,7 @@ class TelegramWebhookController extends Controller
             'admin' => $this->handleAdmin($chatId, $telegramAuthService, $telegramService),
             'help' => $this->reply($telegramService, $chatId, $this->helpMessage(), $this->launchKeyboard()),
             'menu' => $this->handleMenu($chatId, $telegramAuthService, $telegramService),
+            'unlink' => $this->handleUnlink($chatId, 0, $telegramAuthService, $telegramService),
             default => null,
         };
 
@@ -181,7 +183,7 @@ class TelegramWebhookController extends Controller
         return $this->reply(
             $telegramService,
             $chatId,
-            __('app.telegram_linked_success') . "\n\n" . __('app.telegram_menu_heading'),
+            __('app.telegram_linked_success')."\n\n".__('app.telegram_menu_heading'),
             $keyboard
         );
     }
@@ -194,6 +196,7 @@ class TelegramWebhookController extends Controller
         $rows = $keyboard['inline_keyboard'] ?? [];
         if ($rows === []) {
             $openUrl = $this->actorOpenAppUrl($actor, $telegramAuthService);
+
             return ['inline_keyboard' => [
                 [['text' => $this->telegramBotBuilder->menuButtonLabel(), 'web_app' => ['url' => $openUrl]]],
             ]];
@@ -298,6 +301,38 @@ class TelegramWebhookController extends Controller
         return $this->bindFromCode($chatId, $argument, $telegramAuthService, $telegramService, 'start');
     }
 
+    private function handleUnlink(
+        string $chatId,
+        int $messageId,
+        TelegramAuthService $telegramAuthService,
+        TelegramService $telegramService
+    ): JsonResponse {
+        $actor = $this->actorFromChatId($chatId);
+        if (! $actor) {
+            return $this->replyAfterDelete($telegramService, $chatId, $messageId, __('app.telegram_bot_unlink_not_linked'), $this->startChoiceKeyboard());
+        }
+
+        $this->wipeTelegramDataForChat($chatId, $actor);
+
+        return $this->replyAfterDelete(
+            $telegramService,
+            $chatId,
+            $messageId,
+            __('app.telegram_bot_unlinked'),
+            $this->startChoiceKeyboard()
+        );
+    }
+
+    private function wipeTelegramDataForChat(string $chatId, Member|User $actor): void
+    {
+        $this->releaseTelegramChatIdBinding($actor, $chatId);
+
+        TelegramAccessToken::query()
+            ->where('actor_type', $actor->getMorphClass())
+            ->where('actor_id', $actor->getKey())
+            ->delete();
+    }
+
     private function handleHaveAccount(string $chatId, int $messageId, TelegramService $telegramService): JsonResponse
     {
         $text = __('app.telegram_start_have_account_code_instructions');
@@ -374,7 +409,7 @@ class TelegramWebhookController extends Controller
 
         $homeLabel = $this->telegramBotBuilder->buttonLabel('home', 'member', 'Home');
 
-        return $this->replyAfterDelete($telegramService, $chatId, $messageId, $homeLabel . ':', [
+        return $this->replyAfterDelete($telegramService, $chatId, $messageId, $homeLabel.':', [
             'inline_keyboard' => [
                 [['text' => $homeLabel, 'web_app' => ['url' => $homeLink]]],
             ],
@@ -399,7 +434,7 @@ class TelegramWebhookController extends Controller
         $adminLink = $this->adminSecureLink($actor, $telegramAuthService);
         $adminLabel = $this->telegramBotBuilder->buttonLabel('admin', 'admin', 'Admin panel');
 
-        return $this->replyAfterDelete($telegramService, $chatId, $messageId, $adminLabel . ':', [
+        return $this->replyAfterDelete($telegramService, $chatId, $messageId, $adminLabel.':', [
             'inline_keyboard' => [
                 [['text' => $adminLabel, 'web_app' => ['url' => $adminLink]]],
             ],
@@ -853,6 +888,8 @@ class TelegramWebhookController extends Controller
                 $rows[] = [['text' => $this->telegramBotBuilder->buttonLabel('help', 'member', 'Help'), 'callback_data' => 'help']];
             }
 
+            $rows[] = [['text' => __('app.telegram_bot_unlink'), 'callback_data' => 'unlink']];
+
             if ($rows === []) {
                 $homeLink = $this->memberHomeSecureLink($actor, $telegramAuthService);
                 $rows[] = [['text' => $this->telegramBotBuilder->buttonLabel('home', 'member', 'Home'), 'web_app' => ['url' => $homeLink]]];
@@ -869,6 +906,8 @@ class TelegramWebhookController extends Controller
         if ($this->telegramBotBuilder->buttonEnabled('help', 'admin')) {
             $rows[] = [['text' => $this->telegramBotBuilder->buttonLabel('help', 'admin', 'Help'), 'callback_data' => 'help']];
         }
+
+        $rows[] = [['text' => __('app.telegram_bot_unlink'), 'callback_data' => 'unlink']];
 
         if ($rows === []) {
             $adminLink = $this->adminSecureLink($actor, $telegramAuthService);
