@@ -126,6 +126,10 @@ class TelegramWebhookController extends Controller
             return $this->handleTodaySection($chatId, $messageId, $action, $telegramAuthService, $telegramService);
         }
 
+        if (str_starts_with($action, 'progress_')) {
+            return $this->handleProgressPeriod($chatId, $messageId, $action, $telegramAuthService, $telegramService);
+        }
+
         if (in_array($action, ['lang_en', 'lang_am', 'lang_toggle'], true)) {
             return $this->handleLanguageChange($chatId, $messageId, $action, $telegramAuthService, $telegramService);
         }
@@ -659,7 +663,8 @@ class TelegramWebhookController extends Controller
         string $chatId,
         int $messageId,
         TelegramAuthService $telegramAuthService,
-        TelegramService $telegramService
+        TelegramService $telegramService,
+        string $period = 'all'
     ): JsonResponse {
         $actor = $this->actorFromChatId($chatId);
         if (! $actor instanceof Member) {
@@ -675,10 +680,34 @@ class TelegramWebhookController extends Controller
 
         $this->applyLocaleForActor($actor);
 
-        $text = $this->contentFormatter->formatProgressSummary($actor);
-        $keyboard = $this->mainMenuKeyboard($actor, $telegramAuthService);
+        $formatted = $this->contentFormatter->formatProgressForPeriod($actor, $period);
 
-        return $this->replyOrEdit($telegramService, $chatId, $text, $keyboard, $messageId);
+        return $this->replyOrEdit(
+            $telegramService,
+            $chatId,
+            $formatted['text'],
+            $formatted['keyboard'],
+            $messageId,
+            $formatted['use_html'] ? 'HTML' : null
+        );
+    }
+
+    private function handleProgressPeriod(
+        string $chatId,
+        int $messageId,
+        string $action,
+        TelegramAuthService $telegramAuthService,
+        TelegramService $telegramService
+    ): JsonResponse {
+        $period = match ($action) {
+            'progress_daily' => 'daily',
+            'progress_weekly' => 'weekly',
+            'progress_monthly' => 'monthly',
+            'progress_all' => 'all',
+            default => 'all',
+        };
+
+        return $this->handleProgress($chatId, $messageId, $telegramAuthService, $telegramService, $period);
     }
 
     private function handleChecklist(

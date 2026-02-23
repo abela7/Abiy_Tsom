@@ -6,9 +6,11 @@ namespace App\Services;
 
 use App\Models\Activity;
 use App\Models\DailyContent;
+use App\Models\LentSeason;
 use App\Models\Member;
 use App\Models\MemberChecklist;
 use App\Models\MemberCustomChecklist;
+use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
 
@@ -551,17 +553,30 @@ final class TelegramContentFormatter
         return str_replace(['&', '"', "'", '<', '>'], ['&amp;', '&quot;', '&#39;', '&lt;', '&gt;'], trim($url));
     }
 
-    public function formatProgressSummary(Member $member): string
+    /**
+     * Format progress report for a given period (daily, weekly, monthly, all).
+     *
+     * @return array{text: string, use_html: bool, keyboard: array}
+     */
+    public function formatProgressForPeriod(Member $member, string $period = 'all'): array
     {
-        $season = \App\Models\LentSeason::query()->latest('id')->where('is_active', true)->first();
+        $season = LentSeason::query()->latest('id')->where('is_active', true)->first();
         if (! $season) {
-            return __('app.no_active_season');
+            return [
+                'text' => __('app.no_active_season'),
+                'use_html' => false,
+                'keyboard' => [],
+            ];
         }
 
-        $allDays = \App\Models\DailyContent::where('lent_season_id', $season->id)
+        $allDays = DailyContent::where('lent_season_id', $season->id)
             ->where('is_published', true)
             ->orderBy('day_number')
             ->get();
+
+        $today = Carbon::today();
+        $referenceDay = $this->getProgressReferenceDay($allDays, $today);
+        $periodDays = $this->filterProgressByPeriod($allDays, $period, $referenceDay);
 
         $activities = Activity::where('lent_season_id', $season->id)
             ->where('is_active', true)
@@ -582,19 +597,151 @@ final class TelegramContentFormatter
             ->where('completed', true)
             ->get();
 
-        $today = \Carbon\Carbon::today();
-        $pastDays = $allDays->filter(fn ($d) => $d->date && $d->date->lte($today));
+        $periodDayIds = $periodDays->pluck('id');
+        $checks = $allChecks->whereIn('daily_content_id', $periodDayIds);
+        $customChecks = $allCustomChecks->whereIn('daily_content_id', $periodDayIds);
 
-        $totalChecks = $allChecks->count() + $allCustomChecks->count();
-        $totalPossible = $pastDays->count() * max(1, $totalActivities);
-        $overall = ($totalPossible > 0)
-            ? (int) round(($totalChecks / $totalPossible) * 100)
+        $periodDayCount = $periodDays->count();
+        $totalChecks = $checks->count() + $customChecks->count();
+        $overall = ($periodDayCount > 0 && $totalActivities > 0)
+            ? (int) round(($totalChecks / ($periodDayCount * $totalActivities)) * 100)
             : 0;
 
+        $streak = $this->computeProgressStreak($allDays, $allChecks, $allCustomChecks, $today);
+
+        $locale = $this->memberLocale($member);
+        $periodLabel = match ($period) {
+            'daily' => __('app.period_daily'),
+            'weekly' => __('app.period_weekly'),
+            'monthly' => __('app.period_monthly'),
+            default => __('app.period_all'),
+        };
+
+        $parts = [];
+        $parts[] = '<b>📊 '.__('app.progress').' — '.$periodLabel.'</b>';
+        $parts[] = '';
+        $parts[] = __('app.overall_completion', ['pct' => $overall]);
+        $parts[] = __('app.streak_days', ['count' => $streak]);
+        $parts[] = '';
+
+        $allActivities = $activities->merge($customActivities);
+        foreach ($allActivities->take(5) as $a) {
+            $isCustom = $a instanceof \App\Models\MemberCustomActivity;
+            $done = $isCustom
+                ? $customChecks->where('member_custom_activity_id', $a->id)->count()
+                : $checks->where('activity_id', $a->id)->count();
+            $rate = $periodDayCount > 0 ? (int) round(($done / $periodDayCount) * 100) : 0;
+            $name = $this->safeText($isCustom ? ($a->name ?? '-') : (localized($a, 'name', $locale) ?? $a->name ?? '-'));
+            $bar = $this->progressBar($rate);
+            $parts[] = "{$name}: {$bar} {$rate}%";
+        }
+
+        $keyboard = $this->progressPeriodKeyboard($period);
+        $keyboard['inline_keyboard'][] = [['text' => '◀️ '.__('app.menu'), 'callback_data' => 'menu']];
+
+        return [
+            'text' => implode("\n", $parts),
+            'use_html' => true,
+            'keyboard' => $keyboard,
+        ];
+    }
+
+    /** @param  Collection<int, DailyContent>  $allDays */
+    private function getProgressReferenceDay(Collection $allDays, Carbon $anchorDate): ?DailyContent
+    {
+        if ($allDays->isEmpty()) {
+            return null;
+        }
+
+        $todayContent = $allDays->first(
+            fn (DailyContent $d) => $d->date && $d->date->isSameDay($anchorDate)
+        );
+        if ($todayContent) {
+            return $todayContent;
+        }
+
+        $previous = $allDays
+            ->filter(fn (DailyContent $d) => $d->date && $d->date->isBefore($anchorDate))
+            ->sortByDesc('date')
+            ->first();
+
+        return $previous ?? $allDays->filter(fn (DailyContent $d) => $d->date && $d->date->isAfter($anchorDate))
+            ->sortBy('date')
+            ->first();
+    }
+
+    /** @param  Collection<int, DailyContent>  $allDays */
+    private function filterProgressByPeriod(
+        Collection $allDays,
+        string $period,
+        ?DailyContent $referenceDay
+    ): Collection {
+        return match ($period) {
+            'daily' => $this->filterProgressDaily($allDays, $referenceDay),
+            'weekly' => $this->filterProgressWeekly($allDays, $referenceDay),
+            'monthly' => $this->filterProgressMonthly($allDays, $referenceDay),
+            default => $allDays,
+        };
+    }
+
+    /** @param  Collection<int, DailyContent>  $allDays */
+    private function filterProgressDaily(Collection $allDays, ?DailyContent $referenceDay): Collection
+    {
+        if (! $referenceDay) {
+            return collect();
+        }
+
+        return $allDays->filter(
+            fn (DailyContent $d) => $d->day_number === $referenceDay->day_number
+        )->values();
+    }
+
+    /** @param  Collection<int, DailyContent>  $allDays */
+    private function filterProgressWeekly(Collection $allDays, ?DailyContent $referenceDay): Collection
+    {
+        if (! $referenceDay) {
+            return $allDays->isEmpty() ? collect() : $allDays->take(7)->values();
+        }
+
+        $weekNum = AbiyTsomStructure::getWeekForDay($referenceDay->day_number);
+        [$start, $end] = AbiyTsomStructure::getDayRangeForWeek($weekNum);
+
+        return $allDays->whereBetween('day_number', [$start, $end])->values();
+    }
+
+    /** @param  Collection<int, DailyContent>  $allDays */
+    private function filterProgressMonthly(Collection $allDays, ?DailyContent $referenceDay): Collection
+    {
+        if ($allDays->isEmpty()) {
+            return collect();
+        }
+
+        $monthDate = $referenceDay?->date ?? $allDays->sortBy('date')->first()?->date;
+        if (! $monthDate) {
+            return collect();
+        }
+
+        return $allDays->filter(
+            fn (DailyContent $d) => $d->date && $d->date->isSameMonth($monthDate)
+        )->values();
+    }
+
+    /** @param  Collection<int, DailyContent>  $allDays */
+    private function computeProgressStreak(
+        Collection $allDays,
+        Collection $checks,
+        Collection $customChecks,
+        Carbon $today
+    ): int {
+        $pastDays = $allDays
+            ->filter(fn (DailyContent $d) => $d->date && $d->date->lte($today))
+            ->sortByDesc('day_number')
+            ->values();
+
         $streak = 0;
-        foreach ($pastDays->sortByDesc('day_number') as $day) {
-            $done = $allChecks->where('daily_content_id', $day->id)->count()
-                + $allCustomChecks->where('daily_content_id', $day->id)->count();
+        foreach ($pastDays as $day) {
+            $done = $checks->where('daily_content_id', $day->id)->count()
+                + $customChecks->where('daily_content_id', $day->id)->count();
             if ($done > 0) {
                 $streak++;
             } else {
@@ -602,24 +749,27 @@ final class TelegramContentFormatter
             }
         }
 
-        $locale = $this->memberLocale($member);
-        $parts = [];
-        $parts[] = '📊 '.__('app.progress');
-        $parts[] = '';
-        $parts[] = __('app.overall_completion', ['pct' => $overall]);
-        $parts[] = __('app.streak_days', ['count' => $streak]);
-        $parts[] = '';
+        return $streak;
+    }
 
-        $topActivities = $activities->take(5);
-        foreach ($topActivities as $a) {
-            $done = $allChecks->where('activity_id', $a->id)->count();
-            $rate = $pastDays->isNotEmpty() ? (int) round(($done / $pastDays->count()) * 100) : 0;
-            $name = $this->safeText(localized($a, 'name', $locale) ?? $a->name ?? '-');
-            $bar = $this->progressBar($rate);
-            $parts[] = "{$name}: {$bar} {$rate}%";
+    private function progressPeriodKeyboard(string $currentPeriod): array
+    {
+        $periods = [
+            ['key' => 'daily', 'label' => __('app.period_daily')],
+            ['key' => 'weekly', 'label' => __('app.period_weekly')],
+            ['key' => 'monthly', 'label' => __('app.period_monthly')],
+            ['key' => 'all', 'label' => __('app.period_all')],
+        ];
+
+        $row = [];
+        foreach ($periods as $p) {
+            $row[] = [
+                'text' => ($p['key'] === $currentPeriod ? '▸ ' : '').$p['label'],
+                'callback_data' => 'progress_'.$p['key'],
+            ];
         }
 
-        return implode("\n", $parts);
+        return ['inline_keyboard' => array_chunk($row, 2)];
     }
 
     /**
