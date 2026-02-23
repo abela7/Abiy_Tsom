@@ -6,6 +6,12 @@
 <h1 class="text-2xl font-bold text-primary mb-1">{{ __('app.members_tracking') }}</h1>
 <p class="text-sm text-muted-text mb-6">{{ __('app.members_tracking_subtitle') }}</p>
 
+@if (! $telegramBotUsername)
+    <div class="bg-yellow-950/20 border border-yellow-500/40 text-yellow-200 rounded-lg px-4 py-3 mb-6">
+        Telegram bot username is not set. Configure it in Telegram settings to generate one-tap member links.
+    </div>
+@endif
+
 {{-- Summary cards --}}
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
     <div class="bg-card rounded-xl p-4 shadow-sm border border-border">
@@ -197,6 +203,15 @@
                     </td>
                     <td class="px-4 py-3 text-right">
                         <div class="flex items-center justify-end gap-2 flex-wrap">
+                            @if ($telegramBotUsername)
+                                <form method="POST" action="{{ route('admin.members.telegram-link', $member) }}">
+                                    @csrf
+                                    <button type="submit"
+                                            class="px-3 py-1.5 rounded-lg bg-accent/10 text-accent hover:bg-accent/20 text-xs font-semibold border border-accent/20">
+                                        Generate Telegram one-tap link
+                                    </button>
+                                </form>
+                            @endif
 
                             {{-- Wipe data --}}
                             <template x-if="!confirmWipe && !confirmDelete">
@@ -247,7 +262,28 @@
                                     </button>
                                 </div>
                             </template>
-
+                            @php
+                                $memberTelegramLink = $telegramMemberLinks[$member->id] ?? null;
+                            @endphp
+                            @if (is_string($memberTelegramLink))
+                                <div class="w-full mt-2">
+                                    <input id="member-telegram-link-{{ $member->id }}"
+                                           type="text"
+                                           class="w-64 max-w-full px-2 py-1.5 text-xs border border-border rounded-md bg-card text-secondary"
+                                           value="{{ $memberTelegramLink }}"
+                                           readonly>
+                                    <button type="button"
+                                            onclick="copyToClipboard('member-telegram-link-{{ $member->id }}')"
+                                            class="px-2 py-1.5 rounded-md bg-surface border border-border text-xs">
+                                        Copy
+                                    </button>
+                                    <a href="{{ $memberTelegramLink }}"
+                                       target="_blank"
+                                       class="px-2 py-1.5 rounded-md bg-accent text-on-accent text-xs">
+                                        Open
+                                    </a>
+                                </div>
+                            @endif
                         </div>
                     </td>
                 </tr>
@@ -269,4 +305,15 @@
     </div>
     @endif
 </div>
+@push('scripts')
+<script>
+    function copyToClipboard(inputId) {
+        const input = document.getElementById(inputId);
+        if (!input) {
+            return;
+        }
+        navigator.clipboard.writeText(input.value).catch(() => {});
+    }
+</script>
+@endpush
 @endsection

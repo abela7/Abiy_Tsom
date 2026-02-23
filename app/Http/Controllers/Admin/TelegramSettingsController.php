@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\TelegramBotBuilderService;
 use App\Services\TelegramService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -21,8 +22,9 @@ class TelegramSettingsController extends Controller
     /**
      * Show Telegram settings page.
      */
-    public function settings(): View
+    public function settings(TelegramBotBuilderService $telegramBotBuilderService): View
     {
+        $builderConfig = $telegramBotBuilderService->getConfig();
         $envPath = base_path('.env');
         $envExists = File::exists($envPath);
 
@@ -42,8 +44,9 @@ class TelegramSettingsController extends Controller
         $telegramHomeStartLink = $publicBotName ? ('https://t.me/' . $publicBotName . '?start=home') : '';
         $telegramAdminStartLink = $publicBotName ? ('https://t.me/' . $publicBotName . '?start=admin') : '';
         $telegramTodayStartLink = $publicBotName ? ('https://t.me/' . $publicBotName . '?start=today') : '';
-        $telegramMiniConnectLink = $publicBotName ? ('https://t.me/' . $publicBotName . '?start=connect') : '';
         $telegramMiniWebAppUrl = route('telegram.mini.connect');
+        $telegramMiniMemberStartApp = $publicBotName ? ('https://t.me/' . $publicBotName . '?startapp=member') : '';
+        $telegramMiniAdminStartApp = $publicBotName ? ('https://t.me/' . $publicBotName . '?startapp=admin') : '';
 
         return view('admin.telegram.index', compact(
             'botToken',
@@ -51,12 +54,14 @@ class TelegramSettingsController extends Controller
             'defaultChatId',
             'publicBotName',
             'webhookUrl',
+            'builderConfig',
             'telegramMenuStartLink',
             'telegramHomeStartLink',
             'telegramAdminStartLink',
             'telegramTodayStartLink',
-            'telegramMiniConnectLink',
-            'telegramMiniWebAppUrl'
+            'telegramMiniWebAppUrl',
+            'telegramMiniMemberStartApp',
+            'telegramMiniAdminStartApp'
         ));
     }
 
@@ -103,9 +108,90 @@ class TelegramSettingsController extends Controller
     }
 
     /**
+     * Save Telegram bot builder profile (buttons, labels, and command descriptions).
+     */
+    public function updateBuilder(
+        Request $request,
+        TelegramBotBuilderService $telegramBotBuilderService
+    ): RedirectResponse {
+        $payload = [
+            'ui' => [
+                'menu_button_label' => (string) $request->input('ui.menu_button_label', 'Open Abiy Tsom'),
+                'welcome_message' => (string) $request->input('ui.welcome_message', 'Welcome to Abiy Tsom.'),
+                'help_message' => (string) $request->input('ui.help_message', 'Use the buttons below. If your account is linked, the app opens in one tap.'),
+                'not_linked_message' => (string) $request->input('ui.not_linked_message', 'Your account is not linked yet. Open the app and continue securely.'),
+            ],
+            'commands' => [
+                'menu' => [
+                    'label' => (string) $request->input('commands.menu.label', 'Menu'),
+                    'description' => (string) $request->input('commands.menu.description', 'Show quick actions'),
+                    'enabled' => $request->boolean('commands.menu.enabled'),
+                ],
+                'home' => [
+                    'label' => (string) $request->input('commands.home.label', 'Home'),
+                    'description' => (string) $request->input('commands.home.description', 'Open member home'),
+                    'enabled' => $request->boolean('commands.home.enabled'),
+                ],
+                'day' => [
+                    'label' => (string) $request->input('commands.day.label', 'Today'),
+                    'description' => (string) $request->input('commands.day.description', 'Open today content'),
+                    'enabled' => $request->boolean('commands.day.enabled'),
+                ],
+                'admin' => [
+                    'label' => (string) $request->input('commands.admin.label', 'Admin panel'),
+                    'description' => (string) $request->input('commands.admin.description', 'Open admin dashboard'),
+                    'enabled' => $request->boolean('commands.admin.enabled'),
+                ],
+                'help' => [
+                    'label' => (string) $request->input('commands.help.label', 'Help'),
+                    'description' => (string) $request->input('commands.help.description', 'Show command help'),
+                    'enabled' => $request->boolean('commands.help.enabled'),
+                ],
+            ],
+            'member_buttons' => [
+                'home' => [
+                    'label' => (string) $request->input('member_buttons.home.label', 'Home'),
+                    'enabled' => $request->boolean('member_buttons.home.enabled'),
+                ],
+                'today' => [
+                    'label' => (string) $request->input('member_buttons.today.label', 'Today'),
+                    'enabled' => $request->boolean('member_buttons.today.enabled'),
+                ],
+                'me' => [
+                    'label' => (string) $request->input('member_buttons.me.label', 'My links'),
+                    'enabled' => $request->boolean('member_buttons.me.enabled'),
+                ],
+                'help' => [
+                    'label' => (string) $request->input('member_buttons.help.label', 'Help'),
+                    'enabled' => $request->boolean('member_buttons.help.enabled'),
+                ],
+            ],
+            'admin_buttons' => [
+                'admin' => [
+                    'label' => (string) $request->input('admin_buttons.admin.label', 'Admin panel'),
+                    'enabled' => $request->boolean('admin_buttons.admin.enabled'),
+                ],
+                'help' => [
+                    'label' => (string) $request->input('admin_buttons.help.label', 'Help'),
+                    'enabled' => $request->boolean('admin_buttons.help.enabled'),
+                ],
+            ],
+        ];
+
+        $telegramBotBuilderService->saveConfig($payload);
+
+        return redirect()
+            ->route('admin.telegram.settings')
+            ->with('success', __('app.telegram_builder_updated'));
+    }
+
+    /**
      * Push Telegram command menu to show in the chat UI.
      */
-    public function syncMenu(TelegramService $telegramService): RedirectResponse
+    public function syncMenu(
+        TelegramService $telegramService,
+        TelegramBotBuilderService $telegramBotBuilderService
+    ): RedirectResponse
     {
         if (! $telegramService->isConfigured()) {
             return redirect()
@@ -113,13 +199,7 @@ class TelegramSettingsController extends Controller
                 ->with('error', __('app.telegram_not_configured_for_menu'));
         }
 
-        $commands = [
-            ['command' => 'menu', 'description' => __('app.telegram_menu_command_desc')],
-            ['command' => 'help', 'description' => __('app.telegram_help_command_desc')],
-            ['command' => 'home', 'description' => __('app.telegram_home_command_desc')],
-            ['command' => 'admin', 'description' => __('app.telegram_admin_command_desc')],
-            ['command' => 'day', 'description' => __('app.telegram_day_command_desc')],
-        ];
+        $commands = $telegramBotBuilderService->enabledCommands();
 
         if (! $telegramService->setMyCommands($commands)) {
             return redirect()
@@ -127,9 +207,19 @@ class TelegramSettingsController extends Controller
                 ->with('error', __('app.telegram_menu_sync_failed'));
         }
 
+        $menuButtonConfigured = $telegramService->setChatMenuButton(
+            $telegramBotBuilderService->menuButtonLabel(),
+            route('telegram.mini.connect')
+        );
+
         return redirect()
             ->route('admin.telegram.settings')
-            ->with('success', __('app.telegram_menu_synced'));
+            ->with(
+                'success',
+                $menuButtonConfigured
+                    ? __('app.telegram_menu_synced')
+                    : __('app.telegram_menu_synced')
+            );
     }
 
     /**

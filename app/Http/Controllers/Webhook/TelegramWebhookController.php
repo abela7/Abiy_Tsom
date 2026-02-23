@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Webhook;
 
 use App\Http\Controllers\Controller;
-use App\Models\LentSeason;
 use App\Models\DailyContent;
+use App\Models\LentSeason;
 use App\Models\Member;
 use App\Models\User;
 use App\Services\TelegramAuthService;
+use App\Services\TelegramBotBuilderService;
 use App\Services\TelegramService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
@@ -21,6 +22,11 @@ use Illuminate\Support\Facades\Log;
  */
 class TelegramWebhookController extends Controller
 {
+    public function __construct(
+        private readonly TelegramBotBuilderService $telegramBotBuilder
+    ) {
+    }
+
     public function handle(
         Request $request,
         TelegramAuthService $telegramAuthService,
@@ -74,26 +80,12 @@ class TelegramWebhookController extends Controller
         return match ($command) {
             '/start' => $this->handleStart($chatId, $argument, $telegramAuthService, $telegramService),
             '/home' => $this->handleHome($chatId, $telegramAuthService, $telegramService),
-            '/help' => $this->reply($telegramService, $chatId, $this->helpMessage()),
+            '/help' => $this->reply($telegramService, $chatId, $this->helpMessage(), $this->launchKeyboard()),
             '/menu' => $this->handleMenu($chatId, $telegramAuthService, $telegramService),
             '/admin' => $this->handleAdmin($chatId, $telegramAuthService, $telegramService),
-            '/connect' => $this->handleConnect(
-                $chatId,
-                $argument,
-                $telegramAuthService,
-                $telegramService
-            ),
-            '/me' => $this->handleMe(
-                $chatId,
-                $telegramAuthService,
-                $telegramService
-            ),
+            '/me' => $this->handleMe($chatId, $telegramAuthService, $telegramService),
             '/day',
-            '/today' => $this->handleToday(
-                $chatId,
-                $telegramAuthService,
-                $telegramService
-            ),
+            '/today' => $this->handleToday($chatId, $telegramAuthService, $telegramService),
             default => $this->handlePlainText($chatId, $text, $telegramAuthService, $telegramService),
         };
     }
@@ -122,13 +114,7 @@ class TelegramWebhookController extends Controller
             'admin' => $this->handleAdmin($chatId, $telegramAuthService, $telegramService),
             'me' => $this->handleMe($chatId, $telegramAuthService, $telegramService),
             'help' => $this->reply($telegramService, $chatId, $this->helpMessage()),
-            'connect' => $this->reply(
-                $telegramService,
-                $chatId,
-                $this->notLinkedMessage(),
-                $this->miniConnectKeyboard()
-            ),
-            default => $this->reply($telegramService, $chatId, $this->fallbackMessage()),
+            default => $this->reply($telegramService, $chatId, $this->fallbackMessage(), $this->launchKeyboard()),
         };
     }
 
@@ -142,13 +128,8 @@ class TelegramWebhookController extends Controller
 
         return match ($normalized) {
             'home' => $this->handleHome($chatId, $telegramAuthService, $telegramService),
-            'today', 'day' => $this->handleToday($chatId, $telegramAuthService, $telegramService),
-            'connect' => $this->handleConnect(
-                $chatId,
-                '',
-                $telegramAuthService,
-                $telegramService
-            ),
+            'today',
+            'day' => $this->handleToday($chatId, $telegramAuthService, $telegramService),
             'admin' => $this->handleAdmin($chatId, $telegramAuthService, $telegramService),
             'help' => $this->reply($telegramService, $chatId, $this->helpMessage(), $this->launchKeyboard()),
             'menu' => $this->handleMenu($chatId, $telegramAuthService, $telegramService),
@@ -189,39 +170,37 @@ class TelegramWebhookController extends Controller
                 'today' => $this->handleToday($chatId, $telegramAuthService, $telegramService),
                 'admin' => $this->handleAdmin($chatId, $telegramAuthService, $telegramService),
                 'me' => $this->handleMe($chatId, $telegramAuthService, $telegramService),
-                'connect' => $this->reply(
+                'help' => $this->reply($telegramService, $chatId, $this->helpMessage(), $this->launchKeyboard()),
+                default => $this->reply(
                     $telegramService,
                     $chatId,
                     $this->notLinkedMessage(),
                     $this->miniConnectKeyboard()
                 ),
-                default => $this->reply(
-                    $telegramService,
-                    $chatId,
-                    "Unknown Telegram entry point: /start {$argument}"
-                ),
             };
         }
 
-        return $this->bindFromCode($chatId, $argument, $telegramAuthService, $telegramService, 'start');
-    }
+        if ($this->isRoleHint(trim((string) $argument))) {
+            $actor = $this->actorFromChatId($chatId);
 
-    private function handleConnect(
-        string $chatId,
-        string $argument,
-        TelegramAuthService $telegramAuthService,
-        TelegramService $telegramService
-    ): JsonResponse {
-        if (! $argument) {
+            if (! $actor) {
+                return $this->reply(
+                    $telegramService,
+                    $chatId,
+                    $this->notLinkedMessage(),
+                    $this->miniConnectKeyboard($this->purposeFromStartRoleHint($argument))
+                );
+            }
+
             return $this->reply(
                 $telegramService,
                 $chatId,
-                $this->notLinkedMessage(),
-                $this->miniConnectKeyboard()
+                $this->menuHeading(),
+                $this->mainMenuKeyboard($actor, $telegramAuthService)
             );
         }
 
-        return $this->bindFromCode($chatId, $argument, $telegramAuthService, $telegramService, 'connect');
+        return $this->bindFromCode($chatId, $argument, $telegramAuthService, $telegramService, 'start');
     }
 
     private function handleMenu(
@@ -231,12 +210,7 @@ class TelegramWebhookController extends Controller
     ): JsonResponse {
         $actor = $this->actorFromChatId($chatId);
         if (! $actor) {
-            return $this->reply(
-                $telegramService,
-                $chatId,
-                $this->notLinkedMessage(),
-                $this->miniConnectKeyboard()
-            );
+            return $this->reply($telegramService, $chatId, $this->notLinkedMessage(), $this->miniConnectKeyboard(TelegramAuthService::PURPOSE_MEMBER_ACCESS));
         }
 
         return $this->reply(
@@ -252,6 +226,10 @@ class TelegramWebhookController extends Controller
         TelegramAuthService $telegramAuthService,
         TelegramService $telegramService
     ): JsonResponse {
+        if (! $this->telegramBotBuilder->buttonEnabled('me', 'member')) {
+            return $this->reply($telegramService, $chatId, $this->fallbackMessage(), $this->launchKeyboard());
+        }
+
         $actor = $this->actorFromChatId($chatId);
         if (! $actor) {
             return $this->reply(
@@ -275,9 +253,13 @@ class TelegramWebhookController extends Controller
         TelegramAuthService $telegramAuthService,
         TelegramService $telegramService
     ): JsonResponse {
+        if (! $this->telegramBotBuilder->commandEnabled('home')) {
+            return $this->reply($telegramService, $chatId, $this->fallbackMessage(), $this->launchKeyboard());
+        }
+
         $actor = $this->actorFromChatId($chatId);
         if (! $actor instanceof Member) {
-            return $this->reply($telegramService, $chatId, 'Only linked members can use /home.');
+            return $this->reply($telegramService, $chatId, $this->notLinkedMessage(), $this->miniConnectKeyboard(TelegramAuthService::PURPOSE_MEMBER_ACCESS));
         }
 
         $homeLink = $this->memberHomeSecureLink($actor, $telegramAuthService);
@@ -285,9 +267,11 @@ class TelegramWebhookController extends Controller
             return $this->reply($telegramService, $chatId, 'Could not generate secure member home link right now.');
         }
 
-        return $this->reply($telegramService, $chatId, 'Open your member home:', [
+        $homeLabel = $this->telegramBotBuilder->buttonLabel('home', 'member', 'Home');
+
+        return $this->reply($telegramService, $chatId, $homeLabel . ':', [
             'inline_keyboard' => [
-                [['text' => 'Open member home', 'web_app' => ['url' => $homeLink]]],
+                [['text' => $homeLabel, 'web_app' => ['url' => $homeLink]],
             ],
         ]);
     }
@@ -297,16 +281,21 @@ class TelegramWebhookController extends Controller
         TelegramAuthService $telegramAuthService,
         TelegramService $telegramService
     ): JsonResponse {
+        if (! $this->telegramBotBuilder->commandEnabled('admin')) {
+            return $this->reply($telegramService, $chatId, $this->fallbackMessage(), $this->launchKeyboard());
+        }
+
         $actor = $this->actorFromChatId($chatId);
         if (! $actor instanceof User) {
-            return $this->reply($telegramService, $chatId, 'Only linked admins can use /admin.');
+            return $this->reply($telegramService, $chatId, $this->notLinkedMessage(), $this->miniConnectKeyboard(TelegramAuthService::PURPOSE_ADMIN_ACCESS));
         }
 
         $adminLink = $this->adminSecureLink($actor, $telegramAuthService);
+        $adminLabel = $this->telegramBotBuilder->buttonLabel('admin', 'admin', 'Admin panel');
 
-        return $this->reply($telegramService, $chatId, 'Open your admin panel:', [
+        return $this->reply($telegramService, $chatId, $adminLabel . ':', [
             'inline_keyboard' => [
-                [['text' => 'Open admin panel', 'web_app' => ['url' => $adminLink]]],
+                [['text' => $adminLabel, 'web_app' => ['url' => $adminLink]]],
             ],
         ]);
     }
@@ -316,13 +305,13 @@ class TelegramWebhookController extends Controller
         TelegramAuthService $telegramAuthService,
         TelegramService $telegramService
     ): JsonResponse {
+        if (! $this->telegramBotBuilder->commandEnabled('day')) {
+            return $this->reply($telegramService, $chatId, $this->fallbackMessage(), $this->launchKeyboard());
+        }
+
         $actor = $this->actorFromChatId($chatId);
         if (! $actor instanceof Member) {
-            return $this->reply(
-                $telegramService,
-                $chatId,
-                'Only linked members can use /day.'
-            );
+            return $this->reply($telegramService, $chatId, $this->notLinkedMessage(), $this->miniConnectKeyboard(TelegramAuthService::PURPOSE_MEMBER_ACCESS));
         }
 
         $season = LentSeason::query()->latest('id')->where('is_active', true)->first();
@@ -353,9 +342,11 @@ class TelegramWebhookController extends Controller
             'purpose' => TelegramAuthService::PURPOSE_MEMBER_ACCESS,
         ]);
 
+        $label = $this->telegramBotBuilder->buttonLabel('today', 'member', 'Today');
+
         return $this->reply($telegramService, $chatId, "Day {$daily->day_number} content:", [
             'inline_keyboard' => [
-                [['text' => 'Open today', 'web_app' => ['url' => $link]]],
+                [['text' => $label, 'web_app' => ['url' => $link]]],
             ],
         ]);
     }
@@ -397,7 +388,7 @@ class TelegramWebhookController extends Controller
         return $this->reply(
             $telegramService,
             $chatId,
-            'Could not verify that code. Use a valid login link token or linked member token.'
+            'Could not verify that code. Use a valid login link or linked member token.'
         );
     }
 
@@ -408,13 +399,13 @@ class TelegramWebhookController extends Controller
         if ($actor instanceof Member) {
             $homeLink = $this->memberHomeSecureLink($actor, $telegramAuthService);
             $keyboard[] = [
-                ['text' => 'Open member home', 'web_app' => ['url' => $homeLink]],
+                ['text' => $this->telegramBotBuilder->buttonLabel('home', 'member', 'Home'), 'web_app' => ['url' => $homeLink]],
             ];
 
             $todayLink = $this->memberTodaySecureLink($actor, $telegramAuthService);
             if ($todayLink !== null) {
                 $keyboard[] = [
-                    ['text' => 'Open today', 'web_app' => ['url' => $todayLink]],
+                    ['text' => $this->telegramBotBuilder->buttonLabel('today', 'member', 'Today'), 'web_app' => ['url' => $todayLink]],
                 ];
             }
 
@@ -423,7 +414,7 @@ class TelegramWebhookController extends Controller
 
         $adminLink = $this->adminSecureLink($actor, $telegramAuthService);
         $keyboard[] = [
-            ['text' => 'Open admin panel', 'web_app' => ['url' => $adminLink]],
+            ['text' => $this->telegramBotBuilder->buttonLabel('admin', 'admin', 'Admin panel'), 'web_app' => ['url' => $adminLink]],
         ];
 
         return ['inline_keyboard' => $keyboard];
@@ -558,9 +549,14 @@ class TelegramWebhookController extends Controller
             'today', 'day' => 'today',
             'admin' => 'admin',
             'me' => 'me',
-            'connect' => 'connect',
+            'help' => 'help',
             default => null,
         };
+    }
+
+    private function isRoleHint(string $argument): bool
+    {
+        return in_array($argument, ['member', 'admin', 'writer', 'editor'], true);
     }
 
     private function verifySecret(Request $request): bool
@@ -600,8 +596,7 @@ class TelegramWebhookController extends Controller
 
     private function welcomeMessage(): string
     {
-        return "Welcome to Abiy Tsom.\n\n"
-            . "Use the menu below to connect or open the mini app securely.";
+        return $this->telegramBotBuilder->welcomeMessage();
     }
 
     private function fallbackMessage(): string
@@ -611,12 +606,22 @@ class TelegramWebhookController extends Controller
 
     private function helpMessage(): string
     {
-        return 'Use the buttons in chat. If you are linked, I can open your member or admin views in one tap.';
+        $message = $this->telegramBotBuilder->helpMessage();
+        if (str_contains(strtolower($message), '/connect')) {
+            return 'Use the buttons below to open the Abiy Tsom app securely.';
+        }
+
+        return $message;
     }
 
     private function notLinkedMessage(): string
     {
-        return 'Your Telegram account is not linked. Tap Connect account and paste your one-time link code.';
+        $message = $this->telegramBotBuilder->notLinkedMessage();
+        if (str_contains(strtolower($message), '/connect')) {
+            return 'Your account is not linked yet. Open the app and continue securely.';
+        }
+
+        return $message;
     }
 
     private function menuHeading(): string
@@ -626,49 +631,93 @@ class TelegramWebhookController extends Controller
 
     private function launchKeyboard(): array
     {
+        $rows = [
+            [
+                ['text' => $this->telegramBotBuilder->menuButtonLabel(), 'web_app' => ['url' => $this->miniConnectUrl()]],
+            ],
+        ];
+
+        if ($this->telegramBotBuilder->commandEnabled('menu')) {
+            $rows[] = [['text' => $this->telegramBotBuilder->buttonLabel('menu', 'member', 'Menu'), 'callback_data' => 'menu']];
+        }
+
+        return ['inline_keyboard' => $rows];
+    }
+
+    private function miniConnectKeyboard(?string $purpose = null): array
+    {
         return ['inline_keyboard' => [
-            [['text' => 'Connect account', 'web_app' => ['url' => $this->miniConnectUrl()]]],
-            [['text' => 'Open menu', 'callback_data' => 'menu']],
-            [['text' => 'Open website', 'web_app' => ['url' => route('home')]]],
+            [['text' => $this->telegramBotBuilder->menuButtonLabel(), 'web_app' => ['url' => $this->miniConnectUrl($purpose)]]],
         ]];
     }
 
-    private function miniConnectKeyboard(): array
+    private function miniConnectUrl(?string $purpose = null): string
     {
-        return ['inline_keyboard' => [
-            [['text' => 'Open connect screen', 'web_app' => ['url' => $this->miniConnectUrl()]]],
-            [['text' => 'Open website', 'web_app' => ['url' => route('home')]]],
-        ]];
-    }
+        if ($purpose !== null) {
+            return route('telegram.mini.connect', ['purpose' => $purpose]);
+        }
 
-    private function miniConnectUrl(): string
-    {
         return route('telegram.mini.connect');
+    }
+
+    private function purposeFromStartRoleHint(string $argument): ?string
+    {
+        return match (strtolower(trim($argument))) {
+            'member' => TelegramAuthService::PURPOSE_MEMBER_ACCESS,
+            'admin', 'writer', 'editor' => TelegramAuthService::PURPOSE_ADMIN_ACCESS,
+            default => null,
+        };
     }
 
     private function mainMenuKeyboard(Member|User $actor, TelegramAuthService $telegramAuthService): array
     {
+        $rows = [];
+
         if ($actor instanceof Member) {
             $homeLink = $this->memberHomeSecureLink($actor, $telegramAuthService);
             $todayLink = $this->memberTodaySecureLink($actor, $telegramAuthService);
-            $dayButtons = [['text' => 'Home', 'web_app' => ['url' => $homeLink]]];
-            if ($todayLink !== null) {
-                $dayButtons[] = ['text' => 'Today', 'web_app' => ['url' => (string) $todayLink]];
+
+            $memberRow = [];
+            if ($this->telegramBotBuilder->buttonEnabled('home', 'member')) {
+                $memberRow[] = ['text' => $this->telegramBotBuilder->buttonLabel('home', 'member', 'Home'), 'web_app' => ['url' => $homeLink]];
             }
 
-            return ['inline_keyboard' => [
-                $dayButtons,
-                [['text' => 'Open website', 'web_app' => ['url' => route('member.home')]]],
-            ]];
+            if ($this->telegramBotBuilder->buttonEnabled('today', 'member') && $todayLink !== null) {
+                $memberRow[] = ['text' => $this->telegramBotBuilder->buttonLabel('today', 'member', 'Today'), 'web_app' => ['url' => (string) $todayLink]];
+            }
+
+            if ($memberRow !== []) {
+                $rows[] = $memberRow;
+            }
+
+            if ($this->telegramBotBuilder->buttonEnabled('me', 'member')) {
+                $rows[] = [['text' => $this->telegramBotBuilder->buttonLabel('me', 'member', 'My links'), 'callback_data' => 'me']];
+            }
+
+            if ($this->telegramBotBuilder->buttonEnabled('help', 'member')) {
+                $rows[] = [['text' => $this->telegramBotBuilder->buttonLabel('help', 'member', 'Help'), 'callback_data' => 'help']];
+            }
+
+            if ($rows === []) {
+                $rows[] = [['text' => $this->telegramBotBuilder->buttonLabel('home', 'member', 'Home'), 'web_app' => ['url' => route('member.home')]]];
+            }
+
+            return ['inline_keyboard' => $rows];
         }
 
-        $adminLink = $this->adminSecureLink($actor, $telegramAuthService);
-        $adminFallback = $this->adminFallbackPath($actor);
+        if ($this->telegramBotBuilder->buttonEnabled('admin', 'admin')) {
+            $adminLink = $this->adminSecureLink($actor, $telegramAuthService);
+            $rows[] = [['text' => $this->telegramBotBuilder->buttonLabel('admin', 'admin', 'Admin panel'), 'web_app' => ['url' => $adminLink]]];
+        }
 
-        return ['inline_keyboard' => [
-            [['text' => 'Admin panel', 'web_app' => ['url' => $adminLink]]],
-            [['text' => 'Open website', 'web_app' => ['url' => $adminFallback]]],
-            [['text' => 'Profile', 'callback_data' => 'me']],
-        ]];
+        if ($this->telegramBotBuilder->buttonEnabled('help', 'admin')) {
+            $rows[] = [['text' => $this->telegramBotBuilder->buttonLabel('help', 'admin', 'Help'), 'callback_data' => 'help']];
+        }
+
+        if ($rows === []) {
+            $rows[] = [['text' => $this->telegramBotBuilder->buttonLabel('admin', 'admin', 'Admin panel'), 'web_app' => ['url' => $this->adminFallbackPath($actor)]]];
+        }
+
+        return ['inline_keyboard' => $rows];
     }
 }

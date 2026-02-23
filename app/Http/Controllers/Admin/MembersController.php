@@ -9,6 +9,7 @@ use App\Models\Member;
 use App\Models\MemberChecklist;
 use App\Models\MemberCustomActivity;
 use App\Models\MemberCustomChecklist;
+use App\Services\TelegramAuthService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -57,6 +58,8 @@ class MembersController extends Controller
             ->orWhereHas('customChecklists', fn ($q) => $q->where('completed', true))
             ->count();
 
+        $telegramBotUsername = ltrim((string) config('services.telegram.bot_username', ''), '@');
+        $telegramMemberLinks = (array) session('telegram_member_links', []);
         $members = Member::orderByDesc('created_at')->paginate(25);
 
         return view('admin.members.index', compact(
@@ -72,7 +75,9 @@ class MembersController extends Controller
             'totalChecklistCompletions',
             'totalCustomCompletions',
             'engagedMembers',
-            'members'
+            'members',
+            'telegramBotUsername',
+            'telegramMemberLinks'
         ));
     }
 
@@ -104,7 +109,7 @@ class MembersController extends Controller
     }
 
     /**
-     * Delete every member and all their data (nuclear option).
+     * Wipe every member and all their data (nuclear option).
      * Uses DELETE instead of TRUNCATE to avoid MySQL FK constraint errors.
      */
     public function wipeAll(): RedirectResponse
@@ -116,5 +121,38 @@ class MembersController extends Controller
 
         return redirect()->route('admin.members.index')
             ->with('success', __('app.all_members_wiped'));
+    }
+
+    /**
+     * Generate a one-time Telegram mini-app launch link for this member.
+     */
+    public function createTelegramMiniLink(
+        Member $member,
+        TelegramAuthService $telegramAuthService
+    ): RedirectResponse {
+        $telegramBotUsername = ltrim((string) config('services.telegram.bot_username', ''), '@');
+        if ($telegramBotUsername === '') {
+            return redirect()
+                ->route('admin.members.index')
+                ->with('error', __('app.telegram_bot_username_missing'));
+        }
+
+        $code = $telegramAuthService->createCode(
+            $member,
+            TelegramAuthService::PURPOSE_MEMBER_ACCESS,
+            route('member.home'),
+            120
+        );
+
+        $payload = 'member:' . $code;
+        $link = 'https://t.me/' . $telegramBotUsername . '?startapp=' . rawurlencode($payload);
+
+        $links = (array) session('telegram_member_links', []);
+        $links[$member->id] = $link;
+
+        return redirect()
+            ->route('admin.members.index')
+            ->with('success', 'One-time Telegram mini-app link generated for ' . $member->baptism_name . '.')
+            ->with('telegram_member_links', $links);
     }
 }

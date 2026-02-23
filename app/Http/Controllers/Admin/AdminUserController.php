@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\TelegramAuthService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -26,8 +27,9 @@ class AdminUserController extends Controller
         $users = User::orderBy('is_super_admin', 'desc')
             ->orderBy('name')
             ->get();
+        $telegramAdminLinks = (array) session('telegram_admin_links', []);
 
-        return view('admin.admins.index', compact('users'));
+        return view('admin.admins.index', compact('users', 'telegramAdminLinks'));
     }
 
     /**
@@ -71,6 +73,47 @@ class AdminUserController extends Controller
         $this->guardSuperAdmin($admin);
 
         return view('admin.admins.show', compact('admin'));
+    }
+
+    /**
+     * Create a one-time Telegram mini-app launch link for an admin.
+     */
+    public function createTelegramMiniLink(
+        User $admin,
+        TelegramAuthService $telegramAuthService
+    ): RedirectResponse {
+        $telegramBotUsername = ltrim((string) config('services.telegram.bot_username', ''), '@');
+        if ($telegramBotUsername === '') {
+            return redirect()
+                ->route('admin.admins.index')
+                ->with('error', __('app.telegram_bot_username_missing'));
+        }
+
+        $code = $telegramAuthService->createCode(
+            $admin,
+            TelegramAuthService::PURPOSE_ADMIN_ACCESS,
+            $this->adminFallbackPath($admin),
+            30
+        );
+
+        $payload = 'admin:' . $code;
+        $link = 'https://t.me/' . $telegramBotUsername . '?startapp=' . rawurlencode($payload);
+
+        $links = (array) session('telegram_admin_links', []);
+        $links[$admin->id] = $link;
+
+        return redirect()
+            ->route('admin.admins.index')
+            ->with('success', __('app.telegram_admin_link_created', ['name' => $admin->name]))
+            ->with('telegram_admin_links', $links);
+    }
+
+    private function adminFallbackPath(User $admin): string
+    {
+        return match ($admin->role) {
+            'writer' => route('admin.daily.index'),
+            default => route('admin.dashboard'),
+        };
     }
 
     /**

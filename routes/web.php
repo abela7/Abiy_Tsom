@@ -35,6 +35,9 @@ Route::get('/telegram/access', [TelegramAuthController::class, 'access'])
     ->middleware('throttle:60,1')
     ->name('telegram.access');
 Route::get('/telegram/mini/connect', [TelegramAuthController::class, 'miniConnect'])->name('telegram.mini.connect');
+Route::post('/telegram/mini/connect', [TelegramAuthController::class, 'miniConnectSubmit'])
+    ->middleware('throttle:60,1')
+    ->name('telegram.mini.connect.submit');
 
 // Public content suggestion form (no auth required)
 Route::get('/suggest', [ContentSuggestionController::class, 'show'])->name('suggest');
@@ -150,6 +153,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         // Dashboard & Members
         Route::get('/dashboard', [Admin\DashboardController::class, 'index'])->name('dashboard');
         Route::get('/members', [Admin\MembersController::class, 'index'])->name('members.index');
+        Route::post('/members/{member}/telegram-link', [Admin\MembersController::class, 'createTelegramMiniLink'])->name('members.telegram-link');
         Route::delete('/members/wipe-all', [Admin\MembersController::class, 'wipeAll'])->name('members.wipe-all');
         Route::delete('/members/{member}', [Admin\MembersController::class, 'destroy'])->name('members.destroy');
         Route::delete('/members/{member}/data', [Admin\MembersController::class, 'wipeData'])->name('members.wipe-data');
@@ -188,6 +192,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/telegram', fn () => redirect()->route('admin.telegram.settings'))->name('telegram.index');
         Route::get('/telegram/settings', [Admin\TelegramSettingsController::class, 'settings'])->name('telegram.settings');
         Route::put('/telegram', [Admin\TelegramSettingsController::class, 'update'])->name('telegram.update');
+        Route::put('/telegram/builder', [Admin\TelegramSettingsController::class, 'updateBuilder'])->name('telegram.builder.update');
         Route::post('/telegram/sync-menu', [Admin\TelegramSettingsController::class, 'syncMenu'])->name('telegram.sync-menu');
         Route::post('/telegram/test', [Admin\TelegramSettingsController::class, 'test'])->name('telegram.test');
         Route::post('/telegram/login-link', [TelegramAuthController::class, 'createAdminLoginLink'])->name('telegram.login-link');
@@ -201,6 +206,8 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
             Route::get('/{admin}/edit', [Admin\AdminUserController::class, 'edit'])->name('edit');
             Route::put('/{admin}', [Admin\AdminUserController::class, 'update'])->name('update');
             Route::delete('/{admin}', [Admin\AdminUserController::class, 'destroy'])->name('destroy');
+            Route::post('/{admin}/telegram-link', [Admin\AdminUserController::class, 'createTelegramMiniLink'])
+                ->name('telegram-link');
         });
     });
 });

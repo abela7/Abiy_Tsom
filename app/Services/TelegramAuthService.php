@@ -16,6 +16,7 @@ final class TelegramAuthService
     public const PURPOSE_MEMBER_ACCESS = 'member_access';
     public const PURPOSE_ADMIN_ACCESS = 'admin_access';
     private const CODE_LENGTH = 32;
+    private const WEB_APP_AUTH_MAX_AGE_SECONDS = 86400;
 
     private const DEFAULT_TTL_MINUTES = [
         self::PURPOSE_MEMBER_ACCESS => 1440, // 24h
@@ -168,5 +169,134 @@ final class TelegramAuthService
         }
 
         return $normalizedPath;
+    }
+
+    public function parseWebAppInitData(?string $initData): ?array
+    {
+        if (trim((string) $this->botToken()) === '') {
+            return null;
+        }
+
+        $payload = (string) $initData;
+        if ($payload === '') {
+            return null;
+        }
+
+        parse_str($payload, $parts);
+        if (! is_array($parts)) {
+            return null;
+        }
+
+        if (! isset($parts['hash']) || ! is_string($parts['hash'])) {
+            return null;
+        }
+
+        $hash = trim($parts['hash']);
+        if ($hash === '') {
+            return null;
+        }
+
+        unset($parts['hash']);
+
+        $checkData = [];
+        foreach ($parts as $key => $value) {
+            if (is_array($value)) {
+                $value = (string) reset($value);
+            }
+            if (! is_scalar($value)) {
+                continue;
+            }
+            $checkData[(string) $key] = (string) $value;
+        }
+
+        ksort($checkData, SORT_STRING);
+        $dataCheck = [];
+        foreach ($checkData as $key => $value) {
+            $dataCheck[] = "{$key}={$value}";
+        }
+
+        $secretKey = hash('sha256', $this->botToken(), true);
+        $calcHash = hash_hmac('sha256', implode("\n", $dataCheck), $secretKey);
+        if (! hash_equals($hash, $calcHash)) {
+            return null;
+        }
+
+        $authDate = (int) ($parts['auth_date'] ?? 0);
+        if ($authDate <= 0) {
+            return null;
+        }
+
+        if ((now()->timestamp - $authDate) > self::WEB_APP_AUTH_MAX_AGE_SECONDS) {
+            return null;
+        }
+
+        if (! isset($parts['user']) || ! is_string($parts['user'])) {
+            return null;
+        }
+
+        $userPayload = json_decode($parts['user'], true);
+        if (! is_array($userPayload)) {
+            return null;
+        }
+
+        $telegramUserId = isset($userPayload['id']) ? (string) $userPayload['id'] : '';
+        if (! preg_match('/^[0-9]+$/', $telegramUserId)) {
+            return null;
+        }
+
+        return [
+            'user_id' => $telegramUserId,
+            'user' => $userPayload,
+            'start_param' => isset($parts['start_param']) && is_string($parts['start_param']) && trim($parts['start_param']) !== ''
+                ? trim($parts['start_param'])
+                : null,
+            'auth_date' => $authDate,
+            'raw' => $payload,
+            'hash' => $hash,
+        ];
+    }
+
+    public function actorFromTelegramId(string $telegramId): Member|User|null
+    {
+        $telegramId = trim($telegramId);
+        if ($telegramId === '') {
+            return null;
+        }
+
+        $member = Member::query()->where('telegram_chat_id', $telegramId)->first();
+        if ($member instanceof Member) {
+            return $member;
+        }
+
+        return User::query()->where('telegram_chat_id', $telegramId)->first();
+    }
+
+    public function bindActorToTelegramId(Member|User $actor, string $telegramId): void
+    {
+        $telegramId = trim($telegramId);
+        if ($telegramId === '') {
+            return;
+        }
+
+        $this->releaseTelegramChatId($telegramId);
+
+        if ((string) $actor->telegram_chat_id === $telegramId) {
+            return;
+        }
+
+        $actor->forceFill([
+            'telegram_chat_id' => $telegramId,
+        ])->save();
+    }
+
+    private function releaseTelegramChatId(string $telegramId): void
+    {
+        Member::query()
+            ->where('telegram_chat_id', $telegramId)
+            ->update(['telegram_chat_id' => null]);
+
+        User::query()
+            ->where('telegram_chat_id', $telegramId)
+            ->update(['telegram_chat_id' => null]);
     }
 }

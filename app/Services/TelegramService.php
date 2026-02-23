@@ -74,6 +74,22 @@ final class TelegramService
     }
 
     /**
+     * Configure bot default menu button to open the mini app.
+     */
+    public function setChatMenuButton(string $text, string $url): bool
+    {
+        return $this->apiCall('setChatMenuButton', [
+            'menu_button' => [
+                'type' => 'web_app',
+                'text' => $text,
+                'web_app' => [
+                    'url' => $url,
+                ],
+            ],
+        ]);
+    }
+
+    /**
      * Acknowledge callback button taps from inline keyboards.
      */
     public function answerCallbackQuery(string $callbackQueryId, string $text = '', bool $showAlert = false): bool

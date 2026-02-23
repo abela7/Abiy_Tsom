@@ -29,6 +29,12 @@
                 <div class="text-sm text-muted-text">{{ $user->email ?? '—' }}</div>
                 <div class="text-sm text-secondary">{{ __('app.' . $user->role) }}</div>
                 <div class="flex flex-wrap gap-3 pt-2 border-t border-border mt-2">
+                    <form method="POST" action="{{ route('admin.admins.telegram-link', $user) }}" class="inline">
+                        @csrf
+                        <button type="submit" class="text-accent font-medium hover:underline active:opacity-80">
+                            {{ __('app.telegram_generate_admin_link') }}
+                        </button>
+                    </form>
                     <a href="{{ route('admin.admins.show', $user) }}"
                        class="text-accent font-medium hover:underline active:opacity-80">{{ __('app.view') }}</a>
                     <a href="{{ route('admin.admins.edit', $user) }}"
@@ -73,21 +79,58 @@
                         <td class="px-4 py-3">{{ $user->name }}</td>
                         <td class="px-4 py-3 text-muted-text">{{ $user->email ?? '—' }}</td>
                         <td class="px-4 py-3">{{ __('app.' . $user->role) }}</td>
-                        <td class="px-4 py-3 flex flex-wrap gap-3">
-                            <a href="{{ route('admin.admins.show', $user) }}" class="text-accent hover:underline">{{ __('app.view') }}</a>
-                            <a href="{{ route('admin.admins.edit', $user) }}" class="text-accent hover:underline">{{ __('app.edit') }}</a>
-                            @if(!$user->is_super_admin)
-                                <form method="POST" action="{{ route('admin.admins.destroy', $user) }}" onsubmit="return confirm('{{ __('app.confirm_delete_admin') }}')" class="inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-error hover:underline">{{ __('app.delete') }}</button>
-                                </form>
-                            @endif
-                        </td>
+                <td class="px-4 py-3 flex flex-wrap gap-3">
+                    <form method="POST" action="{{ route('admin.admins.telegram-link', $user) }}">
+                        @csrf
+                        <button type="submit" class="text-accent hover:underline">{{ __('app.telegram_generate_admin_link') }}</button>
+                    </form>
+                    <a href="{{ route('admin.admins.show', $user) }}" class="text-accent hover:underline">{{ __('app.view') }}</a>
+                    <a href="{{ route('admin.admins.edit', $user) }}" class="text-accent hover:underline">{{ __('app.edit') }}</a>
+                    @if(!$user->is_super_admin)
+                        <form method="POST" action="{{ route('admin.admins.destroy', $user) }}" onsubmit="return confirm('{{ __('app.confirm_delete_admin') }}')" class="inline">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="text-error hover:underline">{{ __('app.delete') }}</button>
+                        </form>
+                    @endif
+                    @php
+                        $adminTelegramLink = $telegramAdminLinks[$user->id] ?? null;
+                    @endphp
+                    @if (is_string($adminTelegramLink))
+                        <div class="w-full mt-2">
+                            <input id="admin-telegram-link-{{ $user->id }}"
+                                   type="text"
+                                   class="w-64 max-w-full px-2 py-1.5 text-xs border border-border rounded-md bg-card text-secondary"
+                                   value="{{ $adminTelegramLink }}"
+                                   readonly>
+                            <button type="button"
+                                    onclick="copyToClipboard('admin-telegram-link-{{ $user->id }}')"
+                                    class="px-2 py-1.5 rounded-md bg-surface border border-border text-xs">
+                                Copy
+                            </button>
+                            <a href="{{ $adminTelegramLink }}"
+                               target="_blank"
+                               class="px-2 py-1.5 rounded-md bg-accent text-on-accent text-xs">
+                                Open
+                            </a>
+                        </div>
+                    @endif
+                </td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
     </div>
 </div>
+@push('scripts')
+<script>
+    function copyToClipboard(inputId) {
+        const input = document.getElementById(inputId);
+        if (!input) {
+            return;
+        }
+        navigator.clipboard.writeText(input.value).catch(() => {});
+    }
+</script>
+@endpush
 @endsection
