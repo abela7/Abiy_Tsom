@@ -105,7 +105,7 @@ final class TelegramBotBuilderService
         $buttons = $scope === 'admin' ? $this->adminButtons() : $this->memberButtons();
         $label = trim((string) data_get($buttons, $key . '.label', ''));
         if ($label === '') {
-            return self::DEFAULT_KEYBOARD_LABELS[$key] ?? $fallback;
+            return $fallback;
         }
 
         return $label;

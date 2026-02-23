@@ -328,7 +328,7 @@ return [
     'telegram_builder_command_help_desc' => 'Show help',
     'telegram_builder_member_keyboard' => 'Member quick buttons',
     'telegram_builder_admin_keyboard' => 'Admin quick buttons',
-    'telegram_builder_member_home' => 'Home',
+    'telegram_builder_member_home' => 'መነሻ',
     'telegram_builder_member_today' => 'Today',
     'telegram_builder_member_me' => 'My links',
     'telegram_builder_member_help' => 'Help',
