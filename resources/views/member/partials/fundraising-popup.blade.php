@@ -6,7 +6,7 @@
      x-init="init()"
      x-cloak>
 
-    {{-- ── Backdrop ── --}}
+    {{-- ── Backdrop (non-dismissible — user must answer) ── --}}
     <div x-show="open"
          x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="opacity-0"
@@ -15,7 +15,6 @@
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
          class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[90]"
-         @click="step === 1 && notToday()"
          style="display:none;">
     </div>
 
@@ -56,18 +55,21 @@
                 </template>
 
                 <div class="px-5 pt-4 pb-2">
-                    {{-- Gold accent badge --}}
+                    {{-- Badge — gold on dark, blue on light --}}
                     <div class="inline-flex items-center gap-2 mb-3 px-3 py-1 rounded-full border"
-                         style="border-color:#e2ca18;background:rgba(226,202,24,0.08)">
-                        <span class="w-1.5 h-1.5 rounded-full" style="background:#e2ca18"></span>
-                        <p class="text-xs font-bold uppercase tracking-widest" style="color:#e2ca18">
+                         :style="$root.darkMode
+                             ? 'border-color:#e2ca18;background:rgba(226,202,24,0.10);color:#e2ca18'
+                             : 'border-color:#0a6286;background:rgba(10,98,134,0.08);color:#0a6286'">
+                        <span class="w-1.5 h-1.5 rounded-full"
+                              :style="$root.darkMode ? 'background:#e2ca18' : 'background:#0a6286'"></span>
+                        <p class="text-xs font-bold uppercase tracking-widest">
                             {{ __('app.fundraising_popup_badge') }}
                         </p>
                     </div>
 
-                    {{-- Title in brand gold --}}
+                    {{-- Title — gold on dark, blue on light --}}
                     <h2 class="text-xl font-extrabold leading-snug mb-3"
-                        style="color:#e2ca18"
+                        :style="$root.darkMode ? 'color:#e2ca18' : 'color:#0a6286'"
                         x-text="campaign.title"></h2>
 
                     {{-- Description --}}
@@ -76,10 +78,14 @@
 
                 {{-- Buttons --}}
                 <div class="px-5 pb-6 pt-3 space-y-2.5 shrink-0">
+                    {{-- CTA: pulsing attention animation, theme-aware --}}
                     <button @click="step = 2"
-                            class="w-full py-3.5 font-bold text-sm rounded-2xl transition active:scale-95 shadow-lg"
-                            style="background:#e2ca18;color:#1a1a1a">
-                        🙏 {{ __('app.fundraising_popup_interested') }}
+                            class="fund-cta-btn w-full py-3.5 font-bold text-sm rounded-2xl active:scale-95 shadow-lg relative overflow-hidden"
+                            :style="$root.darkMode
+                                ? 'background:#e2ca18;color:#1a1a1a'
+                                : 'background:#0a6286;color:#ffffff'">
+                        <span class="fund-cta-shimmer absolute inset-0 rounded-2xl pointer-events-none"></span>
+                        <span class="relative">🙏 {{ __('app.fundraising_popup_interested') }}</span>
                     </button>
                     <button @click="notToday()"
                             class="w-full py-2.5 text-sm text-muted-text font-medium rounded-2xl hover:bg-muted active:scale-95 transition">
@@ -231,7 +237,8 @@
                     </svg>
                 </div>
 
-                <h2 class="text-xl font-extrabold mb-2" style="color:#e2ca18">
+                <h2 class="text-xl font-extrabold mb-2"
+                    :style="$root.darkMode ? 'color:#e2ca18' : 'color:#0a6286'">
                     {{ __('app.fundraising_thankyou_title') }}
                 </h2>
                 <p class="text-sm text-secondary leading-relaxed mb-6">
@@ -277,6 +284,39 @@
 </div>
 
 @push('scripts')
+<style>
+/* CTA button: gentle pulse-glow drawing the eye */
+@keyframes fund-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(226,202,24,0.55), 0 4px 14px rgba(226,202,24,0.25); }
+    50%       { box-shadow: 0 0 0 10px rgba(226,202,24,0), 0 4px 14px rgba(226,202,24,0.10); }
+}
+.fund-cta-btn {
+    animation: fund-pulse 2.2s ease-in-out infinite;
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+.fund-cta-btn:active { animation: none; }
+
+/* Shimmer sweep across the button */
+@keyframes fund-shimmer {
+    0%   { transform: translateX(-120%) skewX(-20deg); opacity: 0; }
+    15%  { opacity: 0.35; }
+    85%  { opacity: 0.35; }
+    100% { transform: translateX(220%) skewX(-20deg); opacity: 0; }
+}
+.fund-cta-shimmer {
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent);
+    animation: fund-shimmer 2.8s ease-in-out infinite;
+}
+
+/* Light mode: pulse uses blue glow instead of gold */
+html:not(.dark) .fund-cta-btn {
+    animation-name: fund-pulse-light;
+}
+@keyframes fund-pulse-light {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(10,98,134,0.50), 0 4px 14px rgba(10,98,134,0.20); }
+    50%       { box-shadow: 0 0 0 10px rgba(10,98,134,0), 0 4px 14px rgba(10,98,134,0.08); }
+}
+</style>
 <script>
 function fundraisingPopup() {
     return {
