@@ -140,25 +140,22 @@
                         <label class="block text-xs font-semibold text-secondary mb-1.5 uppercase tracking-wide">
                             {{ __('app.name') }} <span class="text-red-400">*</span>
                         </label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-3 flex items-center text-muted-text pointer-events-none">
+                        <div class="flex items-center rounded-xl border bg-surface transition"
+                             :class="errors.name
+                                 ? 'border-red-400 ring-2 ring-red-300/40'
+                                 : 'border-border focus-within:ring-2 focus-within:ring-[#0a6286]/30 focus-within:border-[#0a6286]'">
+                            <span class="flex-shrink-0 pl-3 pr-2 text-muted-text">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                           d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                                 </svg>
                             </span>
                             <input type="text" x-model="form.name"
-                                   class="w-full pl-9 pr-3 py-3 rounded-xl border bg-surface text-primary text-sm
-                                          focus:outline-none focus:ring-2 transition"
-                                   :class="errors.name
-                                       ? 'border-red-400 focus:ring-red-300/40'
-                                       : 'border-border focus:ring-[#0a6286]/30 focus:border-[#0a6286]'"
+                                   class="flex-1 py-3 pr-3 bg-transparent text-primary text-sm focus:outline-none placeholder-muted-text"
                                    placeholder="{{ __('app.fundraising_name_placeholder') }}"
                                    @keyup.enter="$refs.phoneInput.focus()">
                         </div>
-                        <p x-show="errors.name" x-text="errors.name"
-                           class="mt-1 text-xs text-red-500 flex items-center gap-1">
-                        </p>
+                        <p x-show="errors.name" x-text="errors.name" class="mt-1 text-xs text-red-500"></p>
                     </div>
 
                     {{-- Phone --}}
@@ -166,25 +163,22 @@
                         <label class="block text-xs font-semibold text-secondary mb-1.5 uppercase tracking-wide">
                             {{ __('app.phone') }} <span class="text-red-400">*</span>
                         </label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-3 flex items-center text-muted-text pointer-events-none">
+                        <div class="flex items-center rounded-xl border bg-surface transition"
+                             :class="errors.phone
+                                 ? 'border-red-400 ring-2 ring-red-300/40'
+                                 : 'border-border focus-within:ring-2 focus-within:ring-[#0a6286]/30 focus-within:border-[#0a6286]'">
+                            <span class="flex-shrink-0 pl-3 pr-2 text-muted-text">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                           d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
                                 </svg>
                             </span>
                             <input type="tel" x-model="form.phone" x-ref="phoneInput"
-                                   class="w-full pl-9 pr-3 py-3 rounded-xl border bg-surface text-primary text-sm
-                                          focus:outline-none focus:ring-2 transition"
-                                   :class="errors.phone
-                                       ? 'border-red-400 focus:ring-red-300/40'
-                                       : 'border-border focus:ring-[#0a6286]/30 focus:border-[#0a6286]'"
+                                   class="flex-1 py-3 pr-3 bg-transparent text-primary text-sm focus:outline-none placeholder-muted-text"
                                    placeholder="{{ __('app.fundraising_phone_placeholder') }}"
                                    @keyup.enter="submitInterest()">
                         </div>
-                        <p x-show="errors.phone" x-text="errors.phone"
-                           class="mt-1 text-xs text-red-500">
-                        </p>
+                        <p x-show="errors.phone" x-text="errors.phone" class="mt-1 text-xs text-red-500"></p>
                     </div>
 
                 </div>
