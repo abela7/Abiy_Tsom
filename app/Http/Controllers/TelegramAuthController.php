@@ -57,15 +57,19 @@ class TelegramAuthController extends Controller
         }
 
         $title = trim((string) $request->query('title', ''));
-        $img = trim((string) $request->query('img', ''));
-        if ($img !== '' && ! str_starts_with($img, 'https://')) {
-            $img = '';
-        }
+
+        $storedOgImage = \App\Models\SeoSetting::cached('og_image');
+        $mainImageUrl = $storedOgImage
+            ? \Illuminate\Support\Facades\Storage::disk('public')->url($storedOgImage)
+            : asset('images/og-cover.png');
+        $mainImageUrl = str_starts_with($mainImageUrl, 'http')
+            ? $mainImageUrl
+            : url($mainImageUrl);
 
         return view('telegram.embed', [
             'videoId' => $vid,
             'title' => $title,
-            'img' => $img,
+            'mainImageUrl' => $mainImageUrl,
         ]);
     }
 

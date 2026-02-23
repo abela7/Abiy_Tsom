@@ -15,7 +15,7 @@
         .player-wrap iframe { width: 100%; height: 100%; min-height: 200px; border: none; display: block; }
         .content-area { margin-top: 12px; padding: 12px 16px; border-radius: 12px; background: #1e293b; min-height: 60px; }
         .content-area .title { font-size: 16px; font-weight: 600; color: #f8fafc; line-height: 1.4; }
-        .content-area .thumb { width: 100%; max-height: 120px; object-fit: cover; border-radius: 8px; margin-top: 8px; }
+        .content-area .thumb { width: 100%; max-height: 140px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; }
         .close-btn { margin-top: 12px; padding: 12px 20px; background: #0a6286; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; }
         .close-btn:active { opacity: 0.9; }
     </style>
@@ -31,15 +31,11 @@
             ></iframe>
         </div>
         <div class="content-area">
+            <img src="{{ $mainImageUrl }}" alt="{{ __('app.app_name') }}" class="thumb">
             @if(!empty($title))
                 <p class="title">{{ $title }}</p>
             @else
                 <p class="title">{{ __('app.app_name') }}</p>
-            @endif
-            @if(!empty($img))
-                <img src="{{ $img }}" alt="" class="thumb">
-            @else
-                <img src="https://img.youtube.com/vi/{{ $videoId }}/hqdefault.jpg" alt="" class="thumb">
             @endif
         </div>
         <button type="button" class="close-btn" onclick="closeWebApp()">
