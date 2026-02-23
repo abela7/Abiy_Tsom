@@ -154,6 +154,11 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::put('/themes/{theme}', [Admin\WeeklyThemeController::class, 'update'])->name('themes.update');
     });
 
+    // Available to all authenticated admin roles (writer, editor, admin, super admin)
+    Route::middleware('admin_role:writer,editor,admin')->group(function () {
+        Route::get('/telegram/my-link', [TelegramAuthController::class, 'myTelegramLink'])->name('telegram.my-link');
+    });
+
     // Super admin only routes
     Route::middleware('super_admin')->group(function () {
         // Dashboard & Members
@@ -202,7 +207,6 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::post('/telegram/sync-menu', [Admin\TelegramSettingsController::class, 'syncMenu'])->name('telegram.sync-menu');
         Route::post('/telegram/test', [Admin\TelegramSettingsController::class, 'test'])->name('telegram.test');
         Route::post('/telegram/login-link', [TelegramAuthController::class, 'createAdminLoginLink'])->name('telegram.login-link');
-        Route::get('/telegram/my-link', [TelegramAuthController::class, 'myTelegramLink'])->name('telegram.my-link');
 
         // Admin users
         Route::prefix('admins')->name('admins.')->group(function () {
