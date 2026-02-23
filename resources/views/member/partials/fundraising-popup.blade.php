@@ -55,21 +55,9 @@
                 </template>
 
                 <div class="px-5 pt-4 pb-2">
-                    {{-- Badge — gold on dark, blue on light (reads HTML class directly) --}}
-                    <div class="inline-flex items-center gap-2 mb-3 px-3 py-1 rounded-full border"
-                         :style="isDark()
-                             ? 'border-color:#e2ca18;background:rgba(226,202,24,0.10);color:#e2ca18'
-                             : 'border-color:#0a6286;background:rgba(10,98,134,0.08);color:#0a6286'">
-                        <span class="w-1.5 h-1.5 rounded-full"
-                              :style="isDark() ? 'background:#e2ca18' : 'background:#0a6286'"></span>
-                        <p class="text-xs font-bold uppercase tracking-widest">
-                            {{ __('app.fundraising_popup_badge') }}
-                        </p>
-                    </div>
-
                     {{-- Title — gold on dark, blue on light --}}
                     <h2 class="text-xl font-extrabold leading-snug mb-3"
-                        :style="isDark() ? 'color:#e2ca18' : 'color:#0a6286'"
+                        :style="$root.darkMode ? 'color:#e2ca18' : 'color:#0a6286'"
                         x-text="campaign.title"></h2>
 
                     {{-- Description --}}
@@ -78,10 +66,10 @@
 
                 {{-- Buttons --}}
                 <div class="px-5 pb-6 pt-3 space-y-2.5 shrink-0">
-                    {{-- CTA: gold on both themes, subtle glow animation --}}
+                    {{-- CTA: pulsing attention animation, always blue --}}
                     <button @click="step = 2"
                             class="fund-cta-btn w-full py-3.5 font-bold text-sm rounded-2xl active:scale-95 shadow-lg relative overflow-hidden"
-                            style="background:#e2ca18;color:#1a1a1a">
+                            style="background:#0a6286;color:#ffffff">
                         <span class="fund-cta-shimmer absolute inset-0 rounded-2xl pointer-events-none"></span>
                         <span class="relative">🙏 {{ __('app.fundraising_popup_interested') }}</span>
                     </button>
@@ -236,7 +224,7 @@
                 </div>
 
                 <h2 class="text-xl font-extrabold mb-2"
-                    :style="isDark() ? 'color:#e2ca18' : 'color:#0a6286'">
+                    :style="$root.darkMode ? 'color:#e2ca18' : 'color:#0a6286'">
                     {{ __('app.fundraising_thankyou_title') }}
                 </h2>
                 <p class="text-sm text-secondary leading-relaxed mb-6">
@@ -283,25 +271,27 @@
 
 @push('scripts')
 <style>
-/* CTA button: slow, subtle glow-breathe — noticeable but not distracting */
-@keyframes fund-glow {
-    0%, 100% { box-shadow: 0 4px 12px rgba(226,202,24,0.25); }
-    50%       { box-shadow: 0 4px 22px rgba(226,202,24,0.55), 0 0 0 3px rgba(226,202,24,0.12); }
+/* CTA button: blue pulse-glow on both themes */
+@keyframes fund-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(10,98,134,0.55), 0 4px 14px rgba(10,98,134,0.30); }
+    50%       { box-shadow: 0 0 0 10px rgba(10,98,134,0), 0 4px 14px rgba(10,98,134,0.10); }
 }
 .fund-cta-btn {
-    animation: fund-glow 3.5s ease-in-out infinite;
+    animation: fund-pulse 2.2s ease-in-out infinite;
+    transition: transform 0.1s, box-shadow 0.1s;
 }
 .fund-cta-btn:active { animation: none; }
 
-/* Shimmer: one subtle sweep every 4 s */
+/* Shimmer sweep across the button */
 @keyframes fund-shimmer {
-    0%         { transform: translateX(-130%) skewX(-18deg); opacity: 0; }
-    10%, 90%   { opacity: 0.25; }
-    100%       { transform: translateX(230%) skewX(-18deg); opacity: 0; }
+    0%   { transform: translateX(-120%) skewX(-20deg); opacity: 0; }
+    15%  { opacity: 0.30; }
+    85%  { opacity: 0.30; }
+    100% { transform: translateX(220%) skewX(-20deg); opacity: 0; }
 }
 .fund-cta-shimmer {
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
-    animation: fund-shimmer 4s ease-in-out infinite;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent);
+    animation: fund-shimmer 2.8s ease-in-out infinite;
 }
 </style>
 <script>
@@ -314,11 +304,6 @@ function fundraisingPopup() {
         errors: {},
         submitting: false,
         shareCopied: false,
-
-        /** Reliably detects dark mode by reading the <html> class set by the theme system. */
-        isDark() {
-            return document.documentElement.classList.contains('dark');
-        },
 
         async init() {
             await new Promise(r => setTimeout(r, 1800));
