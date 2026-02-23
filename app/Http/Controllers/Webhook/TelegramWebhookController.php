@@ -951,11 +951,11 @@ class TelegramWebhookController extends Controller
         $homeCode = $telegramAuthService->createCode(
             $member,
             TelegramAuthService::PURPOSE_MEMBER_ACCESS,
-            route('member.home'),
+            route('telegram.webapp.home'),
             120
         );
 
-        return url(route('telegram.access', [
+        return url(route('telegram.webapp.home', [
             'code' => $homeCode,
             'purpose' => TelegramAuthService::PURPOSE_MEMBER_ACCESS,
         ]));

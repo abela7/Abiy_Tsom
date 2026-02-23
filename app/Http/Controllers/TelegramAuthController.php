@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\DailyContent;
+use App\Models\LentSeason;
 use App\Models\Member;
 use App\Models\TelegramAccessToken;
+use App\Models\Translation;
 use App\Models\User;
 use App\Services\MemberSessionService;
 use App\Services\TelegramAuthService;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -61,6 +65,91 @@ class TelegramAuthController extends Controller
         return response()
             ->view('telegram.embed', ['videoId' => $vid, 'title' => $title])
             ->header('Cache-Control', 'public, max-age=300');
+    }
+
+    /**
+     * Telegram Web App Home — countdown + Go to Today button.
+     * Requires valid code (member). Renders minimal HTML with real-time countdown.
+     */
+    public function webappHome(
+        Request $request,
+        TelegramAuthService $telegramAuthService
+    ): \Illuminate\View\View|\Illuminate\Http\RedirectResponse {
+        $code = (string) $request->query('code', '');
+        if (trim($code) === '') {
+            return redirect()->route('home');
+        }
+
+        $purpose = $this->detectPurpose($request->query('purpose'));
+        $token = $telegramAuthService->consumeCode($code, $purpose);
+
+        if (! $token || ! $token->actor instanceof Member) {
+            return redirect()->route('home');
+        }
+
+        $member = $token->actor;
+        $locale = in_array($member->locale ?? '', ['en', 'am'], true) ? $member->locale : 'en';
+        app()->setLocale($locale);
+        Translation::loadFromDb($locale);
+
+        $easterTimezone = config('app.easter_timezone', 'Europe/London');
+        $easterAt = Carbon::parse(
+            config('app.easter_date', '2026-04-12 03:00'),
+            $easterTimezone
+        );
+        $lentStartAt = Carbon::parse(
+            config('app.lent_start_date', '2026-02-15 03:00'),
+            $easterTimezone
+        );
+
+        $todayUrl = null;
+        $viewTodayLabel = __('app.view_today');
+        $season = LentSeason::query()->latest('id')->where('is_active', true)->first();
+
+        if ($season) {
+            $today = Carbon::today();
+            $daily = DailyContent::query()
+                ->where('lent_season_id', $season->id)
+                ->whereDate('date', $today->toDateString())
+                ->where('is_published', true)
+                ->first();
+
+            if (! $daily) {
+                $baseQuery = fn () => DailyContent::query()
+                    ->where('lent_season_id', $season->id)
+                    ->where('is_published', true);
+                if ($today->lt($season->start_date)) {
+                    $daily = ($baseQuery)()->orderBy('day_number')->first();
+                } elseif ($today->gt($season->end_date)) {
+                    $daily = ($baseQuery)()->orderByDesc('day_number')->first();
+                } else {
+                    $daily = ($baseQuery)()->where('date', '>=', $today)->orderBy('date')->first()
+                        ?? ($baseQuery)()->where('date', '<=', $today)->orderByDesc('date')->first();
+                }
+            }
+
+            if ($daily) {
+                $todayCode = $telegramAuthService->createCode(
+                    $member,
+                    TelegramAuthService::PURPOSE_MEMBER_ACCESS,
+                    route('member.day', ['daily' => $daily]),
+                    30
+                );
+                $todayUrl = url(route('telegram.access', [
+                    'code' => $todayCode,
+                    'purpose' => TelegramAuthService::PURPOSE_MEMBER_ACCESS,
+                ]));
+            }
+        }
+
+        return response()
+            ->view('telegram.home', [
+                'easterAt' => $easterAt,
+                'lentStartAt' => $lentStartAt,
+                'todayUrl' => $todayUrl,
+                'viewTodayLabel' => $viewTodayLabel,
+            ])
+            ->header('Cache-Control', 'public, max-age=60');
     }
 
     public function miniConnect(Request $request): View
