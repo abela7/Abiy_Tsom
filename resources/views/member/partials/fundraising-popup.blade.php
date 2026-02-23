@@ -1,47 +1,50 @@
 {{--
   Fundraising Popup — shown once per day to members until they express interest.
-  Loaded lazily via AbiyTsom.get('/api/member/fundraising/popup').
+  Step 1: Intro (bottom sheet) → Step 2: Contact form (centered card) → Step 3: Thank you
 --}}
 <div x-data="fundraisingPopup()"
      x-init="init()"
      x-cloak>
 
-    {{-- Backdrop --}}
+    {{-- ── Backdrop ── --}}
     <div x-show="open"
-         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="opacity-0"
          x-transition:enter-end="opacity-100"
-         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave="transition ease-in duration-200"
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
-         class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90]"
+         class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[90]"
+         @click="step === 1 && notToday()"
          style="display:none;">
     </div>
 
-    {{-- Modal --}}
-    <div x-show="open"
-         x-transition:enter="transition ease-out duration-250"
-         x-transition:enter-start="opacity-0 translate-y-8 scale-95"
-         x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-         x-transition:leave="transition ease-in duration-150"
-         x-transition:leave-start="opacity-100 translate-y-0 scale-100"
-         x-transition:leave-end="opacity-0 translate-y-4 scale-95"
+    {{-- ══════════════════════════════════════════════
+         STEP 1 — Intro  (slides up from bottom)
+    ══════════════════════════════════════════════ --}}
+    <div x-show="open && step === 1"
+         x-transition:enter="transition ease-out duration-350"
+         x-transition:enter-start="opacity-0 translate-y-full"
+         x-transition:enter-end="opacity-100 translate-y-0"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100 translate-y-0"
+         x-transition:leave-end="opacity-0 translate-y-full"
          class="fixed inset-x-0 bottom-0 z-[100] mx-auto max-w-lg"
          style="display:none;">
 
-        <div class="bg-card rounded-t-3xl shadow-2xl border border-border overflow-hidden max-h-[90vh] overflow-y-auto">
+        <div class="bg-card rounded-t-3xl shadow-2xl border-t border-border overflow-hidden max-h-[92vh] flex flex-col">
 
             {{-- Drag handle --}}
-            <div class="flex justify-center pt-3 pb-1">
+            <div class="flex justify-center pt-3 pb-0 shrink-0">
                 <div class="w-10 h-1 bg-muted-text/30 rounded-full"></div>
             </div>
 
-            {{-- Step 1: Campaign intro --}}
-            <div x-show="step === 1">
+            {{-- Scrollable body --}}
+            <div class="overflow-y-auto flex-1">
 
                 {{-- YouTube embed --}}
                 <template x-if="campaign.embed_url">
-                    <div class="relative w-full bg-black" style="padding-top:56.25%">
+                    <div class="relative w-full bg-black shrink-0" style="padding-top:56.25%">
                         <iframe :src="campaign.embed_url"
                                 class="absolute inset-0 w-full h-full"
                                 frameborder="0"
@@ -53,21 +56,29 @@
                 </template>
 
                 <div class="px-5 pt-4 pb-2">
-                    {{-- Gold accent bar --}}
-                    <div class="flex items-center gap-2 mb-3">
-                        <div class="w-1 h-5 rounded-full bg-accent-secondary shrink-0"></div>
-                        <p class="text-xs font-semibold text-accent-secondary uppercase tracking-wide">{{ __('app.fundraising_popup_badge') }}</p>
+                    {{-- Gold accent badge --}}
+                    <div class="inline-flex items-center gap-2 mb-3 px-3 py-1 rounded-full border"
+                         style="border-color:#e2ca18;background:rgba(226,202,24,0.08)">
+                        <span class="w-1.5 h-1.5 rounded-full" style="background:#e2ca18"></span>
+                        <p class="text-xs font-bold uppercase tracking-widest" style="color:#e2ca18">
+                            {{ __('app.fundraising_popup_badge') }}
+                        </p>
                     </div>
 
-                    <h2 class="text-xl font-bold leading-snug mb-2"
-                        style="color: #e2ca18;"
+                    {{-- Title in brand gold --}}
+                    <h2 class="text-xl font-extrabold leading-snug mb-3"
+                        style="color:#e2ca18"
                         x-text="campaign.title"></h2>
+
+                    {{-- Description --}}
                     <p class="text-sm text-secondary leading-relaxed" x-text="campaign.description"></p>
                 </div>
 
-                <div class="px-5 pb-5 pt-3 space-y-2.5">
+                {{-- Buttons --}}
+                <div class="px-5 pb-6 pt-3 space-y-2.5 shrink-0">
                     <button @click="step = 2"
-                            class="w-full py-3 bg-accent-secondary text-white font-semibold text-sm rounded-2xl hover:opacity-90 active:scale-95 transition shadow-md">
+                            class="w-full py-3.5 font-bold text-sm rounded-2xl transition active:scale-95 shadow-lg"
+                            style="background:#e2ca18;color:#1a1a1a">
                         🙏 {{ __('app.fundraising_popup_interested') }}
                     </button>
                     <button @click="notToday()"
@@ -75,43 +86,115 @@
                         {{ __('app.fundraising_popup_not_today') }}
                     </button>
                 </div>
+
             </div>
+        </div>
+    </div>
 
-            {{-- Step 2: Contact form --}}
-            <div x-show="step === 2" class="px-5 pt-4 pb-6">
-                <button @click="step = 1" class="flex items-center gap-1 text-muted-text text-sm mb-4 hover:text-primary transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                    </svg>
-                    {{ __('app.back') }}
-                </button>
+    {{-- ══════════════════════════════════════════════
+         STEP 2 — Contact form  (centered card)
+    ══════════════════════════════════════════════ --}}
+    <div x-show="open && step === 2"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100 scale-100"
+         x-transition:leave-end="opacity-0 scale-95"
+         class="fixed inset-0 z-[100] flex items-center justify-center p-4"
+         style="display:none;">
 
-                <h2 class="text-base font-bold text-primary mb-1">{{ __('app.fundraising_form_title') }}</h2>
-                <p class="text-sm text-muted-text mb-4">{{ __('app.fundraising_form_desc') }}</p>
+        <div class="w-full max-w-sm bg-card rounded-3xl shadow-2xl border border-border overflow-hidden">
 
-                <div class="space-y-3">
-                    <div>
-                        <label class="block text-xs font-medium text-secondary mb-1">{{ __('app.name') }} *</label>
-                        <input type="text" x-model="form.name"
-                               class="w-full px-3 py-2.5 rounded-xl border bg-surface text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent"
-                               :class="errors.name ? 'border-red-400' : 'border-border'"
-                               placeholder="{{ __('app.fundraising_name_placeholder') }}"
-                               @keyup.enter="$refs.phoneInput.focus()">
-                        <p x-show="errors.name" x-text="errors.name" class="mt-1 text-xs text-red-500"></p>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-secondary mb-1">{{ __('app.phone') }} *</label>
-                        <input type="tel" x-model="form.phone" x-ref="phoneInput"
-                               class="w-full px-3 py-2.5 rounded-xl border bg-surface text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent"
-                               :class="errors.phone ? 'border-red-400' : 'border-border'"
-                               placeholder="{{ __('app.fundraising_phone_placeholder') }}">
-                        <p x-show="errors.phone" x-text="errors.phone" class="mt-1 text-xs text-red-500"></p>
-                    </div>
+            {{-- Coloured top bar --}}
+            <div class="h-1.5 w-full" style="background:linear-gradient(90deg,#0a6286,#e2ca18)"></div>
+
+            <div class="p-6">
+
+                {{-- Back + step indicator --}}
+                <div class="flex items-center justify-between mb-5">
+                    <button @click="step = 1"
+                            class="flex items-center gap-1 text-sm text-muted-text hover:text-primary transition -ml-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                        {{ __('app.back') }}
+                    </button>
+                    <span class="text-xs text-muted-text">1 / 2</span>
                 </div>
 
+                {{-- Icon --}}
+                <div class="w-12 h-12 rounded-2xl flex items-center justify-center mb-4 shadow-sm"
+                     style="background:rgba(226,202,24,0.12)">
+                    <span class="text-2xl">🙏</span>
+                </div>
+
+                <h2 class="text-lg font-bold text-primary mb-1">{{ __('app.fundraising_form_title') }}</h2>
+                <p class="text-sm text-muted-text leading-relaxed mb-5">{{ __('app.fundraising_form_desc') }}</p>
+
+                {{-- Fields --}}
+                <div class="space-y-3">
+
+                    {{-- Name --}}
+                    <div>
+                        <label class="block text-xs font-semibold text-secondary mb-1.5 uppercase tracking-wide">
+                            {{ __('app.name') }} <span class="text-red-400">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-3 flex items-center text-muted-text pointer-events-none">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                </svg>
+                            </span>
+                            <input type="text" x-model="form.name"
+                                   class="w-full pl-9 pr-3 py-3 rounded-xl border bg-surface text-primary text-sm
+                                          focus:outline-none focus:ring-2 transition"
+                                   :class="errors.name
+                                       ? 'border-red-400 focus:ring-red-300/40'
+                                       : 'border-border focus:ring-[#0a6286]/30 focus:border-[#0a6286]'"
+                                   placeholder="{{ __('app.fundraising_name_placeholder') }}"
+                                   @keyup.enter="$refs.phoneInput.focus()">
+                        </div>
+                        <p x-show="errors.name" x-text="errors.name"
+                           class="mt-1 text-xs text-red-500 flex items-center gap-1">
+                        </p>
+                    </div>
+
+                    {{-- Phone --}}
+                    <div>
+                        <label class="block text-xs font-semibold text-secondary mb-1.5 uppercase tracking-wide">
+                            {{ __('app.phone') }} <span class="text-red-400">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-3 flex items-center text-muted-text pointer-events-none">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                                </svg>
+                            </span>
+                            <input type="tel" x-model="form.phone" x-ref="phoneInput"
+                                   class="w-full pl-9 pr-3 py-3 rounded-xl border bg-surface text-primary text-sm
+                                          focus:outline-none focus:ring-2 transition"
+                                   :class="errors.phone
+                                       ? 'border-red-400 focus:ring-red-300/40'
+                                       : 'border-border focus:ring-[#0a6286]/30 focus:border-[#0a6286]'"
+                                   placeholder="{{ __('app.fundraising_phone_placeholder') }}"
+                                   @keyup.enter="submitInterest()">
+                        </div>
+                        <p x-show="errors.phone" x-text="errors.phone"
+                           class="mt-1 text-xs text-red-500">
+                        </p>
+                    </div>
+
+                </div>
+
+                {{-- Submit --}}
                 <button @click="submitInterest()"
                         :disabled="submitting"
-                        class="mt-5 w-full py-3 bg-accent text-on-accent font-semibold text-sm rounded-2xl hover:opacity-90 active:scale-95 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md">
+                        class="mt-5 w-full py-3.5 font-bold text-sm rounded-2xl transition active:scale-95
+                               disabled:opacity-60 disabled:cursor-not-allowed shadow-md"
+                        style="background:#e2ca18;color:#1a1a1a">
                     <span x-show="!submitting">{{ __('app.fundraising_submit') }}</span>
                     <span x-show="submitting" class="flex items-center justify-center gap-2">
                         <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
@@ -121,39 +204,82 @@
                         {{ __('app.saving') }}...
                     </span>
                 </button>
-            </div>
 
-            {{-- Step 3: Thank you --}}
-            <div x-show="step === 3" class="px-5 pt-6 pb-8 text-center">
-                <div class="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </div>
+        </div>
+    </div>
+
+    {{-- ══════════════════════════════════════════════
+         STEP 3 — Thank you  (centered card)
+    ══════════════════════════════════════════════ --}}
+    <div x-show="open && step === 3"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 scale-90"
+         x-transition:enter-end="opacity-100 scale-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100 scale-100"
+         x-transition:leave-end="opacity-0 scale-90"
+         class="fixed inset-0 z-[100] flex items-center justify-center p-4"
+         style="display:none;">
+
+        <div class="w-full max-w-sm bg-card rounded-3xl shadow-2xl border border-border overflow-hidden text-center">
+
+            {{-- Coloured top bar --}}
+            <div class="h-1.5 w-full" style="background:linear-gradient(90deg,#0a6286,#e2ca18)"></div>
+
+            <div class="px-6 pt-8 pb-7">
+
+                {{-- Animated checkmark --}}
+                <div class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-5 shadow-lg"
+                     style="background:linear-gradient(135deg,#0a6286,#0d7aa3)">
+                    <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                     </svg>
                 </div>
-                <h2 class="text-lg font-bold text-primary mb-2">{{ __('app.fundraising_thankyou_title') }}</h2>
-                <p class="text-sm text-secondary leading-relaxed mb-6">{{ __('app.fundraising_thankyou_desc') }}</p>
 
-                <div class="space-y-3">
+                <h2 class="text-xl font-extrabold mb-2" style="color:#e2ca18">
+                    {{ __('app.fundraising_thankyou_title') }}
+                </h2>
+                <p class="text-sm text-secondary leading-relaxed mb-6">
+                    {{ __('app.fundraising_thankyou_desc') }}
+                </p>
+
+                <div class="space-y-2.5">
+
+                    {{-- Donate page --}}
                     <a :href="campaign.donate_url" target="_blank" rel="noopener"
-                       class="flex items-center justify-center gap-2 w-full py-3 bg-accent-secondary text-white font-semibold text-sm rounded-2xl hover:opacity-90 active:scale-95 transition shadow-md">
-                        🌐 {{ __('app.fundraising_view_donate_page') }}
-                    </a>
-                    <button @click="shareLink()"
-                            class="flex items-center justify-center gap-2 w-full py-2.5 bg-muted text-primary text-sm font-medium rounded-2xl hover:bg-border active:scale-95 transition">
+                       class="flex items-center justify-center gap-2 w-full py-3.5 font-bold text-sm
+                              rounded-2xl transition active:scale-95 shadow-md"
+                       style="background:#0a6286;color:#fff">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                        </svg>
+                        {{ __('app.fundraising_view_donate_page') }}
+                    </a>
+
+                    {{-- Share --}}
+                    <button @click="shareLink()"
+                            class="flex items-center justify-center gap-2 w-full py-3 font-semibold text-sm
+                                   rounded-2xl border border-border hover:bg-muted active:scale-95 transition text-primary">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
                         </svg>
                         <span x-text="shareCopied ? '{{ __('app.link_copied') }}' : '{{ __('app.fundraising_share') }}'"></span>
                     </button>
+
+                    {{-- Close --}}
                     <button @click="open = false"
                             class="w-full py-2 text-xs text-muted-text hover:text-primary transition">
                         {{ __('app.close') }}
                     </button>
+
                 </div>
             </div>
-
         </div>
     </div>
+
 </div>
 
 @push('scripts')
@@ -169,7 +295,6 @@ function fundraisingPopup() {
         shareCopied: false,
 
         async init() {
-            // Slight delay so the page settles before loading the popup
             await new Promise(r => setTimeout(r, 1800));
             try {
                 const data = await AbiyTsom.get('/api/member/fundraising/popup');
@@ -177,9 +302,7 @@ function fundraisingPopup() {
                     this.campaign = data;
                     this.open = true;
                 }
-            } catch (e) {
-                // Silently fail — popup is non-critical
-            }
+            } catch (e) { /* non-critical, fail silently */ }
         },
 
         async notToday() {
