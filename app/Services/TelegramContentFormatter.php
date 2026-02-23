@@ -746,7 +746,7 @@ final class TelegramContentFormatter
         }
 
         // Primary: canonical week range from AbiyTsomStructure
-        $weekNum = AbiyTsomStructure::getWeekForDay($referenceDay->day_number);
+        $weekNum = AbiyTsomStructure::getWeekForDay((int) $referenceDay->day_number);
         [$start, $end] = AbiyTsomStructure::getDayRangeForWeek($weekNum);
 
         $byRange = $allDays->filter(

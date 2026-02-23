@@ -837,7 +837,7 @@ class TelegramWebhookController extends Controller
                 $telegramService,
                 $chatId,
                 '⚠️ '.__('app.progress').' — '.__('app.error_try_again'),
-                [],
+                ['inline_keyboard' => [[['text' => '◀️ '.__('app.menu'), 'callback_data' => 'menu']]]],
                 $messageId
             );
         }
