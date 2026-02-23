@@ -52,6 +52,11 @@ class TelegramWebhookController extends Controller
             return response()->json(['success' => false, 'message' => 'Unauthorized.'], 401);
         }
 
+        // Store Telegram user's language for locale inference (User actors have no locale field)
+        $from = data_get($request->all(), 'callback_query.from') ?? data_get($request->all(), 'message.from') ?? [];
+        $tgLang = (string) ($from['language_code'] ?? 'en');
+        $request->attributes->set('telegram_language_code', in_array($tgLang, ['am', 'ti'], true) ? $tgLang : 'en');
+
         $callbackQuery = $request->input('callback_query');
         if (is_array($callbackQuery)) {
             return $this->handleCallbackQuery(
@@ -90,7 +95,7 @@ class TelegramWebhookController extends Controller
         return match ($command) {
             '/start' => $this->handleStart($chatId, $argument, $telegramAuthService, $telegramService),
             '/home' => $this->handleHome($chatId, $telegramAuthService, $telegramService),
-            '/help' => $this->reply($telegramService, $chatId, $this->helpMessage(), $this->helpKeyboard()),
+            '/help' => $this->handleHelpCommand($chatId, $telegramService),
             '/menu' => $this->handleMenu($chatId, $telegramAuthService, $telegramService),
             '/admin' => $this->handleAdmin($chatId, $telegramAuthService, $telegramService),
             '/me' => $this->handleMe($chatId, $telegramAuthService, $telegramService),
@@ -202,7 +207,7 @@ class TelegramWebhookController extends Controller
             'progress' => $this->handleProgress($chatId, 0, $telegramAuthService, $telegramService),
             'checklist' => $this->handleChecklist($chatId, 0, $telegramAuthService, $telegramService),
             'admin' => $this->handleAdmin($chatId, $telegramAuthService, $telegramService),
-            'help' => $this->reply($telegramService, $chatId, $this->helpMessage(), $this->helpKeyboard()),
+            'help' => $this->handleHelp($chatId, 0, $telegramAuthService, $telegramService),
             'menu' => $this->handleMenu($chatId, $telegramAuthService, $telegramService),
             'unlink' => $this->handleUnlink($chatId, 0, $telegramAuthService, $telegramService),
             'suggest' => $this->handleSuggestCallback($chatId, 0, 'suggest', $telegramAuthService, $telegramService),
@@ -353,7 +358,7 @@ class TelegramWebhookController extends Controller
                 'today' => $this->handleToday($chatId, $telegramAuthService, $telegramService),
                 'admin' => $this->handleAdmin($chatId, $telegramAuthService, $telegramService),
                 'me' => $this->handleMe($chatId, $telegramAuthService, $telegramService),
-                'help' => $this->reply($telegramService, $chatId, $this->helpMessage(), $this->helpKeyboard()),
+                'help' => $this->handleHelp($chatId, 0, $telegramAuthService, $telegramService),
                 default => $this->reply(
                     $telegramService,
                     $chatId,
@@ -392,6 +397,20 @@ class TelegramWebhookController extends Controller
         return $this->bindFromCode($chatId, $argument, $telegramAuthService, $telegramService, 'start');
     }
 
+    private function handleHelpCommand(string $chatId, TelegramService $telegramService): JsonResponse
+    {
+        $actor = $this->actorFromChatId($chatId);
+        if ($actor) {
+            $this->applyLocaleForActor($actor);
+        } else {
+            $locale = request()->attributes->get('telegram_language_code', 'en');
+            app()->setLocale($locale);
+            Translation::loadFromDb($locale);
+        }
+
+        return $this->reply($telegramService, $chatId, $this->helpMessage(), $this->helpKeyboard());
+    }
+
     private function handleHelp(
         string $chatId,
         int $messageId,
@@ -402,8 +421,9 @@ class TelegramWebhookController extends Controller
         if ($actor) {
             $this->applyLocaleForActor($actor);
         } else {
-            app()->setLocale('en');
-            Translation::loadFromDb('en');
+            $locale = request()->attributes->get('telegram_language_code', 'en');
+            app()->setLocale($locale);
+            Translation::loadFromDb($locale);
         }
 
         return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->helpMessage(), $this->helpKeyboard());
@@ -486,9 +506,13 @@ class TelegramWebhookController extends Controller
 
     private function applyLocaleForActor(Member|User $actor): void
     {
-        $locale = $actor instanceof Member && $this->memberHasLocale($actor)
-            ? $actor->locale
-            : 'en';
+        $locale = 'en';
+        if ($actor instanceof Member && $this->memberHasLocale($actor)) {
+            $locale = $actor->locale;
+        } elseif ($actor instanceof User) {
+            // User has no locale field — use Telegram client language
+            $locale = request()->attributes->get('telegram_language_code', 'en');
+        }
         app()->setLocale($locale);
         Translation::loadFromDb($locale);
     }
@@ -648,8 +672,9 @@ class TelegramWebhookController extends Controller
             return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->notLinkedMessage(), $this->miniConnectKeyboard(TelegramAuthService::PURPOSE_ADMIN_ACCESS));
         }
 
+        $this->applyLocaleForActor($actor);
         $adminLink = $this->adminSecureLink($actor, $telegramAuthService);
-        $adminLabel = $this->telegramBotBuilder->buttonLabel('admin', 'admin', 'Admin panel');
+        $adminLabel = $this->telegramBotBuilder->buttonLabel('admin', 'admin', __('app.telegram_builder_admin_panel'));
 
         return $this->replyAfterDelete($telegramService, $chatId, $messageId, $adminLabel.':', [
             'inline_keyboard' => [
@@ -1525,6 +1550,7 @@ class TelegramWebhookController extends Controller
         $pendingAction = $state->get('pending_action', '');
         $state->clear();
 
+        $this->applyLocaleForActor($user);
         $successText = '✅ '.__('app.telegram_link_success')."\n\n".__('app.telegram_menu_heading');
         $keyboard = $this->mainMenuKeyboard($user, $telegramAuthService);
 
@@ -2011,7 +2037,7 @@ class TelegramWebhookController extends Controller
 
         if ($this->telegramBotBuilder->buttonEnabled('admin', 'admin')) {
             $adminLink = $this->adminSecureLink($actor, $telegramAuthService);
-            $rows[] = [['text' => $this->telegramBotBuilder->buttonLabel('admin', 'admin', 'Admin panel'), 'web_app' => ['url' => $adminLink]]];
+            $rows[] = [['text' => $this->telegramBotBuilder->buttonLabel('admin', 'admin', __('app.telegram_builder_admin_panel')), 'web_app' => ['url' => $adminLink]]];
         }
 
         // Suggest + My Suggestions — always shown for linked admin/editor/writer users
@@ -2021,7 +2047,7 @@ class TelegramWebhookController extends Controller
         ];
 
         if ($this->telegramBotBuilder->buttonEnabled('help', 'admin')) {
-            $rows[] = [['text' => $this->telegramBotBuilder->buttonLabel('help', 'admin', 'Help'), 'callback_data' => 'help']];
+            $rows[] = [['text' => $this->telegramBotBuilder->buttonLabel('help', 'admin', __('app.help')), 'callback_data' => 'help']];
         }
 
         $rows[] = [['text' => __('app.telegram_bot_unlink'), 'callback_data' => 'unlink']];
@@ -2029,7 +2055,7 @@ class TelegramWebhookController extends Controller
         if (count($rows) === 2) {
             // Only the suggest row + unlink row — add admin panel fallback
             $adminLink = $this->adminSecureLink($actor, $telegramAuthService);
-            array_unshift($rows, [['text' => $this->telegramBotBuilder->buttonLabel('admin', 'admin', 'Admin panel'), 'web_app' => ['url' => $adminLink]]]);
+            array_unshift($rows, [['text' => $this->telegramBotBuilder->buttonLabel('admin', 'admin', __('app.telegram_builder_admin_panel')), 'web_app' => ['url' => $adminLink]]]);
         }
 
         return ['inline_keyboard' => $rows];
