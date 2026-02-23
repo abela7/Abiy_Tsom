@@ -533,7 +533,7 @@ class TelegramWebhookController extends Controller
     {
         $text = __('app.telegram_start_have_account_code_instructions');
         $keyboard = ['inline_keyboard' => [
-            [['text' => '🌐 '.__('app.telegram_start_open_app'), 'web_app' => ['url' => url(route('home'))]]],
+            [['text' => '🌐 '.__('app.telegram_start_open_app'), 'url' => url(route('home'))]],
             [['text' => '🔄 '.__('app.telegram_cant_access_restart'), 'callback_data' => 'start_over']],
         ]];
 
