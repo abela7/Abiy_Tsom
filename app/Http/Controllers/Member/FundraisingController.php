@@ -38,11 +38,15 @@ class FundraisingController extends Controller
             return response()->json(['show' => false]);
         }
 
+        $locale = in_array($member->locale ?? '', ['en', 'am'], true)
+            ? $member->locale
+            : 'en';
+
         return response()->json([
             'show'        => true,
             'campaign_id' => $campaign->id,
-            'title'       => $campaign->title,
-            'description' => $campaign->description,
+            'title'       => $campaign->localizedTitle($locale),
+            'description' => $campaign->localizedDescription($locale),
             'embed_url'   => $campaign->youtubeEmbedUrl(),
             'donate_url'  => $campaign->donate_url,
         ]);

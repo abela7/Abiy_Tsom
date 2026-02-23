@@ -42,11 +42,13 @@ class FundraisingController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'title'       => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string', 'max:2000'],
-            'youtube_url' => ['nullable', 'url', 'max:500'],
-            'donate_url'  => ['nullable', 'url', 'max:500'],
-            'is_active'   => ['boolean'],
+            'title'          => ['required', 'string', 'max:255'],
+            'title_am'       => ['nullable', 'string', 'max:255'],
+            'description'    => ['nullable', 'string', 'max:2000'],
+            'description_am' => ['nullable', 'string', 'max:2000'],
+            'youtube_url'    => ['nullable', 'url', 'max:500'],
+            'donate_url'     => ['nullable', 'url', 'max:500'],
+            'is_active'      => ['boolean'],
         ]);
 
         $data['is_active'] = $request->boolean('is_active');

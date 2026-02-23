@@ -27,13 +27,14 @@
     @endif
 
     {{-- Campaign Settings --}}
-    <div class="bg-card rounded-2xl border border-border shadow-sm p-6 mb-6">
+    <div class="bg-card rounded-2xl border border-border shadow-sm p-6 mb-6" x-data="{ lang: 'en' }">
+
         <h2 class="text-base font-semibold text-primary mb-4">{{ __('app.fundraising_settings') }}</h2>
 
         <form method="POST" action="/admin/fundraising">
             @csrf
 
-            <div class="space-y-4">
+            <div class="space-y-5">
 
                 {{-- Active toggle --}}
                 <div class="flex items-center justify-between py-3 border-b border-border">
@@ -53,30 +54,7 @@
                     </label>
                 </div>
 
-                {{-- Title --}}
-                <div>
-                    <label class="block text-sm font-medium text-primary mb-1.5">{{ __('app.fundraising_title') }}</label>
-                    <input type="text" name="title"
-                           value="{{ old('title', $campaign?->title ?? 'Help Us Buy Our Church Building') }}"
-                           class="w-full px-3 py-2.5 rounded-xl border border-border bg-surface text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent"
-                           required>
-                    @error('title')
-                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                {{-- Description --}}
-                <div>
-                    <label class="block text-sm font-medium text-primary mb-1.5">{{ __('app.fundraising_description') }}</label>
-                    <textarea name="description" rows="4"
-                              class="w-full px-3 py-2.5 rounded-xl border border-border bg-surface text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent resize-none"
-                              placeholder="{{ __('app.fundraising_description_placeholder') }}">{{ old('description', $campaign?->description) }}</textarea>
-                    @error('description')
-                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                {{-- YouTube URL --}}
+                {{-- YouTube URL (shared) --}}
                 <div>
                     <label class="block text-sm font-medium text-primary mb-1.5">{{ __('app.fundraising_youtube_url') }}</label>
                     <input type="url" name="youtube_url"
@@ -89,7 +67,7 @@
                     @enderror
                 </div>
 
-                {{-- Donate URL --}}
+                {{-- Donate URL (shared) --}}
                 <div>
                     <label class="block text-sm font-medium text-primary mb-1.5">{{ __('app.fundraising_donate_url') }}</label>
                     <input type="url" name="donate_url"
@@ -98,6 +76,91 @@
                     @error('donate_url')
                         <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
                     @enderror
+                </div>
+
+                {{-- Language tabs for title + description --}}
+                <div class="border border-border rounded-2xl overflow-hidden">
+
+                    {{-- Tab bar --}}
+                    <div class="flex border-b border-border bg-muted">
+                        <button type="button"
+                                @click="lang = 'en'"
+                                :class="lang === 'en'
+                                    ? 'border-b-2 border-accent text-accent bg-card font-semibold'
+                                    : 'text-muted-text hover:text-primary'"
+                                class="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm transition">
+                            🇬🇧 English
+                        </button>
+                        <button type="button"
+                                @click="lang = 'am'"
+                                :class="lang === 'am'
+                                    ? 'border-b-2 border-accent text-accent bg-card font-semibold'
+                                    : 'text-muted-text hover:text-primary'"
+                                class="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm transition">
+                            🇪🇹 አማርኛ
+                        </button>
+                    </div>
+
+                    {{-- English fields --}}
+                    <div x-show="lang === 'en'" class="p-4 space-y-4 bg-card">
+                        <div>
+                            <label class="block text-xs font-semibold text-muted-text uppercase tracking-wide mb-1.5">
+                                {{ __('app.fundraising_title') }} <span class="text-red-400">*</span>
+                            </label>
+                            <input type="text" name="title"
+                                   value="{{ old('title', $campaign?->title ?? 'Help Us Buy Our Church Building') }}"
+                                   class="w-full px-3 py-2.5 rounded-xl border border-border bg-surface text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent"
+                                   placeholder="Help Us Buy Our Church Building"
+                                   required>
+                            @error('title')
+                                <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-muted-text uppercase tracking-wide mb-1.5">
+                                {{ __('app.fundraising_description') }}
+                            </label>
+                            <textarea name="description" rows="5"
+                                      class="w-full px-3 py-2.5 rounded-xl border border-border bg-surface text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent resize-none"
+                                      placeholder="We are working towards owning a church building — a place where we will leave a lasting legacy for generations…">{{ old('description', $campaign?->description) }}</textarea>
+                            @error('description')
+                                <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+
+                    {{-- Amharic fields --}}
+                    <div x-show="lang === 'am'" x-cloak class="p-4 space-y-4 bg-card">
+                        <div>
+                            <label class="block text-xs font-semibold text-muted-text uppercase tracking-wide mb-1.5">
+                                {{ __('app.fundraising_title') }} (አማርኛ)
+                                <span class="ml-1 text-muted-text font-normal normal-case">{{ __('app.optional') }}</span>
+                            </label>
+                            <input type="text" name="title_am"
+                                   value="{{ old('title_am', $campaign?->title_am) }}"
+                                   class="w-full px-3 py-2.5 rounded-xl border border-border bg-surface text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent"
+                                   placeholder="የሊቨርፑል ቤተ ክርስቲያን ሕልም እውን እንዲሆን ያግዙን">
+                            @error('title_am')
+                                <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-muted-text uppercase tracking-wide mb-1.5">
+                                {{ __('app.fundraising_description') }} (አማርኛ)
+                                <span class="ml-1 text-muted-text font-normal normal-case">{{ __('app.optional') }}</span>
+                            </label>
+                            <textarea name="description_am" rows="5"
+                                      class="w-full px-3 py-2.5 rounded-xl border border-border bg-surface text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent resize-none"
+                                      placeholder="ለትውልድ የሚሻገር ትልቅ አሻራ የምናሳርፍበት…">{{ old('description_am', $campaign?->description_am) }}</textarea>
+                            @error('description_am')
+                                <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <p class="text-xs text-muted-text">
+                            {{ __('app.fundraising_am_fallback_note') }}
+                        </p>
+                    </div>
+
                 </div>
 
             </div>

@@ -11,7 +11,9 @@ class FundraisingCampaign extends Model
 {
     protected $fillable = [
         'title',
+        'title_am',
         'description',
+        'description_am',
         'youtube_url',
         'donate_url',
         'is_active',
@@ -32,6 +34,30 @@ class FundraisingCampaign extends Model
     public static function active(): ?self
     {
         return static::where('is_active', true)->latest()->first();
+    }
+
+    /**
+     * Returns the title in the requested locale, falling back to English.
+     */
+    public function localizedTitle(string $locale = 'en'): string
+    {
+        if ($locale === 'am' && ! empty($this->title_am)) {
+            return $this->title_am;
+        }
+
+        return $this->title ?? '';
+    }
+
+    /**
+     * Returns the description in the requested locale, falling back to English.
+     */
+    public function localizedDescription(string $locale = 'en'): ?string
+    {
+        if ($locale === 'am' && ! empty($this->description_am)) {
+            return $this->description_am;
+        }
+
+        return $this->description;
     }
 
     /**

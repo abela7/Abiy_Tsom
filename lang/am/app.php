@@ -909,6 +909,7 @@ return [
     'fundraising_youtube_url'           => 'የዩቱብ ቪዲዮ አድራሻ',
     'fundraising_youtube_hint'          => 'ማናቸውም የዩቱብ አድራሻ ይለጥፉ።',
     'fundraising_donate_url'            => 'የለዋጭ ገጽ አድራሻ',
+    'fundraising_am_fallback_note'      => 'ባዶ ከተዉ፣ ለአማርኛ ተጠቃሚዎች የእንግሊዝኛ ቅጂ ይታያል።',
     'fundraising_responses'             => 'የአባላት ምላሾች',
     'fundraising_interested'            => 'ፍቃደኛ',
     'fundraising_snoozed'               => 'ዛሬ አይደለም',
@@ -931,6 +932,8 @@ return [
     'fundraising_share_title'           => 'ቤተ ክርስቲያናችን ሕንጻ እንዲኖረን ይርዱን',
     'fundraising_share_text'            => 'የሊቨርፑል አቡነ ተክለሃይማኖት ቤተ ክርስቲያን ሕንጻ ለመግዛት ይርዱን!',
     'phone'                             => 'ስልክ',
+    'date'                              => 'ቀን',
+    'optional'                          => 'አማራጭ',
     'save_changes'                      => 'ለውጦችን አስቀምጥ',
 
     'telegram_staff_main_page' => 'ዋና ገጽ',

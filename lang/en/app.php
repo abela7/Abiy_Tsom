@@ -929,6 +929,7 @@ return [
     'fundraising_youtube_url'           => 'YouTube Video URL',
     'fundraising_youtube_hint'          => 'Paste any YouTube link — full watch URL or short youtu.be link.',
     'fundraising_donate_url'            => 'Donation Page URL',
+    'fundraising_am_fallback_note'      => 'If left empty, the English version will be shown to Amharic users.',
     'fundraising_responses'             => 'Member Responses',
     'fundraising_interested'            => 'Interested',
     'fundraising_snoozed'               => 'Not Today',
@@ -951,6 +952,8 @@ return [
     'fundraising_share_title'           => 'Help Us Buy Our Church Building',
     'fundraising_share_text'            => 'Support Liverpool Abune Teklehaymanot EOTC — help us buy our church building!',
     'phone'                             => 'Phone',
+    'date'                              => 'Date',
+    'optional'                          => 'optional',
     'save_changes'                      => 'Save Changes',
 
     'telegram_staff_main_page' => 'Main Page',

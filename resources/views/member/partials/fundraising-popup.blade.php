@@ -59,7 +59,9 @@
                         <p class="text-xs font-semibold text-accent-secondary uppercase tracking-wide">{{ __('app.fundraising_popup_badge') }}</p>
                     </div>
 
-                    <h2 class="text-lg font-bold text-primary mb-2 leading-snug" x-text="campaign.title"></h2>
+                    <h2 class="text-xl font-bold leading-snug mb-2"
+                        style="color: #e2ca18;"
+                        x-text="campaign.title"></h2>
                     <p class="text-sm text-secondary leading-relaxed" x-text="campaign.description"></p>
                 </div>
 
