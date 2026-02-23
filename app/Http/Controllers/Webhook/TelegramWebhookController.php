@@ -319,12 +319,12 @@ class TelegramWebhookController extends Controller
             return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->notLinkedMessage(), $this->startChoiceKeyboard());
         }
 
-        return $this->replyAfterDelete(
+        return $this->replyOrEdit(
             $telegramService,
             $chatId,
-            $messageId,
             $this->menuHeading(),
-            $this->mainMenuKeyboard($actor, $telegramAuthService)
+            $this->mainMenuKeyboard($actor, $telegramAuthService),
+            $messageId
         );
     }
 
@@ -441,7 +441,7 @@ class TelegramWebhookController extends Controller
         $text = $this->contentFormatter->formatDayContent($daily, $actor);
         $keyboard = $this->mainMenuKeyboard($actor, $telegramAuthService);
 
-        return $this->replyAfterDelete($telegramService, $chatId, $messageId, $text, $keyboard, 'HTML');
+        return $this->replyOrEdit($telegramService, $chatId, $text, $keyboard, $messageId);
     }
 
     private function handleProgress(
@@ -458,7 +458,7 @@ class TelegramWebhookController extends Controller
         $text = $this->contentFormatter->formatProgressSummary($actor);
         $keyboard = $this->mainMenuKeyboard($actor, $telegramAuthService);
 
-        return $this->replyAfterDelete($telegramService, $chatId, $messageId, $text, $keyboard, 'HTML');
+        return $this->replyOrEdit($telegramService, $chatId, $text, $keyboard, $messageId);
     }
 
     private function handleChecklist(
@@ -514,7 +514,7 @@ class TelegramWebhookController extends Controller
             $customChecklist
         );
 
-        return $this->replyAfterDelete($telegramService, $chatId, $messageId, $formatted['text'], $formatted['keyboard'], 'HTML');
+        return $this->replyOrEdit($telegramService, $chatId, $formatted['text'], $formatted['keyboard'], $messageId);
     }
 
     private function handleChecklistToggle(
@@ -529,14 +529,14 @@ class TelegramWebhookController extends Controller
             return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->notLinkedMessage(), $this->startChoiceKeyboard());
         }
 
-        $parts = explode('_', $action);
-        if (count($parts) !== 4 || ($parts[0] ?? '') !== 'check' || ! in_array($parts[1] ?? '', ['a', 'c'], true)) {
+        $parts = explode('_', $action, 4);
+        if (count($parts) < 4 || ($parts[0] ?? '') !== 'check' || ! in_array($parts[1] ?? '', ['a', 'c'], true)) {
             return response()->json(['success' => true]);
         }
 
         $dailyId = (int) ($parts[2] ?? 0);
         $itemId = (int) ($parts[3] ?? 0);
-        $isCustom = $parts[1] === 'c';
+        $isCustom = ($parts[1] ?? '') === 'c';
 
         $daily = DailyContent::query()->find($dailyId);
         if (! $daily || ! $daily->is_published) {
@@ -599,7 +599,7 @@ class TelegramWebhookController extends Controller
             $customChecklist
         );
 
-        $telegramService->editMessageText($chatId, $messageId, $formatted['text'], $formatted['keyboard'], 'HTML');
+        $telegramService->editMessageText($chatId, $messageId, $formatted['text'], $formatted['keyboard']);
 
         return response()->json(['success' => true]);
     }

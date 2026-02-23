@@ -12,60 +12,58 @@ use App\Models\MemberCustomChecklist;
 use Illuminate\Support\Collection;
 
 /**
- * Format member content for Telegram (plain text, no HTML).
+ * Format member content for Telegram. Uses plain text only (no parse_mode)
+ * to avoid HTML/Markdown parsing errors from user content.
  */
 final class TelegramContentFormatter
 {
-    private const MAX_MESSAGE_LENGTH = 4000;
+    private const MAX_MESSAGE_LENGTH = 4080;
 
     public function formatDayContent(DailyContent $daily, Member $member): string
     {
         $locale = $this->memberLocale($member);
         $parts = [];
 
-        $dayTitle = $this->safeLocalized($daily, 'day_title', $locale) ?? __('app.day_x', ['day' => $daily->day_number]);
-        $parts[] = '📖 <b>Day '.$daily->day_number.' of 55</b>';
+        $dayTitle = $this->safeText(localized($daily, 'day_title', $locale) ?? __('app.day_x', ['day' => $daily->day_number]));
+        $parts[] = "📖 Day {$daily->day_number} of 55";
         $parts[] = $daily->date?->locale('en')->translatedFormat('l, F j, Y') ?? '';
 
         if ($daily->weeklyTheme) {
-            $themeName = localized($daily->weeklyTheme, 'name', $locale) ?? $daily->weeklyTheme->name_en ?? '-';
-            $parts[] = '<i>'.$this->escapeHtml($themeName).'</i>';
+            $themeName = $this->safeText(localized($daily->weeklyTheme, 'name', $locale) ?? $daily->weeklyTheme->name_en ?? '-');
+            $parts[] = "— {$themeName}";
         }
 
         $parts[] = '';
-        $parts[] = "{$dayTitle}";
+        $parts[] = $dayTitle;
         $parts[] = '';
 
         if (localized($daily, 'bible_reference', $locale)) {
-            $parts[] = '📜 <b>'.__('app.bible_reading').'</b>';
-            $parts[] = $this->safeLocalized($daily, 'bible_reference', $locale);
+            $parts[] = '📜 '.__('app.bible_reading');
+            $parts[] = $this->safeText(localized($daily, 'bible_reference', $locale));
             if (localized($daily, 'bible_summary', $locale)) {
-                $parts[] = $this->safeLocalized($daily, 'bible_summary', $locale);
+                $parts[] = $this->safeText(localized($daily, 'bible_summary', $locale));
             }
             if (localized($daily, 'bible_text', $locale)) {
-                $text = localized($daily, 'bible_text', $locale);
-                $parts[] = $this->truncateForTelegram($text, 800);
+                $parts[] = $this->truncate($this->safeText(localized($daily, 'bible_text', $locale)), 800);
             }
             $parts[] = '';
         }
 
         if ($daily->mezmurs->isNotEmpty()) {
-            $parts[] = '🎵 <b>'.__('app.mezmur').'</b>';
+            $parts[] = '🎵 '.__('app.mezmur');
             foreach ($daily->mezmurs as $m) {
-                $parts[] = '• '.($this->safeLocalized($m, 'title', $locale) ?? '-');
+                $parts[] = '• '.$this->safeText(localized($m, 'title', $locale) ?? '-');
             }
             $parts[] = '';
         }
 
         if (localized($daily, 'reflection', $locale)) {
-            $parts[] = '💭 <b>'.__('app.reflection').'</b>';
-            $parts[] = $this->truncateForTelegram(localized($daily, 'reflection', $locale), 600);
+            $parts[] = '💭 '.__('app.reflection');
+            $parts[] = $this->truncate($this->safeText(localized($daily, 'reflection', $locale)), 600);
             $parts[] = '';
         }
 
-        $text = implode("\n", $parts);
-
-        return $this->truncateForTelegram($text, self::MAX_MESSAGE_LENGTH);
+        return $this->truncate(implode("\n", $parts), self::MAX_MESSAGE_LENGTH);
     }
 
     public function formatProgressSummary(Member $member): string
@@ -121,7 +119,7 @@ final class TelegramContentFormatter
 
         $locale = $this->memberLocale($member);
         $parts = [];
-        $parts[] = '📊 <b>'.__('app.progress').'</b>';
+        $parts[] = '📊 '.__('app.progress');
         $parts[] = '';
         $parts[] = __('app.overall_completion', ['pct' => $overall]);
         $parts[] = __('app.streak_days', ['count' => $streak]);
@@ -131,7 +129,7 @@ final class TelegramContentFormatter
         foreach ($topActivities as $a) {
             $done = $allChecks->where('activity_id', $a->id)->count();
             $rate = $pastDays->isNotEmpty() ? (int) round(($done / $pastDays->count()) * 100) : 0;
-            $name = $this->safeLocalized($a, 'name', $locale) ?? $a->name ?? '-';
+            $name = $this->safeText(localized($a, 'name', $locale) ?? $a->name ?? '-');
             $bar = $this->progressBar($rate);
             $parts[] = "{$name}: {$bar} {$rate}%";
         }
@@ -152,35 +150,35 @@ final class TelegramContentFormatter
     ): array {
         $locale = $this->memberLocale($member);
         $parts = [];
-        $parts[] = '☑️ <b>'.__('app.checklist').'</b> — Day '.$daily->day_number;
+        $parts[] = '☑️ '.__('app.checklist').' — Day '.$daily->day_number;
         $parts[] = '';
 
         $rows = [];
         foreach ($activities as $activity) {
             $entry = $checklist->get($activity->id);
             $done = $entry?->completed ?? false;
-            $name = $this->safeLocalized($activity, 'name', $locale) ?? $activity->name ?? '-';
+            $name = $this->safeText(localized($activity, 'name', $locale) ?? $activity->name ?? '-');
             $checkChar = $done ? '✅' : '⬜';
+            $cb = $this->callbackData('check_a', (string) $daily->id, (string) $activity->id);
             $rows[] = [
                 'text' => "{$checkChar} {$name}",
-                'callback_data' => 'check_a_'.$daily->id.'_'.$activity->id,
+                'callback_data' => $cb,
             ];
         }
         foreach ($customActivities as $ca) {
             $entry = $customChecklist->get($ca->id);
             $done = $entry?->completed ?? false;
             $checkChar = $done ? '✅' : '⬜';
-            $name = $this->escapeHtml($ca->name ?? '');
+            $name = $this->safeText($ca->name ?? '');
+            $cb = $this->callbackData('check_c', (string) $daily->id, (string) $ca->id);
             $rows[] = [
                 'text' => "{$checkChar} {$name}",
-                'callback_data' => 'check_c_'.$daily->id.'_'.$ca->id,
+                'callback_data' => $cb,
             ];
         }
 
         $keyboard = ['inline_keyboard' => array_map(fn ($r) => [$r], $rows)];
-
-        $backRow = [['text' => '◀️ '.__('app.menu'), 'callback_data' => 'menu']];
-        $keyboard['inline_keyboard'][] = $backRow;
+        $keyboard['inline_keyboard'][] = [['text' => '◀️ '.__('app.menu'), 'callback_data' => 'menu']];
 
         return [
             'text' => implode("\n", $parts),
@@ -188,31 +186,41 @@ final class TelegramContentFormatter
         ];
     }
 
+    /** Ensure callback_data ≤ 64 bytes (Telegram limit). */
+    private function callbackData(string $prefix, string $id1, string $id2): string
+    {
+        $cb = "{$prefix}_{$id1}_{$id2}";
+        if (strlen($cb) <= 64) {
+            return $cb;
+        }
+
+        return substr($cb, 0, 64);
+    }
+
     private function memberLocale(Member $member): string
     {
         return in_array($member->locale ?? '', ['en', 'am'], true) ? $member->locale : 'en';
     }
 
-    private function truncateForTelegram(string $text, int $max): string
+    private function truncate(string $text, int $max): string
     {
         $text = preg_replace('/\s+/', ' ', trim($text));
-        if (strlen($text) <= $max) {
-            return $this->escapeHtml($text);
+        if (mb_strlen($text) <= $max) {
+            return $text;
         }
 
-        return $this->escapeHtml(substr($text, 0, $max - 3)).'...';
+        return mb_substr($text, 0, $max - 3).'...';
     }
 
-    private function safeLocalized(object $model, string $baseAttr, ?string $locale = null): ?string
+    /** Sanitize user content for plain-text display (strip control chars, limit length). */
+    private function safeText(?string $s): string
     {
-        $val = localized($model, $baseAttr, $locale);
+        if ($s === null || $s === '') {
+            return '-';
+        }
+        $s = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $s);
 
-        return $val !== null ? $this->escapeHtml($val) : null;
-    }
-
-    private function escapeHtml(string $s): string
-    {
-        return str_replace(['&', '<', '>'], ['&amp;', '&lt;', '&gt;'], $s);
+        return trim($s) ?: '-';
     }
 
     private function progressBar(int $pct): string
