@@ -173,7 +173,7 @@ final class TelegramAuthService
 
     public function parseWebAppInitData(?string $initData): ?array
     {
-        if (trim((string) $this->botToken()) === '') {
+        if (trim((string) config('services.telegram.bot_token', '')) === '') {
             return null;
         }
 
@@ -215,7 +215,7 @@ final class TelegramAuthService
             $dataCheck[] = "{$key}={$value}";
         }
 
-        $secretKey = hash('sha256', $this->botToken(), true);
+        $secretKey = hash('sha256', (string) config('services.telegram.bot_token', ''), true);
         $calcHash = hash_hmac('sha256', implode("\n", $dataCheck), $secretKey);
         if (! hash_equals($hash, $calcHash)) {
             return null;

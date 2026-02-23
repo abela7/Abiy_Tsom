@@ -267,6 +267,53 @@
             </div>
         </div>
 
+        {{-- Link Telegram --}}
+        <div class="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
+            <button type="button" @click="openId = openId === 'telegram' ? null : 'telegram'"
+                    class="w-full flex items-center justify-between px-4 py-4 text-left">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-sky-500/15">
+                        <svg class="w-5 h-5 text-sky-500" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.161c-.18 1.897-.962 6.502-1.359 8.627-.168.9-.5 1.201-.82 1.23-.697.064-1.226-.461-1.901-.903-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.139-5.062 3.345-.479.329-.913.489-1.302.481-.428-.009-1.252-.241-1.865-.44-.752-.244-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.831-2.529 6.998-3.015 3.333-1.386 4.025-1.627 4.477-1.635.099-.002.321.023.465.141.121.1.154.234.17.332.015.098.034.321.019.495z"/>
+                        </svg>
+                    </div>
+                    <div class="min-w-0">
+                        <h3 class="font-semibold text-primary">{{ __('app.telegram_settings_link_title') }}</h3>
+                        <p class="text-xs text-muted-text truncate" x-text="telegramStatusLabel"></p>
+                    </div>
+                </div>
+                <svg class="w-5 h-5 text-muted-text transition-transform shrink-0" :class="openId === 'telegram' && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </button>
+            <div x-show="openId === 'telegram'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-1"
+            x-transition:enter-end="opacity-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-150"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0" class="px-4 pb-4 pt-0 space-y-4">
+                <p class="text-sm text-muted-text">{{ __('app.telegram_settings_link_desc') }}</p>
+                <button type="button" @click="generateLink()"
+                        :disabled="telegramLoading"
+                        class="w-full py-2.5 bg-accent text-on-accent rounded-xl font-medium text-sm disabled:opacity-50 transition flex items-center justify-center gap-2">
+                    <span x-show="!telegramLoading">{{ __('app.telegram_settings_generate_link') }}</span>
+                    <span x-show="telegramLoading" class="inline-flex gap-2">
+                        <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                        {{ __('app.loading') }}
+                    </span>
+                </button>
+                <div x-show="telegramLink" class="space-y-2">
+                    <p class="text-xs text-success" x-text="telegramMsg"></p>
+                    <input type="text" :value="telegramLink" readonly
+                           class="w-full px-4 py-2.5 border border-border rounded-xl bg-muted text-primary text-xs font-mono">
+                    <button type="button" @click="copyLink()"
+                            class="w-full py-2.5 bg-muted text-primary rounded-xl text-sm font-medium border border-border hover:bg-muted/80 transition">
+                        Copy link
+                    </button>
+                </div>
+                <p x-show="telegramError" x-text="telegramError" class="text-xs text-error"></p>
+            </div>
+        </div>
+
         {{-- Custom Activities --}}
         <div class="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
             <button type="button" @click="openId = openId === 'activities' ? null : 'activities'"
@@ -534,6 +581,10 @@ function dataManagement() {
 function settingsPage() {
     return {
         locale: '{{ $member?->locale ?? 'en' }}',
+        telegramLink: '',
+        telegramLoading: false,
+        telegramMsg: '',
+        telegramError: '',
         theme: (typeof localStorage !== 'undefined' ? localStorage.getItem('theme') : null) || '{{ $member?->theme ?? 'light' }}',
         baptismName: '{{ addslashes($member?->baptism_name ?? '') }}',
         savedBaptismName: '{{ addslashes($member?->baptism_name ?? '') }}',
@@ -605,6 +656,34 @@ function settingsPage() {
         get waStatusDescription() {
             if (this.waStatus === 'pending') return '{{ __("app.settings_whatsapp_desc_pending") }}';
             return this.waEnabled ? '{{ __("app.settings_whatsapp_desc_on") }}' : '{{ __("app.settings_whatsapp_desc_off") }}';
+        },
+        get telegramStatusLabel() {
+            return this.telegramLink ? '{{ __("app.telegram_settings_link_generated") }}' : '{{ __("app.telegram_settings_link_desc") }}';
+        },
+        async generateLink() {
+            this.telegramLoading = true;
+            this.telegramError = '';
+            this.telegramMsg = '';
+            try {
+                const data = await AbiyTsom.api('/api/member/telegram-link', {});
+                if (data.success && data.link) {
+                    this.telegramLink = data.link;
+                    this.telegramMsg = data.message || '{{ __("app.telegram_settings_link_generated") }}';
+                } else {
+                    this.telegramError = data.message || '{{ __("app.failed") }}';
+                }
+            } catch (e) {
+                this.telegramError = '{{ __("app.failed") }}';
+            } finally {
+                this.telegramLoading = false;
+            }
+        },
+        copyLink() {
+            if (!this.telegramLink) return;
+            navigator.clipboard.writeText(this.telegramLink).then(() => {
+                this.telegramMsg = 'Copied to clipboard. Open it in Telegram.';
+                setTimeout(() => { this.telegramMsg = '{{ __("app.telegram_settings_link_generated") }}'; }, 2000);
+            });
         },
 
         async enableWhatsApp() {

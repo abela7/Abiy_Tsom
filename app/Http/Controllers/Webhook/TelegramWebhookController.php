@@ -95,7 +95,12 @@ class TelegramWebhookController extends Controller
         TelegramAuthService $telegramAuthService,
         TelegramService $telegramService
     ): JsonResponse {
-        $chatId = (string) data_get($callbackQuery, 'from.id', '');
+        $message = $callbackQuery['message'] ?? null;
+        $chatId = (string) data_get($message, 'chat.id', '');
+        if ($chatId === '') {
+            $chatId = (string) data_get($callbackQuery, 'from.id', '');
+        }
+        $messageId = (int) data_get($message, 'message_id', 0);
         $action = (string) data_get($callbackQuery, 'data', '');
         $callbackId = (string) data_get($callbackQuery, 'id', '');
 
@@ -104,17 +109,18 @@ class TelegramWebhookController extends Controller
         }
 
         if ($callbackId !== '') {
-            $telegramService->answerCallbackQuery($callbackId, 'Opening...');
+            $telegramService->answerCallbackQuery($callbackId, '');
         }
 
         return match ($action) {
-            'menu' => $this->handleMenu($chatId, $telegramAuthService, $telegramService),
-            'home' => $this->handleHome($chatId, $telegramAuthService, $telegramService),
-            'today' => $this->handleToday($chatId, $telegramAuthService, $telegramService),
-            'admin' => $this->handleAdmin($chatId, $telegramAuthService, $telegramService),
-            'me' => $this->handleMe($chatId, $telegramAuthService, $telegramService),
-            'help' => $this->reply($telegramService, $chatId, $this->helpMessage()),
-            default => $this->reply($telegramService, $chatId, $this->fallbackMessage(), $this->launchKeyboard()),
+            'have_account' => $this->handleHaveAccount($chatId, $messageId, $telegramService),
+            'menu' => $this->handleMenu($chatId, $telegramAuthService, $telegramService, $messageId),
+            'home' => $this->handleHome($chatId, $telegramAuthService, $telegramService, $messageId),
+            'today' => $this->handleToday($chatId, $telegramAuthService, $telegramService, $messageId),
+            'admin' => $this->handleAdmin($chatId, $telegramAuthService, $telegramService, $messageId),
+            'me' => $this->handleMe($chatId, $telegramAuthService, $telegramService, $messageId),
+            'help' => $this->replyOrEdit($telegramService, $chatId, $this->helpMessage(), $this->launchKeyboard(), $messageId),
+            default => $this->replyOrEdit($telegramService, $chatId, $this->fallbackMessage(), $this->launchKeyboard(), $messageId),
         };
     }
 
@@ -149,8 +155,8 @@ class TelegramWebhookController extends Controller
                 return $this->reply(
                     $telegramService,
                     $chatId,
-                    $this->welcomeMessage(),
-                    $this->launchKeyboard()
+                    __('app.telegram_start_welcome'),
+                    $this->startChoiceKeyboard()
                 );
             }
 
@@ -203,120 +209,138 @@ class TelegramWebhookController extends Controller
         return $this->bindFromCode($chatId, $argument, $telegramAuthService, $telegramService, 'start');
     }
 
+    private function handleHaveAccount(string $chatId, int $messageId, TelegramService $telegramService): JsonResponse
+    {
+        $text = __('app.telegram_start_have_account_instructions');
+        $keyboard = ['inline_keyboard' => [
+            [['text' => __('app.telegram_start_open_app'), 'web_app' => ['url' => route('home')]]],
+        ]];
+
+        if ($messageId > 0) {
+            $ok = $telegramService->editMessageText($chatId, $messageId, $text, $keyboard);
+        } else {
+            $ok = $telegramService->sendTextMessage($chatId, $text, ['reply_markup' => $keyboard]);
+        }
+
+        return response()->json(['success' => $ok, 'delivered' => $ok, 'sent' => $ok]);
+    }
+
     private function handleMenu(
         string $chatId,
         TelegramAuthService $telegramAuthService,
-        TelegramService $telegramService
+        TelegramService $telegramService,
+        int $messageId = 0
     ): JsonResponse {
         $actor = $this->actorFromChatId($chatId);
         if (! $actor) {
-            return $this->reply($telegramService, $chatId, $this->notLinkedMessage(), $this->miniConnectKeyboard(TelegramAuthService::PURPOSE_MEMBER_ACCESS));
+            return $this->replyOrEdit($telegramService, $chatId, $this->notLinkedMessage(), $this->startChoiceKeyboard(), $messageId);
         }
 
-        return $this->reply(
+        return $this->replyOrEdit(
             $telegramService,
             $chatId,
             $this->menuHeading(),
-            $this->mainMenuKeyboard($actor, $telegramAuthService)
+            $this->mainMenuKeyboard($actor, $telegramAuthService),
+            $messageId
         );
     }
 
     private function handleMe(
         string $chatId,
         TelegramAuthService $telegramAuthService,
-        TelegramService $telegramService
+        TelegramService $telegramService,
+        int $messageId = 0
     ): JsonResponse {
         if (! $this->telegramBotBuilder->buttonEnabled('me', 'member')) {
-            return $this->reply($telegramService, $chatId, $this->fallbackMessage(), $this->launchKeyboard());
+            return $this->replyOrEdit($telegramService, $chatId, $this->fallbackMessage(), $this->launchKeyboard(), $messageId);
         }
 
         $actor = $this->actorFromChatId($chatId);
         if (! $actor) {
-            return $this->reply(
-                $telegramService,
-                $chatId,
-                $this->notLinkedMessage(),
-                $this->miniConnectKeyboard()
-            );
+            return $this->replyOrEdit($telegramService, $chatId, $this->notLinkedMessage(), $this->startChoiceKeyboard(), $messageId);
         }
 
-        return $this->reply(
+        return $this->replyOrEdit(
             $telegramService,
             $chatId,
             'Your secure launch links:',
-            $this->quickLinksKeyboard($actor, $telegramAuthService)
+            $this->quickLinksKeyboard($actor, $telegramAuthService),
+            $messageId
         );
     }
 
     private function handleHome(
         string $chatId,
         TelegramAuthService $telegramAuthService,
-        TelegramService $telegramService
+        TelegramService $telegramService,
+        int $messageId = 0
     ): JsonResponse {
         if (! $this->telegramBotBuilder->commandEnabled('home')) {
-            return $this->reply($telegramService, $chatId, $this->fallbackMessage(), $this->launchKeyboard());
+            return $this->replyOrEdit($telegramService, $chatId, $this->fallbackMessage(), $this->launchKeyboard(), $messageId);
         }
 
         $actor = $this->actorFromChatId($chatId);
         if (! $actor instanceof Member) {
-            return $this->reply($telegramService, $chatId, $this->notLinkedMessage(), $this->miniConnectKeyboard(TelegramAuthService::PURPOSE_MEMBER_ACCESS));
+            return $this->replyOrEdit($telegramService, $chatId, $this->notLinkedMessage(), $this->startChoiceKeyboard(), $messageId);
         }
 
         $homeLink = $this->memberHomeSecureLink($actor, $telegramAuthService);
         if (! $homeLink) {
-            return $this->reply($telegramService, $chatId, 'Could not generate secure member home link right now.');
+            return $this->replyOrEdit($telegramService, $chatId, 'Could not generate secure member home link right now.', [], $messageId);
         }
 
         $homeLabel = $this->telegramBotBuilder->buttonLabel('home', 'member', 'Home');
 
-        return $this->reply($telegramService, $chatId, $homeLabel . ':', [
+        return $this->replyOrEdit($telegramService, $chatId, $homeLabel . ':', [
             'inline_keyboard' => [
-                [['text' => $homeLabel, 'web_app' => ['url' => $homeLink]],
+                [['text' => $homeLabel, 'web_app' => ['url' => $homeLink]]],
             ],
-        ]);
+        ], $messageId);
     }
 
     private function handleAdmin(
         string $chatId,
         TelegramAuthService $telegramAuthService,
-        TelegramService $telegramService
+        TelegramService $telegramService,
+        int $messageId = 0
     ): JsonResponse {
         if (! $this->telegramBotBuilder->commandEnabled('admin')) {
-            return $this->reply($telegramService, $chatId, $this->fallbackMessage(), $this->launchKeyboard());
+            return $this->replyOrEdit($telegramService, $chatId, $this->fallbackMessage(), $this->launchKeyboard(), $messageId);
         }
 
         $actor = $this->actorFromChatId($chatId);
         if (! $actor instanceof User) {
-            return $this->reply($telegramService, $chatId, $this->notLinkedMessage(), $this->miniConnectKeyboard(TelegramAuthService::PURPOSE_ADMIN_ACCESS));
+            return $this->replyOrEdit($telegramService, $chatId, $this->notLinkedMessage(), $this->miniConnectKeyboard(TelegramAuthService::PURPOSE_ADMIN_ACCESS), $messageId);
         }
 
         $adminLink = $this->adminSecureLink($actor, $telegramAuthService);
         $adminLabel = $this->telegramBotBuilder->buttonLabel('admin', 'admin', 'Admin panel');
 
-        return $this->reply($telegramService, $chatId, $adminLabel . ':', [
+        return $this->replyOrEdit($telegramService, $chatId, $adminLabel . ':', [
             'inline_keyboard' => [
                 [['text' => $adminLabel, 'web_app' => ['url' => $adminLink]]],
             ],
-        ]);
+        ], $messageId);
     }
 
     private function handleToday(
         string $chatId,
         TelegramAuthService $telegramAuthService,
-        TelegramService $telegramService
+        TelegramService $telegramService,
+        int $messageId = 0
     ): JsonResponse {
         if (! $this->telegramBotBuilder->commandEnabled('day')) {
-            return $this->reply($telegramService, $chatId, $this->fallbackMessage(), $this->launchKeyboard());
+            return $this->replyOrEdit($telegramService, $chatId, $this->fallbackMessage(), $this->launchKeyboard(), $messageId);
         }
 
         $actor = $this->actorFromChatId($chatId);
         if (! $actor instanceof Member) {
-            return $this->reply($telegramService, $chatId, $this->notLinkedMessage(), $this->miniConnectKeyboard(TelegramAuthService::PURPOSE_MEMBER_ACCESS));
+            return $this->replyOrEdit($telegramService, $chatId, $this->notLinkedMessage(), $this->startChoiceKeyboard(), $messageId);
         }
 
         $season = LentSeason::query()->latest('id')->where('is_active', true)->first();
         if (! $season) {
-            return $this->reply($telegramService, $chatId, 'No active season configured yet.');
+            return $this->replyOrEdit($telegramService, $chatId, 'No active season configured yet.', [], $messageId);
         }
 
         $today = CarbonImmutable::now();
@@ -327,7 +351,7 @@ class TelegramWebhookController extends Controller
             ->first();
 
         if (! $daily) {
-            return $this->reply($telegramService, $chatId, 'No published content available for today yet.');
+            return $this->replyOrEdit($telegramService, $chatId, 'No published content available for today yet.', [], $messageId);
         }
 
         $code = $telegramAuthService->createCode(
@@ -344,11 +368,11 @@ class TelegramWebhookController extends Controller
 
         $label = $this->telegramBotBuilder->buttonLabel('today', 'member', 'Today');
 
-        return $this->reply($telegramService, $chatId, "Day {$daily->day_number} content:", [
+        return $this->replyOrEdit($telegramService, $chatId, "Day {$daily->day_number} content:", [
             'inline_keyboard' => [
                 [['text' => $label, 'web_app' => ['url' => $link]]],
             ],
-        ]);
+        ], $messageId);
     }
 
     private function bindFromCode(
@@ -592,6 +616,37 @@ class TelegramWebhookController extends Controller
             'delivered' => $ok,
             'sent' => $ok,
         ]);
+    }
+
+    private function replyOrEdit(
+        TelegramService $telegramService,
+        string $chatId,
+        string $text,
+        array $replyMarkup = [],
+        int $messageId = 0
+    ): JsonResponse {
+        if ($messageId > 0) {
+            $ok = $telegramService->editMessageText($chatId, $messageId, $text, $replyMarkup);
+        } else {
+            return $this->reply($telegramService, $chatId, $text, $replyMarkup);
+        }
+
+        return response()->json([
+            'success' => $ok,
+            'delivered' => $ok,
+            'sent' => $ok,
+        ]);
+    }
+
+    private function startChoiceKeyboard(): array
+    {
+        $appUrl = route('home');
+        $rows = [
+            [['text' => __('app.telegram_start_new'), 'web_app' => ['url' => $appUrl]]],
+            [['text' => __('app.telegram_start_have_account'), 'callback_data' => 'have_account']],
+        ];
+
+        return ['inline_keyboard' => $rows];
     }
 
     private function welcomeMessage(): string

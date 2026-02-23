@@ -77,6 +77,7 @@ Route::prefix('api/member')->middleware('api.member')->name('api.member.')->grou
     Route::get('/data/export', [Member\DataController::class, 'export'])->name('data.export');
     Route::post('/data/import', [Member\DataController::class, 'import'])->name('data.import');
     Route::post('/data/clear', [Member\DataController::class, 'clear'])->name('data.clear');
+    Route::post('/telegram-link', [Member\SettingsController::class, 'generateTelegramLink'])->name('telegram-link');
 });
 
 /*

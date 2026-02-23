@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
+use App\Services\TelegramAuthService;
 use App\Services\WhatsAppReminderConfirmationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -158,6 +159,40 @@ class SettingsController extends Controller
                     : __('app.whatsapp_confirmation_send_failed_notice'))
                 : null,
             'member' => $freshMember,
+        ]);
+    }
+
+    /**
+     * Generate a one-time Telegram link for the current member to link their account.
+     */
+    public function generateTelegramLink(Request $request, TelegramAuthService $telegramAuthService): JsonResponse
+    {
+        $botUsername = ltrim((string) config('services.telegram.bot_username', ''), '@');
+        if ($botUsername === '') {
+            return response()->json([
+                'success' => false,
+                'message' => __('app.telegram_bot_username_missing'),
+            ], 503);
+        }
+
+        /** @var \App\Models\Member $member */
+        $member = $request->attributes->get('member');
+
+        $code = $telegramAuthService->createCode(
+            $member,
+            TelegramAuthService::PURPOSE_MEMBER_ACCESS,
+            route('member.home'),
+            30
+        );
+
+        $payload = 'member:' . $code;
+        $link = 'https://t.me/' . $botUsername . '?start=' . rawurlencode($payload);
+
+        return response()->json([
+            'success' => true,
+            'link' => $link,
+            'expires_in' => 30,
+            'message' => __('app.telegram_settings_link_generated'),
         ]);
     }
 

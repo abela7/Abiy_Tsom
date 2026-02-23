@@ -90,6 +90,43 @@ final class TelegramService
     }
 
     /**
+     * Delete a message from a chat.
+     */
+    public function deleteMessage(string $chatId, int $messageId): bool
+    {
+        if (! $this->isConfigured() || $chatId === '' || $messageId <= 0) {
+            return false;
+        }
+
+        return $this->apiCall('deleteMessage', [
+            'chat_id' => trim($chatId),
+            'message_id' => $messageId,
+        ]);
+    }
+
+    /**
+     * Edit an existing message's text and optional reply markup.
+     */
+    public function editMessageText(string $chatId, int $messageId, string $text, array $replyMarkup = []): bool
+    {
+        if (! $this->isConfigured() || $chatId === '' || $messageId <= 0) {
+            return false;
+        }
+
+        $payload = [
+            'chat_id' => trim($chatId),
+            'message_id' => $messageId,
+            'text' => $text,
+        ];
+
+        if (! empty($replyMarkup)) {
+            $payload['reply_markup'] = $replyMarkup;
+        }
+
+        return $this->apiCall('editMessageText', $payload);
+    }
+
+    /**
      * Acknowledge callback button taps from inline keyboards.
      */
     public function answerCallbackQuery(string $callbackQueryId, string $text = '', bool $showAlert = false): bool
