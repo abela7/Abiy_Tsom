@@ -1223,11 +1223,15 @@ class TelegramWebhookController extends Controller
         $rows = [];
 
         if ($actor instanceof Member) {
-            $rows[] = [
-                ['text' => $this->telegramBotBuilder->buttonLabel('today', 'member', __('app.today')), 'callback_data' => 'today'],
-                ['text' => __('app.progress'), 'callback_data' => 'progress'],
-                ['text' => __('app.checklist'), 'callback_data' => 'checklist'],
-            ];
+            $firstRow = [];
+            if ($this->telegramBotBuilder->commandEnabled('home')) {
+                $homeLink = $this->memberHomeSecureLink($actor, $telegramAuthService);
+                $firstRow[] = ['text' => $this->telegramBotBuilder->buttonLabel('home', 'member', __('app.nav_home')), 'web_app' => ['url' => $homeLink]];
+            }
+            $firstRow[] = ['text' => $this->telegramBotBuilder->buttonLabel('today', 'member', __('app.today')), 'callback_data' => 'today'];
+            $firstRow[] = ['text' => __('app.progress'), 'callback_data' => 'progress'];
+            $firstRow[] = ['text' => __('app.checklist'), 'callback_data' => 'checklist'];
+            $rows[] = $firstRow;
             if ($this->telegramBotBuilder->buttonEnabled('help', 'member')) {
                 $rows[] = [['text' => $this->telegramBotBuilder->buttonLabel('help', 'member', 'Help'), 'callback_data' => 'help']];
             }
