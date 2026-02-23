@@ -166,7 +166,7 @@ return [
     'overall_completion' => 'ጠቅላላ፡ :pct%',
     'streak_days' => 'ተከታታይ፡ :count ቀናት',
     'progress' => 'ሂደት',
-    'menu' => 'ምናሌ',
+    'menu' => 'ማውጫ',
     'best_day' => 'የሚስማማ ቀን',
     'needs_work' => 'ትኩረት ይፈልጋል',
     'period_daily' => 'ዛሬ',
@@ -693,7 +693,7 @@ return [
 
     // Admin common
     'admin' => 'አስተዳዳሪ',
-    'toggle_menu' => 'ምናሌ መቀያየር',
+    'toggle_menu' => 'ማውጫ መቀያየር',
     'toggle_theme' => 'ገጽታ መቀያየር',
     'no_active_season' => 'ንቁ ወቅት የለም።',
     'create_one_first' => 'በመጀመሪያ ፍጠር።',
