@@ -147,6 +147,14 @@ class TelegramWebhookController extends Controller
             return $this->handleSuggestCallback($chatId, $messageId, $action, $telegramAuthService, $telegramService);
         }
 
+        if ($action === 'staff_main_page') {
+            return $this->handleStaffMainPage($chatId, $messageId, $telegramAuthService, $telegramService);
+        }
+
+        if ($action === 'staff_portal') {
+            return $this->handleStaffPortal($chatId, $messageId, $telegramAuthService, $telegramService);
+        }
+
         if ($action === 'link_admin_start') {
             return $this->handleLinkAdminStart($chatId, $messageId, $telegramService);
         }
@@ -216,6 +224,7 @@ class TelegramWebhookController extends Controller
             'unlink' => $this->handleUnlink($chatId, 0, $telegramAuthService, $telegramService),
             'suggest' => $this->handleSuggestCallback($chatId, 0, 'suggest', $telegramAuthService, $telegramService),
             'my suggestions', 'my_suggestions' => $this->handleSuggestCallback($chatId, 0, 'my_suggestions', $telegramAuthService, $telegramService),
+            'portal' => $this->handleStaffPortal($chatId, 0, $telegramAuthService, $telegramService),
             default => null,
         };
 
@@ -632,7 +641,7 @@ class TelegramWebhookController extends Controller
         }
 
         $actor = $this->actorFromChatId($chatId);
-        if (! $actor instanceof Member) {
+        if (! $actor) {
             return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->notLinkedMessage(), $this->startChoiceKeyboard());
         }
 
@@ -649,7 +658,9 @@ class TelegramWebhookController extends Controller
         );
 
         $formatted = $this->contentFormatter->formatHomeCountdown($easterAt, $lentStartAt);
-        $keyboard = $this->mainMenuKeyboard($actor, $telegramAuthService);
+        $keyboard = $actor instanceof Member
+            ? $this->mainMenuKeyboard($actor, $telegramAuthService)
+            : $this->staffMainPageKeyboard();
 
         return $this->replyOrEdit(
             $telegramService,
@@ -698,11 +709,11 @@ class TelegramWebhookController extends Controller
         }
 
         $actor = $this->actorFromChatId($chatId);
-        if (! $actor instanceof Member) {
+        if (! $actor) {
             return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->notLinkedMessage(), $this->startChoiceKeyboard());
         }
 
-        if (! $this->memberHasLocale($actor)) {
+        if ($actor instanceof Member && ! $this->memberHasLocale($actor)) {
             app()->setLocale('en');
             Translation::loadFromDb('en');
 
@@ -729,7 +740,9 @@ class TelegramWebhookController extends Controller
         }
 
         $formatted = $this->contentFormatter->formatDaySection($daily, $actor, 'bible');
-        $keyboard = $formatted['keyboard'] ?? $this->mainMenuKeyboard($actor, $telegramAuthService);
+        $keyboard = $formatted['keyboard'] ?? ($actor instanceof Member
+            ? $this->mainMenuKeyboard($actor, $telegramAuthService)
+            : $this->staffMainPageKeyboard());
         $parseMode = ($formatted['use_html'] ?? false) ? 'HTML' : null;
 
         return $this->replyOrEdit($telegramService, $chatId, $formatted['text'], $keyboard, $messageId, $parseMode);
@@ -743,7 +756,7 @@ class TelegramWebhookController extends Controller
         TelegramService $telegramService
     ): JsonResponse {
         $actor = $this->actorFromChatId($chatId);
-        if (! $actor instanceof Member) {
+        if (! $actor) {
             return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->notLinkedMessage(), $this->startChoiceKeyboard());
         }
 
@@ -2153,15 +2166,10 @@ class TelegramWebhookController extends Controller
             return ['inline_keyboard' => $rows];
         }
 
-        if ($this->telegramBotBuilder->buttonEnabled('admin', 'admin')) {
-            $adminLink = $this->adminSecureLink($actor, $telegramAuthService);
-            $rows[] = [['text' => $this->telegramBotBuilder->buttonLabel('admin', 'admin', __('app.telegram_builder_admin_panel')), 'web_app' => ['url' => $adminLink]]];
-        }
-
-        // Suggest + My Suggestions — always shown for linked admin/editor/writer users
+        // Staff/admin dual-mode menu: Main Page (member view) | Portal (staff tools)
         $rows[] = [
-            ['text' => '💡 '.__('app.telegram_suggest'), 'callback_data' => 'suggest'],
-            ['text' => '📋 '.__('app.telegram_my_suggestions'), 'callback_data' => 'my_suggestions'],
+            ['text' => '📱 '.__('app.telegram_staff_main_page'), 'callback_data' => 'staff_main_page'],
+            ['text' => '⚙️ '.__('app.telegram_staff_portal'), 'callback_data' => 'staff_portal'],
         ];
 
         if ($this->telegramBotBuilder->buttonEnabled('help', 'admin')) {
@@ -2170,12 +2178,89 @@ class TelegramWebhookController extends Controller
 
         $rows[] = [['text' => __('app.telegram_bot_unlink'), 'callback_data' => 'unlink']];
 
-        if (count($rows) === 2) {
-            // Only the suggest row + unlink row — add admin panel fallback
-            $adminLink = $this->adminSecureLink($actor, $telegramAuthService);
-            array_unshift($rows, [['text' => $this->telegramBotBuilder->buttonLabel('admin', 'admin', __('app.telegram_builder_admin_panel')), 'web_app' => ['url' => $adminLink]]]);
+        return ['inline_keyboard' => $rows];
+    }
+
+    /**
+     * Staff "Main Page" sub-menu keyboard: Today, Home, and back to dual-mode menu.
+     */
+    private function staffMainPageKeyboard(): array
+    {
+        $rows = [];
+
+        if ($this->telegramBotBuilder->commandEnabled('home')) {
+            $rows[] = [['text' => $this->telegramBotBuilder->buttonLabel('home', 'member', __('app.nav_home')), 'callback_data' => 'home']];
         }
 
+        $rows[] = [['text' => $this->telegramBotBuilder->buttonLabel('today', 'member', __('app.today')), 'callback_data' => 'today']];
+        $rows[] = [['text' => '⬅️ '.__('app.telegram_staff_back_to_menu'), 'callback_data' => 'menu']];
+
         return ['inline_keyboard' => $rows];
+    }
+
+    /**
+     * Staff "Portal" sub-menu keyboard: Admin panel, Suggest, My Suggestions, back.
+     */
+    private function staffPortalKeyboard(User $actor, TelegramAuthService $telegramAuthService): array
+    {
+        $rows = [];
+
+        if ($this->telegramBotBuilder->buttonEnabled('admin', 'admin')) {
+            $adminLink = $this->adminSecureLink($actor, $telegramAuthService);
+            $rows[] = [['text' => $this->telegramBotBuilder->buttonLabel('admin', 'admin', __('app.telegram_builder_admin_panel')), 'web_app' => ['url' => $adminLink]]];
+        }
+
+        $rows[] = [
+            ['text' => '💡 '.__('app.telegram_suggest'), 'callback_data' => 'suggest'],
+            ['text' => '📋 '.__('app.telegram_my_suggestions'), 'callback_data' => 'my_suggestions'],
+        ];
+
+        $rows[] = [['text' => '⬅️ '.__('app.telegram_staff_back_to_menu'), 'callback_data' => 'menu']];
+
+        return ['inline_keyboard' => $rows];
+    }
+
+    private function handleStaffMainPage(
+        string $chatId,
+        int $messageId,
+        TelegramAuthService $telegramAuthService,
+        TelegramService $telegramService
+    ): JsonResponse {
+        $actor = $this->actorFromChatId($chatId);
+        if (! $actor instanceof User) {
+            return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->notLinkedMessage(), $this->startChoiceKeyboard());
+        }
+
+        $this->applyLocaleForActor($actor);
+
+        return $this->replyOrEdit(
+            $telegramService,
+            $chatId,
+            '📱 '.__('app.telegram_staff_main_page'),
+            $this->staffMainPageKeyboard(),
+            $messageId
+        );
+    }
+
+    private function handleStaffPortal(
+        string $chatId,
+        int $messageId,
+        TelegramAuthService $telegramAuthService,
+        TelegramService $telegramService
+    ): JsonResponse {
+        $actor = $this->actorFromChatId($chatId);
+        if (! $actor instanceof User) {
+            return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->notLinkedMessage(), $this->startChoiceKeyboard());
+        }
+
+        $this->applyLocaleForActor($actor);
+
+        return $this->replyOrEdit(
+            $telegramService,
+            $chatId,
+            '⚙️ '.__('app.telegram_staff_portal'),
+            $this->staffPortalKeyboard($actor, $telegramAuthService),
+            $messageId
+        );
     }
 }

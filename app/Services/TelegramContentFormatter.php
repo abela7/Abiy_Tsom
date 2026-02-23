@@ -40,11 +40,11 @@ final class TelegramContentFormatter
      *
      * @return array{text: string, use_html: bool, keyboard: array}
      */
-    public function formatDaySection(DailyContent $daily, Member $member, string $section): array
+    public function formatDaySection(DailyContent $daily, Member|\App\Models\User $actor, string $section): array
     {
-        $locale = $this->memberLocale($member);
+        $locale = $actor instanceof Member ? $this->memberLocale($actor) : app()->getLocale();
         $dailyId = (string) $daily->id;
-        $parts = $this->buildSectionHeader($daily, $member, $locale, $section);
+        $parts = $this->buildSectionHeader($daily, $locale, $section);
 
         $content = match ($section) {
             'bible' => $this->sectionBible($daily, $locale),
@@ -58,7 +58,7 @@ final class TelegramContentFormatter
 
         $parts = array_merge($parts, $content);
         $text = implode("\n", $parts);
-        $keyboard = $this->sectionNavKeyboard($daily, $member, $section, $dailyId);
+        $keyboard = $this->sectionNavKeyboard($daily, $locale, $section, $dailyId);
 
         return [
             'text' => mb_substr($text, 0, self::MAX_MESSAGE_LENGTH),
@@ -67,7 +67,7 @@ final class TelegramContentFormatter
         ];
     }
 
-    private function buildSectionHeader(DailyContent $daily, Member $member, string $locale, string $section): array
+    private function buildSectionHeader(DailyContent $daily, string $locale, string $section): array
     {
         $dateStr = $daily->date?->locale('en')->translatedFormat('l, F j, Y') ?? '';
         $parts = [];
@@ -216,9 +216,8 @@ final class TelegramContentFormatter
      * Build section nav keyboard. Listen/content buttons at top (if any),
      * then section nav, then menu. No redundant "selected section" button.
      */
-    private function sectionNavKeyboard(DailyContent $daily, Member $member, string $currentSection, string $dailyId): array
+    private function sectionNavKeyboard(DailyContent $daily, string $locale, string $currentSection, string $dailyId): array
     {
-        $locale = $this->memberLocale($member);
         $rows = [];
 
         $sectionsWithContent = $this->sectionsWithContent($daily, $locale);
