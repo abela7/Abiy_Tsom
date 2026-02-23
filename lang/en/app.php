@@ -123,6 +123,14 @@ return [
     'tap_for_details' => 'Tap for details',
     'tap_to_collapse' => 'Tap to collapse',
     'references' => 'References',
+
+    // Telegram Today nav — short labels for inline buttons (avoid truncation)
+    'telegram_nav_bible' => 'Bible',
+    'telegram_nav_mezmur' => 'Mezmur',
+    'telegram_nav_sinksar' => 'Sinksar',
+    'telegram_nav_books' => 'Books',
+    'telegram_nav_references' => 'References',
+    'telegram_nav_reflection' => 'Reflection',
     'reference_name' => 'Reference name',
     'reference_url' => 'Link (URL)',
     'add_reference' => 'Add reference',

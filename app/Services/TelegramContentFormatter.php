@@ -200,8 +200,9 @@ final class TelegramContentFormatter
     }
 
     /**
-     * Build section nav keyboard: Mezmur | Sinksar | Books | Reference | Reflection, then Menu.
-     * For Mezmur/Sinksar/Reference sections with YouTube URLs, add Web App Listen buttons.
+     * Build section nav keyboard. Uses short labels and 2 rows (max 3 per row)
+     * so buttons stay visible on narrow screens. For Mezmur/Sinksar/Reference
+     * sections with YouTube URLs, add Web App Listen buttons.
      */
     private function sectionNavKeyboard(DailyContent $daily, Member $member, string $currentSection, string $dailyId): array
     {
@@ -219,18 +220,21 @@ final class TelegramContentFormatter
             }
             $cb = $this->callbackData('today_sec', $code, $dailyId);
             $label = match ($name) {
-                'bible' => '📜 '.__('app.bible_reading'),
-                'mezmur' => '🎵 '.__('app.mezmur'),
-                'sinksar' => '📿 '.__('app.sinksar'),
-                'books' => '📚 '.__('app.spiritual_book'),
-                'reference' => '🔗 '.__('app.references'),
-                'reflection' => '💭 '.__('app.reflection'),
+                'bible' => '📜 '.__('app.telegram_nav_bible'),
+                'mezmur' => '🎵 '.__('app.telegram_nav_mezmur'),
+                'sinksar' => '📿 '.__('app.telegram_nav_sinksar'),
+                'books' => '📚 '.__('app.telegram_nav_books'),
+                'reference' => '🔗 '.__('app.telegram_nav_references'),
+                'reflection' => '💭 '.__('app.telegram_nav_reflection'),
                 default => $name,
             };
             $navButtons[] = ['text' => $label, 'callback_data' => $cb];
         }
         if ($navButtons !== []) {
-            $rows[] = $navButtons;
+            $rows[] = array_slice($navButtons, 0, 3);
+            if (count($navButtons) > 3) {
+                $rows[] = array_slice($navButtons, 3, 3);
+            }
         }
 
         $listenButtons = $this->listenButtonsForSection($daily, $locale, $currentSection);

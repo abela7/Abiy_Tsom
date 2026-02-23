@@ -126,6 +126,14 @@ return [
     'tap_for_details' => 'ዝርዝሮችን ለማየት ይንኩ',
     'tap_to_collapse' => 'ለመዝጋት ይንኩ',
     'references' => 'ማጣቀሻዎች',
+
+    // Telegram Today nav — short labels for inline buttons (avoid truncation)
+    'telegram_nav_bible' => 'መጽሐፍ ቅዱስ',
+    'telegram_nav_mezmur' => 'መዝሙር',
+    'telegram_nav_sinksar' => 'ስንክሳር',
+    'telegram_nav_books' => 'መጽሐፍ',
+    'telegram_nav_references' => 'ማጣቀሻ',
+    'telegram_nav_reflection' => 'ነጸብራቅ',
     'reference_name' => 'ማጣቀሻ ስም',
     'reference_url' => 'አገናኝ (URL)',
     'add_reference' => 'ማጣቀሻ ጨምር',
