@@ -502,18 +502,29 @@ class TelegramWebhookController extends Controller
             return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->notLinkedMessage(), $this->startChoiceKeyboard());
         }
 
-        $homeLink = $this->memberHomeSecureLink($actor, $telegramAuthService);
-        if (! $homeLink) {
-            return $this->replyAfterDelete($telegramService, $chatId, $messageId, 'Could not generate secure member home link right now.', []);
-        }
+        $this->applyLocaleForActor($actor);
 
-        $homeLabel = $this->telegramBotBuilder->buttonLabel('home', 'member', 'Home');
+        $easterTimezone = config('app.easter_timezone', 'Europe/London');
+        $easterAt = CarbonImmutable::parse(
+            config('app.easter_date', '2026-04-12 03:00'),
+            $easterTimezone
+        );
+        $lentStartAt = CarbonImmutable::parse(
+            config('app.lent_start_date', '2026-02-15 03:00'),
+            $easterTimezone
+        );
 
-        return $this->replyAfterDelete($telegramService, $chatId, $messageId, $homeLabel.':', [
-            'inline_keyboard' => [
-                [['text' => $homeLabel, 'web_app' => ['url' => $homeLink]]],
-            ],
-        ]);
+        $formatted = $this->contentFormatter->formatHomeCountdown($easterAt, $lentStartAt);
+        $keyboard = $this->mainMenuKeyboard($actor, $telegramAuthService);
+
+        return $this->replyOrEdit(
+            $telegramService,
+            $chatId,
+            $formatted['text'],
+            $keyboard,
+            $messageId,
+            $formatted['use_html'] ? 'HTML' : null
+        );
     }
 
     private function handleAdmin(
@@ -1225,8 +1236,7 @@ class TelegramWebhookController extends Controller
         if ($actor instanceof Member) {
             $firstRow = [];
             if ($this->telegramBotBuilder->commandEnabled('home')) {
-                $homeLink = $this->memberHomeSecureLink($actor, $telegramAuthService);
-                $firstRow[] = ['text' => $this->telegramBotBuilder->buttonLabel('home', 'member', __('app.nav_home')), 'web_app' => ['url' => $homeLink]];
+                $firstRow[] = ['text' => $this->telegramBotBuilder->buttonLabel('home', 'member', __('app.nav_home')), 'callback_data' => 'home'];
             }
             $firstRow[] = ['text' => $this->telegramBotBuilder->buttonLabel('today', 'member', __('app.today')), 'callback_data' => 'today'];
             $firstRow[] = ['text' => __('app.progress'), 'callback_data' => 'progress'];

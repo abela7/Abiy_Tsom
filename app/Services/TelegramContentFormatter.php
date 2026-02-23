@@ -9,6 +9,7 @@ use App\Models\DailyContent;
 use App\Models\Member;
 use App\Models\MemberChecklist;
 use App\Models\MemberCustomChecklist;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
 
 /**
@@ -713,5 +714,55 @@ final class TelegramContentFormatter
         $empty = 10 - $filled;
 
         return '['.str_repeat('█', $filled).str_repeat('░', $empty).']';
+    }
+
+    /**
+     * Format Easter countdown and Lent progress for in-chat display.
+     *
+     * @return array{text: string, use_html: bool}
+     */
+    public function formatHomeCountdown(CarbonInterface $easterAt, CarbonInterface $lentStartAt): array
+    {
+        $now = now();
+        $diff = (int) max(0, $easterAt->timestamp - $now->timestamp);
+        $totalWindow = (int) max(1, $easterAt->timestamp - $lentStartAt->timestamp);
+        $elapsed = (int) max(0, $now->timestamp - $lentStartAt->timestamp);
+        $progressPct = (int) round(min(100, max(0, ($elapsed / $totalWindow) * 100)));
+
+        $days = (int) floor($diff / 86400);
+        $hours = (int) floor(($diff % 86400) / 3600);
+        $minutes = (int) floor(($diff % 3600) / 60);
+        $seconds = $diff % 60;
+
+        $pad = fn (int $n) => str_pad((string) $n, 2, '0', STR_PAD_LEFT);
+        $bar = $this->progressBar($progressPct);
+
+        $parts = [];
+        $parts[] = '<b>⏳ '.__('app.easter_countdown').'</b>';
+        $parts[] = '';
+        if ($diff > 0) {
+            $parts[] = sprintf(
+                '<b>%s</b> %s · <b>%s</b> %s · <b>%s</b> %s · <b>%s</b> %s',
+                $pad($days),
+                __('app.days'),
+                $pad($hours),
+                __('app.hours'),
+                $pad($minutes),
+                __('app.minutes'),
+                $pad($seconds),
+                __('app.seconds')
+            );
+            $parts[] = __('app.easter_countdown_remaining');
+        } else {
+            $parts[] = '<b>'.__('app.christ_is_risen').'</b>';
+            $parts[] = __('app.easter_countdown_subtitle');
+        }
+        $parts[] = '';
+        $parts[] = __('app.progress').': '.$bar.' '.$progressPct.'%';
+
+        return [
+            'text' => implode("\n", $parts),
+            'use_html' => true,
+        ];
     }
 }
