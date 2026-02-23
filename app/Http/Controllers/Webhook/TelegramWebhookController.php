@@ -12,6 +12,7 @@ use App\Models\Member;
 use App\Models\MemberChecklist;
 use App\Models\MemberCustomChecklist;
 use App\Models\TelegramAccessToken;
+use App\Models\Translation;
 use App\Models\User;
 use App\Services\TelegramAuthService;
 use App\Services\TelegramBotBuilderService;
@@ -125,6 +126,10 @@ class TelegramWebhookController extends Controller
             return $this->handleTodaySection($chatId, $messageId, $action, $telegramAuthService, $telegramService);
         }
 
+        if (in_array($action, ['lang_en', 'lang_am', 'lang_toggle'], true)) {
+            return $this->handleLanguageChange($chatId, $messageId, $action, $telegramAuthService, $telegramService);
+        }
+
         return match ($action) {
             'have_account' => $this->handleHaveAccount($chatId, $messageId, $telegramService),
             'unlink' => $this->handleUnlink($chatId, $messageId, $telegramAuthService, $telegramService),
@@ -135,7 +140,7 @@ class TelegramWebhookController extends Controller
             'checklist' => $this->handleChecklist($chatId, $messageId, $telegramAuthService, $telegramService),
             'admin' => $this->handleAdmin($chatId, $telegramAuthService, $telegramService, $messageId),
             'me' => $this->handleMe($chatId, $telegramAuthService, $telegramService, $messageId),
-            'help' => $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->helpMessage(), $this->launchKeyboard()),
+            'help' => $this->handleHelp($chatId, $messageId, $telegramAuthService, $telegramService),
             default => $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->fallbackMessage(), $this->launchKeyboard()),
         };
     }
@@ -221,6 +226,12 @@ class TelegramWebhookController extends Controller
                 );
             }
 
+            if ($actor instanceof Member && ! $this->memberHasLocale($actor)) {
+                return $this->showLanguageChoice($telegramService, $chatId);
+            }
+
+            $this->applyLocaleForActor($actor);
+
             return $this->reply(
                 $telegramService,
                 $chatId,
@@ -259,6 +270,12 @@ class TelegramWebhookController extends Controller
                 );
             }
 
+            if ($actor instanceof Member && ! $this->memberHasLocale($actor)) {
+                return $this->showLanguageChoice($telegramService, $chatId);
+            }
+
+            $this->applyLocaleForActor($actor);
+
             return $this->reply(
                 $telegramService,
                 $chatId,
@@ -270,6 +287,107 @@ class TelegramWebhookController extends Controller
         return $this->bindFromCode($chatId, $argument, $telegramAuthService, $telegramService, 'start');
     }
 
+    private function handleHelp(
+        string $chatId,
+        int $messageId,
+        TelegramAuthService $telegramAuthService,
+        TelegramService $telegramService
+    ): JsonResponse {
+        $actor = $this->actorFromChatId($chatId);
+        if ($actor) {
+            $this->applyLocaleForActor($actor);
+        } else {
+            app()->setLocale('en');
+            Translation::loadFromDb('en');
+        }
+
+        return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->helpMessage(), $this->launchKeyboard());
+    }
+
+    private function handleLanguageChange(
+        string $chatId,
+        int $messageId,
+        string $action,
+        TelegramAuthService $telegramAuthService,
+        TelegramService $telegramService
+    ): JsonResponse {
+        $actor = $this->actorFromChatId($chatId);
+        if (! $actor instanceof Member) {
+            return response()->json(['success' => true]);
+        }
+
+        $newLocale = match ($action) {
+            'lang_en' => 'en',
+            'lang_am' => 'am',
+            'lang_toggle' => ($actor->locale ?? 'en') === 'en' ? 'am' : 'en',
+            default => null,
+        };
+        if ($newLocale === null) {
+            return response()->json(['success' => true]);
+        }
+
+        $actor->update(['locale' => $newLocale]);
+        $this->applyLocaleForActor($actor);
+
+        return $this->replyOrEdit(
+            $telegramService,
+            $chatId,
+            $this->menuHeading(),
+            $this->mainMenuKeyboard($actor, $telegramAuthService),
+            $messageId
+        );
+    }
+
+    private function showLanguageChoice(TelegramService $telegramService, string $chatId): JsonResponse
+    {
+        app()->setLocale('en');
+        Translation::loadFromDb('en');
+
+        return $this->reply(
+            $telegramService,
+            $chatId,
+            __('app.telegram_choose_language'),
+            $this->languageChoiceKeyboard()
+        );
+    }
+
+    private function languageChoiceKeyboard(): array
+    {
+        app()->setLocale('en');
+        Translation::loadFromDb('en');
+
+        return ['inline_keyboard' => [
+            [
+                ['text' => __('app.telegram_lang_en'), 'callback_data' => 'lang_en'],
+                ['text' => __('app.telegram_lang_am'), 'callback_data' => 'lang_am'],
+            ],
+        ]];
+    }
+
+    private function languageToggleButton(Member $member): array
+    {
+        $locale = $member->locale ?? 'en';
+        $targetLocale = $locale === 'en' ? 'am' : 'en';
+        $label = $locale === 'en' ? __('app.telegram_lang_switch_am') : __('app.telegram_lang_switch_en');
+        $callback = $targetLocale === 'en' ? 'lang_en' : 'lang_am';
+
+        return ['text' => $label, 'callback_data' => $callback];
+    }
+
+    private function memberHasLocale(Member $member): bool
+    {
+        return in_array($member->locale ?? '', ['en', 'am'], true);
+    }
+
+    private function applyLocaleForActor(Member|User $actor): void
+    {
+        $locale = $actor instanceof Member && $this->memberHasLocale($actor)
+            ? $actor->locale
+            : 'en';
+        app()->setLocale($locale);
+        Translation::loadFromDb($locale);
+    }
+
     private function handleUnlink(
         string $chatId,
         int $messageId,
@@ -278,9 +396,13 @@ class TelegramWebhookController extends Controller
     ): JsonResponse {
         $actor = $this->actorFromChatId($chatId);
         if (! $actor) {
+            app()->setLocale('en');
+            Translation::loadFromDb('en');
+
             return $this->replyAfterDelete($telegramService, $chatId, $messageId, __('app.telegram_bot_unlink_not_linked'), $this->startChoiceKeyboard());
         }
 
+        $this->applyLocaleForActor($actor);
         $this->wipeTelegramDataForChat($chatId, $actor);
 
         return $this->replyAfterDelete(
@@ -322,6 +444,15 @@ class TelegramWebhookController extends Controller
         if (! $actor) {
             return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->notLinkedMessage(), $this->startChoiceKeyboard());
         }
+
+        if ($actor instanceof Member && ! $this->memberHasLocale($actor)) {
+            app()->setLocale('en');
+            Translation::loadFromDb('en');
+
+            return $this->replyOrEdit($telegramService, $chatId, __('app.telegram_choose_language'), $this->languageChoiceKeyboard(), $messageId);
+        }
+
+        $this->applyLocaleForActor($actor);
 
         return $this->replyOrEdit(
             $telegramService,
@@ -425,9 +556,18 @@ class TelegramWebhookController extends Controller
             return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->notLinkedMessage(), $this->startChoiceKeyboard());
         }
 
+        if (! $this->memberHasLocale($actor)) {
+            app()->setLocale('en');
+            Translation::loadFromDb('en');
+
+            return $this->replyOrEdit($telegramService, $chatId, __('app.telegram_choose_language'), $this->languageChoiceKeyboard(), $messageId);
+        }
+
+        $this->applyLocaleForActor($actor);
+
         $season = LentSeason::query()->latest('id')->where('is_active', true)->first();
         if (! $season) {
-            return $this->replyAfterDelete($telegramService, $chatId, $messageId, 'No active season configured yet.', []);
+            return $this->replyAfterDelete($telegramService, $chatId, $messageId, __('app.no_active_season'), []);
         }
 
         $today = CarbonImmutable::now();
@@ -439,7 +579,7 @@ class TelegramWebhookController extends Controller
             ->first();
 
         if (! $daily) {
-            return $this->replyAfterDelete($telegramService, $chatId, $messageId, 'No published content available for today yet.', []);
+            return $this->replyAfterDelete($telegramService, $chatId, $messageId, __('app.no_content_today'), []);
         }
 
         $formatted = $this->contentFormatter->formatDaySection($daily, $actor, 'bible');
@@ -460,6 +600,8 @@ class TelegramWebhookController extends Controller
         if (! $actor instanceof Member) {
             return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->notLinkedMessage(), $this->startChoiceKeyboard());
         }
+
+        $this->applyLocaleForActor($actor);
 
         $parts = explode('_', $action, 4);
         if (count($parts) < 4 || ($parts[0] ?? '') !== 'today' || ($parts[1] ?? '') !== 'sec') {
@@ -513,6 +655,15 @@ class TelegramWebhookController extends Controller
             return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->notLinkedMessage(), $this->startChoiceKeyboard());
         }
 
+        if (! $this->memberHasLocale($actor)) {
+            app()->setLocale('en');
+            Translation::loadFromDb('en');
+
+            return $this->replyOrEdit($telegramService, $chatId, __('app.telegram_choose_language'), $this->languageChoiceKeyboard(), $messageId);
+        }
+
+        $this->applyLocaleForActor($actor);
+
         $text = $this->contentFormatter->formatProgressSummary($actor);
         $keyboard = $this->mainMenuKeyboard($actor, $telegramAuthService);
 
@@ -530,6 +681,15 @@ class TelegramWebhookController extends Controller
             return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->notLinkedMessage(), $this->startChoiceKeyboard());
         }
 
+        if (! $this->memberHasLocale($actor)) {
+            app()->setLocale('en');
+            Translation::loadFromDb('en');
+
+            return $this->replyOrEdit($telegramService, $chatId, __('app.telegram_choose_language'), $this->languageChoiceKeyboard(), $messageId);
+        }
+
+        $this->applyLocaleForActor($actor);
+
         $season = LentSeason::query()->latest('id')->where('is_active', true)->first();
         if (! $season) {
             return $this->replyAfterDelete($telegramService, $chatId, $messageId, __('app.no_active_season'), []);
@@ -543,7 +703,7 @@ class TelegramWebhookController extends Controller
             ->first();
 
         if (! $daily) {
-            return $this->replyAfterDelete($telegramService, $chatId, $messageId, 'No published content for today yet.', []);
+            return $this->replyAfterDelete($telegramService, $chatId, $messageId, __('app.no_content_today'), []);
         }
 
         $activities = Activity::where('lent_season_id', $daily->lent_season_id)
@@ -586,6 +746,8 @@ class TelegramWebhookController extends Controller
         if (! $actor instanceof Member) {
             return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->notLinkedMessage(), $this->startChoiceKeyboard());
         }
+
+        $this->applyLocaleForActor($actor);
 
         $parts = explode('_', $action, 4);
         if (count($parts) < 4 || ($parts[0] ?? '') !== 'check' || ! in_array($parts[1] ?? '', ['a', 'c'], true)) {
@@ -673,9 +835,19 @@ class TelegramWebhookController extends Controller
         $token = $telegramAuthService->consumeCode($code);
         if ($token && $token->actor) {
             $this->syncTelegramChatId($token->actor, $chatId);
-            $keyboard = $token->actor instanceof Member
-                ? $this->mainMenuKeyboard($token->actor, $telegramAuthService)
-                : $this->quickLinksKeyboard($token->actor, $telegramAuthService);
+            $actor = $token->actor;
+            if ($actor instanceof Member && ! $this->memberHasLocale($actor)) {
+                return $this->reply(
+                    $telegramService,
+                    $chatId,
+                    __('app.telegram_linked_success')."\n\n".__('app.telegram_choose_language'),
+                    $this->languageChoiceKeyboard()
+                );
+            }
+            $this->applyLocaleForActor($actor);
+            $keyboard = $actor instanceof Member
+                ? $this->mainMenuKeyboard($actor, $telegramAuthService)
+                : $this->quickLinksKeyboard($actor, $telegramAuthService);
 
             return $this->reply(
                 $telegramService,
@@ -689,6 +861,15 @@ class TelegramWebhookController extends Controller
             $member = Member::query()->where('token', $code)->first();
             if ($member) {
                 $this->syncTelegramChatId($member, $chatId);
+                if (! $this->memberHasLocale($member)) {
+                    return $this->reply(
+                        $telegramService,
+                        $chatId,
+                        __('app.telegram_linked_success')."\n\n".__('app.telegram_choose_language'),
+                        $this->languageChoiceKeyboard()
+                    );
+                }
+                $this->applyLocaleForActor($member);
 
                 return $this->reply(
                     $telegramService,
@@ -1051,6 +1232,7 @@ class TelegramWebhookController extends Controller
                 $rows[] = [['text' => $this->telegramBotBuilder->buttonLabel('help', 'member', 'Help'), 'callback_data' => 'help']];
             }
             $rows[] = [['text' => __('app.telegram_bot_unlink'), 'callback_data' => 'unlink']];
+            $rows[] = [$this->languageToggleButton($actor)];
 
             return ['inline_keyboard' => $rows];
         }
