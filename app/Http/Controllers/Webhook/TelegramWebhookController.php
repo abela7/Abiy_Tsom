@@ -148,6 +148,7 @@ class TelegramWebhookController extends Controller
 
         return match ($action) {
             'have_account' => $this->handleHaveAccount($chatId, $messageId, $telegramService),
+            'have_account_member' => $this->handleHaveAccountMember($chatId, $messageId, $telegramService),
             'unlink' => $this->handleUnlink($chatId, $messageId, $telegramAuthService, $telegramService),
             'menu' => $this->handleMenu($chatId, $telegramAuthService, $telegramService, $messageId),
             'home' => $this->handleHome($chatId, $telegramAuthService, $telegramService, $messageId),
@@ -468,6 +469,19 @@ class TelegramWebhookController extends Controller
     }
 
     private function handleHaveAccount(string $chatId, int $messageId, TelegramService $telegramService): JsonResponse
+    {
+        $text = "👤 ".__('app.telegram_start_have_account')."\n\n"
+            .__('app.telegram_have_account_choose_role');
+
+        $keyboard = ['inline_keyboard' => [
+            [['text' => '🙏 '.__('app.telegram_have_account_member'), 'callback_data' => 'have_account_member']],
+            [['text' => '✍️ '.__('app.telegram_have_account_admin'), 'callback_data' => 'link_admin_start']],
+        ]];
+
+        return $this->replyAfterDelete($telegramService, $chatId, $messageId, $text, $keyboard);
+    }
+
+    private function handleHaveAccountMember(string $chatId, int $messageId, TelegramService $telegramService): JsonResponse
     {
         $text = __('app.telegram_start_have_account_code_instructions');
         $keyboard = ['inline_keyboard' => [
