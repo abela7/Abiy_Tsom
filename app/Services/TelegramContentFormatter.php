@@ -224,6 +224,11 @@ final class TelegramContentFormatter
         if ($currentCode === false) {
             $currentCode = 'b';
         }
+        $listenButtons = $this->listenButtonsForSection($daily, $locale, $currentSection);
+        foreach ($listenButtons as $btn) {
+            $rows[] = [$btn];
+        }
+
         $currentLabel = match ($currentSection) {
             'bible' => '📜 '.__('app.telegram_nav_bible'),
             'mezmur' => '🎵 '.__('app.telegram_nav_mezmur'),
@@ -257,11 +262,6 @@ final class TelegramContentFormatter
             if (count($navButtons) > 3) {
                 $rows[] = array_slice($navButtons, 3, 3);
             }
-        }
-
-        $listenButtons = $this->listenButtonsForSection($daily, $locale, $currentSection);
-        foreach ($listenButtons as $btn) {
-            $rows[] = [$btn];
         }
 
         $rows[] = [['text' => '◀️ '.__('app.menu'), 'callback_data' => 'menu']];
