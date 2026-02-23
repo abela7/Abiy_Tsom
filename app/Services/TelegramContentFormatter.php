@@ -574,7 +574,7 @@ final class TelegramContentFormatter
         $allDays = Cache::remember($cacheKey.'_days', 60, fn () => DailyContent::where('lent_season_id', $season->id)
             ->where('is_published', true)
             ->orderBy('day_number')
-            ->get(['id', 'day_number', 'date', 'weekly_theme_id']));
+            ->get());
 
         $today = Carbon::today();
         $referenceDay = $this->getProgressReferenceDay($allDays, $today);
