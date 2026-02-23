@@ -9,6 +9,7 @@ use App\Models\TelegramAccessToken;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Str;
 
 final class TelegramAuthService
@@ -95,7 +96,8 @@ final class TelegramAuthService
     }
 
     /**
-     * Create a member link code with a short display code for typing in the bot.
+     * Create a member link code with encrypted payload and short display code.
+     * Data is encrypted so it is not readable in the database.
      * Returns [full_token, short_code].
      *
      * @return array{0: string, 1: string}
@@ -106,24 +108,33 @@ final class TelegramAuthService
 
         $plainToken = Str::random(self::CODE_LENGTH);
         $shortCode = $this->generateUniqueShortCode();
+        $expiresAt = CarbonImmutable::now()->addMinutes($ttlMinutes);
+
+        $payload = [
+            'member_id' => $member->getKey(),
+            'redirect_to' => $this->sanitizeRedirectPath($redirectTo, '/'),
+            'expires_at' => $expiresAt->timestamp,
+            'nonce' => Str::random(16),
+        ];
 
         TelegramAccessToken::create([
             'token_hash' => hash('sha256', $plainToken),
             'short_code' => strtoupper($shortCode),
+            'encrypted_payload' => Crypt::encryptString(json_encode($payload)),
             'purpose' => self::PURPOSE_MEMBER_ACCESS,
             'actor_type' => Member::class,
             'actor_id' => $member->getKey(),
             'redirect_to' => $this->sanitizeRedirectPath($redirectTo, '/'),
-            'expires_at' => CarbonImmutable::now()->addMinutes($ttlMinutes),
+            'expires_at' => $expiresAt,
         ]);
 
         return [$plainToken, strtoupper($shortCode)];
     }
 
     /**
-     * Consume a token by its short code (6–8 alphanumeric).
+     * Consume a member link by short code. Decrypts payload and returns the Member.
      */
-    public function consumeByShortCode(string $shortCode): ?TelegramAccessToken
+    public function consumeByShortCode(string $shortCode): ?Member
     {
         $this->cleanupExpiredTokens();
 
@@ -132,19 +143,43 @@ final class TelegramAuthService
             return null;
         }
 
-        $token = TelegramAccessToken::query()
+        $record = TelegramAccessToken::query()
             ->where('short_code', $normalized)
             ->where('purpose', self::PURPOSE_MEMBER_ACCESS)
             ->whereNull('consumed_at')
             ->where('expires_at', '>', now())
             ->first();
 
-        if (! $token) {
+        if (! $record) {
+            return null;
+        }
+
+        $member = null;
+
+        if (! empty($record->encrypted_payload)) {
+            try {
+                $payload = json_decode(Crypt::decryptString($record->encrypted_payload), true);
+                if (is_array($payload) && isset($payload['member_id'])) {
+                    $expiresAt = $payload['expires_at'] ?? 0;
+                    if ($expiresAt > time()) {
+                        $member = Member::query()->find($payload['member_id']);
+                    }
+                }
+            } catch (\Throwable) {
+                return null;
+            }
+        }
+
+        if (! $member && $record->actor_id) {
+            $member = Member::query()->find($record->actor_id);
+        }
+
+        if (! $member) {
             return null;
         }
 
         $consumed = TelegramAccessToken::query()
-            ->whereKey($token->getKey())
+            ->whereKey($record->getKey())
             ->whereNull('consumed_at')
             ->update(['consumed_at' => now()]);
 
@@ -152,9 +187,7 @@ final class TelegramAuthService
             return null;
         }
 
-        $token->forceFill(['consumed_at' => now()]);
-
-        return $token->load('actor');
+        return $member;
     }
 
     private function generateUniqueShortCode(): string

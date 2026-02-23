@@ -334,6 +334,7 @@ return [
     'telegram_settings_link_generated' => 'Link generated. Open it in Telegram to link your account. It expires in 30 minutes.',
     'telegram_settings_code_instructions' => 'Type this code in the Telegram bot to link your account. It expires in 30 minutes.',
     'telegram_linked_success' => 'Account linked successfully.',
+    'telegram_menu_heading' => 'Tap a button below to open the app:',
     'open_botfather' => 'Open BotFather',
     'whatsapp_settings_saved' => 'WhatsApp settings saved successfully.',
     'ultramsg_credentials' => 'UltraMsg API Credentials',

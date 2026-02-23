@@ -168,19 +168,68 @@ class TelegramWebhookController extends Controller
             return null;
         }
 
-        $token = $telegramAuthService->consumeByShortCode($code);
-        if (! $token || ! $token->actor) {
+        $member = $telegramAuthService->consumeByShortCode($code);
+        if (! $member) {
             return null;
         }
 
-        $this->syncTelegramChatId($token->actor, $chatId);
+        $this->syncTelegramChatId($member, $chatId);
+
+        $keyboard = $this->mainMenuKeyboard($member, $telegramAuthService);
+        $keyboard = $this->ensureMenuHasOpenAppButton($keyboard, $member, $telegramAuthService);
 
         return $this->reply(
             $telegramService,
             $chatId,
-            __('app.telegram_linked_success'),
-            $this->mainMenuKeyboard($token->actor, $telegramAuthService)
+            __('app.telegram_linked_success') . "\n\n" . __('app.telegram_menu_heading'),
+            $keyboard
         );
+    }
+
+    /**
+     * Ensure the menu always has at least one working "Open app" button.
+     */
+    private function ensureMenuHasOpenAppButton(array $keyboard, Member|User $actor, TelegramAuthService $telegramAuthService): array
+    {
+        $rows = $keyboard['inline_keyboard'] ?? [];
+        if ($rows === []) {
+            $openUrl = $this->actorOpenAppUrl($actor, $telegramAuthService);
+            return ['inline_keyboard' => [
+                [['text' => $this->telegramBotBuilder->menuButtonLabel(), 'web_app' => ['url' => $openUrl]]],
+            ]];
+        }
+
+        $hasWebApp = false;
+        foreach ($rows as $row) {
+            foreach ($row as $btn) {
+                if (isset($btn['web_app']['url'])) {
+                    $hasWebApp = true;
+                    break 2;
+                }
+            }
+        }
+
+        if (! $hasWebApp) {
+            $openUrl = $this->actorOpenAppUrl($actor, $telegramAuthService);
+            $rows[] = [['text' => $this->telegramBotBuilder->menuButtonLabel(), 'web_app' => ['url' => $openUrl]]];
+        }
+
+        return ['inline_keyboard' => $rows];
+    }
+
+    private function actorOpenAppUrl(Member|User $actor, TelegramAuthService $telegramAuthService): string
+    {
+        $code = $telegramAuthService->createCode(
+            $actor,
+            $actor instanceof Member ? TelegramAuthService::PURPOSE_MEMBER_ACCESS : TelegramAuthService::PURPOSE_ADMIN_ACCESS,
+            $actor instanceof Member ? route('member.home') : $this->adminFallbackPath($actor),
+            $actor instanceof Member ? 120 : 30
+        );
+
+        return url(route('telegram.access', [
+            'code' => $code,
+            'purpose' => $actor instanceof Member ? TelegramAuthService::PURPOSE_MEMBER_ACCESS : TelegramAuthService::PURPOSE_ADMIN_ACCESS,
+        ]));
     }
 
     private function handleStart(
@@ -509,10 +558,10 @@ class TelegramWebhookController extends Controller
             30
         );
 
-        return route('telegram.access', [
+        return url(route('telegram.access', [
             'code' => $code,
             'purpose' => TelegramAuthService::PURPOSE_MEMBER_ACCESS,
-        ]);
+        ]));
     }
 
     private function memberHomeSecureLink(Member $member, TelegramAuthService $telegramAuthService): string
@@ -524,10 +573,10 @@ class TelegramWebhookController extends Controller
             120
         );
 
-        return route('telegram.access', [
+        return url(route('telegram.access', [
             'code' => $homeCode,
             'purpose' => TelegramAuthService::PURPOSE_MEMBER_ACCESS,
-        ]);
+        ]));
     }
 
     private function adminSecureLink(User $admin, TelegramAuthService $telegramAuthService): string
@@ -539,10 +588,10 @@ class TelegramWebhookController extends Controller
             30
         );
 
-        return route('telegram.access', [
+        return url(route('telegram.access', [
             'code' => $adminCode,
             'purpose' => TelegramAuthService::PURPOSE_ADMIN_ACCESS,
-        ]);
+        ]));
     }
 
     private function actorFromChatId(string $chatId): Member|User|null
@@ -794,7 +843,8 @@ class TelegramWebhookController extends Controller
             }
 
             if ($rows === []) {
-                $rows[] = [['text' => $this->telegramBotBuilder->buttonLabel('home', 'member', 'Home'), 'web_app' => ['url' => route('member.home')]]];
+                $homeLink = $this->memberHomeSecureLink($actor, $telegramAuthService);
+                $rows[] = [['text' => $this->telegramBotBuilder->buttonLabel('home', 'member', 'Home'), 'web_app' => ['url' => $homeLink]]];
             }
 
             return ['inline_keyboard' => $rows];
@@ -810,7 +860,8 @@ class TelegramWebhookController extends Controller
         }
 
         if ($rows === []) {
-            $rows[] = [['text' => $this->telegramBotBuilder->buttonLabel('admin', 'admin', 'Admin panel'), 'web_app' => ['url' => $this->adminFallbackPath($actor)]]];
+            $adminLink = $this->adminSecureLink($actor, $telegramAuthService);
+            $rows[] = [['text' => $this->telegramBotBuilder->buttonLabel('admin', 'admin', 'Admin panel'), 'web_app' => ['url' => $adminLink]]];
         }
 
         return ['inline_keyboard' => $rows];
