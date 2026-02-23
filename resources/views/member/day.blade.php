@@ -178,7 +178,7 @@
     {{-- Sinksar (Synaxarium) — same layout as Mezmur with YouTube/video link --}}
     @if(localized($daily, 'sinksar_title'))
     <div class="bg-card rounded-2xl p-4 shadow-sm border border-border">
-        <h3 class="font-semibold text-sm text-sinksar mb-1">{{ __('app.sinksar') }}</h3>
+        <h3 class="font-semibold text-sm text-sinksar mb-1">📖 {{ __('app.sinksar') }}</h3>
         <p class="font-medium text-primary">{{ localized($daily, 'sinksar_title') }}</p>
         @if(localized($daily, 'sinksar_description'))
             <p class="text-sm text-muted-text mt-2 leading-relaxed">{{ localized($daily, 'sinksar_description') }}</p>

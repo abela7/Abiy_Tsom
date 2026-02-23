@@ -237,7 +237,7 @@ final class TelegramContentFormatter
             $label = match ($name) {
                 'bible' => '📜 '.__('app.telegram_nav_bible'),
                 'mezmur' => '🎵 '.__('app.telegram_nav_mezmur'),
-                'sinksar' => '📿 '.__('app.telegram_nav_sinksar'),
+                'sinksar' => '📖 '.__('app.telegram_nav_sinksar'),
                 'books' => '📚 '.__('app.telegram_nav_books'),
                 'reference' => '🔗 '.__('app.telegram_nav_references'),
                 'reflection' => '💭 '.__('app.telegram_nav_reflection'),
@@ -434,7 +434,7 @@ final class TelegramContentFormatter
         }
 
         if (localized($daily, 'sinksar_title', $locale)) {
-            $parts[] = '<b>📿 '.__('app.sinksar').'</b>';
+            $parts[] = '<b>📖 '.__('app.sinksar').'</b>';
             $parts[] = $this->h(localized($daily, 'sinksar_title', $locale));
             if (localized($daily, 'sinksar_description', $locale)) {
                 $parts[] = $this->h(localized($daily, 'sinksar_description', $locale));
