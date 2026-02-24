@@ -139,6 +139,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         // Fundraising campaign popup management
         Route::get('/fundraising', [Admin\FundraisingController::class, 'index'])->name('fundraising.index');
         Route::post('/fundraising', [Admin\FundraisingController::class, 'store'])->name('fundraising.store');
+        Route::post('/fundraising/reset', [Admin\FundraisingController::class, 'resetResponses'])->name('fundraising.reset');
 
         // Content suggestions review
         Route::get('/suggestions', [Admin\ContentSuggestionController::class, 'index'])->name('suggestions.index');

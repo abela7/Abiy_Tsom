@@ -935,6 +935,8 @@ return [
     'fundraising_snoozed'               => 'Not Today',
     'fundraising_contact_list'          => 'Contact List',
     'fundraising_no_leads_yet'          => 'No members have expressed interest yet.',
+    'fundraising_reset_all'             => 'Reset All Responses',
+    'fundraising_reset_confirm'         => 'This will clear all member responses. Every member will see the popup again. Continue?',
     'fundraising_popup_badge'           => 'Church Building Fund',
     'fundraising_popup_interested'      => 'I am willing to contribute',
     'fundraising_popup_not_today'       => 'Not Today',

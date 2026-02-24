@@ -177,7 +177,19 @@
     {{-- Leads / Interested Members --}}
     @if($stats)
     <div class="bg-card rounded-2xl border border-border shadow-sm p-6">
-        <h2 class="text-base font-semibold text-primary mb-4">{{ __('app.fundraising_responses') }}</h2>
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-base font-semibold text-primary">{{ __('app.fundraising_responses') }}</h2>
+            @if($stats['interested'] > 0 || $stats['snoozed'] > 0)
+                <form method="POST" action="/admin/fundraising/reset"
+                      onsubmit="return confirm('{{ __('app.fundraising_reset_confirm') }}')">
+                    @csrf
+                    <button type="submit"
+                            class="text-xs font-medium text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 transition px-3 py-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20">
+                        {{ __('app.fundraising_reset_all') }}
+                    </button>
+                </form>
+            @endif
+        </div>
 
         <div class="grid grid-cols-2 gap-4 mb-5">
             <div class="rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-4 text-center">

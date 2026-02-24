@@ -915,6 +915,8 @@ return [
     'fundraising_snoozed'               => 'ዛሬ አይደለም',
     'fundraising_contact_list'          => 'የእርዳታ ዝርዝር',
     'fundraising_no_leads_yet'          => 'እስካሁን ምንም አባል ፍቃደኛነት አልገለጸም።',
+    'fundraising_reset_all'             => 'ሁሉንም ምላሾች ዳግም አስጀምር',
+    'fundraising_reset_confirm'         => 'ይህ ሁሉንም ምላሾች ያጸዳል። ሁሉም አባላት ፖፐፕ እንደገና ያያሉ። ይቀጥሉ?',
     'fundraising_popup_badge'           => 'የቤተ ክርስቲያን ሕንጻ ፈንድ',
     'fundraising_popup_interested'      => 'ለማዋጣት ፈቃደኛ ነኝ',
     'fundraising_popup_not_today'       => 'ዛሬ አይደለም',

@@ -68,4 +68,21 @@ class FundraisingController extends Controller
 
         return redirect('/admin/fundraising')->with('success', 'Fundraising campaign saved successfully.');
     }
+
+    /**
+     * Delete all member responses so every member sees the popup again.
+     */
+    public function resetResponses(): RedirectResponse
+    {
+        $campaign = FundraisingCampaign::latest()->first();
+
+        if ($campaign) {
+            $deleted = MemberFundraisingResponse::where('campaign_id', $campaign->id)->delete();
+
+            return redirect('/admin/fundraising')
+                ->with('success', "All responses have been reset ({$deleted} cleared). Every member will see the popup again.");
+        }
+
+        return redirect('/admin/fundraising');
+    }
 }
