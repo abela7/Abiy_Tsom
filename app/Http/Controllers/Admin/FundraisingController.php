@@ -22,17 +22,15 @@ class FundraisingController extends Controller
 
         $stats = null;
         if ($campaign) {
+            $allResponses = MemberFundraisingResponse::where('campaign_id', $campaign->id)
+                ->with('member:id,baptism_name,full_name')
+                ->orderByDesc('updated_at')
+                ->get();
+
             $stats = [
-                'interested' => MemberFundraisingResponse::where('campaign_id', $campaign->id)
-                    ->where('status', 'interested')
-                    ->count(),
-                'snoozed' => MemberFundraisingResponse::where('campaign_id', $campaign->id)
-                    ->where('status', 'snoozed')
-                    ->count(),
-                'leads' => MemberFundraisingResponse::where('campaign_id', $campaign->id)
-                    ->where('status', 'interested')
-                    ->whereNotNull('contact_name')
-                    ->get(['contact_name', 'contact_phone', 'interested_at']),
+                'interested' => $allResponses->where('status', 'interested')->count(),
+                'snoozed'    => $allResponses->where('status', 'snoozed')->count(),
+                'responses'  => $allResponses,
             ];
         }
 
@@ -67,6 +65,17 @@ class FundraisingController extends Controller
         }
 
         return redirect('/admin/fundraising')->with('success', 'Fundraising campaign saved successfully.');
+    }
+
+    /**
+     * Delete a single member response so that member sees the popup again.
+     */
+    public function deleteResponse(int $id): RedirectResponse
+    {
+        MemberFundraisingResponse::where('id', $id)->delete();
+
+        return redirect('/admin/fundraising')
+            ->with('success', __('app.fundraising_response_cleared'));
     }
 
     /**

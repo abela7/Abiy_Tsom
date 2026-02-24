@@ -139,6 +139,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         // Fundraising campaign popup management
         Route::get('/fundraising', [Admin\FundraisingController::class, 'index'])->name('fundraising.index');
         Route::post('/fundraising', [Admin\FundraisingController::class, 'store'])->name('fundraising.store');
+        Route::delete('/fundraising/response/{id}', [Admin\FundraisingController::class, 'deleteResponse'])->name('fundraising.delete-response');
         Route::post('/fundraising/reset', [Admin\FundraisingController::class, 'resetResponses'])->name('fundraising.reset');
 
         // Content suggestions review

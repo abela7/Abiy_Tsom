@@ -202,27 +202,62 @@
             </div>
         </div>
 
-        @if($stats['leads']->isNotEmpty())
-            <h3 class="text-sm font-semibold text-primary mb-3">{{ __('app.fundraising_contact_list') }}</h3>
+        @if($stats['responses']->isNotEmpty())
             <div class="overflow-x-auto rounded-xl border border-border">
                 <table class="w-full text-sm">
                     <thead class="bg-muted text-muted-text text-xs uppercase">
                         <tr>
-                            <th class="px-4 py-2.5 text-left">{{ __('app.name') }}</th>
-                            <th class="px-4 py-2.5 text-left">{{ __('app.phone') }}</th>
-                            <th class="px-4 py-2.5 text-left">{{ __('app.date') }}</th>
+                            <th class="px-4 py-2.5 text-left">{{ __('app.fundraising_member') }}</th>
+                            <th class="px-4 py-2.5 text-left">{{ __('app.fundraising_contact_info') }}</th>
+                            <th class="px-4 py-2.5 text-left">{{ __('app.status') }}</th>
+                            <th class="px-4 py-2.5 text-right"></th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-border">
-                        @foreach($stats['leads'] as $lead)
+                        @foreach($stats['responses'] as $resp)
                             <tr class="hover:bg-muted/50 transition">
-                                <td class="px-4 py-3 font-medium text-primary">{{ $lead->contact_name }}</td>
-                                <td class="px-4 py-3 text-secondary">
-                                    <a href="tel:{{ $lead->contact_phone }}" class="text-accent hover:underline">
-                                        {{ $lead->contact_phone }}
-                                    </a>
+                                <td class="px-4 py-3">
+                                    <p class="font-medium text-primary text-sm">
+                                        {{ $resp->member?->baptism_name ?: $resp->member?->full_name ?: '—' }}
+                                    </p>
+                                    @if($resp->contact_name)
+                                        <p class="text-xs text-muted-text">{{ $resp->contact_name }}</p>
+                                    @endif
                                 </td>
-                                <td class="px-4 py-3 text-muted-text">{{ $lead->interested_at?->format('M j, Y H:i') }}</td>
+                                <td class="px-4 py-3 text-secondary">
+                                    @if($resp->contact_phone)
+                                        <a href="tel:{{ $resp->contact_phone }}" class="text-accent hover:underline text-sm">
+                                            {{ $resp->contact_phone }}
+                                        </a>
+                                    @else
+                                        <span class="text-muted-text text-xs">—</span>
+                                    @endif
+                                </td>
+                                <td class="px-4 py-3">
+                                    @if($resp->status === 'interested')
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                            {{ __('app.fundraising_interested') }}
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-text">
+                                            {{ __('app.fundraising_snoozed') }}
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="px-4 py-3 text-right">
+                                    <form method="POST" action="/admin/fundraising/response/{{ $resp->id }}"
+                                          onsubmit="return confirm('{{ __('app.fundraising_clear_one_confirm') }}')"
+                                          class="inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                                class="text-xs text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 font-medium px-2 py-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+                                                title="{{ __('app.fundraising_clear_tooltip') }}">
+                                            {{ __('app.fundraising_clear') }}
+                                        </button>
+                                    </form>
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>
