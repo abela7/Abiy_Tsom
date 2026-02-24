@@ -218,7 +218,7 @@
                             <tr class="hover:bg-muted/50 transition">
                                 <td class="px-4 py-3">
                                     <p class="font-medium text-primary text-sm">
-                                        {{ $resp->member?->baptism_name ?: $resp->member?->full_name ?: '—' }}
+                                        {{ $resp->member?->baptism_name ?: '—' }}
                                     </p>
                                     @if($resp->contact_name)
                                         <p class="text-xs text-muted-text">{{ $resp->contact_name }}</p>

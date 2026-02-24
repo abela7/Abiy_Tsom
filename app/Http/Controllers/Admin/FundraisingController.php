@@ -23,7 +23,7 @@ class FundraisingController extends Controller
         $stats = null;
         if ($campaign) {
             $allResponses = MemberFundraisingResponse::where('campaign_id', $campaign->id)
-                ->with('member:id,baptism_name,full_name')
+                ->with('member:id,baptism_name')
                 ->orderByDesc('updated_at')
                 ->get();
 
