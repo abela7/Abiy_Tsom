@@ -178,27 +178,28 @@
     </div>
 
     {{-- ══════════════════════════════════════════════
-         STEP 3 — Thank you  (centered card)
+         STEP 3 — Thank you  (full-screen overlay)
     ══════════════════════════════════════════════ --}}
     <div x-show="open && step === 3"
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0 scale-90"
-         x-transition:enter-end="opacity-100 scale-100"
+         x-transition:enter="transition ease-out duration-250"
+         x-transition:enter-start="opacity-0 translate-y-6"
+         x-transition:enter-end="opacity-100 translate-y-0"
          x-transition:leave="transition ease-in duration-150"
-         x-transition:leave-start="opacity-100 scale-100"
-         x-transition:leave-end="opacity-0 scale-90"
-         class="fixed inset-0 z-[100] flex items-center justify-center p-4"
+         x-transition:leave-start="opacity-100 translate-y-0"
+         x-transition:leave-end="opacity-0 translate-y-6"
+         class="fixed inset-0 z-[100] bg-card overflow-y-auto"
          style="display:none;">
 
-        <div class="w-full max-w-sm bg-card rounded-3xl shadow-2xl border border-border overflow-hidden text-center">
+        {{-- Top bar --}}
+        <div class="h-1 w-full shrink-0" style="background:linear-gradient(90deg,#0a6286,#e2ca18)"></div>
 
-            {{-- Coloured top bar --}}
-            <div class="h-1.5 w-full" style="background:linear-gradient(90deg,#0a6286,#e2ca18)"></div>
+        <div class="max-w-sm mx-auto px-6 py-6 flex flex-col min-h-[calc(100vh-4px)]">
 
-            <div class="px-6 pt-8 pb-7">
+            {{-- Content (centered vertically) --}}
+            <div class="flex-1 flex flex-col items-center justify-center text-center">
 
-                {{-- Animated checkmark --}}
-                <div class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-5 shadow-lg"
+                {{-- Checkmark --}}
+                <div class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg"
                      style="background:linear-gradient(135deg,#0a6286,#0d7aa3)">
                     <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
@@ -208,42 +209,44 @@
                 <h2 class="text-xl font-extrabold mb-2 text-[#0a6286] dark:text-[#e2ca18]">
                     {{ __('app.fundraising_thankyou_title') }}
                 </h2>
-                <p class="text-sm text-secondary leading-relaxed mb-6">
+                <p class="text-sm text-secondary leading-relaxed mb-8 max-w-xs mx-auto">
                     {{ __('app.fundraising_thankyou_desc') }}
                 </p>
 
-                <div class="space-y-2.5">
+            </div>
 
-                    {{-- Donate page --}}
-                    <a :href="campaign.donate_url" target="_blank" rel="noopener"
-                       class="flex items-center justify-center gap-2 w-full py-3.5 font-bold text-sm
-                              rounded-2xl transition active:scale-95 shadow-md"
-                       style="background:#0a6286;color:#fff">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                        </svg>
-                        {{ __('app.fundraising_view_donate_page') }}
-                    </a>
+            {{-- Buttons at bottom --}}
+            <div class="space-y-3 pb-2 shrink-0">
 
-                    {{-- Share --}}
-                    <button @click="shareLink()"
-                            class="flex items-center justify-center gap-2 w-full py-3 font-semibold text-sm
-                                   rounded-2xl border border-border hover:bg-muted active:scale-95 transition text-primary">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
-                        </svg>
-                        <span x-text="shareCopied ? '{{ __('app.link_copied') }}' : '{{ __('app.fundraising_share') }}'"></span>
-                    </button>
+                {{-- Donate page --}}
+                <a :href="campaign.donate_url" target="_blank" rel="noopener"
+                   class="flex items-center justify-center gap-2 w-full py-4 font-bold text-sm text-white
+                          rounded-2xl transition active:scale-95 shadow-lg"
+                   style="background:#0a6286">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                    </svg>
+                    {{ __('app.fundraising_view_donate_page') }}
+                </a>
 
-                    {{-- Close --}}
-                    <button @click="open = false"
-                            class="w-full py-2 text-xs text-muted-text hover:text-primary transition">
-                        {{ __('app.close') }}
-                    </button>
+                {{-- Share --}}
+                <button @click="shareLink()"
+                        class="flex items-center justify-center gap-2 w-full py-3.5 font-semibold text-sm text-primary
+                               rounded-2xl border border-border hover:bg-muted active:scale-95 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                    </svg>
+                    <span x-text="shareCopied ? '{{ __('app.link_copied') }}' : '{{ __('app.fundraising_share') }}'"></span>
+                </button>
 
-                </div>
+                {{-- Close --}}
+                <button @click="open = false"
+                        class="w-full py-2.5 text-sm text-muted-text hover:text-primary transition">
+                    {{ __('app.close') }}
+                </button>
+
             </div>
         </div>
     </div>
