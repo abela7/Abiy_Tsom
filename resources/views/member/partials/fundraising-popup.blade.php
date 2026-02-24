@@ -56,8 +56,7 @@
 
                 <div class="px-5 pt-4 pb-2">
                     {{-- Title — gold on dark, blue on light --}}
-                    <h2 class="text-xl font-extrabold leading-snug mb-3"
-                        :style="$root.darkMode ? 'color:#e2ca18' : 'color:#0a6286'"
+                    <h2 class="text-xl font-extrabold leading-snug mb-3 text-[#0a6286] dark:text-[#e2ca18]"
                         x-text="campaign.title"></h2>
 
                     {{-- Description --}}
@@ -223,8 +222,7 @@
                     </svg>
                 </div>
 
-                <h2 class="text-xl font-extrabold mb-2"
-                    :style="$root.darkMode ? 'color:#e2ca18' : 'color:#0a6286'">
+                <h2 class="text-xl font-extrabold mb-2 text-[#0a6286] dark:text-[#e2ca18]">
                     {{ __('app.fundraising_thankyou_title') }}
                 </h2>
                 <p class="text-sm text-secondary leading-relaxed mb-6">
