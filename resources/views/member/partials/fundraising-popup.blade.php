@@ -33,7 +33,7 @@
          style="display:none;">
 
         <div class="bg-card rounded-t-3xl shadow-2xl border-t border-border overflow-hidden
-                    max-h-[88vh] sm:max-h-[90vh] flex flex-col fund-safe-bottom">
+                    max-h-[88dvh] sm:max-h-[90dvh] flex flex-col fund-safe-bottom">
 
             {{-- Drag handle --}}
             <div class="flex justify-center pt-3 pb-0 shrink-0">
@@ -43,9 +43,9 @@
             {{-- Scrollable body --}}
             <div class="overflow-y-auto flex-1 overscroll-contain">
 
-                {{-- YouTube embed --}}
+                {{-- YouTube embed — capped height so it never dominates small screens --}}
                 <template x-if="campaign.embed_url">
-                    <div class="relative w-full bg-black shrink-0" style="padding-top:56.25%">
+                    <div class="relative w-full bg-black shrink-0 fund-video-wrap">
                         <iframe :src="campaign.embed_url"
                                 class="absolute inset-0 w-full h-full"
                                 frameborder="0"
@@ -266,6 +266,28 @@
 
 @push('scripts')
 <style>
+/*
+ * YouTube video — responsive aspect-ratio container.
+ * Uses aspect-ratio where supported, with padding-top fallback.
+ * Height is capped so the video never dominates small viewports.
+ */
+.fund-video-wrap {
+    aspect-ratio: 16 / 9;
+    max-height: 28vh;
+}
+@media (min-width: 640px) {
+    .fund-video-wrap { max-height: 36vh; }
+}
+@media (min-width: 1024px) {
+    .fund-video-wrap { max-height: 42vh; }
+}
+@supports not (aspect-ratio: 16 / 9) {
+    .fund-video-wrap { padding-top: 56.25%; }
+}
+@media (orientation: landscape) and (max-height: 500px) {
+    .fund-video-wrap { max-height: 22vh; }
+}
+
 /* CTA button: blue pulse-glow on both themes */
 @keyframes fund-pulse {
     0%, 100% { box-shadow: 0 0 0 0 rgba(10,98,134,0.55), 0 4px 14px rgba(10,98,134,0.30); }
