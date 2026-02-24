@@ -70,7 +70,7 @@
                             class="fund-cta-btn w-full py-3.5 font-bold text-sm rounded-2xl active:scale-95 shadow-lg relative overflow-hidden"
                             style="background:#0a6286;color:#ffffff">
                         <span class="fund-cta-shimmer absolute inset-0 rounded-2xl pointer-events-none"></span>
-                        <span class="relative">🙏 {{ __('app.fundraising_popup_interested') }}</span>
+                        <span class="relative">{{ __('app.fundraising_popup_interested') }}</span>
                     </button>
                     <button @click="notToday()"
                             class="w-full py-2.5 text-sm text-muted-text font-medium rounded-2xl hover:bg-muted active:scale-95 transition">
@@ -83,103 +83,86 @@
     </div>
 
     {{-- ══════════════════════════════════════════════
-         STEP 2 — Contact form  (centered card)
+         STEP 2 — Contact form  (full-screen overlay)
     ══════════════════════════════════════════════ --}}
     <div x-show="open && step === 2"
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0 scale-95"
-         x-transition:enter-end="opacity-100 scale-100"
+         x-transition:enter="transition ease-out duration-250"
+         x-transition:enter-start="opacity-0 translate-y-6"
+         x-transition:enter-end="opacity-100 translate-y-0"
          x-transition:leave="transition ease-in duration-150"
-         x-transition:leave-start="opacity-100 scale-100"
-         x-transition:leave-end="opacity-0 scale-95"
-         class="fixed inset-0 z-[100] flex items-center justify-center p-4"
+         x-transition:leave-start="opacity-100 translate-y-0"
+         x-transition:leave-end="opacity-0 translate-y-6"
+         class="fixed inset-0 z-[100] bg-card overflow-y-auto"
          style="display:none;">
 
-        <div class="w-full max-w-sm bg-card rounded-3xl shadow-2xl border border-border overflow-hidden">
+        {{-- Top bar --}}
+        <div class="h-1 w-full shrink-0" style="background:linear-gradient(90deg,#0a6286,#e2ca18)"></div>
 
-            {{-- Coloured top bar --}}
-            <div class="h-1.5 w-full" style="background:linear-gradient(90deg,#0a6286,#e2ca18)"></div>
+        <div class="max-w-sm mx-auto px-6 py-6 flex flex-col min-h-[calc(100vh-4px)]">
 
-            <div class="p-6">
+            {{-- Header --}}
+            <div class="flex items-center justify-between mb-8">
+                <button @click="step = 1"
+                        class="flex items-center gap-1.5 text-sm text-muted-text hover:text-primary transition -ml-1 active:scale-95">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                    {{ __('app.back') }}
+                </button>
+                <span class="text-xs text-muted-text font-medium px-2.5 py-1 rounded-full bg-muted">1 / 2</span>
+            </div>
 
-                {{-- Back + step indicator --}}
-                <div class="flex items-center justify-between mb-5">
-                    <button @click="step = 1"
-                            class="flex items-center gap-1 text-sm text-muted-text hover:text-primary transition -ml-1">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                        </svg>
-                        {{ __('app.back') }}
-                    </button>
-                    <span class="text-xs text-muted-text">1 / 2</span>
-                </div>
+            {{-- Content (centered vertically in remaining space) --}}
+            <div class="flex-1 flex flex-col justify-center">
 
-                {{-- Icon --}}
-                <div class="w-12 h-12 rounded-2xl flex items-center justify-center mb-4 shadow-sm"
-                     style="background:rgba(226,202,24,0.12)">
-                    <span class="text-2xl">🙏</span>
-                </div>
-
-                <h2 class="text-lg font-bold text-primary mb-1">{{ __('app.fundraising_form_title') }}</h2>
-                <p class="text-sm text-muted-text leading-relaxed mb-5">{{ __('app.fundraising_form_desc') }}</p>
+                <h2 class="text-xl font-bold text-primary mb-2">{{ __('app.fundraising_form_title') }}</h2>
+                <p class="text-sm text-muted-text leading-relaxed mb-8">{{ __('app.fundraising_form_desc') }}</p>
 
                 {{-- Fields --}}
-                <div class="space-y-3">
+                <div class="space-y-5">
 
                     {{-- Name --}}
                     <div>
-                        <label class="block text-xs font-semibold text-secondary mb-1.5 uppercase tracking-wide">
-                            {{ __('app.name') }} <span class="text-red-400">*</span>
+                        <label class="block text-sm font-medium text-primary mb-2">
+                            {{ __('app.name') }}
                         </label>
-                        <div class="flex items-center rounded-xl border bg-surface transition"
-                             :class="errors.name
-                                 ? 'border-red-400 ring-2 ring-red-300/40'
-                                 : 'border-border focus-within:ring-2 focus-within:ring-[#0a6286]/30 focus-within:border-[#0a6286]'">
-                            <span class="flex-shrink-0 pl-3 pr-2 text-muted-text">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                                </svg>
-                            </span>
-                            <input type="text" x-model="form.name"
-                                   class="flex-1 py-3 pr-3 bg-transparent text-primary text-sm focus:outline-none placeholder-muted-text"
-                                   placeholder="{{ __('app.fundraising_name_placeholder') }}"
-                                   @keyup.enter="$refs.phoneInput.focus()">
-                        </div>
-                        <p x-show="errors.name" x-text="errors.name" class="mt-1 text-xs text-red-500"></p>
+                        <input type="text" x-model="form.name"
+                               class="w-full px-4 py-3.5 rounded-2xl border bg-surface text-primary text-sm
+                                      focus:outline-none focus:ring-2 transition placeholder-muted-text"
+                               :class="errors.name
+                                   ? 'border-red-400 focus:ring-red-300/40'
+                                   : 'border-border focus:ring-[#0a6286]/40 focus:border-[#0a6286]'"
+                               placeholder="{{ __('app.fundraising_name_placeholder') }}"
+                               @keyup.enter="$refs.phoneInput.focus()">
+                        <p x-show="errors.name" x-text="errors.name" class="mt-1.5 text-xs text-red-500"></p>
                     </div>
 
                     {{-- Phone --}}
                     <div>
-                        <label class="block text-xs font-semibold text-secondary mb-1.5 uppercase tracking-wide">
-                            {{ __('app.phone') }} <span class="text-red-400">*</span>
+                        <label class="block text-sm font-medium text-primary mb-2">
+                            {{ __('app.phone') }}
                         </label>
-                        <div class="flex items-center rounded-xl border bg-surface transition"
-                             :class="errors.phone
-                                 ? 'border-red-400 ring-2 ring-red-300/40'
-                                 : 'border-border focus-within:ring-2 focus-within:ring-[#0a6286]/30 focus-within:border-[#0a6286]'">
-                            <span class="flex-shrink-0 pl-3 pr-2 text-muted-text">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                          d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-                                </svg>
-                            </span>
-                            <input type="tel" x-model="form.phone" x-ref="phoneInput"
-                                   class="flex-1 py-3 pr-3 bg-transparent text-primary text-sm focus:outline-none placeholder-muted-text"
-                                   placeholder="{{ __('app.fundraising_phone_placeholder') }}"
-                                   @keyup.enter="submitInterest()">
-                        </div>
-                        <p x-show="errors.phone" x-text="errors.phone" class="mt-1 text-xs text-red-500"></p>
+                        <input type="tel" x-model="form.phone" x-ref="phoneInput"
+                               class="w-full px-4 py-3.5 rounded-2xl border bg-surface text-primary text-sm
+                                      focus:outline-none focus:ring-2 transition placeholder-muted-text"
+                               :class="errors.phone
+                                   ? 'border-red-400 focus:ring-red-300/40'
+                                   : 'border-border focus:ring-[#0a6286]/40 focus:border-[#0a6286]'"
+                               placeholder="{{ __('app.fundraising_phone_placeholder') }}"
+                               @keyup.enter="submitInterest()">
+                        <p x-show="errors.phone" x-text="errors.phone" class="mt-1.5 text-xs text-red-500"></p>
                     </div>
 
                 </div>
+            </div>
 
-                {{-- Submit --}}
+            {{-- Submit — fixed at bottom --}}
+            <div class="pt-6 pb-2 shrink-0">
                 <button @click="submitInterest()"
                         :disabled="submitting"
-                        class="mt-5 w-full py-3.5 font-bold text-sm rounded-2xl transition active:scale-95
-                               disabled:opacity-60 disabled:cursor-not-allowed shadow-md"
-                        style="background:#e2ca18;color:#1a1a1a">
+                        class="w-full py-4 font-bold text-sm text-white rounded-2xl transition active:scale-95
+                               disabled:opacity-60 disabled:cursor-not-allowed shadow-lg"
+                        style="background:#0a6286">
                     <span x-show="!submitting">{{ __('app.fundraising_submit') }}</span>
                     <span x-show="submitting" class="flex items-center justify-center gap-2">
                         <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
@@ -189,8 +172,8 @@
                         {{ __('app.saving') }}...
                     </span>
                 </button>
-
             </div>
+
         </div>
     </div>
 
