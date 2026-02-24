@@ -1,7 +1,8 @@
 {{--
   Fundraising Popup — shown once per day to members until they express interest.
-  Step 1: Intro (bottom sheet) → Step 2: Contact form (full-screen) → Step 3: Thank you
-  Fully responsive: phones (320px+), tablets, desktops, landscape, safe areas.
+  Context-aware layout:
+    Mobile  → Step 1: bottom sheet, Steps 2-3: full-screen
+    Desktop → All steps: centered modal card with proper sizing
 --}}
 <div x-data="fundraisingPopup()"
      x-init="init()"
@@ -20,32 +21,36 @@
     </div>
 
     {{-- ══════════════════════════════════════════════
-         STEP 1 — Intro  (slides up from bottom)
+         STEP 1 — Intro
+         Mobile: bottom sheet  |  Desktop: centered card
     ══════════════════════════════════════════════ --}}
     <div x-show="open && step === 1"
          x-transition:enter="transition ease-out duration-350"
-         x-transition:enter-start="opacity-0 translate-y-full"
-         x-transition:enter-end="opacity-100 translate-y-0"
+         x-transition:enter-start="opacity-0 fund-step1-enter-from"
+         x-transition:enter-end="opacity-100 translate-y-0 scale-100"
          x-transition:leave="transition ease-in duration-200"
-         x-transition:leave-start="opacity-100 translate-y-0"
-         x-transition:leave-end="opacity-0 translate-y-full"
-         class="fixed inset-x-0 bottom-0 z-[100] px-2 sm:px-0 sm:mx-auto sm:max-w-lg"
+         x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+         x-transition:leave-end="opacity-0 fund-step1-leave-to"
+         class="fixed z-[100]
+                inset-x-0 bottom-0
+                md:inset-0 md:flex md:items-center md:justify-center md:p-6"
          style="display:none;">
 
-        <div class="bg-card rounded-t-3xl shadow-2xl border-t border-border overflow-hidden
-                    max-h-[88dvh] sm:max-h-[90dvh] flex flex-col fund-safe-bottom">
+        <div class="bg-card shadow-2xl border-t border-border overflow-hidden flex flex-col
+                    rounded-t-3xl max-h-[88dvh]
+                    md:rounded-2xl md:max-h-[85vh] md:w-full md:max-w-xl md:border md:mx-auto">
 
-            {{-- Drag handle --}}
-            <div class="flex justify-center pt-3 pb-0 shrink-0">
+            {{-- Drag handle — mobile only --}}
+            <div class="flex justify-center pt-3 pb-0 shrink-0 md:hidden">
                 <div class="w-10 h-1 bg-muted-text/30 rounded-full"></div>
             </div>
 
             {{-- Scrollable body --}}
             <div class="overflow-y-auto flex-1 overscroll-contain">
 
-                {{-- YouTube embed — capped height so it never dominates small screens --}}
+                {{-- YouTube embed --}}
                 <template x-if="campaign.embed_url">
-                    <div class="relative w-full bg-black shrink-0 fund-video-wrap">
+                    <div class="relative w-full bg-black shrink-0 fund-video-wrap md:rounded-t-2xl overflow-hidden">
                         <iframe :src="campaign.embed_url"
                                 class="absolute inset-0 w-full h-full"
                                 frameborder="0"
@@ -56,7 +61,7 @@
                     </div>
                 </template>
 
-                <div class="px-4 sm:px-5 pt-3 sm:pt-4 pb-1 sm:pb-2">
+                <div class="px-4 sm:px-5 md:px-6 pt-3 sm:pt-4 md:pt-5 pb-1 sm:pb-2">
                     <h2 class="text-lg sm:text-xl font-extrabold leading-snug mb-2 sm:mb-3 text-[#0a6286] dark:text-[#e2ca18]"
                         x-text="campaign.title"></h2>
 
@@ -64,7 +69,7 @@
                 </div>
 
                 {{-- Buttons --}}
-                <div class="px-4 sm:px-5 pb-4 sm:pb-6 pt-2 sm:pt-3 space-y-2 sm:space-y-2.5 shrink-0">
+                <div class="px-4 sm:px-5 md:px-6 pb-4 sm:pb-5 md:pb-6 pt-2 sm:pt-3 space-y-2 sm:space-y-2.5 shrink-0">
                     <button @click="step = 2"
                             class="fund-cta-btn w-full py-3 sm:py-3.5 font-bold text-[13px] sm:text-sm rounded-2xl
                                    active:scale-95 shadow-lg relative overflow-hidden"
@@ -80,29 +85,42 @@
                 </div>
 
             </div>
+
+            {{-- Safe-area padding on mobile --}}
+            <div class="fund-safe-bottom md:hidden"></div>
         </div>
     </div>
 
     {{-- ══════════════════════════════════════════════
-         STEP 2 — Contact form  (full-screen overlay)
+         STEP 2 — Contact form
+         Mobile: full-screen  |  Desktop: centered card
     ══════════════════════════════════════════════ --}}
     <div x-show="open && step === 2"
          x-transition:enter="transition ease-out duration-250"
-         x-transition:enter-start="opacity-0 translate-y-6"
-         x-transition:enter-end="opacity-100 translate-y-0"
+         x-transition:enter-start="opacity-0 translate-y-6 md:translate-y-0 md:scale-95"
+         x-transition:enter-end="opacity-100 translate-y-0 scale-100"
          x-transition:leave="transition ease-in duration-150"
-         x-transition:leave-start="opacity-100 translate-y-0"
-         x-transition:leave-end="opacity-0 translate-y-6"
-         class="fixed inset-0 z-[100] bg-card overflow-y-auto overscroll-contain"
+         x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+         x-transition:leave-end="opacity-0 translate-y-6 md:translate-y-0 md:scale-95"
+         class="fixed inset-0 z-[100] overflow-y-auto overscroll-contain
+                bg-card
+                md:bg-transparent md:flex md:items-center md:justify-center md:p-6"
          style="display:none;">
 
-        <div class="h-1 w-full shrink-0" style="background:linear-gradient(90deg,#0a6286,#e2ca18)"></div>
+        {{-- Mobile: full-screen gradient bar --}}
+        <div class="h-1 w-full shrink-0 md:hidden" style="background:linear-gradient(90deg,#0a6286,#e2ca18)"></div>
 
-        <div class="w-full max-w-sm md:max-w-md mx-auto px-4 sm:px-6 py-4 sm:py-6 flex flex-col
-                    min-h-[calc(100vh-4px)] min-h-[calc(100dvh-4px)]">
+        {{-- Card wrapper — full-screen on mobile, card on desktop --}}
+        <div class="w-full max-w-sm mx-auto px-4 sm:px-6 py-4 sm:py-6 flex flex-col
+                    min-h-[calc(100vh-4px)] min-h-[calc(100dvh-4px)]
+                    md:min-h-0 md:max-w-md md:bg-card md:rounded-2xl md:border md:border-border
+                    md:shadow-2xl md:px-8 md:py-8 md:max-h-[85vh] md:overflow-y-auto">
+
+            {{-- Desktop: gradient bar inside card --}}
+            <div class="hidden md:block h-1 w-full rounded-full mb-6 shrink-0" style="background:linear-gradient(90deg,#0a6286,#e2ca18)"></div>
 
             {{-- Header --}}
-            <div class="flex items-center justify-between mb-5 sm:mb-8 shrink-0">
+            <div class="flex items-center justify-between mb-5 sm:mb-6 md:mb-8 shrink-0">
                 <button @click="step = 1"
                         class="flex items-center gap-1 sm:gap-1.5 text-[13px] sm:text-sm text-muted-text
                                hover:text-primary transition -ml-1 active:scale-95">
@@ -116,13 +134,13 @@
                 </span>
             </div>
 
-            {{-- Content (centered vertically in remaining space) --}}
-            <div class="flex-1 flex flex-col justify-center">
+            {{-- Content --}}
+            <div class="flex-1 flex flex-col justify-center md:flex-none">
 
                 <h2 class="text-lg sm:text-xl font-bold text-primary mb-1.5 sm:mb-2">
                     {{ __('app.fundraising_form_title') }}
                 </h2>
-                <p class="text-[13px] sm:text-sm text-muted-text leading-relaxed mb-5 sm:mb-8">
+                <p class="text-[13px] sm:text-sm text-muted-text leading-relaxed mb-5 sm:mb-6 md:mb-8">
                     {{ __('app.fundraising_form_desc') }}
                 </p>
 
@@ -167,8 +185,8 @@
                 </div>
             </div>
 
-            {{-- Submit — pinned at bottom --}}
-            <div class="pt-4 sm:pt-6 pb-1 sm:pb-2 shrink-0 fund-safe-bottom">
+            {{-- Submit --}}
+            <div class="pt-4 sm:pt-6 pb-1 sm:pb-2 md:pb-0 shrink-0 fund-safe-bottom">
                 <button @click="submitInterest()"
                         :disabled="submitting"
                         class="w-full py-3.5 sm:py-4 font-bold text-[13px] sm:text-sm text-white rounded-2xl transition
@@ -189,25 +207,35 @@
     </div>
 
     {{-- ══════════════════════════════════════════════
-         STEP 3 — Thank you  (full-screen overlay)
+         STEP 3 — Thank you
+         Mobile: full-screen  |  Desktop: centered card
     ══════════════════════════════════════════════ --}}
     <div x-show="open && step === 3"
          x-transition:enter="transition ease-out duration-250"
-         x-transition:enter-start="opacity-0 translate-y-6"
-         x-transition:enter-end="opacity-100 translate-y-0"
+         x-transition:enter-start="opacity-0 translate-y-6 md:translate-y-0 md:scale-95"
+         x-transition:enter-end="opacity-100 translate-y-0 scale-100"
          x-transition:leave="transition ease-in duration-150"
-         x-transition:leave-start="opacity-100 translate-y-0"
-         x-transition:leave-end="opacity-0 translate-y-6"
-         class="fixed inset-0 z-[100] bg-card overflow-y-auto overscroll-contain"
+         x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+         x-transition:leave-end="opacity-0 translate-y-6 md:translate-y-0 md:scale-95"
+         class="fixed inset-0 z-[100] overflow-y-auto overscroll-contain
+                bg-card
+                md:bg-transparent md:flex md:items-center md:justify-center md:p-6"
          style="display:none;">
 
-        <div class="h-1 w-full shrink-0" style="background:linear-gradient(90deg,#0a6286,#e2ca18)"></div>
+        {{-- Mobile: full-screen gradient bar --}}
+        <div class="h-1 w-full shrink-0 md:hidden" style="background:linear-gradient(90deg,#0a6286,#e2ca18)"></div>
 
-        <div class="w-full max-w-sm md:max-w-md mx-auto px-4 sm:px-6 py-4 sm:py-6 flex flex-col
-                    min-h-[calc(100vh-4px)] min-h-[calc(100dvh-4px)]">
+        {{-- Card wrapper --}}
+        <div class="w-full max-w-sm mx-auto px-4 sm:px-6 py-4 sm:py-6 flex flex-col
+                    min-h-[calc(100vh-4px)] min-h-[calc(100dvh-4px)]
+                    md:min-h-0 md:max-w-md md:bg-card md:rounded-2xl md:border md:border-border
+                    md:shadow-2xl md:px-8 md:py-8 md:max-h-[85vh] md:overflow-y-auto">
+
+            {{-- Desktop: gradient bar inside card --}}
+            <div class="hidden md:block h-1 w-full rounded-full mb-6 shrink-0" style="background:linear-gradient(90deg,#0a6286,#e2ca18)"></div>
 
             {{-- Content (centered vertically) --}}
-            <div class="flex-1 flex flex-col items-center justify-center text-center px-2 sm:px-4">
+            <div class="flex-1 flex flex-col items-center justify-center text-center px-2 sm:px-4 md:flex-none md:py-6">
 
                 {{-- Checkmark --}}
                 <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg"
@@ -227,7 +255,7 @@
             </div>
 
             {{-- Buttons at bottom --}}
-            <div class="space-y-2.5 sm:space-y-3 pb-1 sm:pb-2 shrink-0 fund-safe-bottom">
+            <div class="space-y-2.5 sm:space-y-3 pb-1 sm:pb-2 md:pb-0 shrink-0 fund-safe-bottom">
 
                 {{-- Donate page --}}
                 <a :href="campaign.donate_url" target="_blank" rel="noopener"
@@ -268,24 +296,43 @@
 <style>
 /*
  * YouTube video — responsive aspect-ratio container.
- * Uses aspect-ratio where supported, with padding-top fallback.
- * Height is capped so the video never dominates small viewports.
+ * Height capped so video doesn't dominate the popup.
  */
 .fund-video-wrap {
     aspect-ratio: 16 / 9;
     max-height: 28vh;
 }
 @media (min-width: 640px) {
-    .fund-video-wrap { max-height: 36vh; }
+    .fund-video-wrap { max-height: 32vh; }
 }
-@media (min-width: 1024px) {
-    .fund-video-wrap { max-height: 42vh; }
+@media (min-width: 768px) {
+    .fund-video-wrap { max-height: none; }
 }
 @supports not (aspect-ratio: 16 / 9) {
     .fund-video-wrap { padding-top: 56.25%; }
 }
 @media (orientation: landscape) and (max-height: 500px) {
     .fund-video-wrap { max-height: 22vh; }
+}
+
+/*
+ * Step 1 transition helpers — slide-up on mobile, scale-fade on desktop.
+ * Tailwind can't do breakpoint-conditional enter/leave states,
+ * so we use custom classes toggled by Alpine transitions.
+ */
+.fund-step1-enter-from {
+    transform: translateY(100%);
+}
+.fund-step1-leave-to {
+    transform: translateY(100%);
+}
+@media (min-width: 768px) {
+    .fund-step1-enter-from {
+        transform: translateY(0) scale(0.95) !important;
+    }
+    .fund-step1-leave-to {
+        transform: translateY(0) scale(0.95) !important;
+    }
 }
 
 /* CTA button: blue pulse-glow on both themes */
