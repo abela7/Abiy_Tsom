@@ -341,6 +341,18 @@ function onboarding() {
             AbiyTsom.api('/member/identify', {})
                 .then(data => {
                     if (data.success) {
+                        // If this member opted in but hasn't confirmed yet,
+                        // show the modal again regardless of refresh.
+                        if (data.member.whatsapp_confirmation_status === 'pending') {
+                            this.hasToken = false;
+                            this.pendingRedirect = AbiyTsom.baseUrl + '/member/home';
+                            this.modalMessage = '{{ __('app.whatsapp_confirmation_pending_notice') }}';
+                            this.modalPhone = data.member.whatsapp_phone || '';
+                            this.showWhatsAppModal = true;
+                            this.startConfirmationPolling();
+                            return;
+                        }
+
                         if (data.member.passcode_enabled) {
                             window.location.href = AbiyTsom.baseUrl + '/member/passcode';
                         } else {
