@@ -45,15 +45,52 @@ class TelegramBotState extends Model
     }
 
     /**
-     * Return ANY active state for a chat (any action), or null.
+     * Return ANY active wizard state for a chat, excluding the persistent
+     * 'locale' preference record which is not a wizard step.
      */
     public static function getAnyActive(string $chatId): ?self
     {
         return self::query()
             ->where('chat_id', $chatId)
+            ->where('action', '!=', 'locale')
             ->where('expires_at', '>', now())
             ->latest()
             ->first();
+    }
+
+    /**
+     * Retrieve the stored locale preference for an unlinked chat, or null.
+     */
+    public static function getStoredLocale(string $chatId): ?string
+    {
+        $record = self::query()
+            ->where('chat_id', $chatId)
+            ->where('action', 'locale')
+            ->where('expires_at', '>', now())
+            ->first();
+
+        $locale = $record ? ($record->get('locale') ?? null) : null;
+
+        return in_array($locale, ['en', 'am'], true) ? $locale : null;
+    }
+
+    /**
+     * Persist a locale preference for an unlinked chat (30-day TTL).
+     */
+    public static function storeLocale(string $chatId, string $locale): void
+    {
+        self::query()
+            ->where('chat_id', $chatId)
+            ->where('action', 'locale')
+            ->delete();
+
+        self::create([
+            'chat_id'    => $chatId,
+            'action'     => 'locale',
+            'step'       => 'set',
+            'data'       => ['locale' => $locale],
+            'expires_at' => now()->addDays(30),
+        ]);
     }
 
     /**

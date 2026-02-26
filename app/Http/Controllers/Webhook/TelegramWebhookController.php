@@ -341,7 +341,7 @@ class TelegramWebhookController extends Controller
         if (! $argument) {
             $actor = $this->actorFromChatId($chatId);
             if (! $actor) {
-                $locale = request()->attributes->get('telegram_language_code', 'en');
+                $locale = $this->guestLocale($chatId);
                 app()->setLocale($locale);
                 Translation::loadFromDb($locale);
 
@@ -420,7 +420,7 @@ class TelegramWebhookController extends Controller
         if ($actor) {
             $this->applyLocaleForActor($actor);
         } else {
-            $locale = request()->attributes->get('telegram_language_code', 'en');
+            $locale = $this->guestLocale($chatId);
             app()->setLocale($locale);
             Translation::loadFromDb($locale);
         }
@@ -441,7 +441,7 @@ class TelegramWebhookController extends Controller
         if ($actor) {
             $this->applyLocaleForActor($actor);
         } else {
-            $locale = request()->attributes->get('telegram_language_code', 'en');
+            $locale = $this->guestLocale($chatId);
             app()->setLocale($locale);
             Translation::loadFromDb($locale);
         }
@@ -465,7 +465,7 @@ class TelegramWebhookController extends Controller
         if ($actor) {
             $this->applyLocaleForActor($actor);
         } else {
-            $locale = request()->attributes->get('telegram_language_code', 'en');
+            $locale = $this->guestLocale($chatId);
             app()->setLocale($locale);
             Translation::loadFromDb($locale);
         }
@@ -481,8 +481,31 @@ class TelegramWebhookController extends Controller
         TelegramService $telegramService
     ): JsonResponse {
         $actor = $this->actorFromChatId($chatId);
+
+        // Unlinked guest — persist the choice and redisplay the start screen.
         if (! $actor instanceof Member) {
-            return response()->json(['success' => true]);
+            $currentLocale = $this->guestLocale($chatId);
+            $newLocale = match ($action) {
+                'lang_en'     => 'en',
+                'lang_am'     => 'am',
+                'lang_toggle' => $currentLocale === 'en' ? 'am' : 'en',
+                default       => null,
+            };
+            if ($newLocale === null) {
+                return response()->json(['success' => true]);
+            }
+
+            TelegramBotState::storeLocale($chatId, $newLocale);
+            app()->setLocale($newLocale);
+            Translation::loadFromDb($newLocale);
+
+            return $this->replyAfterDelete(
+                $telegramService,
+                $chatId,
+                $messageId,
+                __('app.telegram_start_welcome'),
+                $this->startChoiceKeyboard()
+            );
         }
 
         $newLocale = match ($action) {
@@ -546,6 +569,21 @@ class TelegramWebhookController extends Controller
     private function memberHasLocale(Member $member): bool
     {
         return in_array($member->locale ?? '', ['en', 'am'], true);
+    }
+
+    /**
+     * Resolve the locale for an unlinked (guest) chat.
+     * Checks the persisted TelegramBotState locale first,
+     * then falls back to the Telegram client language code.
+     */
+    private function guestLocale(string $chatId): string
+    {
+        $stored = TelegramBotState::getStoredLocale($chatId);
+        if ($stored !== null) {
+            return $stored;
+        }
+
+        return request()->attributes->get('telegram_language_code', 'en');
     }
 
     private function applyLocaleForActor(Member|User $actor): void
@@ -1365,9 +1403,16 @@ class TelegramWebhookController extends Controller
     private function startChoiceKeyboard(): array
     {
         $appUrl = route('home');
+        $locale = app()->getLocale();
+        $langLabel = $locale === 'en'
+            ? __('app.telegram_lang_switch_am')
+            : __('app.telegram_lang_switch_en');
+        $langCallback = $locale === 'en' ? 'lang_am' : 'lang_en';
+
         $rows = [
             [['text' => __('app.telegram_start_new'), 'web_app' => ['url' => $appUrl]]],
             [['text' => __('app.telegram_start_have_account'), 'callback_data' => 'have_account']],
+            [['text' => $langLabel, 'callback_data' => $langCallback]],
         ];
 
         return ['inline_keyboard' => $rows];
