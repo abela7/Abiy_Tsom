@@ -38,11 +38,9 @@ class MemberFundraisingResponse extends Model
     /**
      * Whether the popup should be shown to this member today.
      *
-     * Rules:
-     * - No response yet → show.
-     * - Status = 'interested' → never show again.
-     * - Status = 'snoozed' and last_snoozed_date is today → hide (already dismissed today).
-     * - Status = 'snoozed' and last_snoozed_date is before today → show again.
+     * - 'interested' → never show again (permanent).
+     * - last_snoozed_date is today → already seen today, hide.
+     * - Otherwise → show.
      */
     public function shouldShowPopup(): bool
     {
@@ -50,8 +48,8 @@ class MemberFundraisingResponse extends Model
             return false;
         }
 
-        if ($this->status === 'snoozed' && $this->last_snoozed_date) {
-            return ! $this->last_snoozed_date->isToday();
+        if ($this->last_snoozed_date && $this->last_snoozed_date->isToday()) {
+            return false;
         }
 
         return true;

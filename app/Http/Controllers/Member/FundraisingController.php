@@ -17,7 +17,10 @@ use Illuminate\Http\Request;
 class FundraisingController extends Controller
 {
     /**
-     * Returns the active campaign data if the popup should be shown to this member.
+     * Returns the active campaign data if the popup should be shown.
+     *
+     * Stamps last_snoozed_date = today the moment the popup is served,
+     * so refreshes / page navigations within the same day never re-show.
      */
     public function popup(Request $request): JsonResponse
     {
@@ -32,22 +35,14 @@ class FundraisingController extends Controller
             ->where('campaign_id', $campaign->id)
             ->first();
 
-        $show = $response === null || $response->shouldShowPopup();
-
-        if (! $show) {
+        if ($response && ! $response->shouldShowPopup()) {
             return response()->json(['show' => false]);
         }
 
-        // Mark as shown so it won't appear again today on another page.
+        // First-time or new day — stamp "seen today" immediately.
         MemberFundraisingResponse::updateOrCreate(
-            [
-                'member_id'   => $member->id,
-                'campaign_id' => $campaign->id,
-            ],
-            [
-                'status'            => $response?->status ?? 'snoozed',
-                'last_snoozed_date' => Carbon::today(),
-            ]
+            ['member_id' => $member->id, 'campaign_id' => $campaign->id],
+            ['last_snoozed_date' => Carbon::today()]
         );
 
         $locale = in_array($member->locale ?? '', ['en', 'am'], true)
@@ -65,7 +60,8 @@ class FundraisingController extends Controller
     }
 
     /**
-     * Member clicked "Not Today" — snooze the popup until tomorrow.
+     * Member clicked "Not Today" — already stamped by popup(), this
+     * just ensures the record is marked as snoozed for clarity.
      */
     public function snooze(Request $request): JsonResponse
     {
@@ -76,21 +72,15 @@ class FundraisingController extends Controller
         ]);
 
         MemberFundraisingResponse::updateOrCreate(
-            [
-                'member_id'   => $member->id,
-                'campaign_id' => (int) $validated['campaign_id'],
-            ],
-            [
-                'status'            => 'snoozed',
-                'last_snoozed_date' => Carbon::today(),
-            ]
+            ['member_id' => $member->id, 'campaign_id' => (int) $validated['campaign_id']],
+            ['status' => 'snoozed', 'last_snoozed_date' => Carbon::today()]
         );
 
         return response()->json(['success' => true]);
     }
 
     /**
-     * Member expressed interest — save contact details and mark as interested.
+     * Member expressed interest — permanently stop showing the popup.
      */
     public function interested(Request $request): JsonResponse
     {
@@ -105,15 +95,13 @@ class FundraisingController extends Controller
         $campaign = FundraisingCampaign::find((int) $validated['campaign_id']);
 
         MemberFundraisingResponse::updateOrCreate(
+            ['member_id' => $member->id, 'campaign_id' => (int) $validated['campaign_id']],
             [
-                'member_id'   => $member->id,
-                'campaign_id' => (int) $validated['campaign_id'],
-            ],
-            [
-                'status'        => 'interested',
-                'contact_name'  => trim($validated['contact_name']),
-                'contact_phone' => trim($validated['contact_phone']),
-                'interested_at' => now(),
+                'status'            => 'interested',
+                'contact_name'      => trim($validated['contact_name']),
+                'contact_phone'     => trim($validated['contact_phone']),
+                'interested_at'     => now(),
+                'last_snoozed_date' => Carbon::today(),
             ]
         );
 
