@@ -52,7 +52,7 @@
                     </template>
 
                     {{-- Text --}}
-                    <div class="px-5 sm:px-6 pt-3 pb-2">
+                    <div class="px-5 sm:px-6 pt-3 pb-5">
                         <h2 class="text-base sm:text-lg font-extrabold leading-snug mb-2 text-[#0a6286] dark:text-[#e2ca18]"
                             x-text="campaign.title"></h2>
                         <p class="text-[13px] sm:text-sm text-secondary leading-relaxed"
@@ -61,7 +61,7 @@
                 </div>
 
                 {{-- Buttons --}}
-                <div class="px-5 sm:px-6 pb-4 pt-2.5 space-y-1.5 shrink-0 border-t border-border/50 fund-safe-bottom">
+                <div class="px-5 sm:px-6 pb-4 pt-4 space-y-1.5 shrink-0 border-t border-border/50 fund-safe-bottom">
                     <button @click="step = 2"
                             class="fund-cta-btn w-full py-2.5 sm:py-3 font-bold text-sm rounded-2xl active:scale-[0.97] shadow-lg relative overflow-hidden"
                             style="background:#0a6286;color:#fff">
