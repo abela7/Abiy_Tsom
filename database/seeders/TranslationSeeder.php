@@ -52,7 +52,7 @@ class TranslationSeeder extends Seeder
                 'wizard_time_title', 'wizard_time_subtitle', 'wizard_time_help',
                 'wizard_error',
                 'wizard_whatsapp_sent_title', 'wizard_open_whatsapp', 'wizard_continue',
-                'whatsapp_confirmation_prompt_message',
+                'whatsapp_confirmation_prompt_message', 'whatsapp_invalid_reply_message',
                 'loading', 'language', 'lang_en', 'lang_am',
                 'footer_branding',
             ],

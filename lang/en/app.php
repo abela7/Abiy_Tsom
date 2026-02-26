@@ -262,6 +262,7 @@ return [
     'settings_whatsapp_not_setup' => 'Not set up',
     'settings_whatsapp_setup_cta' => 'Set up WhatsApp reminders to receive daily spiritual content.',
     'whatsapp_confirmation_prompt_message' => "Hi :name,\nAre you happy to get daily WhatsApp reminders with this number?\nReply YES to activate or NO to cancel.",
+    'whatsapp_invalid_reply_message' => "Please reply YES or NO only.\n\nHi :name,\nAre you happy to get daily WhatsApp reminders with this number?\nReply YES to activate or NO to cancel.",
     'whatsapp_confirmation_pending_notice' => 'We sent a WhatsApp confirmation message. Reply YES to activate reminders.',
     'wizard_whatsapp_sent_title' => 'Check Your WhatsApp',
     'wizard_open_whatsapp' => 'Open WhatsApp',

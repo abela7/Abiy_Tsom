@@ -15,6 +15,23 @@ final class WhatsAppReminderConfirmationService
     public function __construct(private readonly UltraMsgService $ultraMsg) {}
 
     /**
+     * Send "Please reply YES or NO only" re-prompt after an invalid reply.
+     */
+    public function sendInvalidReplyPrompt(Member $member): bool
+    {
+        if (! $this->ultraMsg->isConfigured() || ! $member->whatsapp_phone) {
+            return false;
+        }
+
+        $locale = $this->memberLocale($member);
+        $message = Lang::get('app.whatsapp_invalid_reply_message', [
+            'name' => $member->baptism_name,
+        ], $locale);
+
+        return $this->ultraMsg->sendTextMessage((string) $member->whatsapp_phone, $message);
+    }
+
+    /**
      * Send "Reply YES or NO" prompt to member.
      */
     public function sendOptInPrompt(Member $member): bool

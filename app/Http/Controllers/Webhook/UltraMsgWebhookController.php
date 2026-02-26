@@ -53,17 +53,30 @@ class UltraMsgWebhookController extends Controller
         }
 
         $reply = $confirmation->parseReply($messageText);
-        if (! $reply) {
-            Log::info('[Webhook] Ignored: not a YES/NO reply', ['text' => $messageText]);
-
-            return response()->json(['success' => true, 'ignored' => 'not_yes_no']);
-        }
 
         $member = Member::query()
             ->where('whatsapp_phone', $phone)
             ->where('whatsapp_confirmation_status', 'pending')
             ->orderByDesc('whatsapp_confirmation_requested_at')
             ->first();
+
+        if (! $reply) {
+            if ($member) {
+                Log::info('[Webhook] Invalid reply — re-sending prompt', [
+                    'member_id' => $member->id,
+                    'text' => $messageText,
+                ]);
+                $confirmation->sendInvalidReplyPrompt($member);
+
+                return response()->json(['success' => true, 'action' => 'invalid_reply_re_prompted']);
+            }
+
+            Log::info('[Webhook] Ignored: not a YES/NO reply and no pending member', [
+                'text' => $messageText,
+            ]);
+
+            return response()->json(['success' => true, 'ignored' => 'not_yes_no']);
+        }
 
         if (! $member) {
             Log::info('[Webhook] Ignored: no pending member for phone', ['phone' => $phone]);
