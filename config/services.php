@@ -41,6 +41,7 @@ return [
         'token' => env('ULTRAMSG_TOKEN'),
         'webhook_secret' => env('ULTRAMSG_WEBHOOK_SECRET'),
         'reminder_once_only' => env('WHATSAPP_REMINDER_ONCE_ONLY', true),
+        'church_phone' => env('ULTRAMSG_CHURCH_PHONE', '+447757668785'),
     ],
 
     'telegram' => [

@@ -267,7 +267,11 @@
             <p x-text="modalMessage" class="text-sm text-muted-text mb-6 leading-relaxed"></p>
 
             <div class="flex flex-col gap-3">
-                <a :href="'https://wa.me/' + modalPhone.replace('+', '')"
+@php
+    $churchPhone = ltrim((string) config('services.ultramsg.church_phone', '+447757668785'), '+');
+    $waUrl = 'https://wa.me/' . $churchPhone . '?text=' . rawurlencode('YES');
+@endphp
+                <a href="{{ $waUrl }}"
                    target="_blank"
                    rel="noopener noreferrer"
                    class="w-full py-3.5 bg-green-600 hover:bg-green-500 text-white rounded-xl font-bold text-base active:scale-[0.98] transition-all duration-150 shadow-lg shadow-green-600/30 flex items-center justify-center gap-2.5">
