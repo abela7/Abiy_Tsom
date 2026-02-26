@@ -348,7 +348,7 @@ return [
     'telegram_test_failed' => 'Failed to send test message. Check your token/chat ID and try again.',
     'telegram_test_error' => 'Network error. Please try again.',
     'telegram_test_message' => 'Test message from :app. Your Telegram bot is working correctly!',
-    'telegram_start_welcome' => 'Welcome to Abiy Tsom. Choose an option:',
+    'telegram_start_welcome' => 'Welcome to Abiy Tsom Telegram Bot. Choose an option:',
     'telegram_start_new' => 'New — Register',
     'telegram_start_have_account' => 'I have an account',
     'telegram_start_have_account_instructions' => "To link your existing account:\n\n1. Open the app in your browser\n2. Go to Settings\n3. Tap \"Link Telegram\"\n4. Generate the link and open it in Telegram\n\nYour account will be linked when you open that link.",
