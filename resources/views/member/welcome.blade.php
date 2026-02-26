@@ -308,7 +308,7 @@ function onboarding() {
         baptismName: '',
         wantsWhatsApp: false,
         phone: '',
-        whatsappLang: 'en',
+        whatsappLang: '{{ in_array(app()->getLocale(), ['en', 'am']) ? app()->getLocale() : 'en' }}',
         reminderTime: '18:00',
         hasToken: false,
         isLoading: false,
