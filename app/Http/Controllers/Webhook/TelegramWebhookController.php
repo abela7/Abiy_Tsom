@@ -54,8 +54,8 @@ class TelegramWebhookController extends Controller
 
         // Store Telegram user's language for locale inference (User actors have no locale field)
         $from = data_get($request->all(), 'callback_query.from') ?? data_get($request->all(), 'message.from') ?? [];
-        $tgLang = (string) ($from['language_code'] ?? 'en');
-        $request->attributes->set('telegram_language_code', in_array($tgLang, ['am', 'ti'], true) ? $tgLang : 'en');
+        $tgLang = (string) ($from['language_code'] ?? 'am');
+        $request->attributes->set('telegram_language_code', in_array($tgLang, ['am', 'ti'], true) ? $tgLang : 'am');
 
         $callbackQuery = $request->input('callback_query');
         if (is_array($callbackQuery)) {
@@ -125,6 +125,15 @@ class TelegramWebhookController extends Controller
 
         if ($callbackId !== '') {
             $telegramService->answerCallbackQuery($callbackId, '');
+        }
+
+        $actor = $this->actorFromChatId($chatId);
+        if ($actor instanceof Member || $actor instanceof User) {
+            $this->applyLocaleForActor($actor);
+        } else {
+            $locale = $this->guestLocale($chatId);
+            app()->setLocale($locale);
+            Translation::loadFromDb($locale);
         }
 
         if (str_starts_with($action, 'check_')) {
@@ -588,12 +597,11 @@ class TelegramWebhookController extends Controller
 
     private function applyLocaleForActor(Member|User $actor): void
     {
-        $locale = 'en';
+        $locale = 'am';
         if ($actor instanceof Member && $this->memberHasLocale($actor)) {
             $locale = $actor->locale;
         } elseif ($actor instanceof User) {
-            // User has no locale field — use Telegram client language
-            $locale = request()->attributes->get('telegram_language_code', 'en');
+            $locale = request()->attributes->get('telegram_language_code', 'am');
         }
         app()->setLocale($locale);
         Translation::loadFromDb($locale);
