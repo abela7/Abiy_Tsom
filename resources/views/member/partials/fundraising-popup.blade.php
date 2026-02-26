@@ -22,13 +22,7 @@
 
             {{-- ═══ STEP 1 — Intro ═══ --}}
             <div x-show="step === 1"
-                 x-transition:enter="transition ease-out duration-300 delay-75"
-                 x-transition:enter-start="opacity-0 scale-95 translate-y-4"
-                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                 x-transition:leave="transition ease-in duration-150"
-                 x-transition:leave-start="opacity-100 scale-100"
-                 x-transition:leave-end="opacity-0 scale-95"
-                 class="fund-card overflow-hidden rounded-2xl w-full sm:max-w-lg flex flex-col"
+                 class="fund-step fund-card overflow-hidden rounded-2xl w-full sm:max-w-lg flex flex-col"
                  style="background:#ffffff;color:#111827;border:1px solid #e5e7eb;box-shadow:0 25px 50px -12px rgba(0,0,0,.25)">
 
                 <div class="overflow-y-auto flex-1 overscroll-contain min-h-0" @touchmove.stop>
@@ -69,13 +63,7 @@
 
             {{-- ═══ STEP 2 — Contact form ═══ --}}
             <div x-show="step === 2"
-                 x-transition:enter="transition ease-out duration-250"
-                 x-transition:enter-start="opacity-0 scale-95"
-                 x-transition:enter-end="opacity-100 scale-100"
-                 x-transition:leave="transition ease-in duration-150"
-                 x-transition:leave-start="opacity-100 scale-100"
-                 x-transition:leave-end="opacity-0 scale-95"
-                 class="fund-card rounded-2xl w-full sm:max-w-lg flex flex-col overflow-hidden"
+                 class="fund-step fund-card rounded-2xl w-full sm:max-w-lg flex flex-col overflow-hidden"
                  style="background:#ffffff;color:#111827;border:1px solid #e5e7eb;box-shadow:0 25px 50px -12px rgba(0,0,0,.25)">
 
                 <div class="h-1 w-full shrink-0" style="background:linear-gradient(90deg,#0a6286,#e2ca18)"></div>
@@ -143,13 +131,7 @@
 
             {{-- ═══ STEP 3 — Thank you ═══ --}}
             <div x-show="step === 3"
-                 x-transition:enter="transition ease-out duration-250"
-                 x-transition:enter-start="opacity-0 scale-95"
-                 x-transition:enter-end="opacity-100 scale-100"
-                 x-transition:leave="transition ease-in duration-150"
-                 x-transition:leave-start="opacity-100 scale-100"
-                 x-transition:leave-end="opacity-0 scale-95"
-                 class="fund-card rounded-2xl w-full sm:max-w-lg flex flex-col overflow-hidden"
+                 class="fund-step fund-card rounded-2xl w-full sm:max-w-lg flex flex-col overflow-hidden"
                  style="background:#ffffff;color:#111827;border:1px solid #e5e7eb;box-shadow:0 25px 50px -12px rgba(0,0,0,.25)">
 
                 <div class="h-1 w-full shrink-0" style="background:linear-gradient(90deg,#0a6286,#e2ca18)"></div>
@@ -228,6 +210,13 @@ body.fund-body-lock {
 .fund-card {
     max-height: calc(100vh - 2rem);
     max-height: calc(100dvh - 2rem);
+}
+.fund-step {
+    animation: fund-step-in 0.25s ease-out both;
+}
+@keyframes fund-step-in {
+    from { opacity: 0; transform: scale(0.97); }
+    to   { opacity: 1; transform: scale(1); }
 }
 @media (min-width: 640px) {
     .fund-card { max-height: 88vh; max-height: 88dvh; }
