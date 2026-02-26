@@ -114,6 +114,7 @@ class SendWhatsAppReminders extends Command
                 $today,
                 $dryRun,
                 $ultraMsgService,
+                $telegramAuthService,
                 &$sentCount,
                 &$failedCount
             ): void {
