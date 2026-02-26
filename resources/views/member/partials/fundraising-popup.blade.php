@@ -265,40 +265,9 @@
     }
 }
 
-/* ── Video: 16:9 but capped so it never exceeds ~40% of viewport ── */
+/* ── Video: 16:9, shrinks naturally inside the scroll area ── */
 .fund-video {
     aspect-ratio: 16 / 9;
-    max-height: 35vh;
-    max-height: 35dvh;
-}
-@media (min-width: 640px) {
-    .fund-video {
-        max-height: 45vh;
-        max-height: 45dvh;
-    }
-}
-@media (min-height: 700px) {
-    .fund-video {
-        max-height: 40vh;
-        max-height: 40dvh;
-    }
-}
-
-/* ── Description: clamp to ~6 lines on tiny screens, more on taller ── */
-.fund-desc {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 5;
-    overflow: hidden;
-}
-@media (min-height: 680px) {
-    .fund-desc { -webkit-line-clamp: 8; }
-}
-@media (min-height: 800px) {
-    .fund-desc { -webkit-line-clamp: 14; }
-}
-@media (min-width: 640px) {
-    .fund-desc { -webkit-line-clamp: unset; overflow: visible; }
 }
 
 /* ── CTA pulse animation ── */
