@@ -91,8 +91,7 @@
                                 <label class="block text-sm font-medium mb-1.5" style="color:#111827">{{ __('app.name') }}</label>
                                 <input type="text" x-model="form.name"
                                        class="w-full px-4 py-3 sm:py-3.5 rounded-xl sm:rounded-2xl text-sm focus:outline-none focus:ring-2 transition"
-                                       style="background:#ffffff;color:#111827;border:2px solid #cbd5e1"
-                                       :style="errors.name ? 'border-color:#f87171' : ''"
+                                       :style="'background:#fff;color:#111827;border:2px solid ' + (errors.name ? '#f87171' : '#94a3b8')"
                                        placeholder="{{ __('app.fundraising_name_placeholder') }}"
                                        @keyup.enter="$refs.phoneInput.focus()">
                                 <p x-show="errors.name" x-text="errors.name" class="mt-1 text-xs text-red-500"></p>
@@ -102,8 +101,7 @@
                                 <input type="tel" x-model="form.phone" x-ref="phoneInput"
                                        inputmode="tel" autocomplete="tel"
                                        class="w-full px-4 py-3 sm:py-3.5 rounded-xl sm:rounded-2xl text-sm focus:outline-none focus:ring-2 transition"
-                                       style="background:#ffffff;color:#111827;border:2px solid #cbd5e1"
-                                       :style="errors.phone ? 'border-color:#f87171' : ''"
+                                       :style="'background:#fff;color:#111827;border:2px solid ' + (errors.phone ? '#f87171' : '#94a3b8')"
                                        placeholder="{{ __('app.fundraising_phone_placeholder') }}"
                                        @keyup.enter="submitInterest()">
                                 <p x-show="errors.phone" x-text="errors.phone" class="mt-1 text-xs text-red-500"></p>
