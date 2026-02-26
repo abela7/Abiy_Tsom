@@ -24,25 +24,18 @@
     ══════════════════════════════════════════════ --}}
     <div x-show="open && step === 1"
          x-transition:enter="transition ease-out duration-350"
-         x-transition:enter-start="opacity-0 translate-y-full sm:translate-y-8 sm:scale-95"
-         x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
          x-transition:leave="transition ease-in duration-200"
-         x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-         x-transition:leave-end="opacity-0 translate-y-full sm:translate-y-8 sm:scale-95"
-         class="fixed z-[100]
-                inset-x-0 bottom-0
-                sm:inset-0 sm:flex sm:items-center sm:justify-center sm:p-4"
+         x-transition:leave-start="opacity-100 scale-100"
+         x-transition:leave-end="opacity-0 scale-95"
+         class="fixed inset-0 z-[100] flex items-center justify-center p-4"
          style="display:none;">
 
-        <div class="fund-card bg-card shadow-2xl border-t sm:border border-border overflow-hidden
-                    rounded-t-3xl sm:rounded-2xl
-                    w-full sm:max-w-lg sm:mx-auto
+        <div class="fund-card bg-card shadow-2xl border border-border overflow-hidden
+                    rounded-2xl
+                    w-full sm:max-w-lg
                     flex flex-col">
-
-            {{-- Drag handle (mobile only) --}}
-            <div class="flex justify-center pt-2.5 pb-0.5 shrink-0 sm:hidden">
-                <div class="w-10 h-1 bg-muted-text/30 rounded-full"></div>
-            </div>
 
             {{-- Scrollable body --}}
             <div class="overflow-y-auto flex-1 overscroll-contain min-h-0">
@@ -91,16 +84,16 @@
     ══════════════════════════════════════════════ --}}
     <div x-show="open && step === 2"
          x-transition:enter="transition ease-out duration-250"
-         x-transition:enter-start="opacity-0 translate-y-6 sm:translate-y-0 sm:scale-95"
-         x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
          x-transition:leave="transition ease-in duration-150"
-         x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-         x-transition:leave-end="opacity-0 translate-y-6 sm:translate-y-0 sm:scale-95"
-         class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center"
+         x-transition:leave-start="opacity-100 scale-100"
+         x-transition:leave-end="opacity-0 scale-95"
+         class="fixed inset-0 z-[100] flex items-center justify-center p-4"
          style="display:none;">
 
-        <div class="fund-card-full w-full sm:max-w-lg sm:mx-4
-                    bg-card sm:rounded-2xl sm:shadow-2xl sm:border sm:border-border
+        <div class="fund-card-full w-full sm:max-w-lg
+                    bg-card rounded-2xl shadow-2xl border border-border
                     flex flex-col overflow-hidden">
 
             {{-- Gradient accent bar --}}
@@ -183,16 +176,16 @@
     ══════════════════════════════════════════════ --}}
     <div x-show="open && step === 3"
          x-transition:enter="transition ease-out duration-250"
-         x-transition:enter-start="opacity-0 translate-y-6 sm:translate-y-0 sm:scale-95"
-         x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
          x-transition:leave="transition ease-in duration-150"
-         x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-         x-transition:leave-end="opacity-0 translate-y-6 sm:translate-y-0 sm:scale-95"
-         class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center"
+         x-transition:leave-start="opacity-100 scale-100"
+         x-transition:leave-end="opacity-0 scale-95"
+         class="fixed inset-0 z-[100] flex items-center justify-center p-4"
          style="display:none;">
 
-        <div class="fund-card-full w-full sm:max-w-lg sm:mx-4
-                    bg-card sm:rounded-2xl sm:shadow-2xl sm:border sm:border-border
+        <div class="fund-card-full w-full sm:max-w-lg
+                    bg-card rounded-2xl shadow-2xl border border-border
                     flex flex-col overflow-hidden">
 
             {{-- Gradient accent bar --}}
@@ -258,24 +251,15 @@
 
 @push('scripts')
 <style>
-/* ── Card sizing (uses dvh with vh fallback for older browsers) ── */
-.fund-card {
-    max-height: 92vh;
-    max-height: 92dvh;
-}
-@media (min-width: 640px) {
-    .fund-card {
-        max-height: 88vh;
-        max-height: 88dvh;
-    }
-}
+/* ── Card sizing (dvh with vh fallback) ── */
+.fund-card,
 .fund-card-full {
-    height: 100vh;
-    height: 100dvh;
+    max-height: calc(100vh - 2rem);
+    max-height: calc(100dvh - 2rem);
 }
 @media (min-width: 640px) {
+    .fund-card,
     .fund-card-full {
-        height: auto;
         max-height: 88vh;
         max-height: 88dvh;
     }
