@@ -44,7 +44,6 @@ class FundraisingController extends Controller
             MemberFundraisingResponse::create([
                 'member_id'   => $member->id,
                 'campaign_id' => $campaign->id,
-                'status'      => 'viewed',
             ]);
         }
 

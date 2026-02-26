@@ -39,9 +39,9 @@ class MemberFundraisingResponse extends Model
      * Whether the popup should be shown to this member today.
      *
      * - 'interested' → never show again.
-     * - 'snoozed' + last_snoozed_date is today → user explicitly
-     *   clicked "Not Today", hide until tomorrow.
-     * - 'viewed' or no record → keep showing until user acts.
+     * - 'snoozed' + last_snoozed_date is today → user clicked
+     *   "Not Today", hide until tomorrow.
+     * - null (seen but no action) → keep showing until user acts.
      */
     public function shouldShowPopup(): bool
     {
