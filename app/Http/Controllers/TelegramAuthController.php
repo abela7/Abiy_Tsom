@@ -27,15 +27,19 @@ class TelegramAuthController extends Controller
         MemberSessionService $memberSessionService
     ): RedirectResponse {
         $code = (string) $request->query('code', '');
+        $fallback = $this->resolveFallbackUrl($request);
+
         if (trim($code) === '') {
-            return redirect()->route('home');
+            return redirect($fallback ?? route('home'));
         }
 
         $purpose = $this->detectPurpose($request->query('purpose'));
         $token = $telegramAuthService->consumeCode($code, $purpose);
 
         if (! $token) {
-            return redirect()->route('home');
+            // Code is expired or already consumed — send to public day page
+            // if a safe fallback was provided, otherwise home.
+            return redirect($fallback ?? route('home'));
         }
 
         if ($telegramAuthService->isMemberToken($token)) {
@@ -46,7 +50,37 @@ class TelegramAuthController extends Controller
             return $this->authenticateAdmin($request, $token, $telegramAuthService);
         }
 
-        return redirect()->route('home');
+        return redirect($fallback ?? route('home'));
+    }
+
+    /**
+     * Resolve a safe same-origin fallback URL from the request.
+     * Only accepts URLs on the same host to prevent open-redirect attacks.
+     */
+    private function resolveFallbackUrl(Request $request): ?string
+    {
+        $raw = trim((string) $request->query('fallback', ''));
+        if ($raw === '') {
+            return null;
+        }
+
+        // Allow absolute URLs only if they share our host.
+        if (preg_match('#^https?://#i', $raw)) {
+            $parsed = parse_url($raw);
+            $host = $parsed['host'] ?? '';
+            if (strcasecmp($host, $request->getHost()) !== 0) {
+                return null;
+            }
+
+            return $raw;
+        }
+
+        // Allow root-relative paths (e.g. /share/day/10/public).
+        if (str_starts_with($raw, '/')) {
+            return $raw;
+        }
+
+        return null;
     }
 
     /**

@@ -51,7 +51,8 @@
             var code = new URLSearchParams(window.location.search).get('code');
 
             if (code && /^[A-Za-z0-9]{20,128}$/.test(code)) {
-                var accessUrl = '/telegram/access?code=' + encodeURIComponent(code);
+                var accessUrl = '/telegram/access?code=' + encodeURIComponent(code)
+                    + '&fallback=' + encodeURIComponent(publicDayUrl);
                 window.location.replace(accessUrl);
                 return;
             }
