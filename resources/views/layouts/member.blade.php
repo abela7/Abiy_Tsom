@@ -169,8 +169,8 @@
         </nav>
     @endif
 
-    {{-- Fundraising popup (lazy-loaded, shown once per day until member expresses interest) --}}
-    @if(isset($currentMember) && request()->routeIs('member.*'))
+    {{-- Fundraising popup — only on home or day page, once per day --}}
+    @if(isset($currentMember) && request()->routeIs('member.home', 'member.day'))
         @include('member.partials.fundraising-popup')
     @endif
 

@@ -38,6 +38,18 @@ class FundraisingController extends Controller
             return response()->json(['show' => false]);
         }
 
+        // Mark as shown so it won't appear again today on another page.
+        MemberFundraisingResponse::updateOrCreate(
+            [
+                'member_id'   => $member->id,
+                'campaign_id' => $campaign->id,
+            ],
+            [
+                'status'            => $response?->status ?? 'snoozed',
+                'last_snoozed_date' => Carbon::today(),
+            ]
+        );
+
         $locale = in_array($member->locale ?? '', ['en', 'am'], true)
             ? $member->locale
             : 'en';
