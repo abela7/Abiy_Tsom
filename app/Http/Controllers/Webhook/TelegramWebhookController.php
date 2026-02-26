@@ -161,7 +161,7 @@ class TelegramWebhookController extends Controller
 
         return match ($action) {
             'have_account' => $this->handleHaveAccount($chatId, $messageId, $telegramService),
-            'start_over' => $this->replyAfterDelete($telegramService, $chatId, $messageId, __('app.telegram_start_welcome'), $this->startChoiceKeyboard()),
+            'start_over' => $this->handleStartOver($chatId, $messageId, $telegramService),
             'unlink' => $this->handleUnlink($chatId, $messageId, $telegramAuthService, $telegramService),
             'menu' => $this->handleMenu($chatId, $telegramAuthService, $telegramService, $messageId),
             'home' => $this->handleHome($chatId, $telegramAuthService, $telegramService, $messageId),
@@ -341,6 +341,10 @@ class TelegramWebhookController extends Controller
         if (! $argument) {
             $actor = $this->actorFromChatId($chatId);
             if (! $actor) {
+                $locale = request()->attributes->get('telegram_language_code', 'en');
+                app()->setLocale($locale);
+                Translation::loadFromDb($locale);
+
                 return $this->reply(
                     $telegramService,
                     $chatId,
@@ -422,6 +426,33 @@ class TelegramWebhookController extends Controller
         }
 
         return $this->reply($telegramService, $chatId, $this->helpMessage(), $this->helpKeyboard());
+    }
+
+    /**
+     * Show the start/welcome screen again, respecting the actor's saved
+     * language or falling back to the Telegram client language.
+     */
+    private function handleStartOver(
+        string $chatId,
+        int $messageId,
+        TelegramService $telegramService
+    ): JsonResponse {
+        $actor = $this->actorFromChatId($chatId);
+        if ($actor) {
+            $this->applyLocaleForActor($actor);
+        } else {
+            $locale = request()->attributes->get('telegram_language_code', 'en');
+            app()->setLocale($locale);
+            Translation::loadFromDb($locale);
+        }
+
+        return $this->replyAfterDelete(
+            $telegramService,
+            $chatId,
+            $messageId,
+            __('app.telegram_start_welcome'),
+            $this->startChoiceKeyboard()
+        );
     }
 
     private function handleHelp(
