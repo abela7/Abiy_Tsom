@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -25,14 +26,23 @@ final class UltraMsgService
      */
     public function sendTextMessage(string $to, string $body): bool
     {
-        $response = Http::asForm()
-            ->acceptJson()
-            ->timeout(20)
-            ->post($this->messagesEndpoint(), [
-                'token' => $this->token(),
+        try {
+            $response = Http::asForm()
+                ->acceptJson()
+                ->timeout(20)
+                ->post($this->messagesEndpoint(), [
+                    'token' => $this->token(),
+                    'to' => $to,
+                    'body' => $body,
+                ]);
+        } catch (ConnectionException $e) {
+            Log::warning('UltraMsg connection error sending message.', [
                 'to' => $to,
-                'body' => $body,
+                'error' => $e->getMessage(),
             ]);
+
+            return false;
+        }
 
         if (! $response->successful()) {
             Log::warning('UltraMsg request failed.', [
@@ -64,11 +74,19 @@ final class UltraMsgService
      */
     public function getInstanceSettings(): ?array
     {
-        $response = Http::acceptJson()
-            ->timeout(15)
-            ->get($this->instanceSettingsEndpoint(), [
-                'token' => $this->token(),
+        try {
+            $response = Http::acceptJson()
+                ->timeout(15)
+                ->get($this->instanceSettingsEndpoint(), [
+                    'token' => $this->token(),
+                ]);
+        } catch (ConnectionException $e) {
+            Log::warning('UltraMsg connection error getting settings.', [
+                'error' => $e->getMessage(),
             ]);
+
+            return null;
+        }
 
         if (! $response->successful()) {
             Log::warning('UltraMsg get settings failed.', [
@@ -93,10 +111,18 @@ final class UltraMsgService
             'token' => $this->token(),
         ], $settings);
 
-        $response = Http::asForm()
-            ->acceptJson()
-            ->timeout(20)
-            ->post($this->instanceSettingsEndpoint(), $payload);
+        try {
+            $response = Http::asForm()
+                ->acceptJson()
+                ->timeout(20)
+                ->post($this->instanceSettingsEndpoint(), $payload);
+        } catch (ConnectionException $e) {
+            Log::warning('UltraMsg connection error updating settings.', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return false;
+        }
 
         if (! $response->successful()) {
             Log::warning('UltraMsg update settings failed.', [
