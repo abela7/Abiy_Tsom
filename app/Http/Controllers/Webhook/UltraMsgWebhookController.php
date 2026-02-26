@@ -97,6 +97,7 @@ class UltraMsgWebhookController extends Controller
             ])->save();
 
             $confirmation->sendConfirmedNotice($member);
+            $confirmation->sendGoBackMessage($member);
 
             Log::info('[Webhook] Member confirmed', ['member_id' => $member->id]);
 

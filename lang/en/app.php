@@ -269,6 +269,7 @@ return [
     'wizard_continue' => 'Continue',
     'whatsapp_confirmation_send_failed_notice' => 'Could not send confirmation right now. Please try again later from Settings.',
     'whatsapp_confirmation_activated_message' => 'Great! Your daily WhatsApp reminders are now activated.',
+    'whatsapp_confirmation_go_back_message' => "You can now go back to the website using the following link:\n:url\n\nAlternatively, you can access all the contents easily through our Telegram bot:\n:telegram_url",
     'whatsapp_confirmation_rejected_message' => 'Okay, WhatsApp reminders are not activated. You can enable them anytime from Settings.',
     'whatsapp_daily_reminder_header' => 'Hello :baptism_name. Today is day :day of the 55 great lent days.',
     'whatsapp_daily_reminder_content' => "Open today's content:\n:url",

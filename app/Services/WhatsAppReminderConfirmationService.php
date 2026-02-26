@@ -50,6 +50,29 @@ final class WhatsAppReminderConfirmationService
     }
 
     /**
+     * Send a follow-up message directing the member back to the website
+     * and mentioning the Telegram bot as an alternative.
+     */
+    public function sendGoBackMessage(Member $member): bool
+    {
+        if (! $this->ultraMsg->isConfigured() || ! $member->whatsapp_phone) {
+            return false;
+        }
+
+        $locale = $this->memberLocale($member);
+
+        $telegramUsername = trim((string) config('services.telegram.bot_username', ''));
+        $telegramUrl = $telegramUsername !== '' ? 'https://t.me/' . $telegramUsername : 'https://t.me/AbiyTsomBot';
+
+        $message = Lang::get('app.whatsapp_confirmation_go_back_message', [
+            'url' => url('/'),
+            'telegram_url' => $telegramUrl,
+        ], $locale);
+
+        return $this->ultraMsg->sendTextMessage((string) $member->whatsapp_phone, $message);
+    }
+
+    /**
      * Send activation confirmed message.
      */
     public function sendConfirmedNotice(Member $member): bool
