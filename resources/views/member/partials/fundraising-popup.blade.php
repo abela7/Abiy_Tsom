@@ -53,7 +53,7 @@
 
                     {{-- Text --}}
                     <div class="px-5 sm:px-6 pt-3 pb-5">
-                        <h2 class="text-base sm:text-lg font-extrabold leading-snug mb-2 text-[#e2ca18]"
+                        <h2 class="text-base sm:text-lg font-extrabold leading-snug mb-2 text-[#0a6286]"
                             x-text="campaign.title"></h2>
                         <p class="text-[13px] sm:text-sm text-secondary leading-relaxed"
                            x-text="campaign.description"></p>
@@ -179,7 +179,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                             </svg>
                         </div>
-                        <h2 class="text-lg sm:text-xl font-extrabold mb-2 text-[#0a6286] dark:text-[#e2ca18]">
+                        <h2 class="text-lg sm:text-xl font-extrabold mb-2 text-[#0a6286]">
                             {{ __('app.fundraising_thankyou_title') }}
                         </h2>
                         <p class="text-[13px] sm:text-sm text-secondary leading-relaxed max-w-[280px] sm:max-w-xs mx-auto">
@@ -230,7 +230,7 @@ body.fund-body-lock {
     width: 100% !important;
 }
 
-/* ── Full-screen overlay — above everything ── */
+/* ── Full-screen overlay — above everything, forced light theme ── */
 .fund-overlay {
     position: fixed;
     inset: 0;
@@ -244,6 +244,17 @@ body.fund-body-lock {
     -webkit-backdrop-filter: blur(8px);
     overscroll-behavior: contain;
     touch-action: none;
+
+    /* Force light theme inside the modal */
+    --app-surface: #f9fafb;
+    --app-card: #ffffff;
+    --app-muted: #f3f4f6;
+    --app-primary: #111827;
+    --app-secondary: #4b5563;
+    --app-muted-text: #6b7280;
+    --app-border: #e5e7eb;
+    --app-border-muted: #f3f4f6;
+    color-scheme: light;
 }
 
 /* ── Card sizing ── */
