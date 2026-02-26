@@ -103,7 +103,7 @@
                                 <label class="block text-sm font-medium mb-1.5" style="color:#111827">{{ __('app.name') }}</label>
                                 <input type="text" x-model="form.name"
                                        class="w-full px-4 py-3 sm:py-3.5 rounded-xl sm:rounded-2xl text-sm focus:outline-none focus:ring-2 transition"
-                                       style="background:#f9fafb;color:#111827;border:1px solid #e5e7eb"
+                                       style="background:#ffffff;color:#111827;border:2px solid #cbd5e1"
                                        :style="errors.name ? 'border-color:#f87171' : ''"
                                        placeholder="{{ __('app.fundraising_name_placeholder') }}"
                                        @keyup.enter="$refs.phoneInput.focus()">
@@ -114,7 +114,7 @@
                                 <input type="tel" x-model="form.phone" x-ref="phoneInput"
                                        inputmode="tel" autocomplete="tel"
                                        class="w-full px-4 py-3 sm:py-3.5 rounded-xl sm:rounded-2xl text-sm focus:outline-none focus:ring-2 transition"
-                                       style="background:#f9fafb;color:#111827;border:1px solid #e5e7eb"
+                                       style="background:#ffffff;color:#111827;border:2px solid #cbd5e1"
                                        :style="errors.phone ? 'border-color:#f87171' : ''"
                                        placeholder="{{ __('app.fundraising_phone_placeholder') }}"
                                        @keyup.enter="submitInterest()">
