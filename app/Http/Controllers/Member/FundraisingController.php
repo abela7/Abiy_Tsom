@@ -19,8 +19,9 @@ class FundraisingController extends Controller
     /**
      * Returns the active campaign data if the popup should be shown.
      *
-     * Stamps last_snoozed_date = today the moment the popup is served,
-     * so refreshes / page navigations within the same day never re-show.
+     * Creates a 'viewed' record so we know the member has seen it,
+     * but 'viewed' does NOT hide the popup — only an explicit user
+     * action (Not Today / Interested) does.
      */
     public function popup(Request $request): JsonResponse
     {
@@ -39,11 +40,13 @@ class FundraisingController extends Controller
             return response()->json(['show' => false]);
         }
 
-        // First-time or new day — stamp "seen today" immediately.
-        MemberFundraisingResponse::updateOrCreate(
-            ['member_id' => $member->id, 'campaign_id' => $campaign->id],
-            ['last_snoozed_date' => Carbon::today()]
-        );
+        if (! $response) {
+            MemberFundraisingResponse::create([
+                'member_id'   => $member->id,
+                'campaign_id' => $campaign->id,
+                'status'      => 'viewed',
+            ]);
+        }
 
         $locale = in_array($member->locale ?? '', ['en', 'am'], true)
             ? $member->locale
@@ -60,8 +63,7 @@ class FundraisingController extends Controller
     }
 
     /**
-     * Member clicked "Not Today" — already stamped by popup(), this
-     * just ensures the record is marked as snoozed for clarity.
+     * Member clicked "Not Today" — hide popup until tomorrow.
      */
     public function snooze(Request $request): JsonResponse
     {
@@ -97,11 +99,10 @@ class FundraisingController extends Controller
         MemberFundraisingResponse::updateOrCreate(
             ['member_id' => $member->id, 'campaign_id' => (int) $validated['campaign_id']],
             [
-                'status'            => 'interested',
-                'contact_name'      => trim($validated['contact_name']),
-                'contact_phone'     => trim($validated['contact_phone']),
-                'interested_at'     => now(),
-                'last_snoozed_date' => Carbon::today(),
+                'status'        => 'interested',
+                'contact_name'  => trim($validated['contact_name']),
+                'contact_phone' => trim($validated['contact_phone']),
+                'interested_at' => now(),
             ]
         );
 
