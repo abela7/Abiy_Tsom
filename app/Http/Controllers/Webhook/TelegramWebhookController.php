@@ -583,7 +583,7 @@ class TelegramWebhookController extends Controller
             return $stored;
         }
 
-        return request()->attributes->get('telegram_language_code', 'en');
+        return request()->attributes->get('telegram_language_code', 'am');
     }
 
     private function applyLocaleForActor(Member|User $actor): void
