@@ -44,7 +44,10 @@ class FundraisingController extends Controller
             MemberFundraisingResponse::create([
                 'member_id'   => $member->id,
                 'campaign_id' => $campaign->id,
+                'view_count'  => 1,
             ]);
+        } else {
+            $response->increment('view_count');
         }
 
         $locale = in_array($member->locale ?? '', ['en', 'am'], true)

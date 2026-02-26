@@ -24,12 +24,14 @@ class FundraisingController extends Controller
         if ($campaign) {
             $allResponses = MemberFundraisingResponse::where('campaign_id', $campaign->id)
                 ->with('member:id,baptism_name')
+                ->orderByDesc('view_count')
                 ->orderByDesc('updated_at')
                 ->get();
 
             $stats = [
                 'interested' => $allResponses->where('status', 'interested')->count(),
                 'snoozed'    => $allResponses->where('status', 'snoozed')->count(),
+                'viewed'     => $allResponses->whereNull('status')->count(),
                 'responses'  => $allResponses,
             ];
         }

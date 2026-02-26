@@ -13,6 +13,7 @@ class MemberFundraisingResponse extends Model
     protected $fillable = [
         'member_id',
         'campaign_id',
+        'view_count',
         'status',
         'last_snoozed_date',
         'contact_name',

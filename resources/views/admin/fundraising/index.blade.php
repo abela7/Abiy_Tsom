@@ -179,7 +179,7 @@
     <div class="bg-card rounded-2xl border border-border shadow-sm p-6">
         <div class="flex items-center justify-between mb-4">
             <h2 class="text-base font-semibold text-primary">{{ __('app.fundraising_responses') }}</h2>
-            @if($stats['interested'] > 0 || $stats['snoozed'] > 0)
+            @if($stats['responses']->isNotEmpty())
                 <form method="POST" action="/admin/fundraising/reset"
                       onsubmit="return confirm('{{ __('app.fundraising_reset_confirm') }}')">
                     @csrf
@@ -191,7 +191,7 @@
             @endif
         </div>
 
-        <div class="grid grid-cols-2 gap-4 mb-5">
+        <div class="grid grid-cols-3 gap-3 mb-5">
             <div class="rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-4 text-center">
                 <p class="text-2xl font-bold text-green-700 dark:text-green-400">{{ $stats['interested'] }}</p>
                 <p class="text-xs text-green-600 dark:text-green-500 mt-0.5">{{ __('app.fundraising_interested') }}</p>
@@ -199,6 +199,10 @@
             <div class="rounded-xl bg-muted border border-border p-4 text-center">
                 <p class="text-2xl font-bold text-primary">{{ $stats['snoozed'] }}</p>
                 <p class="text-xs text-muted-text mt-0.5">{{ __('app.fundraising_snoozed') }}</p>
+            </div>
+            <div class="rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 p-4 text-center">
+                <p class="text-2xl font-bold text-blue-700 dark:text-blue-400">{{ $stats['viewed'] }}</p>
+                <p class="text-xs text-blue-600 dark:text-blue-500 mt-0.5">Viewed</p>
             </div>
         </div>
 
@@ -210,6 +214,7 @@
                             <th class="px-4 py-2.5 text-left">{{ __('app.fundraising_member') }}</th>
                             <th class="px-4 py-2.5 text-left">{{ __('app.fundraising_contact_info') }}</th>
                             <th class="px-4 py-2.5 text-left">{{ __('app.status') }}</th>
+                            <th class="px-4 py-2.5 text-left">Views</th>
                             <th class="px-4 py-2.5 text-right"></th>
                         </tr>
                     </thead>
@@ -239,11 +244,18 @@
                                             <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
                                             {{ __('app.fundraising_interested') }}
                                         </span>
-                                    @else
-                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-text">
+                                    @elseif($resp->status === 'snoozed')
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
                                             {{ __('app.fundraising_snoozed') }}
                                         </span>
+                                    @else
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                                            Viewing
+                                        </span>
                                     @endif
+                                </td>
+                                <td class="px-4 py-3 text-sm text-muted-text">
+                                    {{ $resp->view_count ?? 0 }}
                                 </td>
                                 <td class="px-4 py-3 text-right">
                                     <form method="POST" action="/admin/fundraising/response/{{ $resp->id }}"
