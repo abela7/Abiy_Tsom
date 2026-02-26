@@ -37,6 +37,7 @@ class TranslationController extends Controller
                 'progress' => __('app.group_progress'),
                 'settings' => __('app.group_settings'),
                 'telegram_bot' => __('app.group_telegram_bot'),
+                'fundraising_popup' => __('app.group_fundraising_popup'),
                 'general' => __('app.group_general'),
             ],
             'admin' => [
@@ -44,6 +45,7 @@ class TranslationController extends Controller
                 'admin_dashboard' => __('app.group_admin_dashboard'),
                 'admin_daily' => __('app.group_admin_daily'),
                 'admin_activities' => __('app.group_activities'),
+                'admin_fundraising' => __('app.group_admin_fundraising'),
                 'admin_other' => __('app.group_admin_other'),
                 'admin_translations' => __('app.group_admin_translations'),
             ],
