@@ -7,7 +7,7 @@
      x-init="init()"
      x-cloak>
 
-    {{-- ── Backdrop (non-dismissible — user must answer) ── --}}
+    {{-- ── Backdrop ── --}}
     <div x-show="open"
          x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="opacity-0"
@@ -20,7 +20,7 @@
     </div>
 
     {{-- ══════════════════════════════════════════════
-         STEP 1 — Intro  (bottom sheet on mobile, centered card on desktop)
+         STEP 1 — Intro
     ══════════════════════════════════════════════ --}}
     <div x-show="open && step === 1"
          x-transition:enter="transition ease-out duration-350"
@@ -34,22 +34,22 @@
                 sm:inset-0 sm:flex sm:items-center sm:justify-center sm:p-4"
          style="display:none;">
 
-        <div class="bg-card shadow-2xl border-t sm:border border-border overflow-hidden
+        <div class="fund-card bg-card shadow-2xl border-t sm:border border-border overflow-hidden
                     rounded-t-3xl sm:rounded-2xl
-                    w-full sm:max-w-md sm:mx-auto
-                    max-h-[90vh] sm:max-h-[85vh] flex flex-col">
+                    w-full sm:max-w-lg sm:mx-auto
+                    flex flex-col">
 
             {{-- Drag handle (mobile only) --}}
-            <div class="flex justify-center pt-3 pb-1 shrink-0 sm:hidden">
+            <div class="flex justify-center pt-2.5 pb-0.5 shrink-0 sm:hidden">
                 <div class="w-10 h-1 bg-muted-text/30 rounded-full"></div>
             </div>
 
             {{-- Scrollable body --}}
-            <div class="overflow-y-auto flex-1 overscroll-contain">
+            <div class="overflow-y-auto flex-1 overscroll-contain min-h-0">
 
-                {{-- YouTube embed (16:9 aspect ratio) --}}
+                {{-- YouTube embed — constrained height so it never eats >40% of card --}}
                 <template x-if="campaign.embed_url">
-                    <div class="relative w-full bg-black shrink-0 aspect-video">
+                    <div class="fund-video relative w-full bg-black shrink-0">
                         <iframe :src="campaign.embed_url"
                                 class="absolute inset-0 w-full h-full"
                                 frameborder="0"
@@ -61,23 +61,25 @@
                 </template>
 
                 {{-- Text content --}}
-                <div class="px-5 sm:px-6 pt-4 pb-2">
-                    <h2 class="text-lg sm:text-xl font-extrabold leading-snug mb-2.5 text-[#0a6286] dark:text-[#e2ca18]"
+                <div class="px-5 sm:px-6 pt-3 pb-2">
+                    <h2 class="text-base sm:text-lg font-extrabold leading-snug mb-2 text-[#0a6286] dark:text-[#e2ca18]"
                         x-text="campaign.title"></h2>
-                    <p class="text-[13px] sm:text-sm text-secondary leading-relaxed" x-text="campaign.description"></p>
+                    <p class="fund-desc text-[13px] sm:text-sm text-secondary leading-relaxed"
+                       x-text="campaign.description"></p>
                 </div>
             </div>
 
             {{-- Buttons (pinned at bottom) --}}
-            <div class="px-5 sm:px-6 pb-5 pt-3 space-y-2 shrink-0 border-t border-border/50">
+            <div class="px-5 sm:px-6 pb-4 pt-2.5 space-y-1.5 shrink-0 border-t border-border/50"
+                 style="padding-bottom:max(1rem, env(safe-area-inset-bottom))">
                 <button @click="step = 2"
-                        class="fund-cta-btn w-full py-3 sm:py-3.5 font-bold text-sm rounded-2xl active:scale-[0.97] shadow-lg relative overflow-hidden"
+                        class="fund-cta-btn w-full py-2.5 sm:py-3 font-bold text-sm rounded-2xl active:scale-[0.97] shadow-lg relative overflow-hidden"
                         style="background:#0a6286;color:#ffffff">
                     <span class="fund-cta-shimmer absolute inset-0 rounded-2xl pointer-events-none"></span>
                     <span class="relative">{{ __('app.fundraising_popup_interested') }}</span>
                 </button>
                 <button @click="notToday()"
-                        class="w-full py-2.5 text-sm text-muted-text font-medium rounded-2xl hover:bg-muted active:scale-[0.97] transition">
+                        class="w-full py-2 text-sm text-muted-text font-medium rounded-2xl hover:bg-muted active:scale-[0.97] transition">
                     {{ __('app.fundraising_popup_not_today') }}
                 </button>
             </div>
@@ -86,8 +88,6 @@
 
     {{-- ══════════════════════════════════════════════
          STEP 2 — Contact form
-         Mobile: full-screen overlay
-         Tablet/Desktop: centered card
     ══════════════════════════════════════════════ --}}
     <div x-show="open && step === 2"
          x-transition:enter="transition ease-out duration-250"
@@ -99,8 +99,7 @@
          class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center"
          style="display:none;">
 
-        {{-- Mobile: full-width, full-height  |  sm+: constrained card --}}
-        <div class="w-full h-full sm:h-auto sm:max-h-[85vh] sm:max-w-md sm:mx-4
+        <div class="fund-card-full w-full sm:max-w-lg sm:mx-4
                     bg-card sm:rounded-2xl sm:shadow-2xl sm:border sm:border-border
                     flex flex-col overflow-hidden">
 
@@ -120,7 +119,7 @@
             </div>
 
             {{-- Scrollable content --}}
-            <div class="flex-1 overflow-y-auto overscroll-contain px-5 sm:px-6">
+            <div class="flex-1 overflow-y-auto overscroll-contain px-5 sm:px-6 min-h-0">
                 <div class="flex flex-col justify-center min-h-full py-4">
 
                     <h2 class="text-lg sm:text-xl font-bold text-primary mb-1.5">{{ __('app.fundraising_form_title') }}</h2>
@@ -159,7 +158,7 @@
                 </div>
             </div>
 
-            {{-- Submit (pinned at bottom, safe-area aware) --}}
+            {{-- Submit --}}
             <div class="px-5 sm:px-6 pt-3 shrink-0" style="padding-bottom:max(0.75rem, env(safe-area-inset-bottom))">
                 <button @click="submitInterest()"
                         :disabled="submitting"
@@ -181,8 +180,6 @@
 
     {{-- ══════════════════════════════════════════════
          STEP 3 — Thank you
-         Mobile: full-screen overlay
-         Tablet/Desktop: centered card
     ══════════════════════════════════════════════ --}}
     <div x-show="open && step === 3"
          x-transition:enter="transition ease-out duration-250"
@@ -194,7 +191,7 @@
          class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center"
          style="display:none;">
 
-        <div class="w-full h-full sm:h-auto sm:max-h-[85vh] sm:max-w-md sm:mx-4
+        <div class="fund-card-full w-full sm:max-w-lg sm:mx-4
                     bg-card sm:rounded-2xl sm:shadow-2xl sm:border sm:border-border
                     flex flex-col overflow-hidden">
 
@@ -202,7 +199,7 @@
             <div class="h-1 w-full shrink-0" style="background:linear-gradient(90deg,#0a6286,#e2ca18)"></div>
 
             {{-- Scrollable content --}}
-            <div class="flex-1 overflow-y-auto overscroll-contain px-5 sm:px-6">
+            <div class="flex-1 overflow-y-auto overscroll-contain px-5 sm:px-6 min-h-0">
                 <div class="flex flex-col items-center justify-center text-center min-h-full py-8 sm:py-10">
 
                     {{-- Checkmark --}}
@@ -222,7 +219,7 @@
                 </div>
             </div>
 
-            {{-- Buttons (pinned at bottom, safe-area aware) --}}
+            {{-- Buttons --}}
             <div class="px-5 sm:px-6 pt-2 space-y-2.5 shrink-0" style="padding-bottom:max(0.75rem, env(safe-area-inset-bottom))">
 
                 {{-- Donate page --}}
@@ -261,6 +258,66 @@
 
 @push('scripts')
 <style>
+/* ── Card sizing (uses dvh with vh fallback for older browsers) ── */
+.fund-card {
+    max-height: 92vh;
+    max-height: 92dvh;
+}
+@media (min-width: 640px) {
+    .fund-card {
+        max-height: 88vh;
+        max-height: 88dvh;
+    }
+}
+.fund-card-full {
+    height: 100vh;
+    height: 100dvh;
+}
+@media (min-width: 640px) {
+    .fund-card-full {
+        height: auto;
+        max-height: 88vh;
+        max-height: 88dvh;
+    }
+}
+
+/* ── Video: 16:9 but capped so it never exceeds ~40% of viewport ── */
+.fund-video {
+    aspect-ratio: 16 / 9;
+    max-height: 35vh;
+    max-height: 35dvh;
+}
+@media (min-width: 640px) {
+    .fund-video {
+        max-height: 45vh;
+        max-height: 45dvh;
+    }
+}
+@media (min-height: 700px) {
+    .fund-video {
+        max-height: 40vh;
+        max-height: 40dvh;
+    }
+}
+
+/* ── Description: clamp to ~6 lines on tiny screens, more on taller ── */
+.fund-desc {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 5;
+    overflow: hidden;
+}
+@media (min-height: 680px) {
+    .fund-desc { -webkit-line-clamp: 8; }
+}
+@media (min-height: 800px) {
+    .fund-desc { -webkit-line-clamp: 14; }
+}
+@media (min-width: 640px) {
+    .fund-desc { -webkit-line-clamp: unset; overflow: visible; }
+}
+
+/* ── CTA pulse animation ── */
 @keyframes fund-pulse {
     0%, 100% { box-shadow: 0 0 0 0 rgba(10,98,134,0.55), 0 4px 14px rgba(10,98,134,0.30); }
     50%       { box-shadow: 0 0 0 10px rgba(10,98,134,0), 0 4px 14px rgba(10,98,134,0.10); }
