@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\Member;
+use App\Models\Translation;
 use Illuminate\Support\Facades\Lang;
 
 /**
@@ -105,10 +106,17 @@ final class WhatsAppReminderConfirmationService
         return null;
     }
 
+    /**
+     * Resolve the member's locale and ensure DB translations are loaded
+     * so that Lang::get() returns admin-edited values, not lang file defaults.
+     */
     private function memberLocale(Member $member): string
     {
         $locale = (string) ($member->whatsapp_language ?? 'en');
+        $locale = in_array($locale, ['en', 'am'], true) ? $locale : 'en';
 
-        return in_array($locale, ['en', 'am'], true) ? $locale : 'en';
+        Translation::loadFromDb($locale);
+
+        return $locale;
     }
 }
