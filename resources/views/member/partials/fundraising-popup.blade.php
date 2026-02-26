@@ -1,6 +1,6 @@
 {{--
   Fundraising Popup — professional modal overlay.
-  Locks body scroll, blocks all background interaction.
+  Always light theme. Locks body scroll, blocks all background interaction.
   Step 1: Video + intro → Step 2: Contact form → Step 3: Thank you
 --}}
 <div x-data="fundraisingPopup()"
@@ -8,7 +8,6 @@
      x-effect="document.body.classList.toggle('fund-body-lock', open)"
      x-cloak>
 
-    {{-- ── Full-screen overlay: backdrop + card in one container ── --}}
     <template x-teleport="body">
         <div x-show="open"
              x-transition:enter="transition ease-out duration-300"
@@ -21,9 +20,7 @@
              style="display:none;"
              @touchmove.self.prevent>
 
-            {{-- ══════════════════════════════════════════════
-                 STEP 1 — Intro
-            ══════════════════════════════════════════════ --}}
+            {{-- ═══ STEP 1 — Intro ═══ --}}
             <div x-show="step === 1"
                  x-transition:enter="transition ease-out duration-300 delay-75"
                  x-transition:enter-start="opacity-0 scale-95 translate-y-4"
@@ -31,37 +28,31 @@
                  x-transition:leave="transition ease-in duration-150"
                  x-transition:leave-start="opacity-100 scale-100"
                  x-transition:leave-end="opacity-0 scale-95"
-                 class="fund-card bg-card shadow-2xl border border-border overflow-hidden
-                        rounded-2xl w-full sm:max-w-lg flex flex-col">
+                 class="fund-card overflow-hidden rounded-2xl w-full sm:max-w-lg flex flex-col"
+                 style="background:#ffffff;color:#111827;border:1px solid #e5e7eb;box-shadow:0 25px 50px -12px rgba(0,0,0,.25)">
 
-                {{-- Scrollable body --}}
-                <div class="overflow-y-auto flex-1 overscroll-contain min-h-0"
-                     @touchmove.stop>
-
-                    {{-- YouTube embed --}}
+                <div class="overflow-y-auto flex-1 overscroll-contain min-h-0" @touchmove.stop>
                     <template x-if="campaign.embed_url">
                         <div class="fund-video relative w-full bg-black shrink-0">
                             <iframe :src="campaign.embed_url"
                                     class="absolute inset-0 w-full h-full"
                                     frameborder="0"
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowfullscreen
-                                    loading="lazy">
-                            </iframe>
+                                    allowfullscreen loading="lazy"></iframe>
                         </div>
                     </template>
-
-                    {{-- Text --}}
                     <div class="px-5 sm:px-6 pt-3 pb-5">
-                        <h2 class="text-base sm:text-lg font-extrabold leading-snug mb-2 text-[#0a6286]"
+                        <h2 class="text-base sm:text-lg font-extrabold leading-snug mb-2"
+                            style="color:#0a6286"
                             x-text="campaign.title"></h2>
-                        <p class="text-[13px] sm:text-sm text-secondary leading-relaxed"
+                        <p class="text-[13px] sm:text-sm leading-relaxed"
+                           style="color:#4b5563"
                            x-text="campaign.description"></p>
                     </div>
                 </div>
 
-                {{-- Buttons --}}
-                <div class="px-5 sm:px-6 pb-4 pt-4 space-y-1.5 shrink-0 border-t border-border/50 fund-safe-bottom">
+                <div class="px-5 sm:px-6 pb-4 pt-4 space-y-1.5 shrink-0 fund-safe-bottom"
+                     style="border-top:1px solid #e5e7eb">
                     <button @click="step = 2"
                             class="fund-cta-btn w-full py-2.5 sm:py-3 font-bold text-sm rounded-2xl active:scale-[0.97] shadow-lg relative overflow-hidden"
                             style="background:#0a6286;color:#fff">
@@ -69,15 +60,14 @@
                         <span class="relative">{{ __('app.fundraising_popup_interested') }}</span>
                     </button>
                     <button @click="notToday()"
-                            class="w-full py-2 text-sm text-muted-text font-medium rounded-2xl hover:bg-muted active:scale-[0.97] transition">
+                            class="w-full py-2 text-sm font-medium rounded-2xl active:scale-[0.97] transition"
+                            style="color:#6b7280">
                         {{ __('app.fundraising_popup_not_today') }}
                     </button>
                 </div>
             </div>
 
-            {{-- ══════════════════════════════════════════════
-                 STEP 2 — Contact form
-            ══════════════════════════════════════════════ --}}
+            {{-- ═══ STEP 2 — Contact form ═══ --}}
             <div x-show="step === 2"
                  x-transition:enter="transition ease-out duration-250"
                  x-transition:enter-start="opacity-0 scale-95"
@@ -85,50 +75,47 @@
                  x-transition:leave="transition ease-in duration-150"
                  x-transition:leave-start="opacity-100 scale-100"
                  x-transition:leave-end="opacity-0 scale-95"
-                 class="fund-card bg-card rounded-2xl shadow-2xl border border-border
-                        w-full sm:max-w-lg flex flex-col overflow-hidden">
+                 class="fund-card rounded-2xl w-full sm:max-w-lg flex flex-col overflow-hidden"
+                 style="background:#ffffff;color:#111827;border:1px solid #e5e7eb;box-shadow:0 25px 50px -12px rgba(0,0,0,.25)">
 
                 <div class="h-1 w-full shrink-0" style="background:linear-gradient(90deg,#0a6286,#e2ca18)"></div>
 
                 <div class="flex items-center justify-between px-5 sm:px-6 pt-4 pb-2 shrink-0">
                     <button @click="step = 1"
-                            class="flex items-center gap-1 text-sm text-muted-text hover:text-primary transition active:scale-95 -ml-1">
+                            class="flex items-center gap-1 text-sm transition active:scale-95 -ml-1"
+                            style="color:#6b7280">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                         </svg>
                         {{ __('app.back') }}
                     </button>
-                    <span class="text-xs text-muted-text font-medium px-2.5 py-1 rounded-full bg-muted">1 / 2</span>
+                    <span class="text-xs font-medium px-2.5 py-1 rounded-full"
+                          style="background:#f3f4f6;color:#6b7280">1 / 2</span>
                 </div>
 
-                <div class="flex-1 overflow-y-auto overscroll-contain px-5 sm:px-6 min-h-0"
-                     @touchmove.stop>
+                <div class="flex-1 overflow-y-auto overscroll-contain px-5 sm:px-6 min-h-0" @touchmove.stop>
                     <div class="flex flex-col justify-center min-h-full py-4">
-                        <h2 class="text-lg sm:text-xl font-bold text-primary mb-1.5">{{ __('app.fundraising_form_title') }}</h2>
-                        <p class="text-[13px] sm:text-sm text-muted-text leading-relaxed mb-6 sm:mb-8">{{ __('app.fundraising_form_desc') }}</p>
+                        <h2 class="text-lg sm:text-xl font-bold mb-1.5" style="color:#111827">{{ __('app.fundraising_form_title') }}</h2>
+                        <p class="text-[13px] sm:text-sm leading-relaxed mb-6 sm:mb-8" style="color:#6b7280">{{ __('app.fundraising_form_desc') }}</p>
 
                         <div class="space-y-4 sm:space-y-5">
                             <div>
-                                <label class="block text-sm font-medium text-primary mb-1.5">{{ __('app.name') }}</label>
+                                <label class="block text-sm font-medium mb-1.5" style="color:#111827">{{ __('app.name') }}</label>
                                 <input type="text" x-model="form.name"
-                                       class="w-full px-4 py-3 sm:py-3.5 rounded-xl sm:rounded-2xl border bg-surface text-primary text-sm
-                                              focus:outline-none focus:ring-2 transition placeholder-muted-text"
-                                       :class="errors.name
-                                           ? 'border-red-400 focus:ring-red-300/40'
-                                           : 'border-border focus:ring-[#0a6286]/40 focus:border-[#0a6286]'"
+                                       class="w-full px-4 py-3 sm:py-3.5 rounded-xl sm:rounded-2xl text-sm focus:outline-none focus:ring-2 transition"
+                                       style="background:#f9fafb;color:#111827;border:1px solid #e5e7eb"
+                                       :style="errors.name ? 'border-color:#f87171' : ''"
                                        placeholder="{{ __('app.fundraising_name_placeholder') }}"
                                        @keyup.enter="$refs.phoneInput.focus()">
                                 <p x-show="errors.name" x-text="errors.name" class="mt-1 text-xs text-red-500"></p>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-primary mb-1.5">{{ __('app.phone') }}</label>
+                                <label class="block text-sm font-medium mb-1.5" style="color:#111827">{{ __('app.phone') }}</label>
                                 <input type="tel" x-model="form.phone" x-ref="phoneInput"
                                        inputmode="tel" autocomplete="tel"
-                                       class="w-full px-4 py-3 sm:py-3.5 rounded-xl sm:rounded-2xl border bg-surface text-primary text-sm
-                                              focus:outline-none focus:ring-2 transition placeholder-muted-text"
-                                       :class="errors.phone
-                                           ? 'border-red-400 focus:ring-red-300/40'
-                                           : 'border-border focus:ring-[#0a6286]/40 focus:border-[#0a6286]'"
+                                       class="w-full px-4 py-3 sm:py-3.5 rounded-xl sm:rounded-2xl text-sm focus:outline-none focus:ring-2 transition"
+                                       style="background:#f9fafb;color:#111827;border:1px solid #e5e7eb"
+                                       :style="errors.phone ? 'border-color:#f87171' : ''"
                                        placeholder="{{ __('app.fundraising_phone_placeholder') }}"
                                        @keyup.enter="submitInterest()">
                                 <p x-show="errors.phone" x-text="errors.phone" class="mt-1 text-xs text-red-500"></p>
@@ -140,8 +127,7 @@
                 <div class="px-5 sm:px-6 pt-3 shrink-0 fund-safe-bottom">
                     <button @click="submitInterest()"
                             :disabled="submitting"
-                            class="w-full py-3.5 sm:py-4 font-bold text-sm text-white rounded-2xl transition active:scale-[0.97]
-                                   disabled:opacity-60 disabled:cursor-not-allowed shadow-lg"
+                            class="w-full py-3.5 sm:py-4 font-bold text-sm text-white rounded-2xl transition active:scale-[0.97] disabled:opacity-60 disabled:cursor-not-allowed shadow-lg"
                             style="background:#0a6286">
                         <span x-show="!submitting">{{ __('app.fundraising_submit') }}</span>
                         <span x-show="submitting" class="flex items-center justify-center gap-2">
@@ -155,9 +141,7 @@
                 </div>
             </div>
 
-            {{-- ══════════════════════════════════════════════
-                 STEP 3 — Thank you
-            ══════════════════════════════════════════════ --}}
+            {{-- ═══ STEP 3 — Thank you ═══ --}}
             <div x-show="step === 3"
                  x-transition:enter="transition ease-out duration-250"
                  x-transition:enter-start="opacity-0 scale-95"
@@ -165,13 +149,12 @@
                  x-transition:leave="transition ease-in duration-150"
                  x-transition:leave-start="opacity-100 scale-100"
                  x-transition:leave-end="opacity-0 scale-95"
-                 class="fund-card bg-card rounded-2xl shadow-2xl border border-border
-                        w-full sm:max-w-lg flex flex-col overflow-hidden">
+                 class="fund-card rounded-2xl w-full sm:max-w-lg flex flex-col overflow-hidden"
+                 style="background:#ffffff;color:#111827;border:1px solid #e5e7eb;box-shadow:0 25px 50px -12px rgba(0,0,0,.25)">
 
                 <div class="h-1 w-full shrink-0" style="background:linear-gradient(90deg,#0a6286,#e2ca18)"></div>
 
-                <div class="flex-1 overflow-y-auto overscroll-contain px-5 sm:px-6 min-h-0"
-                     @touchmove.stop>
+                <div class="flex-1 overflow-y-auto overscroll-contain px-5 sm:px-6 min-h-0" @touchmove.stop>
                     <div class="flex flex-col items-center justify-center text-center min-h-full py-8 sm:py-10">
                         <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center mx-auto mb-5 sm:mb-6 shadow-lg"
                              style="background:linear-gradient(135deg,#0a6286,#0d7aa3)">
@@ -179,10 +162,10 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                             </svg>
                         </div>
-                        <h2 class="text-lg sm:text-xl font-extrabold mb-2 text-[#0a6286]">
+                        <h2 class="text-lg sm:text-xl font-extrabold mb-2" style="color:#0a6286">
                             {{ __('app.fundraising_thankyou_title') }}
                         </h2>
-                        <p class="text-[13px] sm:text-sm text-secondary leading-relaxed max-w-[280px] sm:max-w-xs mx-auto">
+                        <p class="text-[13px] sm:text-sm leading-relaxed max-w-[280px] sm:max-w-xs mx-auto" style="color:#4b5563">
                             {{ __('app.fundraising_thankyou_desc') }}
                         </p>
                     </div>
@@ -190,8 +173,7 @@
 
                 <div class="px-5 sm:px-6 pt-2 space-y-2.5 shrink-0 fund-safe-bottom">
                     <a :href="campaign.donate_url" target="_blank" rel="noopener"
-                       class="flex items-center justify-center gap-2 w-full py-3.5 sm:py-4 font-bold text-sm text-white
-                              rounded-2xl transition active:scale-[0.97] shadow-lg"
+                       class="flex items-center justify-center gap-2 w-full py-3.5 sm:py-4 font-bold text-sm text-white rounded-2xl transition active:scale-[0.97] shadow-lg"
                        style="background:#0a6286">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -200,8 +182,8 @@
                         {{ __('app.fundraising_view_donate_page') }}
                     </a>
                     <button @click="shareLink()"
-                            class="flex items-center justify-center gap-2 w-full py-3 sm:py-3.5 font-semibold text-sm text-primary
-                                   rounded-2xl border border-border hover:bg-muted active:scale-[0.97] transition">
+                            class="flex items-center justify-center gap-2 w-full py-3 sm:py-3.5 font-semibold text-sm rounded-2xl transition active:scale-[0.97]"
+                            style="color:#111827;border:1px solid #e5e7eb">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
@@ -209,7 +191,8 @@
                         <span x-text="shareCopied ? '{{ __('app.link_copied') }}' : '{{ __('app.fundraising_share') }}'"></span>
                     </button>
                     <button @click="open = false"
-                            class="w-full py-2 text-sm text-muted-text hover:text-primary transition">
+                            class="w-full py-2 text-sm transition"
+                            style="color:#6b7280">
                         {{ __('app.close') }}
                     </button>
                 </div>
@@ -222,15 +205,12 @@
 
 @push('scripts')
 <style>
-/* ── Body scroll lock when modal is open ── */
 body.fund-body-lock {
     overflow: hidden !important;
     position: fixed !important;
     inset: 0 !important;
     width: 100% !important;
 }
-
-/* ── Full-screen overlay — above everything, forced light theme ── */
 .fund-overlay {
     position: fixed;
     inset: 0;
@@ -244,50 +224,22 @@ body.fund-body-lock {
     -webkit-backdrop-filter: blur(8px);
     overscroll-behavior: contain;
     touch-action: none;
-
-    /* Force light theme inside the modal */
-    --app-surface: #f9fafb;
-    --app-card: #ffffff;
-    --app-muted: #f3f4f6;
-    --app-primary: #111827;
-    --app-secondary: #4b5563;
-    --app-muted-text: #6b7280;
-    --app-border: #e5e7eb;
-    --app-border-muted: #f3f4f6;
-    color-scheme: light;
 }
-
-/* ── Card sizing ── */
 .fund-card {
     max-height: calc(100vh - 2rem);
     max-height: calc(100dvh - 2rem);
 }
 @media (min-width: 640px) {
-    .fund-card {
-        max-height: 88vh;
-        max-height: 88dvh;
-    }
+    .fund-card { max-height: 88vh; max-height: 88dvh; }
 }
+.fund-video { aspect-ratio: 16 / 9; }
+.fund-safe-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
 
-/* ── Video: 16:9 ── */
-.fund-video {
-    aspect-ratio: 16 / 9;
-}
-
-/* ── Safe area bottom padding ── */
-.fund-safe-bottom {
-    padding-bottom: max(1rem, env(safe-area-inset-bottom));
-}
-
-/* ── CTA pulse ── */
 @keyframes fund-pulse {
     0%, 100% { box-shadow: 0 0 0 0 rgba(10,98,134,0.55), 0 4px 14px rgba(10,98,134,0.30); }
     50%       { box-shadow: 0 0 0 10px rgba(10,98,134,0), 0 4px 14px rgba(10,98,134,0.10); }
 }
-.fund-cta-btn {
-    animation: fund-pulse 2.2s ease-in-out infinite;
-    transition: transform 0.1s, box-shadow 0.1s;
-}
+.fund-cta-btn { animation: fund-pulse 2.2s ease-in-out infinite; transition: transform 0.1s, box-shadow 0.1s; }
 .fund-cta-btn:active { animation: none; }
 
 @keyframes fund-shimmer {
