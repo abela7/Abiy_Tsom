@@ -683,6 +683,7 @@ return [
     'group_calendar' => 'ቀጠሮ',
     'group_progress' => 'ሂደት',
     'group_settings' => 'ቅንብሮች',
+    'group_telegram_bot' => 'Telegram Bot Messages',
     'group_general' => 'አጠቃላይ (አስቀምጥ፣ ሰርዝ፣ ወዘተ)',
     'group_admin_login' => 'መግቢያ',
     'group_admin_dashboard' => 'ዋና ማያ',
