@@ -51,7 +51,7 @@ class TranslationSeeder extends Seeder
                 'wizard_lang_english', 'wizard_lang_amharic',
                 'wizard_time_title', 'wizard_time_subtitle', 'wizard_time_help',
                 'wizard_error',
-                'wizard_whatsapp_sent_title', 'wizard_open_whatsapp', 'wizard_continue',
+                'wizard_whatsapp_sent_title', 'wizard_open_whatsapp', 'wizard_continue', 'wizard_whatsapp_waiting',
                 'whatsapp_confirmation_prompt_message', 'whatsapp_invalid_reply_message',
                 'whatsapp_confirmation_pending_notice', 'whatsapp_confirmation_send_failed_notice',
                 'whatsapp_confirmation_activated_message', 'whatsapp_confirmation_go_back_message',

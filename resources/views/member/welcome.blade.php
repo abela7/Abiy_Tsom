@@ -281,10 +281,11 @@
                     {{ __('app.wizard_open_whatsapp') }}
                 </a>
 
-                <button @click="dismissWhatsAppModal()"
-                        class="w-full py-3 bg-muted/80 hover:bg-muted text-secondary rounded-xl font-semibold text-base active:scale-[0.98] transition-all duration-150 border border-border">
-                    {{ __('app.wizard_continue') }}
-                </button>
+                {{-- Waiting indicator — shown while polling for confirmation --}}
+                <div class="flex items-center justify-center gap-2 py-2 text-sm text-muted-text">
+                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse shrink-0"></span>
+                    <span>{{ __('app.wizard_whatsapp_waiting') }}</span>
+                </div>
             </div>
         </div>
     </div>
@@ -317,6 +318,8 @@ function onboarding() {
         modalMessage: '',
         modalPhone: '',
         pendingRedirect: '',
+        _pollInterval: null,
+        _visibilityHandler: null,
 
         normalizeUkPhone(raw) {
             if (!raw || typeof raw !== 'string') return null;
@@ -381,6 +384,7 @@ function onboarding() {
                             this.modalPhone = data.member.whatsapp_phone || '';
                             this.showWhatsAppModal = true;
                             this.isLoading = false;
+                            this.startConfirmationPolling();
                         } else {
                             window.location.href = redirect;
                         }
@@ -395,7 +399,45 @@ function onboarding() {
                 });
         },
 
+        startConfirmationPolling() {
+            this.stopConfirmationPolling();
+
+            // Check immediately when the user returns to this tab from WhatsApp.
+            this._visibilityHandler = () => {
+                if (!document.hidden) this.checkConfirmationStatus();
+            };
+            document.addEventListener('visibilitychange', this._visibilityHandler);
+
+            // Also poll every 4 seconds as a fallback.
+            this._pollInterval = setInterval(() => this.checkConfirmationStatus(), 4000);
+        },
+
+        stopConfirmationPolling() {
+            if (this._pollInterval) {
+                clearInterval(this._pollInterval);
+                this._pollInterval = null;
+            }
+            if (this._visibilityHandler) {
+                document.removeEventListener('visibilitychange', this._visibilityHandler);
+                this._visibilityHandler = null;
+            }
+        },
+
+        checkConfirmationStatus() {
+            AbiyTsom.api('/member/identify', {})
+                .then(data => {
+                    if (!data.success) return;
+                    const status = data.member.whatsapp_confirmation_status;
+                    if (status === 'confirmed' || status === 'rejected') {
+                        this.stopConfirmationPolling();
+                        this.dismissWhatsAppModal();
+                    }
+                })
+                .catch(() => {});
+        },
+
         dismissWhatsAppModal() {
+            this.stopConfirmationPolling();
             this.showWhatsAppModal = false;
             window.location.href = this.pendingRedirect;
         }

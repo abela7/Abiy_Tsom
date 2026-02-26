@@ -270,6 +270,7 @@ return [
     'wizard_whatsapp_sent_title' => 'Check Your WhatsApp',
     'wizard_open_whatsapp' => 'Open WhatsApp',
     'wizard_continue' => 'Continue',
+    'wizard_whatsapp_waiting' => 'Waiting for your reply...',
     'whatsapp_confirmation_send_failed_notice' => 'Could not send confirmation right now. Please try again later from Settings.',
     'whatsapp_confirmation_activated_message' => 'Great! Your daily WhatsApp reminders are now activated.',
     'whatsapp_confirmation_go_back_message' => "You can now go back to the website using the following link:\n:url\n\nAlternatively, you can access all the contents easily through our Telegram bot:\n:telegram_url",
