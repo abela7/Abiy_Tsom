@@ -53,7 +53,7 @@
 
                     {{-- Text --}}
                     <div class="px-5 sm:px-6 pt-3 pb-5">
-                        <h2 class="text-base sm:text-lg font-extrabold leading-snug mb-2 text-[#0a6286] dark:text-[#e2ca18]"
+                        <h2 class="text-base sm:text-lg font-extrabold leading-snug mb-2 text-[#e2ca18]"
                             x-text="campaign.title"></h2>
                         <p class="text-[13px] sm:text-sm text-secondary leading-relaxed"
                            x-text="campaign.description"></p>
