@@ -52,6 +52,7 @@ class TranslationSeeder extends Seeder
                 'wizard_time_title', 'wizard_time_subtitle', 'wizard_time_help',
                 'wizard_error',
                 'wizard_whatsapp_sent_title', 'wizard_open_whatsapp', 'wizard_continue',
+                'whatsapp_confirmation_prompt_message',
                 'loading', 'language', 'lang_en', 'lang_am',
                 'footer_branding',
             ],
@@ -285,6 +286,9 @@ class TranslationSeeder extends Seeder
         foreach ($allStrings as $key => $enValue) {
             $group = $keyToGroup[$key] ?? $this->inferGroup($key);
             $amValue = isset($am[$key]) ? (string) $am[$key] : '';
+
+            // Remove stale records if this key was previously in a different group.
+            Translation::where('key', $key)->where('group', '!=', $group)->delete();
 
             // English: create or update from file
             Translation::updateOrCreate(
