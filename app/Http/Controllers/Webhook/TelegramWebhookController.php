@@ -499,12 +499,12 @@ class TelegramWebhookController extends Controller
             app()->setLocale($newLocale);
             Translation::loadFromDb($newLocale);
 
-            return $this->replyAfterDelete(
+            return $this->replyOrEdit(
                 $telegramService,
                 $chatId,
-                $messageId,
                 __('app.telegram_start_welcome'),
-                $this->startChoiceKeyboard()
+                $this->startChoiceKeyboard(),
+                $messageId
             );
         }
 
