@@ -207,6 +207,8 @@ return [
     'custom_activity_placeholder' => 'e.g. Extra prayer, Read Bible',
     'custom_activity_added' => 'Activity added!',
     'custom_activity_deleted' => 'Activity removed.',
+    'custom_activity_updated' => 'Activity renamed!',
+    'confirm_delete_custom_activity' => 'Remove this activity? All its history will be deleted.',
     'no_custom_activities' => 'No custom activities yet. Add one above.',
     // Day page: add activity form (member/day checklist section)
     'add_activity_day_btn' => 'Add activity',

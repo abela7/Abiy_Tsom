@@ -212,6 +212,8 @@ return [
     // Day page: add activity form (member/day checklist section)
     'add_activity_day_btn' => 'እንቅስቃሴ ጨምር',
     'custom_activity_deleted' => 'እንቅስቃሴ ተሰርዟል።',
+    'custom_activity_updated' => 'Activity renamed!',
+    'confirm_delete_custom_activity' => 'Remove this activity? All its history will be deleted.',
     'no_custom_activities' => 'ገና ብጁ እንቅስቃሴዎች የሉም። ከላይ ይጨምሩ።',
     'add' => 'ጨምር',
     'language' => 'ቋንቋ',

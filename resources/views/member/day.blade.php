@@ -341,13 +341,59 @@
                 </label>
             @endforeach
             <template x-for="activity in customActivities" :key="activity.id">
-                <label class="flex items-center gap-3 p-3.5 rounded-xl cursor-pointer transition-all duration-200"
-                       :class="customChecklistCompleted[activity.id] ? 'bg-success-bg/50 border border-success/30' : 'bg-muted hover:bg-border border border-transparent'">
-                    <input type="checkbox" :checked="customChecklistCompleted[activity.id]"
-                           @change="toggleCustomChecklist({{ $daily->id }}, activity.id, $event.target.checked); customChecklistCompleted[activity.id] = $event.target.checked; $dispatch('checklist-updated')"
-                           class="w-5 h-5 rounded-md border-2 border-border accent-success focus:ring-2 focus:ring-success focus:ring-offset-0">
-                    <span class="text-sm font-semibold block min-w-0 truncate" :class="customChecklistCompleted[activity.id] ? 'line-through text-muted-text' : 'text-primary'" x-text="activity.name"></span>
-                </label>
+                <div class="group flex items-center gap-2 p-3.5 rounded-xl transition-all duration-200"
+                     :class="customChecklistCompleted[activity.id] ? 'bg-success-bg/50 border border-success/30' : 'bg-muted hover:bg-border border border-transparent'"
+                     x-data="{ editing: false, editName: activity.name }">
+
+                    {{-- Normal view --}}
+                    <template x-if="!editing">
+                        <label class="flex items-center gap-3 flex-1 min-w-0 cursor-pointer">
+                            <input type="checkbox" :checked="customChecklistCompleted[activity.id]"
+                                   @change="toggleCustomChecklist({{ $daily->id }}, activity.id, $event.target.checked); customChecklistCompleted[activity.id] = $event.target.checked; $dispatch('checklist-updated')"
+                                   class="w-5 h-5 shrink-0 rounded-md border-2 border-border accent-success focus:ring-2 focus:ring-success focus:ring-offset-0">
+                            <span class="text-sm font-semibold block min-w-0 truncate"
+                                  :class="customChecklistCompleted[activity.id] ? 'line-through text-muted-text' : 'text-primary'"
+                                  x-text="activity.name"></span>
+                        </label>
+                    </template>
+
+                    {{-- Edit view --}}
+                    <template x-if="editing">
+                        <form class="flex items-center gap-2 flex-1 min-w-0"
+                              @submit.prevent="renameActivity(activity, editName).then(ok => { if(ok) editing = false; })">
+                            <input type="text" x-model="editName" maxlength="255"
+                                   x-ref="editInput"
+                                   class="flex-1 min-w-0 px-3 py-1.5 border border-accent rounded-lg bg-surface text-primary text-sm outline-none focus:ring-2 focus:ring-accent"
+                                   @keyup.escape="editing = false; editName = activity.name">
+                            <button type="submit" class="shrink-0 p-1.5 rounded-lg bg-accent text-on-accent transition hover:opacity-80" :disabled="!editName.trim()">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            </button>
+                            <button type="button" @click="editing = false; editName = activity.name" class="shrink-0 p-1.5 rounded-lg bg-muted text-muted-text transition hover:bg-border">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </button>
+                        </form>
+                    </template>
+
+                    {{-- Action buttons (visible on hover / always on mobile) --}}
+                    <div x-show="!editing" class="flex items-center gap-1 shrink-0 opacity-60 sm:opacity-0 sm:group-hover:opacity-60 transition-opacity">
+                        <button type="button"
+                                @click.stop="editing = true; $nextTick(() => { if($refs.editInput) $refs.editInput.focus(); })"
+                                class="p-1.5 rounded-lg hover:bg-border transition touch-manipulation"
+                                :title="'{{ __('app.edit') }}'">
+                            <svg class="w-4 h-4 text-muted-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                            </svg>
+                        </button>
+                        <button type="button"
+                                @click.stop="deleteActivity(activity)"
+                                class="p-1.5 rounded-lg hover:bg-error/10 transition touch-manipulation"
+                                :title="'{{ __('app.delete') }}'">
+                            <svg class="w-4 h-4 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
             </template>
         </div>
         @if($member)
@@ -454,6 +500,45 @@ function dayPage() {
                 member_custom_activity_id: customActivityId,
                 completed: completed,
             });
+        },
+
+        async renameActivity(activity, newName) {
+            newName = newName.trim();
+            if (!newName || newName === activity.name) return false;
+            try {
+                const data = await AbiyTsom.api('/api/member/custom-activities/update', {
+                    id: activity.id,
+                    name: newName,
+                });
+                if (data.success) {
+                    activity.name = data.activity.name;
+                    this.addActivityMsg = '{{ __("app.custom_activity_updated") }}';
+                    this.addActivityMsgError = false;
+                    setTimeout(() => { this.addActivityMsg = ''; }, 3000);
+                    return true;
+                }
+            } catch (_e) { /* ignore */ }
+            this.addActivityMsg = '{{ __("app.failed_to_add") }}';
+            this.addActivityMsgError = true;
+            setTimeout(() => { this.addActivityMsg = ''; }, 3000);
+            return false;
+        },
+
+        async deleteActivity(activity) {
+            if (!confirm('{{ __("app.confirm_delete_custom_activity") }}')) return;
+            try {
+                const data = await AbiyTsom.api('/api/member/custom-activities/delete', {
+                    id: activity.id,
+                });
+                if (data.success) {
+                    this.customActivities = this.customActivities.filter(a => a.id !== activity.id);
+                    delete this.customChecklistCompleted[activity.id];
+                    this.$dispatch('checklist-updated');
+                    this.addActivityMsg = '{{ __("app.custom_activity_deleted") }}';
+                    this.addActivityMsgError = false;
+                    setTimeout(() => { this.addActivityMsg = ''; }, 3000);
+                }
+            } catch (_e) { /* ignore */ }
         },
 
         async addActivity() {

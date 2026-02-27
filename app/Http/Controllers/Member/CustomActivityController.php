@@ -42,6 +42,35 @@ class CustomActivityController extends Controller
     }
 
     /**
+     * Rename a custom activity. Must belong to the member.
+     */
+    public function update(Request $request): JsonResponse
+    {
+        $request->validate([
+            'id' => ['required', 'integer', 'exists:member_custom_activities,id'],
+            'name' => ['required', 'string', 'max:255'],
+        ]);
+
+        /** @var \App\Models\Member $member */
+        $member = $request->attributes->get('member');
+
+        $activity = MemberCustomActivity::where('id', $request->input('id'))
+            ->where('member_id', $member->id)
+            ->first();
+
+        if (! $activity) {
+            return response()->json(['success' => false, 'message' => 'Custom activity not found or does not belong to you.'], 404);
+        }
+
+        $activity->update(['name' => $request->input('name')]);
+
+        return response()->json([
+            'success' => true,
+            'activity' => $activity->fresh(),
+        ]);
+    }
+
+    /**
      * Delete a custom activity. Must belong to the member.
      */
     public function destroy(Request $request): JsonResponse

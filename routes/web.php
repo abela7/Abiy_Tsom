@@ -76,6 +76,7 @@ Route::prefix('api/member')->middleware('api.member')->name('api.member.')->grou
     Route::post('/checklist/custom-toggle', [Member\CustomActivityController::class, 'toggle'])->name('checklist.custom-toggle');
     Route::post('/settings', [Member\SettingsController::class, 'update'])->name('settings.update');
     Route::post('/custom-activities', [Member\CustomActivityController::class, 'store'])->name('custom-activities.store');
+    Route::post('/custom-activities/update', [Member\CustomActivityController::class, 'update'])->name('custom-activities.update');
     Route::post('/custom-activities/delete', [Member\CustomActivityController::class, 'destroy'])->name('custom-activities.destroy');
     Route::get('/progress/data', [Member\ProgressController::class, 'data'])->name('progress.data');
     Route::get('/data/export', [Member\DataController::class, 'export'])->name('data.export');
