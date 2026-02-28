@@ -604,12 +604,17 @@ class TelegramWebhookController extends Controller
         ]];
     }
 
-    private function languageToggleButton(Member $member): array
+    private function languageToggleButton(Member|User $actor): array
     {
-        $locale = $member->locale ?? 'en';
+        // For Members use the saved locale; for staff users use the active locale
+        // (already set by applyLocaleForActor before this point).
+        $locale = $actor instanceof Member
+            ? ($actor->locale ?? 'am')
+            : app()->getLocale();
+
         $targetLocale = $locale === 'en' ? 'am' : 'en';
-        $label = $locale === 'en' ? __('app.telegram_lang_switch_am') : __('app.telegram_lang_switch_en');
-        $callback = $targetLocale === 'en' ? 'lang_en' : 'lang_am';
+        $label        = $locale === 'en' ? __('app.telegram_lang_switch_am') : __('app.telegram_lang_switch_en');
+        $callback     = $targetLocale === 'en' ? 'lang_en' : 'lang_am';
 
         return ['text' => $label, 'callback_data' => $callback];
     }
