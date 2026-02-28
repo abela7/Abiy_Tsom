@@ -54,8 +54,12 @@
                 <div>
                     <label class="block text-sm font-medium text-primary mb-1.5">{{ __('app.banner_image') }}</label>
                     @if($editing?->image)
-                        <div class="mb-2">
+                        <div class="mb-2 flex items-end gap-3">
                             <img src="{{ $editing->imageUrl() }}" alt="" class="h-24 rounded-xl object-cover">
+                            <label class="inline-flex items-center gap-2 text-sm text-red-500 hover:text-red-600 cursor-pointer">
+                                <input type="checkbox" name="remove_image" value="1" class="rounded border-border text-red-500 focus:ring-red-400">
+                                {{ __('app.remove') }}
+                            </label>
                         </div>
                     @endif
                     <input type="file" name="image" accept="image/*"

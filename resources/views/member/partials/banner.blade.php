@@ -10,10 +10,10 @@
 
             {{-- Banner image --}}
             @if($banner->imageUrl())
-            <div class="aspect-[16/9] overflow-hidden">
+            <div class="overflow-hidden">
                 <img src="{{ $banner->imageUrl() }}"
                      alt="{{ $banner->localizedTitle() }}"
-                     class="w-full h-full object-cover">
+                     class="w-full h-auto block">
             </div>
             @endif
 

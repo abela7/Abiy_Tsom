@@ -74,7 +74,12 @@ class BannerController extends Controller
         $data['is_active'] = $request->boolean('is_active');
         $data['sort_order'] = (int) ($data['sort_order'] ?? 0);
 
-        if ($request->hasFile('image')) {
+        if ($request->boolean('remove_image')) {
+            if ($banner->image) {
+                Storage::disk('public')->delete($banner->image);
+            }
+            $data['image'] = null;
+        } elseif ($request->hasFile('image')) {
             if ($banner->image) {
                 Storage::disk('public')->delete($banner->image);
             }
