@@ -177,6 +177,18 @@ class TranslationSeeder extends Seeder
                 'telegram_link_heading',
                 'telegram_link_intro',
                 'telegram_link_enter_username',
+                // Dual-role choice
+                'telegram_link_choose_role',
+                'telegram_link_as_member',
+                // Unregistered phone → WhatsApp reminder subscription
+                'telegram_link_not_registered',
+                'telegram_subscribe_yes',
+                'telegram_subscribe_no',
+                'telegram_subscribe_ask_name',
+                'telegram_subscribe_ask_time',
+                'telegram_subscribe_invalid_time',
+                'telegram_subscribe_success',
+                'telegram_subscribe_cancelled',
             ],
             'general' => [
                 'loading', 'save', 'cancel', 'edit', 'delete', 'create', 'back',

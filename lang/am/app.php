@@ -982,4 +982,18 @@ return [
     'telegram_link_heading' => 'አካውንትዎን ያያይዙ',
     'telegram_link_intro' => 'አካውንትዎን ለማያያዝ ስልክ ቁጥርዎን ያስገቡ።',
     'telegram_link_start' => 'ማያያዝ ይጀምሩ',
+
+    // Telegram — dual-role account choice
+    'telegram_link_choose_role' => 'ይህ ቁጥር ከብዙ አካውንቶች ጋር ተያይዟል። በየትኛው ለመግባት ይፈልጋሉ?',
+    'telegram_link_as_member'   => 'ተራ አባል',
+
+    // Telegram — unregistered phone → WhatsApp reminder subscription
+    'telegram_link_not_registered'    => 'ቁጥርዎ ከእኛ ስርዓት ጋር አልተያያዘም። ዕለታዊ ዋትስአፕ ማስታወሻ ለመቀበል ይፈልጋሉ?',
+    'telegram_subscribe_yes'          => '✅ አዎ፣ ማስታወሻ ጀምር',
+    'telegram_subscribe_no'           => '❌ አይ፣ አመሰግናለሁ',
+    'telegram_subscribe_ask_name'     => 'ጎበዝ! ስምዎ ማነው?',
+    'telegram_subscribe_ask_time'     => "ዕለታዊ ማስታወሻ ለምን ሰዓት ይፈልጋሉ?\n\n24ሰዓት ቅርጸት ይጠቀሙ (ለምሳሌ 09:00 ወይም 18:30).\n\nበማንኛውም ሰዓት ማስቆም ወይም መቀየር ይቻላል።",
+    'telegram_subscribe_invalid_time' => 'እባክዎ ትክክለኛ ሰዓት ያስገቡ (24ሰዓት ቅርጸት፣ ለምሳሌ 09:00 ወይም 18:30)።',
+    'telegram_subscribe_success'      => "✅ ተሳክቷል! ዕለታዊ ዋትስአፕ ማስታወሻ በ :time ይደርስዎታል።\n\nዋትስአፕዎን ይፈትሹ — የማረጋገጫ መልዕክት ልከናል። YES ብለው ሲመልሱ ማስታወሻ ይጀምራል።",
+    'telegram_subscribe_cancelled'    => 'ምንም ችግር የለም! ሊመዘገቡ ሲፈልጉ ይህን ድረ-ገጽ ይጎብኙ: :url',
 ];

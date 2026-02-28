@@ -1002,4 +1002,18 @@ return [
     'telegram_link_intro' => 'Enter your phone number to link your account.',
     'telegram_link_enter_username' => 'Please type your phone number:',
     'telegram_link_start' => 'Start Linking',
+
+    // Telegram — dual-role account choice
+    'telegram_link_choose_role' => 'This number is linked to multiple accounts. Which one would you like to log in as?',
+    'telegram_link_as_member'   => 'Regular Member',
+
+    // Telegram — unregistered phone → WhatsApp reminder subscription
+    'telegram_link_not_registered'    => "Your number isn't linked to our system. Would you like to sign up for daily WhatsApp reminders?",
+    'telegram_subscribe_yes'          => '✅ Yes, set up reminders',
+    'telegram_subscribe_no'           => '❌ No thanks',
+    'telegram_subscribe_ask_name'     => "Great! What's your name?",
+    'telegram_subscribe_ask_time'     => "What time would you like your daily reminder?\n\nEnter in 24hr format (e.g. 09:00 or 18:30).\n\nYou can change or turn this off at any time.",
+    'telegram_subscribe_invalid_time' => "Please enter a valid time in 24hr format (e.g. 09:00 or 18:30).",
+    'telegram_subscribe_success'      => "✅ You're all set! You'll receive a daily WhatsApp reminder at :time.\n\nCheck your WhatsApp — we've sent you a confirmation message. Reply YES to activate your reminders.",
+    'telegram_subscribe_cancelled'    => "No problem! You can register at any time: :url",
 ];

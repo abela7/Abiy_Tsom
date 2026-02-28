@@ -25,6 +25,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 /**
  * Telegram bot webhook entry point.
@@ -172,6 +173,22 @@ class TelegramWebhookController extends Controller
             return $this->handleLinkMemberWhatsapp($chatId, $messageId, $telegramService);
         }
 
+        if ($action === 'link_role_member') {
+            return $this->handleLinkRoleChoice('member', $chatId, $messageId, $telegramService);
+        }
+
+        if ($action === 'link_role_admin') {
+            return $this->handleLinkRoleChoice('admin', $chatId, $messageId, $telegramService);
+        }
+
+        if ($action === 'subscribe_wa_yes') {
+            return $this->handleSubscribeWaYes($chatId, $messageId, $telegramService);
+        }
+
+        if ($action === 'subscribe_wa_no') {
+            return $this->handleSubscribeWaNo($chatId, $messageId, $telegramService);
+        }
+
         return match ($action) {
             'have_account' => $this->handleHaveAccount($chatId, $messageId, $telegramService),
             'start_over' => $this->handleStartOver($chatId, $messageId, $telegramService),
@@ -201,15 +218,14 @@ class TelegramWebhookController extends Controller
         if ($activeState !== null) {
             // Universal cancel keyword
             if ($normalized === 'cancel') {
+                $action = $activeState->action;
                 $activeState->clear();
 
-                return $this->reply(
-                    $telegramService,
-                    $chatId,
-                    $activeState->action === 'link_admin'
-                        ? __('app.telegram_link_cancelled')
-                        : __('app.telegram_suggest_cancelled')
-                );
+                $cancelMsg = in_array($action, ['link_admin', 'link_member', 'subscribe_wa'], true)
+                    ? __('app.telegram_link_cancelled')
+                    : __('app.telegram_suggest_cancelled');
+
+                return $this->reply($telegramService, $chatId, $cancelMsg);
             }
 
             if ($activeState->action === 'link_admin') {
@@ -218,6 +234,10 @@ class TelegramWebhookController extends Controller
 
             if ($activeState->action === 'link_member') {
                 return $this->handleLinkMemberText($chatId, $text, $activeState, $telegramService);
+            }
+
+            if ($activeState->action === 'subscribe_wa') {
+                return $this->handleSubscribeWaText($chatId, $text, $activeState, $telegramService);
             }
 
             if ($activeState->action === 'suggest') {
@@ -687,13 +707,27 @@ class TelegramWebhookController extends Controller
         return match ($state->step) {
             'ask_phone' => $this->handleLinkMemberPhone($chatId, $text, $state, $telegramService),
             'verify_code' => $this->handleLinkMemberCode($chatId, $text, $state, $telegramService),
+            // Re-show the role choice if the user types instead of tapping a button
+            'choose_role' => $this->reply(
+                $telegramService,
+                $chatId,
+                __('app.telegram_link_choose_role'),
+                $this->linkRoleChoiceKeyboard((string) $state->get('role', 'editor'))
+            ),
+            // Re-show the subscribe offer if the user types instead of tapping a button
+            'not_found_offer' => $this->reply(
+                $telegramService,
+                $chatId,
+                __('app.telegram_link_not_registered'),
+                $this->subscribeOrNotKeyboard()
+            ),
             default => response()->json(['success' => true]),
         };
     }
 
     /**
-     * Validates the member's phone number, sends a WhatsApp verification code,
-     * and advances the wizard to the verify_code step.
+     * Validates the member's phone, checks both members and users tables,
+     * and either sends a code, offers a role choice, or offers reminder signup.
      */
     private function handleLinkMemberPhone(
         string $chatId,
@@ -704,63 +738,92 @@ class TelegramWebhookController extends Controller
         $normalized = normalizeUkWhatsAppPhone(trim($input));
 
         if ($normalized === null) {
-            return $this->reply(
-                $telegramService,
-                $chatId,
-                __('app.telegram_link_phone_not_found')
-            );
+            return $this->reply($telegramService, $chatId, __('app.telegram_link_phone_not_found'));
         }
 
         $member = Member::query()->where('whatsapp_phone', $normalized)->first();
+        $user   = User::query()->where('whatsapp_phone', $normalized)->first();
 
-        if (! $member instanceof Member) {
-            return $this->reply(
-                $telegramService,
-                $chatId,
-                __('app.telegram_link_phone_not_found')
-            );
-        }
-
-        if (! $member->whatsapp_phone) {
-            $state->clear();
+        // Number not in either table — offer WhatsApp reminder signup
+        if (! $member instanceof Member && ! $user instanceof User) {
+            $state->advance('not_found_offer', ['phone' => $normalized]);
 
             return $this->reply(
                 $telegramService,
                 $chatId,
-                __('app.telegram_link_no_whatsapp_member')
+                __('app.telegram_link_not_registered'),
+                $this->subscribeOrNotKeyboard()
             );
         }
 
+        // Number linked to BOTH a member account AND a staff account — offer choice
+        if ($member instanceof Member && $user instanceof User) {
+            $state->advance('choose_role', [
+                'member_id' => $member->id,
+                'user_id'   => $user->id,
+                'phone'     => $normalized,
+                'role'      => $user->role,
+            ]);
+
+            return $this->reply(
+                $telegramService,
+                $chatId,
+                __('app.telegram_link_choose_role'),
+                $this->linkRoleChoiceKeyboard($user->role)
+            );
+        }
+
+        // Staff (admin/editor/writer) account only — send code directly
+        if ($user instanceof User) {
+            return $this->sendLinkCode($chatId, $user->whatsapp_phone, 'user', $user->id, $state, $telegramService);
+        }
+
+        // Member account only — send code directly
+        return $this->sendLinkCode($chatId, $normalized, 'member', $member->id, $state, $telegramService);
+    }
+
+    /**
+     * Generates and sends a 6-digit WhatsApp verification code,
+     * then advances the wizard to the verify_code step.
+     */
+    private function sendLinkCode(
+        string $chatId,
+        string $phone,
+        string $linkType,
+        int $actorId,
+        TelegramBotState $state,
+        TelegramService $telegramService
+    ): JsonResponse {
         $code = (string) random_int(100000, 999999);
 
         $sent = $this->ultraMsg->sendTextMessage(
-            $normalized,
+            $phone,
             "Your Abiy Tsom Telegram link code is: *{$code}*\n\nIt expires in 10 minutes. Do not share it."
         );
 
         if (! $sent) {
-            return $this->reply(
-                $telegramService,
-                $chatId,
-                __('app.telegram_link_whatsapp_failed')
-            );
+            return $this->reply($telegramService, $chatId, __('app.telegram_link_whatsapp_failed'));
         }
 
+        $idKey = $linkType === 'user' ? 'user_id' : 'member_id';
         $state->advance('verify_code', [
-            'member_id' => $member->id,
-            'code' => $code,
+            'link_type'      => $linkType,
+            $idKey           => $actorId,
+            'code'           => $code,
             'code_expires_at' => now()->addMinutes(10)->toIso8601String(),
         ]);
 
         return $this->reply(
             $telegramService,
             $chatId,
-            __('app.telegram_link_member_code_sent')
+            $linkType === 'user'
+                ? __('app.telegram_link_code_sent')
+                : __('app.telegram_link_member_code_sent')
         );
     }
 
     /**
-     * Validates the 6-digit code, links the member's Telegram account, and shows the main menu.
+     * Validates the 6-digit code, links the account (member or staff user), and shows the main menu.
      */
     private function handleLinkMemberCode(
         string $chatId,
@@ -768,29 +831,47 @@ class TelegramWebhookController extends Controller
         TelegramBotState $state,
         TelegramService $telegramService
     ): JsonResponse {
-        $expectedCode = (string) $state->get('code', '');
+        $expectedCode  = (string) $state->get('code', '');
         $codeExpiresAt = $state->get('code_expires_at');
-        $memberId = (int) $state->get('member_id', 0);
+        $linkType      = (string) $state->get('link_type', 'member');
 
         if ($codeExpiresAt && now()->isAfter($codeExpiresAt)) {
             $state->clear();
 
-            return $this->reply(
-                $telegramService,
-                $chatId,
-                __('app.telegram_link_wrong_code')
-            );
+            return $this->reply($telegramService, $chatId, __('app.telegram_link_wrong_code'));
         }
 
         if (trim($input) !== $expectedCode) {
+            return $this->reply($telegramService, $chatId, __('app.telegram_link_wrong_code'));
+        }
+
+        // Link as staff User (admin / editor / writer)
+        if ($linkType === 'user') {
+            $userId = (int) $state->get('user_id', 0);
+            $user   = User::query()->find($userId);
+
+            if (! $user instanceof User) {
+                $state->clear();
+
+                return $this->reply($telegramService, $chatId, __('app.telegram_link_phone_not_found'));
+            }
+
+            $this->syncTelegramChatId($user, $chatId);
+            $state->clear();
+            $this->applyLocaleForActor($user);
+
             return $this->reply(
                 $telegramService,
                 $chatId,
-                __('app.telegram_link_wrong_code')
+                '✅ '.__('app.telegram_link_success')."\n\n".__('app.telegram_menu_heading'),
+                $this->mainMenuKeyboard($user, app(TelegramAuthService::class))
             );
         }
 
-        $member = Member::query()->find($memberId);
+        // Link as regular Member (default)
+        $memberId = (int) $state->get('member_id', 0);
+        $member   = Member::query()->find($memberId);
+
         if (! $member instanceof Member) {
             $state->clear();
 
@@ -799,17 +880,204 @@ class TelegramWebhookController extends Controller
 
         $this->syncTelegramChatId($member, $chatId);
         $state->clear();
-
         $this->applyLocaleForActor($member);
-
-        $keyboard = $this->mainMenuKeyboard($member, app(TelegramAuthService::class));
 
         return $this->reply(
             $telegramService,
             $chatId,
             '✅ '.__('app.telegram_link_success')."\n\n".__('app.telegram_menu_heading'),
-            $keyboard
+            $this->mainMenuKeyboard($member, app(TelegramAuthService::class))
         );
+    }
+
+    /**
+     * Handles the role-choice callback when a phone is linked to both a member and a staff account.
+     * Sends a verification code for the chosen account type.
+     */
+    private function handleLinkRoleChoice(
+        string $choice,
+        string $chatId,
+        int $messageId,
+        TelegramService $telegramService
+    ): JsonResponse {
+        $state = TelegramBotState::getAnyActive($chatId);
+
+        if (! $state || $state->action !== 'link_member' || $state->step !== 'choose_role') {
+            return $this->reply($telegramService, $chatId, __('app.telegram_link_cancelled'));
+        }
+
+        if ($choice === 'member') {
+            $memberId = (int) $state->get('member_id', 0);
+            $member   = Member::query()->find($memberId);
+
+            if (! $member instanceof Member) {
+                $state->clear();
+
+                return $this->reply($telegramService, $chatId, __('app.telegram_link_phone_not_found'));
+            }
+
+            return $this->sendLinkCode($chatId, $member->whatsapp_phone, 'member', $member->id, $state, $telegramService);
+        }
+
+        // Admin / editor / writer
+        $userId = (int) $state->get('user_id', 0);
+        $user   = User::query()->find($userId);
+
+        if (! $user instanceof User) {
+            $state->clear();
+
+            return $this->reply($telegramService, $chatId, __('app.telegram_link_phone_not_found'));
+        }
+
+        return $this->sendLinkCode($chatId, $user->whatsapp_phone, 'user', $user->id, $state, $telegramService);
+    }
+
+    /** Returns the inline keyboard for the dual-role account choice. */
+    private function linkRoleChoiceKeyboard(string $role): array
+    {
+        $roleLabel = match ($role) {
+            'super_admin' => 'Super Admin',
+            'editor'      => 'Editor',
+            'writer'      => 'Writer',
+            default       => ucfirst($role),
+        };
+
+        return ['inline_keyboard' => [
+            [['text' => '👤 '.__('app.telegram_link_as_member'), 'callback_data' => 'link_role_member']],
+            [['text' => '🔧 '.$roleLabel,                        'callback_data' => 'link_role_admin']],
+        ]];
+    }
+
+    /** Returns the inline keyboard for the "subscribe to WhatsApp reminders?" offer. */
+    private function subscribeOrNotKeyboard(): array
+    {
+        return ['inline_keyboard' => [
+            [['text' => __('app.telegram_subscribe_yes'), 'callback_data' => 'subscribe_wa_yes']],
+            [['text' => __('app.telegram_subscribe_no'),  'callback_data' => 'subscribe_wa_no']],
+        ]];
+    }
+
+    // =========================================================================
+    // WhatsApp Reminder Subscription (unregistered phone)
+    // =========================================================================
+
+    /**
+     * User tapped "Yes" on the subscribe offer — clear the link_member state,
+     * start the subscribe_wa wizard, and ask for their name.
+     */
+    private function handleSubscribeWaYes(
+        string $chatId,
+        int $messageId,
+        TelegramService $telegramService
+    ): JsonResponse {
+        $linkState = TelegramBotState::getAnyActive($chatId);
+        $phone     = $linkState ? (string) $linkState->get('phone', '') : '';
+
+        $linkState?->clear();
+
+        if ($phone === '') {
+            return $this->replyOrEdit($telegramService, $chatId, __('app.telegram_link_cancelled'), [], $messageId);
+        }
+
+        TelegramBotState::startFor($chatId, 'subscribe_wa', 'ask_name', ['phone' => $phone]);
+
+        return $this->replyOrEdit($telegramService, $chatId, __('app.telegram_subscribe_ask_name'), [], $messageId);
+    }
+
+    /**
+     * User tapped "No" on the subscribe offer — clear state and show a helpful message.
+     */
+    private function handleSubscribeWaNo(
+        string $chatId,
+        int $messageId,
+        TelegramService $telegramService
+    ): JsonResponse {
+        TelegramBotState::getAnyActive($chatId)?->clear();
+
+        $text = str_replace(':url', url(route('home')), __('app.telegram_subscribe_cancelled'));
+
+        return $this->replyOrEdit($telegramService, $chatId, $text, [], $messageId);
+    }
+
+    /** Routes plain-text input for the subscribe_wa wizard. */
+    private function handleSubscribeWaText(
+        string $chatId,
+        string $text,
+        TelegramBotState $state,
+        TelegramService $telegramService
+    ): JsonResponse {
+        return match ($state->step) {
+            'ask_name' => $this->handleSubscribeWaName($chatId, $text, $state, $telegramService),
+            'ask_time' => $this->handleSubscribeWaTime($chatId, $text, $state, $telegramService),
+            default    => response()->json(['success' => true]),
+        };
+    }
+
+    /** Captures the user's name and advances to the time-selection step. */
+    private function handleSubscribeWaName(
+        string $chatId,
+        string $input,
+        TelegramBotState $state,
+        TelegramService $telegramService
+    ): JsonResponse {
+        $name = trim($input);
+
+        if (mb_strlen($name) < 2 || mb_strlen($name) > 64) {
+            return $this->reply($telegramService, $chatId, __('app.telegram_subscribe_ask_name'));
+        }
+
+        $state->advance('ask_time', ['name' => $name]);
+
+        return $this->reply($telegramService, $chatId, __('app.telegram_subscribe_ask_time'));
+    }
+
+    /**
+     * Validates the 24hr time, creates a minimal member record, links their Telegram,
+     * and sends a WhatsApp opt-in confirmation.
+     */
+    private function handleSubscribeWaTime(
+        string $chatId,
+        string $input,
+        TelegramBotState $state,
+        TelegramService $telegramService
+    ): JsonResponse {
+        $input = trim($input);
+
+        if (! preg_match('/^([01]\d|2[0-3]):([0-5]\d)$/', $input)) {
+            return $this->reply($telegramService, $chatId, __('app.telegram_subscribe_invalid_time'));
+        }
+
+        $phone  = (string) $state->get('phone', '');
+        $name   = (string) $state->get('name', 'Member');
+        $locale = app()->getLocale();
+
+        $member = Member::create([
+            'baptism_name'                       => $name,
+            'token'                              => Str::random(64),
+            'whatsapp_phone'                     => $phone,
+            'whatsapp_reminder_time'             => $input,
+            'whatsapp_reminder_enabled'          => false,
+            'whatsapp_confirmation_status'       => 'pending',
+            'whatsapp_confirmation_requested_at' => now(),
+            'whatsapp_language'                  => $locale,
+            'locale'                             => $locale,
+        ]);
+
+        $this->syncTelegramChatId($member, $chatId);
+        $state->clear();
+
+        // Send WhatsApp opt-in prompt so they confirm via WhatsApp reply YES
+        $this->ultraMsg->sendTextMessage(
+            $phone,
+            trans('app.whatsapp_confirmation_prompt_message', ['name' => $name])
+        );
+
+        $this->applyLocaleForActor($member);
+
+        $successText = str_replace(':time', $input, __('app.telegram_subscribe_success'));
+        $keyboard    = $this->mainMenuKeyboard($member, app(TelegramAuthService::class));
+
+        return $this->reply($telegramService, $chatId, $successText, $keyboard);
     }
 
     private function handleMenu(
