@@ -2697,6 +2697,7 @@ class TelegramWebhookController extends Controller
         }
 
         $rows[] = [['text' => __('app.telegram_bot_unlink'), 'callback_data' => 'unlink']];
+        $rows[] = [$this->languageToggleButton($actor)];
 
         return ['inline_keyboard' => $rows];
     }
