@@ -211,6 +211,17 @@ class TelegramWebhookController extends Controller
         TelegramAuthService $telegramAuthService,
         TelegramService $telegramService
     ): JsonResponse {
+        // Apply locale for every plain-text message, exactly as handleCallbackQuery does,
+        // so wizard responses honour the language the user already selected.
+        $actor = $this->actorFromChatId($chatId);
+        if ($actor instanceof Member || $actor instanceof User) {
+            $this->applyLocaleForActor($actor);
+        } else {
+            $locale = $this->guestLocale($chatId);
+            app()->setLocale($locale);
+            Translation::loadFromDb($locale);
+        }
+
         $normalized = strtolower(trim($text));
 
         // Check for an active wizard state first — wizard input takes priority
