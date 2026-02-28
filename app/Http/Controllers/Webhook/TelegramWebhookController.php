@@ -531,7 +531,7 @@ class TelegramWebhookController extends Controller
         $actor = $this->actorFromChatId($chatId);
 
         // Unlinked guest — persist the choice and redisplay the start screen.
-        if (! $actor instanceof Member) {
+        if (! $actor instanceof Member && ! $actor instanceof User) {
             $currentLocale = $this->guestLocale($chatId);
             $newLocale = match ($action) {
                 'lang_en'     => 'en',
@@ -556,17 +556,30 @@ class TelegramWebhookController extends Controller
             );
         }
 
+        // Linked Member — determine current locale from saved field
+        // Linked User (staff) — determine current locale from stored state
+        $currentLocale = $actor instanceof Member
+            ? ($actor->locale ?? 'am')
+            : $this->guestLocale($chatId);
+
         $newLocale = match ($action) {
-            'lang_en' => 'en',
-            'lang_am' => 'am',
-            'lang_toggle' => ($actor->locale ?? 'en') === 'en' ? 'am' : 'en',
-            default => null,
+            'lang_en'     => 'en',
+            'lang_am'     => 'am',
+            'lang_toggle' => $currentLocale === 'en' ? 'am' : 'en',
+            default       => null,
         };
         if ($newLocale === null) {
             return response()->json(['success' => true]);
         }
 
-        $actor->update(['locale' => $newLocale]);
+        if ($actor instanceof Member) {
+            // Members store locale in their own DB column
+            $actor->update(['locale' => $newLocale]);
+        } else {
+            // Staff users store locale in TelegramBotState (same key as guests)
+            TelegramBotState::storeLocale($chatId, $newLocale);
+        }
+
         $this->applyLocaleForActor($actor);
 
         return $this->replyOrEdit(
@@ -641,11 +654,13 @@ class TelegramWebhookController extends Controller
 
     private function applyLocaleForActor(Member|User $actor): void
     {
-        $locale = 'am';
-        if ($actor instanceof Member && $this->memberHasLocale($actor)) {
-            $locale = $actor->locale;
-        } elseif ($actor instanceof User) {
-            $locale = request()->attributes->get('telegram_language_code', 'am');
+        if ($actor instanceof Member) {
+            $locale = $this->memberHasLocale($actor) ? $actor->locale : 'am';
+        } else {
+            // For staff Users: check if they stored a preference via the language toggle,
+            // then fall back to the Telegram client language.
+            $stored = TelegramBotState::getStoredLocale((string) ($actor->telegram_chat_id ?? ''));
+            $locale = $stored ?? request()->attributes->get('telegram_language_code', 'am');
         }
         app()->setLocale($locale);
         Translation::loadFromDb($locale);
