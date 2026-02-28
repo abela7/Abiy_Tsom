@@ -61,7 +61,8 @@ class FundraisingCampaign extends Model
     }
 
     /**
-     * Extract a YouTube embed URL from any YouTube URL format.
+     * Extract a YouTube embed URL from any YouTube URL format
+     * (regular videos, Shorts, youtu.be links).
      * Returns null if the URL is not a recognisable YouTube link.
      */
     public function youtubeEmbedUrl(): ?string
@@ -77,11 +78,28 @@ class FundraisingCampaign extends Model
             return 'https://www.youtube.com/embed/'.$m[1].'?rel=0';
         }
 
+        // youtube.com/shorts/VIDEO_ID
+        if (preg_match('/youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/', $url, $m)) {
+            return 'https://www.youtube.com/embed/'.$m[1].'?rel=0';
+        }
+
         // youtube.com/watch?v=VIDEO_ID  or  youtube.com/embed/VIDEO_ID
         if (preg_match('/(?:youtube\.com\/(?:watch\?v=|embed\/))([a-zA-Z0-9_-]{11})/', $url, $m)) {
             return 'https://www.youtube.com/embed/'.$m[1].'?rel=0';
         }
 
         return null;
+    }
+
+    /**
+     * Whether the source URL points to a YouTube Short (vertical 9:16).
+     */
+    public function isYoutubeShort(): bool
+    {
+        if (! $this->youtube_url) {
+            return false;
+        }
+
+        return (bool) preg_match('/youtube\.com\/shorts\//', $this->youtube_url);
     }
 }

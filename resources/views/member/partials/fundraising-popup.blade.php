@@ -26,10 +26,19 @@
                  style="background:#ffffff;color:#111827;border:1px solid #e5e7eb;box-shadow:0 25px 50px -12px rgba(0,0,0,.25)">
 
                 <div class="overflow-y-auto flex-1 overscroll-contain min-h-0" @touchmove.stop>
-                    <template x-if="campaign.embed_url">
-                        <div class="fund-video relative w-full bg-black shrink-0">
+                    <template x-if="campaign.embed_url && !campaign.is_short">
+                        <div class="fund-video-landscape relative w-full bg-black shrink-0">
                             <iframe :src="campaign.embed_url"
                                     class="absolute inset-0 w-full h-full"
+                                    frameborder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowfullscreen loading="lazy"></iframe>
+                        </div>
+                    </template>
+                    <template x-if="campaign.embed_url && campaign.is_short">
+                        <div class="fund-video-short mx-auto shrink-0">
+                            <iframe :src="campaign.embed_url"
+                                    class="absolute inset-0 w-full h-full rounded-lg"
                                     frameborder="0"
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                     allowfullscreen loading="lazy"></iframe>
@@ -219,7 +228,20 @@ body.fund-body-lock {
 @media (min-width: 640px) {
     .fund-card { max-height: 88vh; max-height: 88dvh; }
 }
-.fund-video { aspect-ratio: 16 / 9; }
+.fund-video-landscape { aspect-ratio: 16 / 9; position: relative; }
+.fund-video-short {
+    position: relative;
+    width: 65%;
+    aspect-ratio: 9 / 16;
+    max-height: 45dvh;
+    margin: 0.75rem auto;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    background: #000;
+}
+@media (max-width: 639px) {
+    .fund-video-short { width: 55%; max-height: 40dvh; }
+}
 .fund-safe-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
 
 @keyframes fund-pulse {

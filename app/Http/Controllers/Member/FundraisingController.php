@@ -60,6 +60,7 @@ class FundraisingController extends Controller
             'title'       => $campaign->localizedTitle($locale),
             'description' => $campaign->localizedDescription($locale),
             'embed_url'   => $campaign->youtubeEmbedUrl(),
+            'is_short'    => $campaign->isYoutubeShort(),
             'donate_url'  => $campaign->donate_url,
         ]);
     }
