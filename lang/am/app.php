@@ -966,15 +966,20 @@ return [
     'telegram_suggest_no_suggestions' => 'You have not submitted any suggestions yet.',
 
     // Telegram bot — admin account linking via WhatsApp
-    'telegram_link_enter_username' => 'Please type your username:',
+    'telegram_link_via_whatsapp' => 'Get code via WhatsApp',
+    'telegram_link_enter_phone' => 'Enter your registered WhatsApp phone number (e.g. +447911123456):',
+    'telegram_link_phone_not_found' => "No account found with that number. Try again or type 'cancel' to abort.",
+    'telegram_link_member_code_sent' => 'A 6-digit code was sent to your WhatsApp. Enter it here:',
+    'telegram_link_enter_username' => 'Please type your phone number:',
     'telegram_link_code_sent' => 'A 6-digit code has been sent to your WhatsApp. Type it here:',
     'telegram_link_success' => 'አካውንት በተሳካ ተገናኝቷል!',
     'telegram_link_wrong_code' => "Wrong code. Try again or type 'cancel' to abort.",
     'telegram_link_no_whatsapp' => 'No WhatsApp number is on file for your admin account. Contact the super admin.',
+    'telegram_link_no_whatsapp_member' => 'No WhatsApp number is linked to your account. Please use the website method to get a code instead.',
     'telegram_link_user_not_found' => "Username not found. Try again or type 'cancel' to abort.",
     'telegram_link_whatsapp_failed' => 'Could not send WhatsApp code. Please try again later.',
     'telegram_link_cancelled' => 'Linking cancelled.',
     'telegram_link_heading' => 'Link your account',
-    'telegram_link_intro' => 'Enter your username to link your account.',
+    'telegram_link_intro' => 'Enter your phone number to link your account.',
     'telegram_link_start' => 'Start Linking',
 ];
