@@ -263,7 +263,7 @@ function fundraisingPopup() {
                     window.scrollTo(0, scrollY.value);
                 }
             });
-            await new Promise(r => setTimeout(r, 1800));
+            await new Promise(r => setTimeout(r, 5000));
             try {
                 const data = await AbiyTsom.get('/api/member/fundraising/popup');
                 if (data.show) {
