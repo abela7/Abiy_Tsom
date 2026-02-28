@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Member;
 use App\Http\Controllers\Controller;
 use App\Models\Activity;
 use App\Models\Announcement;
+use App\Models\Banner;
 use App\Models\DailyContent;
 use App\Models\LentSeason;
 use App\Models\MemberChecklist;
@@ -54,6 +55,8 @@ class HomeController extends Controller
 
         $announcements = Announcement::orderByDesc('created_at')->get();
 
+        $banners = Banner::active()->orderBy('sort_order')->get();
+
         // View Today target: today's content if in Lent, else recommended day (never crash)
         $viewTodayTarget = $today;
         if (! $viewTodayTarget && $season) {
@@ -72,7 +75,7 @@ class HomeController extends Controller
 
         return view('member.home', compact(
             'member', 'season', 'today', 'weekTheme', 'easterAt', 'lentStartAt', 'easterTimezone', 'announcements',
-            'viewTodayTarget'
+            'banners', 'viewTodayTarget'
         ));
     }
 

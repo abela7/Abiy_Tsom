@@ -1016,4 +1016,30 @@ return [
     'telegram_subscribe_invalid_time' => "Please enter a valid time in 24hr format (e.g. 09:00 or 18:30).",
     'telegram_subscribe_success'      => "✅ You're all set! You'll receive a daily WhatsApp reminder at :time.\n\nCheck your WhatsApp — we've sent you a confirmation message. Reply YES to activate your reminders.",
     'telegram_subscribe_cancelled'    => "No problem! You can register at any time: :url",
+
+    // Banners — member-facing
+    'banner_section_title'      => 'Featured',
+    'banner_interested'         => "I'm Interested",
+    'banner_form_title'         => 'Express Your Interest',
+    'banner_form_desc'          => 'Leave your name and phone number and we will get back to you.',
+    'banner_name_placeholder'   => 'Your name',
+    'banner_phone_placeholder'  => 'Phone number',
+    'banner_name_required'      => 'Name is required.',
+    'banner_phone_required'     => 'Phone number is required.',
+    'banner_submit'             => 'Submit',
+    'banner_thankyou_title'     => 'Thank you!',
+    'banner_thankyou_desc'      => 'We have received your details and will be in touch.',
+
+    // Banners — admin
+    'banner_admin_title'          => 'Banners',
+    'banner_admin_create'         => 'Create Banner',
+    'banner_admin_edit'           => 'Edit Banner',
+    'banner_admin_delete_confirm' => 'Are you sure you want to delete this banner?',
+    'banner_admin_saved'          => 'Banner saved successfully.',
+    'banner_admin_deleted'        => 'Banner deleted.',
+    'banner_admin_responses'      => 'Responses',
+    'banner_admin_active_desc'    => 'Show this banner on the member home page.',
+    'banner_image'                => 'Image',
+    'banner_url_hint'             => 'If set, the button links to this URL instead of opening the contact form.',
+    'group_admin_banners'         => 'Banners',
 ];

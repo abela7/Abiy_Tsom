@@ -295,6 +295,17 @@ class TranslationSeeder extends Seeder
                 'fundraising_clear', 'fundraising_clear_tooltip', 'fundraising_clear_one_confirm',
                 'fundraising_response_cleared', 'fundraising_reset_all', 'fundraising_reset_confirm',
             ],
+            'admin_banners' => [
+                'banner_section_title', 'banner_interested',
+                'banner_form_title', 'banner_form_desc',
+                'banner_name_placeholder', 'banner_phone_placeholder',
+                'banner_name_required', 'banner_phone_required',
+                'banner_submit', 'banner_thankyou_title', 'banner_thankyou_desc',
+                'banner_admin_title', 'banner_admin_create', 'banner_admin_edit',
+                'banner_admin_delete_confirm', 'banner_admin_saved', 'banner_admin_deleted',
+                'banner_admin_responses', 'banner_admin_active_desc',
+                'banner_image', 'banner_url_hint', 'group_admin_banners',
+            ],
             'admin_translations' => [
                 'group_activities',
                 'add_key', 'no_translation_groups', 'group_label', 'key_label',
@@ -305,7 +316,7 @@ class TranslationSeeder extends Seeder
                 'group_onboarding', 'group_wizard', 'group_whatsapp_member', 'group_navigation', 'group_home', 'group_day_content',
                 'group_calendar', 'group_progress', 'group_settings', 'group_telegram_bot', 'group_fundraising_popup', 'group_general',
                 'group_admin_login', 'group_admin_dashboard', 'group_admin_daily',
-                'group_admin_fundraising', 'group_admin_other', 'group_admin_translations',
+                'group_admin_fundraising', 'group_admin_banners', 'group_admin_other', 'group_admin_translations',
             ],
         ];
     }

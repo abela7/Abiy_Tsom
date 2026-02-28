@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php -l app/Models/Banner.php)",
+      "Bash(php -l app/Models/BannerResponse.php)",
+      "Bash(php -l app/Http/Controllers/Admin/BannerController.php)",
+      "Bash(php -l app/Http/Controllers/Member/BannerController.php)",
+      "Bash(php -l database/migrations/2026_02_28_124719_create_banners_table.php)",
+      "Bash(php -l database/migrations/2026_02_28_124723_create_banner_responses_table.php)",
+      "Bash(php -l app/Http/Controllers/Member/HomeController.php)",
+      "Bash(php -l routes/web.php)",
+      "Bash(php -l lang/en/app.php)",
+      "Bash(php -l lang/am/app.php)",
+      "Bash(php -l database/seeders/TranslationSeeder.php)",
+      "Bash(php -l app/Http/Controllers/Admin/TranslationController.php)"
+    ]
+  }
+}

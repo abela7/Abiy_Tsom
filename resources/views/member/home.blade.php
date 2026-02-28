@@ -140,6 +140,9 @@
         </div>
     </div>
 
+    {{-- Banners --}}
+    @include('member.partials.banner', ['banners' => $banners])
+
     {{-- Announcements --}}
     @if($announcements->isNotEmpty())
     <section x-data="announcementDisplay({{ $announcements->count() }})">

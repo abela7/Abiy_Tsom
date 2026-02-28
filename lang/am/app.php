@@ -996,4 +996,30 @@ return [
     'telegram_subscribe_invalid_time' => 'እባክዎ ትክክለኛ ሰዓት ያስገቡ (24ሰዓት ቅርጸት፣ ለምሳሌ 09:00 ወይም 18:30)።',
     'telegram_subscribe_success'      => "✅ ተሳክቷል! ዕለታዊ ዋትስአፕ ማስታወሻ በ :time ይደርስዎታል።\n\nዋትስአፕዎን ይፈትሹ — የማረጋገጫ መልዕክት ልከናል። YES ብለው ሲመልሱ ማስታወሻ ይጀምራል።",
     'telegram_subscribe_cancelled'    => 'ምንም ችግር የለም! ሊመዘገቡ ሲፈልጉ ይህን ድረ-ገጽ ይጎብኙ: :url',
+
+    // Banners — member-facing
+    'banner_section_title'      => 'ተለይተው የቀረቡ',
+    'banner_interested'         => 'ፍላጎት አለኝ',
+    'banner_form_title'         => 'ፍላጎትዎን ይግለጹ',
+    'banner_form_desc'          => 'ስምዎን እና ስልክ ቁጥርዎን ይተዉ እናም እናገኝዎታለን።',
+    'banner_name_placeholder'   => 'ስምዎ',
+    'banner_phone_placeholder'  => 'ስልክ ቁጥር',
+    'banner_name_required'      => 'ስም ያስፈልጋል።',
+    'banner_phone_required'     => 'ስልክ ቁጥር ያስፈልጋል።',
+    'banner_submit'             => 'አስገባ',
+    'banner_thankyou_title'     => 'አመሰግናለሁ!',
+    'banner_thankyou_desc'      => 'ዝርዝርዎን ተቀብለናል፣ በቅርቡ እናገኝዎታለን።',
+
+    // Banners — admin
+    'banner_admin_title'          => 'ባነሮች',
+    'banner_admin_create'         => 'ባነር ፍጠር',
+    'banner_admin_edit'           => 'ባነር አርትዕ',
+    'banner_admin_delete_confirm' => 'ይህን ባነር መሰረዝ ይፈልጋሉ?',
+    'banner_admin_saved'          => 'ባነር በተሳካ ሁኔታ ተቀምጧል።',
+    'banner_admin_deleted'        => 'ባነር ተሰርዟል።',
+    'banner_admin_responses'      => 'ምላሾች',
+    'banner_admin_active_desc'    => 'ይህን ባነር በአባል መነሻ ገጽ ላይ አሳይ።',
+    'banner_image'                => 'ምስል',
+    'banner_url_hint'             => 'ከተቀመጠ ቁልፉ ወደ ይህ URL ይመራል፣ ካልሆነ የግንኙነት ቅፅ ይከፈታል።',
+    'group_admin_banners'         => 'ባነሮች',
 ];

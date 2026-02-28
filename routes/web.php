@@ -87,6 +87,7 @@ Route::prefix('api/member')->middleware('api.member')->name('api.member.')->grou
     Route::get('/fundraising/popup', [Member\FundraisingController::class, 'popup'])->name('fundraising.popup');
     Route::post('/fundraising/snooze', [Member\FundraisingController::class, 'snooze'])->name('fundraising.snooze');
     Route::post('/fundraising/interested', [Member\FundraisingController::class, 'interested'])->name('fundraising.interested');
+    Route::post('/banner/{banner}/respond', [Member\BannerController::class, 'respond'])->name('banner.respond');
 });
 
 /*
@@ -142,6 +143,13 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::post('/fundraising', [Admin\FundraisingController::class, 'store'])->name('fundraising.store');
         Route::delete('/fundraising/response/{id}', [Admin\FundraisingController::class, 'deleteResponse'])->name('fundraising.delete-response');
         Route::post('/fundraising/reset', [Admin\FundraisingController::class, 'resetResponses'])->name('fundraising.reset');
+
+        // Banners
+        Route::get('/banners', [Admin\BannerController::class, 'index'])->name('banners.index');
+        Route::post('/banners', [Admin\BannerController::class, 'store'])->name('banners.store');
+        Route::put('/banners/{banner}', [Admin\BannerController::class, 'update'])->name('banners.update');
+        Route::delete('/banners/{banner}', [Admin\BannerController::class, 'destroy'])->name('banners.destroy');
+        Route::post('/banners/{banner}/toggle', [Admin\BannerController::class, 'toggleActive'])->name('banners.toggle');
 
         // Content suggestions review
         Route::get('/suggestions', [Admin\ContentSuggestionController::class, 'index'])->name('suggestions.index');

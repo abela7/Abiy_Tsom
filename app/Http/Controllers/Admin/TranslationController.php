@@ -46,6 +46,7 @@ class TranslationController extends Controller
                 'admin_daily' => __('app.group_admin_daily'),
                 'admin_activities' => __('app.group_activities'),
                 'admin_fundraising' => __('app.group_admin_fundraising'),
+                'admin_banners' => __('app.group_admin_banners'),
                 'admin_other' => __('app.group_admin_other'),
                 'admin_translations' => __('app.group_admin_translations'),
             ],
