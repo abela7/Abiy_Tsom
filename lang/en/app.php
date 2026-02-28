@@ -921,7 +921,7 @@ return [
     'telegram_suggest_enter_reference' => 'Type the Bible reference (e.g. John 3:16):',
     'telegram_suggest_enter_title' => 'Type the title:',
     'telegram_suggest_enter_author' => "Type the author name (or type 'skip'):",
-    'telegram_suggest_enter_url' => 'Type the URL or link:',
+    'telegram_suggest_enter_url' => '🔗 Paste a link (YouTube, website, etc.) or tap Skip:',
     'telegram_suggest_enter_detail' => "Add any details or notes (or type 'skip'):",
     'telegram_suggest_current' => 'Current:',
     'telegram_suggest_type_to_replace' => 'Type your new value to replace it.',

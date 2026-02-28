@@ -121,6 +121,12 @@
                                             <span class="text-secondary ml-1">{{ $s->author }}</span>
                                         </div>
                                     @endif
+                                    @if($s->url)
+                                        <div class="text-xs">
+                                            <span class="font-semibold text-muted-text">Link:</span>
+                                            <a href="{{ $s->url }}" target="_blank" rel="noopener" class="text-accent hover:underline break-all ml-1">{{ $s->url }}</a>
+                                        </div>
+                                    @endif
                                     @if($s->content_detail)
                                         <p class="text-xs text-secondary whitespace-pre-wrap leading-relaxed">{{ $s->content_detail }}</p>
                                     @endif

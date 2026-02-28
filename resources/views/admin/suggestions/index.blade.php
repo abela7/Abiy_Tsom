@@ -61,7 +61,7 @@
                         <td class="px-4 py-3">
                             <button type="button" @click="expanded = !expanded" class="text-left hover:text-accent transition">
                                 <span class="font-medium text-primary">{{ $s->title ?: '-' }}</span>
-                                @if($s->content_detail || $s->reference || $s->author || $s->notes)
+                                @if($s->content_detail || $s->reference || $s->author || $s->url || $s->notes)
                                     <svg class="w-3.5 h-3.5 inline ml-1 text-muted-text transition-transform" :class="expanded && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                                     </svg>
@@ -70,6 +70,7 @@
                             <div x-show="expanded" x-cloak x-transition class="mt-2 space-y-1 text-xs text-secondary max-w-md">
                                 @if($s->reference)<p><span class="font-semibold text-muted-text">Ref:</span> {{ $s->reference }}</p>@endif
                                 @if($s->author)<p><span class="font-semibold text-muted-text">Author:</span> {{ $s->author }}</p>@endif
+                                @if($s->url)<p><span class="font-semibold text-muted-text">Link:</span> <a href="{{ $s->url }}" target="_blank" rel="noopener" class="text-accent hover:underline break-all">{{ $s->url }}</a></p>@endif
                                 @if($s->content_detail)<p class="whitespace-pre-wrap leading-relaxed">{{ $s->content_detail }}</p>@endif
                                 @if($s->notes)<p class="text-muted-text italic">{{ $s->notes }}</p>@endif
                             </div>
@@ -183,13 +184,16 @@
                 {{-- Expanded detail + actions --}}
                 <div x-show="open" x-cloak x-collapse>
                     {{-- Content details --}}
-                    @if($s->reference || $s->author || $s->content_detail || $s->notes)
+                    @if($s->reference || $s->author || $s->url || $s->content_detail || $s->notes)
                         <div class="px-3.5 sm:px-4 space-y-1.5 border-t border-border pt-3 ml-[52px]">
                             @if($s->reference)
                                 <p class="text-xs"><span class="font-semibold text-muted-text">Ref:</span> <span class="text-secondary">{{ $s->reference }}</span></p>
                             @endif
                             @if($s->author)
                                 <p class="text-xs"><span class="font-semibold text-muted-text">Author:</span> <span class="text-secondary">{{ $s->author }}</span></p>
+                            @endif
+                            @if($s->url)
+                                <p class="text-xs"><span class="font-semibold text-muted-text">Link:</span> <a href="{{ $s->url }}" target="_blank" rel="noopener" class="text-accent hover:underline break-all">{{ $s->url }}</a></p>
                             @endif
                             @if($s->content_detail)
                                 <p class="text-xs text-secondary whitespace-pre-wrap leading-relaxed">{{ $s->content_detail }}</p>

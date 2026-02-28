@@ -1850,7 +1850,7 @@ class TelegramWebhookController extends Controller
             'enter_reference' => 'reference',
             'enter_title' => 'title',
             'enter_author' => 'author',
-            'enter_url' => 'url_reference',
+            'enter_url' => 'url',
             'enter_detail' => 'content_detail',
         ];
 
@@ -1913,8 +1913,8 @@ class TelegramWebhookController extends Controller
         if (! empty($data['author'])) {
             $lines[] = '<b>Author:</b> '.htmlspecialchars($data['author'], ENT_QUOTES, 'UTF-8');
         }
-        if (! empty($data['url_reference'])) {
-            $lines[] = '<b>URL:</b> '.htmlspecialchars($data['url_reference'], ENT_QUOTES, 'UTF-8');
+        if (! empty($data['url'])) {
+            $lines[] = '<b>Link:</b> '.htmlspecialchars($data['url'], ENT_QUOTES, 'UTF-8');
         }
         if (! empty($data['content_detail'])) {
             $lines[] = '<b>Notes:</b> '.htmlspecialchars($data['content_detail'], ENT_QUOTES, 'UTF-8');
@@ -1950,18 +1950,14 @@ class TelegramWebhookController extends Controller
         $type = $data['type'] ?? 'reference';
         $language = $data['language'] ?? 'en';
 
-        // Map url_reference to the reference field for non-bible types
-        $referenceValue = $type === 'bible'
-            ? ($data['reference'] ?? null)
-            : ($data['url_reference'] ?? null);
-
         ContentSuggestion::create([
             'user_id' => $user->id,
             'type' => $type,
             'language' => $language,
             'title' => $data['title'] ?? null,
-            'reference' => $referenceValue,
+            'reference' => $data['reference'] ?? null,
             'author' => $data['author'] ?? null,
+            'url' => $data['url'] ?? null,
             'content_detail' => $data['content_detail'] ?? null,
             'submitter_name' => $user->name,
             'status' => 'pending',
@@ -2096,7 +2092,7 @@ class TelegramWebhookController extends Controller
             'enter_reference' => 'reference',
             'enter_title' => 'title',
             'enter_author' => 'author',
-            'enter_url' => 'url_reference',
+            'enter_url' => 'url',
             'enter_detail' => 'content_detail',
         ];
 
@@ -2121,11 +2117,11 @@ class TelegramWebhookController extends Controller
     private function suggestPreviousStep(string $type, string $currentStep): string
     {
         $flow = match ($type) {
-            'bible' => ['enter_reference', 'enter_detail'],
-            'sinksar' => ['enter_title', 'enter_detail'],
-            'mezmur', 'book' => ['enter_title', 'enter_author', 'enter_detail'],
+            'bible' => ['enter_reference', 'enter_url', 'enter_detail'],
+            'sinksar' => ['enter_title', 'enter_url', 'enter_detail'],
+            'mezmur', 'book' => ['enter_title', 'enter_author', 'enter_url', 'enter_detail'],
             'reference' => ['enter_title', 'enter_url', 'enter_detail'],
-            default => ['enter_title', 'enter_detail'],
+            default => ['enter_title', 'enter_url', 'enter_detail'],
         };
 
         // When on the preview step, the previous step is the last text-input step
@@ -2146,7 +2142,7 @@ class TelegramWebhookController extends Controller
     {
         $rows = [];
 
-        if (in_array($step, ['enter_author', 'enter_detail'], true)) {
+        if (in_array($step, ['enter_author', 'enter_url', 'enter_detail'], true)) {
             $rows[] = [['text' => '⏭ '.__('app.telegram_suggest_skip'), 'callback_data' => 'suggest_skip']];
         }
 
@@ -2175,11 +2171,11 @@ class TelegramWebhookController extends Controller
     private function suggestNextStep(string $type, string $currentStep): string
     {
         $flow = match ($type) {
-            'bible' => ['enter_reference', 'enter_detail', 'preview'],
-            'sinksar' => ['enter_title', 'enter_detail', 'preview'],
-            'mezmur', 'book' => ['enter_title', 'enter_author', 'enter_detail', 'preview'],
+            'bible' => ['enter_reference', 'enter_url', 'enter_detail', 'preview'],
+            'sinksar' => ['enter_title', 'enter_url', 'enter_detail', 'preview'],
+            'mezmur', 'book' => ['enter_title', 'enter_author', 'enter_url', 'enter_detail', 'preview'],
             'reference' => ['enter_title', 'enter_url', 'enter_detail', 'preview'],
-            default => ['enter_title', 'enter_detail', 'preview'],
+            default => ['enter_title', 'enter_url', 'enter_detail', 'preview'],
         };
 
         $idx = array_search($currentStep, $flow, true);

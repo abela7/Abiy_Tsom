@@ -18,6 +18,7 @@ class ContentSuggestion extends Model
         'title',
         'reference',
         'author',
+        'url',
         'content_detail',
         'notes',
         'ip_address',
