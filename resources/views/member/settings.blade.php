@@ -352,7 +352,9 @@
             x-transition:leave-end="opacity-0" class="px-4 pb-4 pt-0">
                 <p class="text-xs text-muted-text mb-3">{{ __('app.custom_activities_desc') }}</p>
                 <div x-data="customActivitiesSection()" x-init="customActivities = {{ json_encode($customActivities ?? []) }}">
-                    <form @submit.prevent="addActivity()" class="flex flex-wrap gap-2 mb-3">
+
+                    {{-- Add new activity --}}
+                    <form @submit.prevent="addActivity()" class="flex flex-wrap gap-2 mb-4">
                         <input type="text" x-model="newName" maxlength="255"
                                :placeholder="'{{ __('app.custom_activity_placeholder') }}'"
                                class="min-w-0 flex-1 basis-24 px-4 py-2.5 border border-border rounded-xl bg-muted text-primary text-sm outline-none focus:ring-2 focus:ring-accent">
@@ -361,17 +363,58 @@
                             {{ __('app.add') }}
                         </button>
                     </form>
-                    <ul class="space-y-2 overflow-hidden" x-show="customActivities.length > 0">
+
+                    {{-- Activity list --}}
+                    <ul class="space-y-2" x-show="customActivities.length > 0">
                         <template x-for="activity in customActivities" :key="activity.id">
-                            <li class="flex items-center justify-between gap-2 p-3 rounded-xl bg-muted min-w-0">
-                                <span class="text-sm font-medium text-primary min-w-0 truncate" x-text="activity.name"></span>
-                                <button type="button" @click="deleteActivity(activity.id)"
-                                        class="shrink-0 p-1.5 text-error hover:bg-error/10 rounded-lg transition"
-                                        :aria-label="'{{ __('app.delete') }}'">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                    </svg>
-                                </button>
+                            <li class="rounded-xl bg-muted border border-transparent hover:border-border transition"
+                                x-data="{ editing: false, editName: activity.name }">
+
+                                {{-- Display mode --}}
+                                <div x-show="!editing" class="flex items-center gap-2 p-3 min-w-0">
+                                    <span class="text-sm font-medium text-primary min-w-0 truncate flex-1" x-text="activity.name"></span>
+                                    <button type="button"
+                                            @click="editing = true; editName = activity.name; $nextTick(() => $el.closest('li').querySelector('input[type=text]')?.focus())"
+                                            class="shrink-0 p-1.5 text-muted-text hover:text-accent hover:bg-accent/10 rounded-lg transition touch-manipulation"
+                                            :aria-label="'{{ __('app.edit') }}'">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                        </svg>
+                                    </button>
+                                    <button type="button"
+                                            @click="deleteActivity(activity.id)"
+                                            class="shrink-0 p-1.5 text-error hover:bg-error/10 rounded-lg transition touch-manipulation"
+                                            :aria-label="'{{ __('app.delete') }}'">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                {{-- Edit mode --}}
+                                <form x-show="editing" x-transition
+                                      @submit.prevent="renameActivity(activity, editName).then(ok => { if(ok) editing = false; })"
+                                      @keyup.escape="editing = false; editName = activity.name"
+                                      class="flex items-center gap-2 p-2 min-w-0">
+                                    <input type="text" x-model="editName" maxlength="255"
+                                           class="min-w-0 flex-1 px-3 py-2 border border-accent rounded-lg bg-surface text-primary text-sm outline-none focus:ring-2 focus:ring-accent">
+                                    <button type="submit"
+                                            :disabled="!editName.trim() || editName.trim() === activity.name"
+                                            class="shrink-0 p-2 rounded-lg bg-accent text-on-accent transition hover:opacity-80 disabled:opacity-40"
+                                            :aria-label="'{{ __('app.save') }}'">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                    </button>
+                                    <button type="button"
+                                            @click="editing = false; editName = activity.name"
+                                            class="shrink-0 p-2 rounded-lg bg-muted text-muted-text transition hover:bg-border"
+                                            :aria-label="'{{ __('app.cancel') }}'">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                        </svg>
+                                    </button>
+                                </form>
                             </li>
                         </template>
                     </ul>
@@ -499,6 +542,13 @@ function customActivitiesSection() {
         newName: '',
         msg: '',
         msgError: false,
+
+        showMsg(text, isError = false) {
+            this.msg = text;
+            this.msgError = isError;
+            setTimeout(() => { this.msg = ''; }, 3000);
+        },
+
         async addActivity() {
             const name = this.newName.trim();
             if (!name) return;
@@ -506,23 +556,40 @@ function customActivitiesSection() {
             if (data.success) {
                 this.customActivities.push(data.activity);
                 this.newName = '';
-                this.msg = '{{ __("app.custom_activity_added") }}';
-                this.msgError = false;
-                setTimeout(() => { this.msg = ''; }, 3000);
+                this.showMsg('{{ __("app.custom_activity_added") }}');
             } else {
-                this.msg = data.message || '{{ __("app.failed_to_add") }}';
-                this.msgError = true;
+                this.showMsg(data.message || '{{ __("app.failed_to_add") }}', true);
             }
         },
+
+        async renameActivity(activity, newName) {
+            newName = newName.trim();
+            if (!newName || newName === activity.name) return false;
+            try {
+                const data = await AbiyTsom.api('/api/member/custom-activities/update', {
+                    id: activity.id,
+                    name: newName,
+                });
+                if (data.success) {
+                    activity.name = data.activity.name;
+                    this.showMsg('{{ __("app.custom_activity_updated") }}');
+                    return true;
+                }
+                this.showMsg(data.message || '{{ __("app.failed_to_save") }}', true);
+            } catch (_e) {
+                this.showMsg('{{ __("app.failed_to_save") }}', true);
+            }
+            return false;
+        },
+
         async deleteActivity(id) {
+            if (!confirm('{{ __("app.confirm_delete_custom_activity") }}')) return;
             const data = await AbiyTsom.api('/api/member/custom-activities/delete', { id });
             if (data.success) {
                 this.customActivities = this.customActivities.filter(a => a.id !== id);
-                this.msg = '{{ __("app.custom_activity_deleted") }}';
-                this.msgError = false;
-                setTimeout(() => { this.msg = ''; }, 3000);
+                this.showMsg('{{ __("app.custom_activity_deleted") }}');
             }
-        }
+        },
     };
 }
 

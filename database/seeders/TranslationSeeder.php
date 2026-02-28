@@ -103,6 +103,7 @@ class TranslationSeeder extends Seeder
                 'lang_en', 'lang_am',
                 'custom_activities', 'custom_activities_desc',
                 'custom_activity_placeholder', 'custom_activity_added', 'custom_activity_deleted',
+                'custom_activity_updated', 'confirm_delete_custom_activity',
                 'no_custom_activities', 'add',
                 'passcode_lock', 'lock_app', 'passcode_enable', 'passcode_disable',
                 'set_passcode', 'passcode_saved', 'passcode_enabled', 'incorrect_passcode',
