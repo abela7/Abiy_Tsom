@@ -104,7 +104,7 @@ return [
     // Content sections
     'bible_reading' => 'Bible Reading',
     'read' => 'Read',
-    'mezmur' => 'Mezmur (Spiritual Music)',
+    'mezmur' => 'Mezmur (Hymns)',
     'sinksar' => 'Sinksar (Synaxarium)',
     'spiritual_book' => 'Spiritual Book',
     'reflection' => 'Daily Reflection',
@@ -650,7 +650,7 @@ return [
     'bible_text_am_label' => 'Bible Text (Amharic)',
     'bible_text_am_placeholder' => 'Full reading text in Amharic (optional)',
     'shown_when_amharic' => 'Shown when user language is Amharic',
-    'mezmur_label' => 'Mezmur (Spiritual Music)',
+    'mezmur_label' => 'Mezmur (Hymns)',
     'title_label' => 'Title',
     'url_label' => 'URL (YouTube / Audio link)',
     'description_label' => 'Description',
