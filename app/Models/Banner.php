@@ -18,6 +18,7 @@ class Banner extends Model
         'description',
         'description_am',
         'image',
+        'image_en',
         'button_label',
         'button_label_am',
         'button_url',
@@ -50,13 +51,26 @@ class Banner extends Model
             ?? __('app.banner_interested');
     }
 
-    public function imageUrl(): ?string
+    public function imageUrl(?string $locale = null): ?string
     {
-        if (! $this->image) {
+        $path = $this->imageForLocale($locale);
+
+        if (! $path) {
             return null;
         }
 
-        return Storage::disk('public')->url($this->image);
+        return Storage::disk('public')->url($path);
+    }
+
+    public function imageForLocale(?string $locale = null): ?string
+    {
+        $locale = $locale ?? app()->getLocale();
+
+        if ($locale === 'en' && is_string($this->image_en) && trim($this->image_en) !== '') {
+            return $this->image_en;
+        }
+
+        return $this->image;
     }
 
     /**

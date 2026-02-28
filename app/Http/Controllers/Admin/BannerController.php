@@ -33,6 +33,7 @@ class BannerController extends Controller
             'description'    => ['nullable', 'string', 'max:2000'],
             'description_am' => ['nullable', 'string', 'max:2000'],
             'image'          => ['nullable', 'image', 'max:2048'],
+            'image_en'       => ['nullable', 'image', 'max:2048'],
             'button_label'   => ['nullable', 'string', 'max:255'],
             'button_label_am' => ['nullable', 'string', 'max:255'],
             'button_url'     => ['nullable', 'url', 'max:500'],
@@ -45,6 +46,10 @@ class BannerController extends Controller
 
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('banners', 'public');
+        }
+
+        if ($request->hasFile('image_en')) {
+            $data['image_en'] = $request->file('image_en')->store('banners', 'public');
         }
 
         if (empty($data['button_label'])) {
@@ -64,6 +69,7 @@ class BannerController extends Controller
             'description'    => ['nullable', 'string', 'max:2000'],
             'description_am' => ['nullable', 'string', 'max:2000'],
             'image'          => ['nullable', 'image', 'max:2048'],
+            'image_en'       => ['nullable', 'image', 'max:2048'],
             'button_label'   => ['nullable', 'string', 'max:255'],
             'button_label_am' => ['nullable', 'string', 'max:255'],
             'button_url'     => ['nullable', 'url', 'max:500'],
@@ -74,6 +80,7 @@ class BannerController extends Controller
         $data['is_active'] = $request->boolean('is_active');
         $data['sort_order'] = (int) ($data['sort_order'] ?? 0);
 
+        // Default image (Amharic / fallback)
         if ($request->boolean('remove_image')) {
             if ($banner->image) {
                 Storage::disk('public')->delete($banner->image);
@@ -84,6 +91,19 @@ class BannerController extends Controller
                 Storage::disk('public')->delete($banner->image);
             }
             $data['image'] = $request->file('image')->store('banners', 'public');
+        }
+
+        // English image
+        if ($request->boolean('remove_image_en')) {
+            if ($banner->image_en) {
+                Storage::disk('public')->delete($banner->image_en);
+            }
+            $data['image_en'] = null;
+        } elseif ($request->hasFile('image_en')) {
+            if ($banner->image_en) {
+                Storage::disk('public')->delete($banner->image_en);
+            }
+            $data['image_en'] = $request->file('image_en')->store('banners', 'public');
         }
 
         if (empty($data['button_label'])) {
@@ -99,6 +119,9 @@ class BannerController extends Controller
     {
         if ($banner->image) {
             Storage::disk('public')->delete($banner->image);
+        }
+        if ($banner->image_en) {
+            Storage::disk('public')->delete($banner->image_en);
         }
 
         $banner->delete();

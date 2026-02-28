@@ -8,10 +8,11 @@
         <div class="rounded-2xl shadow-lg border border-border overflow-hidden bg-card"
              x-data="{ showForm: false, submitted: false, sending: false, errors: {} }">
 
-            {{-- Banner image --}}
-            @if($banner->imageUrl())
+            {{-- Banner image (locale-aware) --}}
+            @php $bannerImgUrl = $banner->imageUrl(); @endphp
+            @if($bannerImgUrl)
             <div class="overflow-hidden">
-                <img src="{{ $banner->imageUrl() }}"
+                <img src="{{ $bannerImgUrl }}"
                      alt="{{ $banner->localizedTitle() }}"
                      class="w-full h-auto block">
             </div>
