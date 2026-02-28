@@ -967,7 +967,7 @@ return [
 
     // Telegram bot — admin account linking via WhatsApp
     'telegram_link_via_whatsapp' => 'Get code via WhatsApp',
-    'telegram_link_enter_phone' => 'Enter your registered WhatsApp phone number (e.g. +447911123456):',
+    'telegram_link_enter_phone' => 'Enter your registered WhatsApp phone number (e.g. 07911123456):',
     'telegram_link_phone_not_found' => "No account found with that number. Try again or type 'cancel' to abort.",
     'telegram_link_member_code_sent' => 'A 6-digit code was sent to your WhatsApp. Enter it here:',
     'telegram_link_enter_username' => 'Please type your phone number:',
