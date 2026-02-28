@@ -114,8 +114,8 @@
                 ['route' => 'admin.daily.index', 'label' => __('app.daily_content'), 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'roles' => ['admin', 'editor', 'writer']],
                 ['route' => 'admin.day-assignments.index', 'label' => __('app.day_assignments'), 'icon' => 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', 'super_admin' => true],
                 ['route' => 'admin.announcements.index', 'label' => __('app.announcements'), 'icon' => 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3.14a7.5 7.5 0 011.294 12.169A5.75 5.75 0 0112 18.5a5.75 5.75 0 01-6.564-4.817z', 'roles' => ['admin', 'editor', 'writer']],
-                ['route' => 'admin.activities.index', 'label' => __('app.activities'), 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4', 'roles' => ['admin', 'editor', 'writer']],
-                ['route' => 'admin.fundraising.index', 'label' => __('app.fundraising'), 'icon' => 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z', 'roles' => ['admin', 'editor']],
+                ['route' => 'admin.activities.index', 'label' => __('app.activities'), 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4', 'super_admin' => true],
+                ['route' => 'admin.fundraising.index', 'label' => __('app.fundraising'), 'icon' => 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z', 'super_admin' => true],
                 ['route' => 'admin.suggestions.index', 'label' => __('app.suggest_content_suggestions'), 'icon' => 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z', 'roles' => ['admin', 'editor']],
                 ['route' => 'admin.suggestions.my', 'label' => __('app.suggest_my_suggestions'), 'icon' => 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z', 'roles' => ['admin', 'editor', 'writer']],
                 ['route' => 'admin.telegram.my-link', 'label' => __('app.telegram_settings_link_title'), 'icon' => 'M8 12h.01M12 12h.01M16 12h.01M4 4a2 2 0 012-2h12a2 2 0 012 2v16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z', 'roles' => ['admin', 'editor', 'writer']],
@@ -129,8 +129,8 @@
         {{-- Mobile sidebar (overlay, < lg) --}}
         <aside class="fixed inset-y-0 left-0 z-40 w-64 bg-card shadow-xl transform transition-transform duration-200 border-r border-border pt-14 lg:hidden"
                :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
-            <div class="py-4 h-full overflow-y-auto">
-                <nav class="space-y-1 px-3">
+            <div class="py-4 h-full overflow-y-auto flex flex-col">
+                <nav class="space-y-1 px-3 flex-1">
                     @foreach ($links as $link)
                         @if(!empty($link['super_admin']) && !$currentAdmin?->isSuperAdmin()) @continue @endif
                         @if(!empty($link['roles']) && !$currentAdmin?->isSuperAdmin() && !in_array($currentAdmin?->role, $link['roles'], true)) @continue @endif
@@ -142,6 +142,16 @@
                         </a>
                     @endforeach
                 </nav>
+                <div class="px-3 pb-4 pt-2 border-t border-border mt-2">
+                    <form method="POST" action="{{ route('admin.logout') }}">
+                        @csrf
+                        <button type="submit"
+                                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition text-error hover:bg-error/10 w-full">
+                            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                            {{ __('app.logout') }}
+                        </button>
+                    </form>
+                </div>
             </div>
         </aside>
 
@@ -152,8 +162,8 @@
         {{-- Desktop sidebar (push, >= lg) --}}
         <aside class="hidden lg:block shrink-0 bg-card border-r border-border sticky top-14 h-[calc(100vh-3.5rem)] transition-all duration-300 ease-in-out overflow-hidden"
                :style="desktopSidebar ? 'width: 16rem' : 'width: 0; border-right-width: 0'">
-            <div class="w-64 py-4 h-full overflow-y-auto">
-                <nav class="space-y-1 px-3">
+            <div class="w-64 py-4 h-full overflow-y-auto flex flex-col">
+                <nav class="space-y-1 px-3 flex-1">
                     @foreach ($links as $link)
                         @if(!empty($link['super_admin']) && !$currentAdmin?->isSuperAdmin()) @continue @endif
                         @if(!empty($link['roles']) && !$currentAdmin?->isSuperAdmin() && !in_array($currentAdmin?->role, $link['roles'], true)) @continue @endif
@@ -165,6 +175,16 @@
                         </a>
                     @endforeach
                 </nav>
+                <div class="px-3 pb-4 pt-2 border-t border-border mt-2">
+                    <form method="POST" action="{{ route('admin.logout') }}">
+                        @csrf
+                        <button type="submit"
+                                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition whitespace-nowrap text-error hover:bg-error/10 w-full">
+                            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                            {{ __('app.logout') }}
+                        </button>
+                    </form>
+                </div>
             </div>
         </aside>
 
