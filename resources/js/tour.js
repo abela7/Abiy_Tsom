@@ -39,6 +39,20 @@ export async function resetTour() {
     } catch {}
 }
 
+/**
+ * Sync localStorage tour completion to the server.
+ * Runs on page load for members who completed the tour before server-side
+ * tracking was introduced — their localStorage has '1' but DB has NULL.
+ */
+export function syncTourCompletion() {
+    if (window.AbiyTsomTourCompleted === true) return; // already in sync
+    try {
+        if (localStorage.getItem(TOUR_STORAGE_KEY) === '1') {
+            setTourCompleted(); // silently backfill the DB record
+        }
+    } catch {}
+}
+
 export async function startMemberTour(force = false) {
     if (!force && isTourCompleted()) return;
 
