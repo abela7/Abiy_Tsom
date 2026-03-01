@@ -1,0 +1,91 @@
+/**
+ * Member app tour (Driver.js) — language & theme on home screen.
+ * Tour content comes from window.AbiyTsomTourContent (set by Blade).
+ */
+
+const TOUR_STORAGE_KEY = 'member_tour_completed';
+
+export function isTourCompleted() {
+    try {
+        return localStorage.getItem(TOUR_STORAGE_KEY) === '1';
+    } catch {
+        return false;
+    }
+}
+
+export function setTourCompleted() {
+    try {
+        localStorage.setItem(TOUR_STORAGE_KEY, '1');
+    } catch {}
+}
+
+export function resetTour() {
+    try {
+        localStorage.removeItem(TOUR_STORAGE_KEY);
+    } catch {}
+}
+
+export async function startMemberTour(force = false) {
+    if (!force && isTourCompleted()) return;
+
+    const content = window.AbiyTsomTourContent;
+    if (!content) return;
+
+    const steps = [
+        {
+            popover: {
+                title: content.welcome?.title ?? 'Welcome',
+                description: content.welcome?.desc ?? '',
+                side: 'bottom',
+                align: 'center',
+            },
+        },
+        {
+            element: '[data-tour="language"]',
+            popover: {
+                title: content.language?.title ?? 'Language',
+                description: content.language?.desc ?? '',
+                side: 'bottom',
+                align: 'end',
+            },
+        },
+        {
+            element: '[data-tour="theme"]',
+            popover: {
+                title: content.theme?.title ?? 'Theme',
+                description: content.theme?.desc ?? '',
+                side: 'bottom',
+                align: 'end',
+            },
+        },
+    ].filter((s) => !s.element || document.querySelector(s.element));
+
+    if (steps.length < 2) return;
+
+    try {
+        const { driver } = await import('driver.js');
+
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+
+        const driverObj = driver({
+            showProgress: true,
+            allowClose: true,
+            smoothScroll: true,
+            overlayOpacity: 0.6,
+            stagePadding: isMobile ? 8 : 10,
+            popoverOffset: isMobile ? 8 : 10,
+            nextBtnText: content.next ?? 'Next',
+            prevBtnText: content.prev ?? 'Back',
+            doneBtnText: content.done ?? 'Done',
+            progressText: content.progressText ?? '{{current}} of {{total}}',
+            steps,
+            onDestroyed: () => {
+                setTourCompleted();
+            },
+        });
+
+        driverObj.drive();
+    } catch (e) {
+        console.warn('Tour: failed to start', e);
+    }
+}

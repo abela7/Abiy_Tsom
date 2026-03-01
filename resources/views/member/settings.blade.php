@@ -108,6 +108,33 @@
             </div>
         </div>
 
+        {{-- App Tour --}}
+        <div class="bg-card rounded-2xl shadow-sm border border-border overflow-hidden"
+             x-data="{ tourCompleted: typeof window.AbiyTsomIsTourCompleted === 'function' && window.AbiyTsomIsTourCompleted() }">
+            <button type="button" @click="openId = openId === 'tour' ? null : 'tour'; tourCompleted = typeof window.AbiyTsomIsTourCompleted === 'function' && window.AbiyTsomIsTourCompleted()"
+                    class="w-full flex items-center justify-between px-4 py-4 text-left">
+                <div>
+                    <h3 class="font-semibold text-primary">{{ __('app.tour_section_title') }}</h3>
+                    <p class="text-xs text-muted-text mt-0.5" x-text="tourCompleted ? '{{ __('app.tour_status_completed') }}' : '{{ __('app.tour_status_not_completed') }}'"></p>
+                </div>
+                <svg class="w-5 h-5 text-muted-text transition-transform shrink-0" :class="openId === 'tour' && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </button>
+            <div x-show="openId === 'tour'" x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0 -translate-y-1"
+            x-transition:enter-end="opacity-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-150"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0" class="px-4 pb-4 pt-0">
+                <p class="text-sm text-muted-text mb-4">{{ __('app.tour_section_desc') }}</p>
+                <button type="button" @click="window.AbiyTsomResetTour?.(); tourCompleted = false; window.location.href = '{{ route('member.home') }}?tour=1'"
+                        class="w-full py-2.5 bg-accent text-on-accent rounded-xl font-medium text-sm transition hover:opacity-90">
+                    {{ __('app.tour_show_again') }}
+                </button>
+            </div>
+        </div>
+
         {{-- WhatsApp Reminder --}}
         <div class="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
             <button type="button" @click="openId = openId === 'whatsapp' ? null : 'whatsapp'"

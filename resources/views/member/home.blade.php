@@ -3,7 +3,9 @@
 @section('title', __('app.nav_home') . ' - ' . __('app.app_name'))
 
 @section('content')
-<div class="px-4 pt-4 space-y-4">
+<div class="px-4 pt-4 space-y-4"
+     x-data="{}"
+     x-init="$nextTick(() => { if (window.AbiyTsomStartTour) { const force = new URLSearchParams(location.search).get('tour') === '1'; if (force || !window.AbiyTsomIsTourCompleted?.()) { window.AbiyTsomStartTour(force); if (force) history.replaceState({}, '', location.pathname); } } })">
 
     {{-- View Today — hero CTA card --}}
     @if(isset($viewTodayTarget) && $viewTodayTarget)

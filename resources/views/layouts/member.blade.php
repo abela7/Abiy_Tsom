@@ -81,7 +81,7 @@
                     </svg>
                 </a>
                 @endif
-                <div class="relative overflow-visible" x-data="{ open: false }" @click.away="open = false">
+                <div class="relative overflow-visible" x-data="{ open: false }" @click.away="open = false" data-tour="language">
                     <button type="button"
                             @click="open = !open"
                             class="p-2 rounded-xl hover:bg-muted transition active:scale-95 touch-manipulation"
@@ -121,7 +121,8 @@
                 <button type="button"
                         @click="toggleTheme()"
                         class="p-2 rounded-xl hover:bg-muted transition active:scale-95"
-                        :aria-label="darkMode ? '{{ __('app.theme_light') }}' : '{{ __('app.theme_dark') }}'">
+                        :aria-label="darkMode ? '{{ __('app.theme_light') }}' : '{{ __('app.theme_dark') }}'"
+                        data-tour="theme">
                     {{-- Sun: show when dark (click to switch to light) --}}
                     <svg x-show="darkMode" x-cloak class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
@@ -172,6 +173,22 @@
     {{-- Fundraising popup — only on home or day page, once per day --}}
     @if(isset($currentMember) && request()->routeIs('member.home', 'member.day'))
         @include('member.partials.fundraising-popup')
+    @endif
+
+    {{-- Tour content (locale-aware) --}}
+    @if(isset($currentMember) && request()->routeIs('member.*'))
+    <script>
+        window.AbiyTsomTourContent = @json([
+            'welcome' => ['title' => __('app.tour_welcome_title'), 'desc' => __('app.tour_welcome_desc')],
+            'language' => ['title' => __('app.tour_language_title'), 'desc' => __('app.tour_language_desc')],
+            'theme' => ['title' => __('app.tour_theme_title'), 'desc' => __('app.tour_theme_desc')],
+            'next' => __('app.tour_next'),
+            'prev' => __('app.tour_prev'),
+            'done' => __('app.tour_done'),
+            'skip' => __('app.tour_skip'),
+            'progressText' => __('app.tour_progress'),
+        ]);
+    </script>
     @endif
 
     {{-- Member session helpers --}}
