@@ -113,6 +113,25 @@ class TranslationSeeder extends Seeder
                 'tour_management_subtitle', 'tour_clear_section_title', 'tour_clear_section_desc',
                 'tour_clear_all_btn', 'tour_clear_confirm', 'tour_data_cleared',
                 'tour_nothing_to_clear', 'tour_management_hint',
+                // Admin tour management — member list & per-member reset
+                'tour_member_list_title', 'tour_status', 'tour_status_done', 'tour_status_pending',
+                'tour_completed_at_label', 'tour_not_completed_yet', 'tour_reset_btn',
+                'tour_reset_member_confirm',
+                // Multi-page tour step content — home phase
+                'tour_view_today_title', 'tour_view_today_desc',
+                // Multi-page tour step content — calendar phase
+                'tour_cal_legend_title', 'tour_cal_legend_desc',
+                'tour_cal_week_title', 'tour_cal_week_desc',
+                'tour_cal_today_title', 'tour_cal_today_desc',
+                // Multi-page tour step content — day phase
+                'tour_day_header_title', 'tour_day_header_desc',
+                'tour_day_bible_title', 'tour_day_bible_desc',
+                'tour_day_mezmur_title', 'tour_day_mezmur_desc',
+                'tour_day_checklist_title', 'tour_day_checklist_desc',
+                'tour_day_custom_title', 'tour_day_custom_desc',
+                // Multi-page tour step content — settings phase
+                'tour_settings_custom_title', 'tour_settings_custom_desc',
+                'tour_settings_done_title', 'tour_settings_done_desc',
             ],
             'settings' => [
                 'settings_title', 'language', 'theme', 'theme_light', 'theme_dark',
