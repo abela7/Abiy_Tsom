@@ -2245,7 +2245,19 @@ class TelegramWebhookController extends Controller
 
         $mergeData = [];
         if (isset($fieldForStep[$currentStep]) && $input !== '') {
-            $mergeData[$fieldForStep[$currentStep]] = $input;
+            $field = $fieldForStep[$currentStep];
+
+            if (
+                $currentStep === 'enter_url'
+                && ! $this->suggestStepInputLooksUrl($input)
+            ) {
+                $field = 'content_detail';
+                if (! empty($state->get('content_detail'))) {
+                    $input = rtrim((string) $state->get('content_detail'))."\n\n".trim($input);
+                }
+            }
+
+            $mergeData[$field] = trim($input);
         }
 
         $nextStep = $this->suggestNextStep($type, $currentStep);
@@ -2539,6 +2551,26 @@ class TelegramWebhookController extends Controller
         }
 
         return $flow[$idx - 1];
+    }
+
+    /**
+     * Determines whether user input on the URL step looks like a real link.
+     */
+    private function suggestStepInputLooksUrl(string $input): bool
+    {
+        $value = trim($input);
+        if ($value === '') {
+            return false;
+        }
+
+        if (filter_var($value, FILTER_VALIDATE_URL) !== false) {
+            return true;
+        }
+
+        return (bool) preg_match(
+            '/^(?:https?:\/\/)?(?:www\.)?[\w.-]+\.[a-z]{2,}(?:\/[^\s]*)?$/i',
+            $value
+        );
     }
 
     /** Builds the keyboard for a text-input step (Skip for optional, Back, Cancel). */
