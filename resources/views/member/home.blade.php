@@ -329,7 +329,7 @@
             $themeMeaning = $isAm && $weekTheme->meaning_am ? $weekTheme->meaning_am : $weekTheme->meaning;
             $themeDescription = $isAm && $weekTheme->description_am ? $weekTheme->description_am : $weekTheme->description;
             $themeSummary = $isAm && $weekTheme->summary_am ? $weekTheme->summary_am : $weekTheme->theme_summary;
-            $hasOverview = $themeDescription || $themeSummary;
+            $hasOverview = (bool) $themeDescription;
 
             // Build grouped content — each group holds related items with individual icons
             $contentGroups = [];
@@ -447,12 +447,6 @@
                         <div class="flex-1 min-w-0">
                             @if($themeDescription)
                                 <p class="text-sm text-secondary leading-relaxed">{{ $themeDescription }}</p>
-                            @endif
-                            @if($themeSummary)
-                                <div class="{{ $themeDescription ? 'mt-2' : '' }}">
-                                    <p class="text-[11px] font-semibold text-muted-text uppercase tracking-wide mb-1">{{ __('app.theme_summary') }}</p>
-                                    <p class="text-sm text-secondary leading-relaxed">{{ $themeSummary }}</p>
-                                </div>
                             @endif
                         </div>
                     </div>
