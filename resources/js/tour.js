@@ -354,6 +354,16 @@ async function runPhaseTour(phase, steps) {
  * force=true restarts the whole tour from step 0.
  */
 export async function startMemberTour(force = false) {
+    // If a blocking modal (fundraising popup) is still visible, wait for it to
+    // close before starting the tour so they don't overlap.
+    if (document.body.classList.contains('fund-body-lock')) {
+        await new Promise(resolve => {
+            window.addEventListener('fundraising-ready', resolve, { once: true });
+        });
+        // Extra pause for the modal's exit animation to finish.
+        await new Promise(resolve => setTimeout(resolve, 350));
+    }
+
     if (force) {
         clearPhase();
     }

@@ -17,7 +17,9 @@
         const onFundraisingReady = () => {
             window.removeEventListener('fundraising-ready', onFundraisingReady);
             clearTimeout(fallback);
-            startTourIfNeeded();
+            // Delay slightly so the modal's exit animation (200ms) fully finishes
+            // before the tour overlay appears on top of it.
+            setTimeout(startTourIfNeeded, 350);
         };
         window.addEventListener('fundraising-ready', onFundraisingReady);
         const fallback = setTimeout(onFundraisingReady, 60000);
