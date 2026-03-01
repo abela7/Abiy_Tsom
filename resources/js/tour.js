@@ -305,8 +305,7 @@ async function runPhaseTour(phase, steps) {
         const isMobile   = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
         const content    = window.AbiyTsomTourContent;
 
-        let lastHighlightedIdx = resumeStep;
-        let closedEarly        = false;
+        let closedEarly = false;
 
         const driverObj = driver({
             showProgress:   true,
@@ -322,8 +321,10 @@ async function runPhaseTour(phase, steps) {
             steps,
 
             onHighlightStarted: (element, _step, opts) => {
-                lastHighlightedIdx = opts?.state?.activeIndex ?? lastHighlightedIdx;
-                saveStep(lastHighlightedIdx);
+                // Save step for language-change resume (best-effort — some Driver.js builds
+                // don't expose state.activeIndex, so we fall back to a no-op).
+                const idx = opts?.state?.activeIndex;
+                if (typeof idx === 'number') saveStep(idx);
                 // Boost language dropdown z-index above the Driver.js popover (z-index 1 billion).
                 if (element?.dataset?.tour === 'language') {
                     setLangDropdownZIndex('1000000001');
@@ -341,13 +342,13 @@ async function runPhaseTour(phase, steps) {
                 try { sessionStorage.removeItem(TOUR_STEP_KEY); } catch {}
                 setLangDropdownZIndex('9999');
 
-                const completedAllSteps = !closedEarly && lastHighlightedIdx >= steps.length - 1;
-                if (completedAllSteps) {
-                    navigateAfterPhase(phase);
-                } else {
-                    // User closed early — end tour entirely.
+                if (closedEarly) {
+                    // User pressed X — end tour entirely.
                     clearPhase();
                     setTourCompleted();
+                } else {
+                    // Done button pressed — advance to the next phase.
+                    navigateAfterPhase(phase);
                 }
             },
         });
