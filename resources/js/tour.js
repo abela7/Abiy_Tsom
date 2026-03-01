@@ -5,6 +5,7 @@
  */
 
 const TOUR_STORAGE_KEY = 'member_tour_completed';
+const TOUR_STEP_KEY    = 'member_tour_step'; // sessionStorage — survives reload, not tab close
 
 export function isTourCompleted() {
     if (window.AbiyTsomTourCompleted === true) return true;
@@ -60,6 +61,14 @@ export function syncTourCompletion() {
     } catch {}
 }
 
+/** Boost the language dropdown above the Driver.js overlay when on the language step. */
+function setLangDropdownZIndex(zIndex) {
+    try {
+        const el = document.querySelector('[data-tour="language"] .fixed');
+        if (el) el.style.zIndex = zIndex;
+    } catch {}
+}
+
 export async function startMemberTour(force = false) {
     if (!force && isTourCompleted()) return;
 
@@ -102,9 +111,19 @@ export async function startMemberTour(force = false) {
 
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
 
+        // Resume from saved step (e.g. after language change triggers a page reload).
+        let resumeStep = 0;
+        try {
+            const saved = sessionStorage.getItem(TOUR_STEP_KEY);
+            if (saved !== null) {
+                resumeStep = Math.max(0, Math.min(parseInt(saved, 10) || 0, steps.length - 1));
+                sessionStorage.removeItem(TOUR_STEP_KEY);
+            }
+        } catch {}
+
         const driverObj = driver({
             showProgress: true,
-            allowClose: true,
+            allowClose: false,      // overlay click does NOT close the tour
             smoothScroll: true,
             overlayOpacity: 0.6,
             stagePadding: isMobile ? 8 : 10,
@@ -114,12 +133,28 @@ export async function startMemberTour(force = false) {
             doneBtnText: content.done ?? 'Done',
             progressText: content.progressText ?? '{{current}} of {{total}}',
             steps,
+            onHighlightStarted: (element, _step, opts) => {
+                // Persist current step so a page reload (e.g. language switch) can resume here.
+                const idx = opts?.state?.activeIndex ?? 0;
+                try { sessionStorage.setItem(TOUR_STEP_KEY, String(idx)); } catch {}
+
+                // Language dropdown is position:fixed with z-index 9999, which sits below
+                // the Driver.js overlay (~10000). Boost it when the language step is active.
+                if (element?.dataset?.tour === 'language') {
+                    setLangDropdownZIndex('100002');
+                } else {
+                    setLangDropdownZIndex('9999');
+                }
+            },
             onDestroyed: () => {
+                // Clear resume key and z-index fix, then mark tour done.
+                try { sessionStorage.removeItem(TOUR_STEP_KEY); } catch {}
+                setLangDropdownZIndex('9999');
                 setTourCompleted();
             },
         });
 
-        driverObj.drive();
+        driverObj.drive(resumeStep);
     } catch (e) {
         console.warn('Tour: failed to start', e);
     }
