@@ -121,14 +121,25 @@
                 {{ __('app.bible_reading') }} {{ $n }}
             </h2>
 
-            <div>
-                <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.reading_reference') }}</label>
-                <input type="text" name="reading_{{ $n }}_reference"
-                       value="{{ old('reading_'.$n.'_reference', $theme->{'reading_'.$n.'_reference'} ?? '') }}"
-                       placeholder="e.g. Hebrews 9:11-28"
-                       class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
+            {{-- Reference: EN and AM side by side --}}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.reading_reference') }} (EN)</label>
+                    <input type="text" name="reading_{{ $n }}_reference"
+                           value="{{ old('reading_'.$n.'_reference', $theme->{'reading_'.$n.'_reference'} ?? '') }}"
+                           placeholder="e.g. Hebrews 9:11-28"
+                           class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.reading_reference') }} (AM)</label>
+                    <input type="text" name="reading_{{ $n }}_reference_am"
+                           value="{{ old('reading_'.$n.'_reference_am', $theme->{'reading_'.$n.'_reference_am'} ?? '') }}"
+                           placeholder="ለምሳሌ፡ ዕብራውያን 9:11-28"
+                           class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
+                </div>
             </div>
 
+            {{-- Full text: EN and AM side by side --}}
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.reading_text_en') }}</label>
@@ -152,14 +163,25 @@
         <div class="bg-card rounded-xl shadow-sm border border-border p-6 space-y-4">
             <h2 class="text-sm font-bold text-primary uppercase tracking-wide">{{ __('app.psalm') }}</h2>
 
-            <div>
-                <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.psalm_reference') }}</label>
-                <input type="text" name="psalm_reference"
-                       value="{{ old('psalm_reference', $theme->psalm_reference ?? '') }}"
-                       placeholder="{{ __('app.psalm_placeholder') }}"
-                       class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
+            {{-- Reference: EN and AM side by side --}}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.psalm_reference') }} (EN)</label>
+                    <input type="text" name="psalm_reference"
+                           value="{{ old('psalm_reference', $theme->psalm_reference ?? '') }}"
+                           placeholder="{{ __('app.psalm_placeholder') }}"
+                           class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.psalm_reference') }} (AM)</label>
+                    <input type="text" name="psalm_reference_am"
+                           value="{{ old('psalm_reference_am', $theme->psalm_reference_am ?? '') }}"
+                           placeholder="ለምሳሌ፡ 69:9-10"
+                           class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
+                </div>
             </div>
 
+            {{-- Full text: EN and AM side by side --}}
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.psalm_text') }} (EN)</label>
@@ -182,14 +204,25 @@
         <div class="bg-card rounded-xl shadow-sm border border-border p-6 space-y-4">
             <h2 class="text-sm font-bold text-primary uppercase tracking-wide">{{ __('app.gospel') }}</h2>
 
-            <div>
-                <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.gospel_reference') }}</label>
-                <input type="text" name="gospel_reference"
-                       value="{{ old('gospel_reference', $theme->gospel_reference ?? '') }}"
-                       placeholder="{{ __('app.reference_placeholder_short') }}"
-                       class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
+            {{-- Reference: EN and AM side by side --}}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.gospel_reference') }} (EN)</label>
+                    <input type="text" name="gospel_reference"
+                           value="{{ old('gospel_reference', $theme->gospel_reference ?? '') }}"
+                           placeholder="{{ __('app.reference_placeholder_short') }}"
+                           class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.gospel_reference') }} (AM)</label>
+                    <input type="text" name="gospel_reference_am"
+                           value="{{ old('gospel_reference_am', $theme->gospel_reference_am ?? '') }}"
+                           placeholder="ለምሳሌ፡ ዮሐ 3:16"
+                           class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
+                </div>
             </div>
 
+            {{-- Full text: EN and AM side by side --}}
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.gospel_text') }} (EN)</label>
@@ -212,14 +245,25 @@
         <div class="bg-card rounded-xl shadow-sm border border-border p-6 space-y-4">
             <h2 class="text-sm font-bold text-primary uppercase tracking-wide">{{ __('app.liturgy_anaphora') }}</h2>
 
-            <div>
-                <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.liturgy_anaphora') }}</label>
-                <input type="text" name="liturgy"
-                       value="{{ old('liturgy', $theme->liturgy ?? '') }}"
-                       placeholder="{{ __('app.liturgy_placeholder') }}"
-                       class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
+            {{-- Anaphora name: EN and AM side by side --}}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.liturgy_anaphora') }} (EN)</label>
+                    <input type="text" name="liturgy"
+                           value="{{ old('liturgy', $theme->liturgy ?? '') }}"
+                           placeholder="{{ __('app.liturgy_placeholder') }}"
+                           class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.liturgy_anaphora') }} (AM)</label>
+                    <input type="text" name="liturgy_am"
+                           value="{{ old('liturgy_am', $theme->liturgy_am ?? '') }}"
+                           placeholder="ለምሳሌ፡ የጌታችን አናፌራ"
+                           class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
+                </div>
             </div>
 
+            {{-- Full text: EN and AM side by side --}}
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.liturgy_text') }} (EN)</label>

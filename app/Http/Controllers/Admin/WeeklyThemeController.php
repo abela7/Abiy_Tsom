@@ -56,21 +56,29 @@ class WeeklyThemeController extends Controller
             'week_end_date' => ['required', 'date', 'after_or_equal:week_start_date'],
             // Feature picture
             'feature_picture' => ['nullable', 'image', 'max:2048'],
-            // Bible readings
+            // Bible readings (reference in EN + AM, full text in EN + AM)
             'reading_1_reference' => ['nullable', 'string', 'max:255'],
+            'reading_1_reference_am' => ['nullable', 'string', 'max:255'],
             'reading_1_text_en' => ['nullable', 'string'],
             'reading_1_text_am' => ['nullable', 'string'],
             'reading_2_reference' => ['nullable', 'string', 'max:255'],
+            'reading_2_reference_am' => ['nullable', 'string', 'max:255'],
             'reading_2_text_en' => ['nullable', 'string'],
             'reading_2_text_am' => ['nullable', 'string'],
             'reading_3_reference' => ['nullable', 'string', 'max:255'],
+            'reading_3_reference_am' => ['nullable', 'string', 'max:255'],
             'reading_3_text_en' => ['nullable', 'string'],
             'reading_3_text_am' => ['nullable', 'string'],
-            // Psalm, Gospel, Liturgy full text
+            // Psalm (reference EN + AM, full text EN + AM)
+            'psalm_reference_am' => ['nullable', 'string', 'max:255'],
             'psalm_text_en' => ['nullable', 'string'],
             'psalm_text_am' => ['nullable', 'string'],
+            // Gospel (reference EN + AM, full text EN + AM)
+            'gospel_reference_am' => ['nullable', 'string', 'max:255'],
             'gospel_text_en' => ['nullable', 'string'],
             'gospel_text_am' => ['nullable', 'string'],
+            // Liturgy (anaphora name EN + AM, full text EN + AM)
+            'liturgy_am' => ['nullable', 'string', 'max:255'],
             'liturgy_text_en' => ['nullable', 'string'],
             'liturgy_text_am' => ['nullable', 'string'],
         ]);
@@ -113,21 +121,29 @@ class WeeklyThemeController extends Controller
             // Feature picture
             'feature_picture' => ['nullable', 'image', 'max:2048'],
             'remove_feature_picture' => ['nullable', 'boolean'],
-            // Bible readings
+            // Bible readings (reference in EN + AM, full text in EN + AM)
             'reading_1_reference' => ['nullable', 'string', 'max:255'],
+            'reading_1_reference_am' => ['nullable', 'string', 'max:255'],
             'reading_1_text_en' => ['nullable', 'string'],
             'reading_1_text_am' => ['nullable', 'string'],
             'reading_2_reference' => ['nullable', 'string', 'max:255'],
+            'reading_2_reference_am' => ['nullable', 'string', 'max:255'],
             'reading_2_text_en' => ['nullable', 'string'],
             'reading_2_text_am' => ['nullable', 'string'],
             'reading_3_reference' => ['nullable', 'string', 'max:255'],
+            'reading_3_reference_am' => ['nullable', 'string', 'max:255'],
             'reading_3_text_en' => ['nullable', 'string'],
             'reading_3_text_am' => ['nullable', 'string'],
-            // Psalm, Gospel, Liturgy full text
+            // Psalm (reference EN + AM, full text EN + AM)
+            'psalm_reference_am' => ['nullable', 'string', 'max:255'],
             'psalm_text_en' => ['nullable', 'string'],
             'psalm_text_am' => ['nullable', 'string'],
+            // Gospel (reference EN + AM, full text EN + AM)
+            'gospel_reference_am' => ['nullable', 'string', 'max:255'],
             'gospel_text_en' => ['nullable', 'string'],
             'gospel_text_am' => ['nullable', 'string'],
+            // Liturgy (anaphora name EN + AM, full text EN + AM)
+            'liturgy_am' => ['nullable', 'string', 'max:255'],
             'liturgy_text_en' => ['nullable', 'string'],
             'liturgy_text_am' => ['nullable', 'string'],
         ]);
