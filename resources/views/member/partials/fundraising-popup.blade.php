@@ -254,13 +254,16 @@ function fundraisingPopup() {
         shareCopied: false,
 
         async init() {
-            this.$watch('open', (val) => {
+            this.$watch('open', (val, oldVal) => {
                 if (val) {
                     scrollY.value = window.scrollY;
                     document.body.style.top = `-${scrollY.value}px`;
                 } else {
                     document.body.style.top = '';
                     window.scrollTo(0, scrollY.value);
+                    if (oldVal === true) {
+                        window.dispatchEvent(new CustomEvent('fundraising-ready'));
+                    }
                 }
             });
             await new Promise(r => setTimeout(r, 5000));
@@ -269,8 +272,12 @@ function fundraisingPopup() {
                 if (data.show) {
                     this.campaign = data;
                     this.open = true;
+                } else {
+                    window.dispatchEvent(new CustomEvent('fundraising-ready'));
                 }
-            } catch (e) { /* non-critical */ }
+            } catch (e) {
+                window.dispatchEvent(new CustomEvent('fundraising-ready'));
+            }
         },
 
         async notToday() {
