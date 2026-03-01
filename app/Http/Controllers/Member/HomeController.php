@@ -12,6 +12,7 @@ use App\Models\DailyContent;
 use App\Models\LentSeason;
 use App\Models\MemberChecklist;
 use App\Models\MemberCustomChecklist;
+use App\Models\WeeklyTheme;
 use App\Services\AbiyTsomStructure;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -40,7 +41,12 @@ class HomeController extends Controller
                 ->with(['weeklyTheme'])
                 ->first();
 
-            $weekTheme = $today?->weeklyTheme;
+            // Determine the current week by date range, not by the FK stored on DailyContent.
+            // This respects whatever week_start_date / week_end_date the admin set on each theme.
+            $weekTheme = WeeklyTheme::where('lent_season_id', $season->id)
+                ->whereDate('week_start_date', '<=', Carbon::today())
+                ->whereDate('week_end_date', '>=', Carbon::today())
+                ->first();
         }
 
         $easterTimezone = config('app.easter_timezone', 'Europe/London');
