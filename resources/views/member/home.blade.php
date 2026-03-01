@@ -389,32 +389,37 @@
         @if($hasContent)
         <section x-data="{ open: false, detail: null }" class="rounded-2xl bg-card shadow-lg overflow-hidden">
             {{-- Collapsible header --}}
-            <button type="button" @click="open = !open"
-                    class="w-full text-left relative overflow-hidden bg-gradient-to-br from-[#0a6286] via-[#134e5e] to-[#0a6286]">
+            <div @click="open = !open" role="button"
+                 class="cursor-pointer relative overflow-hidden bg-gradient-to-br from-[#0a6286] via-[#134e5e] to-[#0a6286]">
                 @if($weekTheme->feature_picture)
                     <img src="{{ Storage::disk('public')->url($weekTheme->feature_picture) }}" alt="" class="absolute inset-0 w-full h-full object-cover opacity-20">
                 @endif
                 <div class="absolute -top-20 -right-20 w-56 h-56 rounded-full bg-easter-gold/15 blur-[70px] pointer-events-none"></div>
                 <div class="absolute -bottom-16 -left-16 w-40 h-40 rounded-full bg-white/5 blur-[60px] pointer-events-none"></div>
-                <div class="relative flex items-center gap-3 px-4 py-3.5 sm:px-5">
-                    <div class="flex-1 min-w-0 text-white">
-                        <div class="flex items-center gap-2 mb-0.5">
-                            <span class="px-2 py-0.5 rounded-md bg-easter-gold/20 text-easter-gold font-bold text-[11px] tracking-wide">{{ __('app.week', ['number' => $weekTheme->week_number]) }}</span>
-                            <span class="text-white/30">|</span>
-                            <span class="text-sm text-white/80 font-medium">{{ $themeName }}</span>
-                        </div>
-                        <h3 class="font-black text-base text-white drop-shadow-sm leading-tight">{{ $themeMeaning }}</h3>
-                        <p class="text-[11px] text-white/40 mt-1">{{ __('app.weekly_readings') }}</p>
+                <div class="relative px-4 py-4 sm:px-5">
+                    {{-- Week badge + theme name --}}
+                    <div class="flex items-center gap-2.5 mb-2">
+                        <span class="px-2.5 py-1 rounded-full bg-easter-gold/20 text-easter-gold font-bold text-[11px] tracking-wide uppercase">{{ __('app.week', ['number' => $weekTheme->week_number]) }}</span>
+                        <span class="text-sm text-white/70 font-semibold">{{ $themeName }}</span>
                     </div>
-                    <div class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center shrink-0">
-                        <svg class="w-4 h-4 text-white/70 transition-transform duration-300"
-                             :class="open && 'rotate-180'"
-                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
-                        </svg>
+                    {{-- Meaning text — clamp to 2 lines when closed --}}
+                    <p class="text-[15px] font-bold text-white leading-snug"
+                       :class="!open && 'line-clamp-2'">{{ $themeMeaning }}</p>
+                    {{-- Read more / Show less pill --}}
+                    <div class="mt-3 flex items-center gap-2">
+                        <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-200"
+                              :class="open ? 'bg-white/20 text-white' : 'bg-easter-gold/90 text-[#0a3d52]'">
+                            <span x-text="open ? '{{ __('app.show_less') }}' : '{{ __('app.read_more') }}'"></span>
+                            <svg class="w-3.5 h-3.5 transition-transform duration-300"
+                                 :class="open && 'rotate-180'"
+                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </span>
+                        <span class="text-[11px] text-white/35">{{ __('app.weekly_readings') }}</span>
                     </div>
                 </div>
-            </button>
+            </div>
 
             {{-- Expandable body --}}
             <div x-show="open"
