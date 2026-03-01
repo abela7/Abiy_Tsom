@@ -411,9 +411,9 @@
                     <p class="text-[15px] font-bold text-white leading-snug"
                        :class="!open && 'line-clamp-2'">{{ $themeMeaning }}</p>
                     {{-- Read more / Show less pill --}}
-                    <div class="mt-3 flex items-center gap-2">
-                        <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-200"
-                              :class="open ? 'bg-white/20 text-white' : 'bg-white text-[#0a6286]'">
+                    <div class="mt-3 flex items-center gap-3">
+                        <span class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold shadow-sm transition-all duration-200"
+                              :class="open ? 'bg-white/15 text-white/90 backdrop-blur-sm' : 'bg-easter-gold text-[#1a1a1a]'">
                             <span x-text="open ? '{{ __('app.show_less') }}' : '{{ __('app.read_more') }}'"></span>
                             <svg class="w-3.5 h-3.5 transition-transform duration-300"
                                  :class="open && 'rotate-180'"
