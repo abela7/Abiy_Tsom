@@ -301,10 +301,16 @@ return [
     'tour_day_privacy_desc'     => 'Your daily check-ins and activity progress are stored privately on your account — no one else can see what you have ticked.',
 
     // Extended tour — settings page
-    'tour_settings_whatsapp_title' => 'WhatsApp Reminders',
-    'tour_settings_whatsapp_desc'  => 'Get a daily WhatsApp message with your spiritual content. Turn it on or off, choose your preferred time, and pick your language.',
-    'tour_settings_passcode_title' => 'Passcode Lock',
-    'tour_settings_passcode_desc'  => 'Protect your spiritual journey with a PIN. Enable the passcode lock so that only you can open the app.',
+    'tour_settings_whatsapp_title'  => 'WhatsApp Reminders',
+    'tour_settings_whatsapp_desc'   => 'Get a daily WhatsApp message with your spiritual content. Turn it on or off, choose your preferred time, and pick your language.',
+    'tour_settings_telegram_title'  => 'Telegram Bot',
+    'tour_settings_telegram_desc'   => 'You can access all your daily content — Bible readings, Mezmur, Sinksar and more — directly in our Telegram bot. Tap "Open Telegram Bot" to get started without needing to visit this website.',
+    'tour_settings_passcode_title'  => 'Passcode Lock',
+    'tour_settings_passcode_desc'   => 'Protect your spiritual journey with a PIN. Enable the passcode lock so that only you can open the app.',
+
+    // Telegram bot CTA (settings page UI)
+    'telegram_bot_cta_desc' => 'You can also access all your daily spiritual content through our Telegram bot — no need to open this website.',
+    'telegram_bot_open_btn' => 'Open Telegram Bot',
 
     'passcode_lock' => 'Passcode Lock',
     'lock_app' => 'Lock app',

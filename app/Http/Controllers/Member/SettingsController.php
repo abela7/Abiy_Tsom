@@ -23,7 +23,10 @@ class SettingsController extends Controller
             ? $member->customActivities()->orderBy('sort_order')->get()
             : collect();
 
-        return view('member.settings', compact('member', 'customActivities'));
+        $botUsername = ltrim((string) config('services.telegram.bot_username', ''), '@');
+        $telegramBotUrl = $botUsername ? 'https://t.me/' . $botUsername : null;
+
+        return view('member.settings', compact('member', 'customActivities', 'telegramBotUrl'));
     }
 
     /**

@@ -208,9 +208,10 @@
                 'privacy'    => ['title' => __('app.tour_day_privacy_title'),    'desc' => __('app.tour_day_privacy_desc')],
             ],
             'settings' => [
-                'whatsapp' => ['title' => __('app.tour_settings_whatsapp_title'), 'desc' => __('app.tour_settings_whatsapp_desc')],
-                'custom'   => ['title' => __('app.tour_settings_custom_title'),   'desc' => __('app.tour_settings_custom_desc')],
-                'passcode' => ['title' => __('app.tour_settings_passcode_title'), 'desc' => __('app.tour_settings_passcode_desc')],
+                'whatsapp'  => ['title' => __('app.tour_settings_whatsapp_title'),  'desc' => __('app.tour_settings_whatsapp_desc')],
+                'telegram'  => ['title' => __('app.tour_settings_telegram_title'),  'desc' => __('app.tour_settings_telegram_desc')],
+                'custom'    => ['title' => __('app.tour_settings_custom_title'),    'desc' => __('app.tour_settings_custom_desc')],
+                'passcode'  => ['title' => __('app.tour_settings_passcode_title'),  'desc' => __('app.tour_settings_passcode_desc')],
                 'done'     => ['title' => __('app.tour_settings_done_title'),     'desc' => __('app.tour_settings_done_desc')],
             ],
         ];

@@ -135,6 +135,7 @@ class TranslationSeeder extends Seeder
                 'tour_day_privacy_title', 'tour_day_privacy_desc',
                 // Multi-page tour step content — settings phase
                 'tour_settings_whatsapp_title', 'tour_settings_whatsapp_desc',
+                'tour_settings_telegram_title', 'tour_settings_telegram_desc',
                 'tour_settings_custom_title', 'tour_settings_custom_desc',
                 'tour_settings_passcode_title', 'tour_settings_passcode_desc',
                 'tour_settings_done_title', 'tour_settings_done_desc',
@@ -144,6 +145,7 @@ class TranslationSeeder extends Seeder
             'settings' => [
                 'settings_title', 'language', 'theme', 'theme_light', 'theme_dark',
                 'lang_en', 'lang_am',
+                'telegram_bot_cta_desc', 'telegram_bot_open_btn',
                 'custom_activities', 'custom_activities_desc',
                 'custom_activity_placeholder', 'custom_activity_added', 'custom_activity_deleted',
                 'custom_activity_updated', 'confirm_delete_custom_activity',

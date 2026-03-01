@@ -304,10 +304,16 @@ return [
     'tour_day_privacy_desc'     => 'ዕለታዊ እንቅስቃሴዎችዎ እና ሂደትዎ በሂሳብዎ ውስጥ ብቸኛ ሆኖ ይቀመጣል — ሌላ ሰው ምን እንደ ምርጡ ሊያይ አይችልም።',
 
     // Extended tour — settings page
-    'tour_settings_whatsapp_title' => 'የዋትሳፕ ማሳወቂያዎች',
-    'tour_settings_whatsapp_desc'  => 'ዕለታዊ መንፈሳዊ ይዘትዎን የሚያካትት የዋትሳፕ መልዕክት ይቀበሉ። ይክፈቱ ወይም ይዝጉ፣ የሚፈለጉትን ሰዓት ይምረጡ እና ቋንቋ ይምረጡ።',
-    'tour_settings_passcode_title' => 'የይለፍ ቃል መቆለፊያ',
-    'tour_settings_passcode_desc'  => 'ፒን በማዘጋጀት የመንፈሳዊ ጉዞዎን ይጠብቁ። የይለፍ ቃሉን ያስፈቅዱ — መተግበሪያዎን ሊከፍት የሚችለው እርስዎ ብቻ ነው።',
+    'tour_settings_whatsapp_title'  => 'የዋትሳፕ ማሳወቂያዎች',
+    'tour_settings_whatsapp_desc'   => 'ዕለታዊ መንፈሳዊ ይዘትዎን የሚያካትት የዋትሳፕ መልዕክት ይቀበሉ። ይክፈቱ ወይም ይዝጉ፣ የሚፈለጉትን ሰዓት ይምረጡ እና ቋንቋ ይምረጡ።',
+    'tour_settings_telegram_title'  => 'ቴሌግራም ቦት',
+    'tour_settings_telegram_desc'   => 'ዕለታዊ ይዘቶን — መጽሐፍ ቅዱስ፣ መዝሙር፣ ስንክሳር እና ሌሎችም — ቀጥታ በቴሌግራም ቦታችን ማግኘት ይችላሉ። ይህን ድረ-ገጽ ሳይጎበኙ ለመጀመር "ቴሌግራም ቦት ክፈት" ን ይጫኑ።',
+    'tour_settings_passcode_title'  => 'የይለፍ ቃል መቆለፊያ',
+    'tour_settings_passcode_desc'   => 'ፒን በማዘጋጀት የመንፈሳዊ ጉዞዎን ይጠብቁ። የይለፍ ቃሉን ያስፈቅዱ — መተግበሪያዎን ሊከፍት የሚችለው እርስዎ ብቻ ነው።',
+
+    // Telegram bot CTA (settings page UI)
+    'telegram_bot_cta_desc' => 'ዕለታዊ መንፈሳዊ ይዘቶን በቴሌግራም ቦታችን ማግኘት ይችላሉ — ይህን ድረ-ገጽ ሳይጎበኙ።',
+    'telegram_bot_open_btn' => 'ቴሌግራም ቦት ክፈት',
 
     'passcode_lock' => 'የይለፍ ቃል መቆለፊያ',
     'lock_app' => 'መቸገስ አስቀምጥ',

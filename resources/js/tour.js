@@ -321,6 +321,14 @@ function buildSettingsSteps(c) {
             },
         },
         {
+            element: '[data-tour="settings-telegram"]',
+            popover: {
+                title:       c?.settings?.telegram?.title ?? 'Telegram Bot',
+                description: c?.settings?.telegram?.desc  ?? '',
+                side: 'bottom', align: 'start',
+            },
+        },
+        {
             element: '[data-tour="settings-custom"]',
             popover: {
                 title:       c?.settings?.custom?.title ?? 'Custom Activities',

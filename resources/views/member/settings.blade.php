@@ -295,7 +295,7 @@
         </div>
 
         {{-- Link Telegram --}}
-        <div class="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
+        <div data-tour="settings-telegram" class="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
             <button type="button" @click="openId = openId === 'telegram' ? null : 'telegram'"
                     class="w-full flex items-center justify-between px-4 py-4 text-left">
                 <div class="flex items-center gap-3 min-w-0">
@@ -318,6 +318,19 @@
             x-transition:leave="transition ease-in duration-150"
             x-transition:leave-start="opacity-100"
             x-transition:leave-end="opacity-0" class="px-4 pb-4 pt-0 space-y-4">
+                {{-- Telegram bot shortcut --}}
+                @if($telegramBotUrl ?? null)
+                <div class="p-3 rounded-xl bg-sky-500/8 border border-sky-500/20 space-y-2">
+                    <p class="text-sm text-secondary leading-relaxed">{{ __('app.telegram_bot_cta_desc') }}</p>
+                    <a href="{{ $telegramBotUrl }}" target="_blank" rel="noopener"
+                       class="inline-flex items-center gap-2 px-4 py-2.5 bg-sky-500 text-white text-sm font-semibold rounded-xl hover:bg-sky-600 transition active:scale-95">
+                        <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.161c-.18 1.897-.962 6.502-1.359 8.627-.168.9-.5 1.201-.82 1.23-.697.064-1.226-.461-1.901-.903-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.139-5.062 3.345-.479.329-.913.489-1.302.481-.428-.009-1.252-.241-1.865-.44-.752-.244-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.831-2.529 6.998-3.015 3.333-1.386 4.025-1.627 4.477-1.635.099-.002.321.023.465.141.121.1.154.234.17.332.015.098.034.321.019.495z"/>
+                        </svg>
+                        {{ __('app.telegram_bot_open_btn') }}
+                    </a>
+                </div>
+                @endif
                 <p class="text-sm text-muted-text">{{ __('app.telegram_settings_link_desc') }}</p>
                 @if ($member?->telegram_chat_id)
                 <div class="flex items-center justify-between p-3 rounded-xl bg-green-500/10 border border-green-500/20">
