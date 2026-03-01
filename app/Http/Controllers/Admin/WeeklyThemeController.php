@@ -9,6 +9,7 @@ use App\Models\LentSeason;
 use App\Models\WeeklyTheme;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 /**
@@ -53,7 +54,30 @@ class WeeklyThemeController extends Controller
             'summary_am' => ['nullable', 'string'],
             'week_start_date' => ['required', 'date'],
             'week_end_date' => ['required', 'date', 'after_or_equal:week_start_date'],
+            // Feature picture
+            'feature_picture' => ['nullable', 'image', 'max:2048'],
+            // Bible readings
+            'reading_1_reference' => ['nullable', 'string', 'max:255'],
+            'reading_1_text_en' => ['nullable', 'string'],
+            'reading_1_text_am' => ['nullable', 'string'],
+            'reading_2_reference' => ['nullable', 'string', 'max:255'],
+            'reading_2_text_en' => ['nullable', 'string'],
+            'reading_2_text_am' => ['nullable', 'string'],
+            'reading_3_reference' => ['nullable', 'string', 'max:255'],
+            'reading_3_text_en' => ['nullable', 'string'],
+            'reading_3_text_am' => ['nullable', 'string'],
+            // Psalm, Gospel, Liturgy full text
+            'psalm_text_en' => ['nullable', 'string'],
+            'psalm_text_am' => ['nullable', 'string'],
+            'gospel_text_en' => ['nullable', 'string'],
+            'gospel_text_am' => ['nullable', 'string'],
+            'liturgy_text_en' => ['nullable', 'string'],
+            'liturgy_text_am' => ['nullable', 'string'],
         ]);
+
+        if ($request->hasFile('feature_picture')) {
+            $validated['feature_picture'] = $request->file('feature_picture')->store('themes', 'public');
+        }
 
         WeeklyTheme::create($validated);
 
@@ -86,7 +110,45 @@ class WeeklyThemeController extends Controller
             'summary_am' => ['nullable', 'string'],
             'week_start_date' => ['required', 'date'],
             'week_end_date' => ['required', 'date', 'after_or_equal:week_start_date'],
+            // Feature picture
+            'feature_picture' => ['nullable', 'image', 'max:2048'],
+            'remove_feature_picture' => ['nullable', 'boolean'],
+            // Bible readings
+            'reading_1_reference' => ['nullable', 'string', 'max:255'],
+            'reading_1_text_en' => ['nullable', 'string'],
+            'reading_1_text_am' => ['nullable', 'string'],
+            'reading_2_reference' => ['nullable', 'string', 'max:255'],
+            'reading_2_text_en' => ['nullable', 'string'],
+            'reading_2_text_am' => ['nullable', 'string'],
+            'reading_3_reference' => ['nullable', 'string', 'max:255'],
+            'reading_3_text_en' => ['nullable', 'string'],
+            'reading_3_text_am' => ['nullable', 'string'],
+            // Psalm, Gospel, Liturgy full text
+            'psalm_text_en' => ['nullable', 'string'],
+            'psalm_text_am' => ['nullable', 'string'],
+            'gospel_text_en' => ['nullable', 'string'],
+            'gospel_text_am' => ['nullable', 'string'],
+            'liturgy_text_en' => ['nullable', 'string'],
+            'liturgy_text_am' => ['nullable', 'string'],
         ]);
+
+        // Handle feature picture removal or replacement
+        if ($request->boolean('remove_feature_picture')) {
+            if ($theme->feature_picture) {
+                Storage::disk('public')->delete($theme->feature_picture);
+            }
+            $validated['feature_picture'] = null;
+        } elseif ($request->hasFile('feature_picture')) {
+            if ($theme->feature_picture) {
+                Storage::disk('public')->delete($theme->feature_picture);
+            }
+            $validated['feature_picture'] = $request->file('feature_picture')->store('themes', 'public');
+        }
+
+        // Do not overwrite existing picture if no new one was uploaded
+        if (! array_key_exists('feature_picture', $validated)) {
+            unset($validated['feature_picture']);
+        }
 
         $theme->update($validated);
 

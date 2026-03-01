@@ -32,6 +32,23 @@ class WeeklyTheme extends Model
         'summary_am',
         'week_start_date',
         'week_end_date',
+        // Structured readings content
+        'feature_picture',
+        'reading_1_reference',
+        'reading_1_text_en',
+        'reading_1_text_am',
+        'reading_2_reference',
+        'reading_2_text_en',
+        'reading_2_text_am',
+        'reading_3_reference',
+        'reading_3_text_en',
+        'reading_3_text_am',
+        'psalm_text_en',
+        'psalm_text_am',
+        'gospel_text_en',
+        'gospel_text_am',
+        'liturgy_text_en',
+        'liturgy_text_am',
     ];
 
     /** @return array<string, string> */
