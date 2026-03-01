@@ -28,7 +28,7 @@
                 <div class="overflow-y-auto flex-1 overscroll-contain min-h-0" @touchmove.stop>
                     <template x-if="campaign.embed_url">
                         <div class="fund-video relative w-full bg-black shrink-0">
-                            <iframe :src="campaign.embed_url"
+                            <iframe :src="cleanEmbedUrl"
                                     class="absolute inset-0 w-full h-full"
                                     frameborder="0"
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -53,10 +53,14 @@
                         <span class="fund-cta-shimmer absolute inset-0 rounded-2xl pointer-events-none"></span>
                         <span class="relative">{{ __('app.fundraising_popup_interested') }}</span>
                     </button>
-                    <button @click="notToday()"
-                            class="w-full py-2 text-sm font-medium rounded-2xl active:scale-[0.97] transition"
+                    <button @click="skipCountdown === 0 && notToday()"
+                            :disabled="skipCountdown > 0"
+                            :class="skipCountdown > 0 ? 'opacity-40 cursor-not-allowed' : 'active:scale-[0.97]'"
+                            class="w-full py-2 text-sm font-medium rounded-2xl transition"
                             style="color:#6b7280">
-                        {{ __('app.fundraising_popup_not_today') }}
+                        <span x-show="skipCountdown > 0"
+                              x-text="'{{ __('app.fundraising_popup_not_today') }}' + ' (' + skipCountdown + ')'"></span>
+                        <span x-show="skipCountdown === 0">{{ __('app.fundraising_popup_not_today') }}</span>
                     </button>
                 </div>
             </div>
@@ -252,15 +256,39 @@ function fundraisingPopup() {
         errors: {},
         submitting: false,
         shareCopied: false,
+        skipCountdown: 0,
+        _skipTimer: null,
+
+        get cleanEmbedUrl() {
+            if (!this.campaign.embed_url) return '';
+            try {
+                const url = new URL(this.campaign.embed_url);
+                url.searchParams.set('rel', '0');
+                url.searchParams.set('modestbranding', '1');
+                url.searchParams.set('iv_load_policy', '3'); // hide annotations
+                return url.toString();
+            } catch { return this.campaign.embed_url; }
+        },
 
         async init() {
             this.$watch('open', (val, oldVal) => {
                 if (val) {
                     scrollY.value = window.scrollY;
                     document.body.style.top = `-${scrollY.value}px`;
+                    // Start skip countdown when video popup opens
+                    if (this.campaign.embed_url && this.step === 1) {
+                        this.skipCountdown = 20;
+                        clearInterval(this._skipTimer);
+                        this._skipTimer = setInterval(() => {
+                            if (this.skipCountdown > 0) this.skipCountdown--;
+                            else clearInterval(this._skipTimer);
+                        }, 1000);
+                    }
                 } else {
                     document.body.style.top = '';
                     window.scrollTo(0, scrollY.value);
+                    clearInterval(this._skipTimer);
+                    this.skipCountdown = 0;
                     if (oldVal === true) {
                         window.dispatchEvent(new CustomEvent('fundraising-ready'));
                     }
@@ -272,6 +300,15 @@ function fundraisingPopup() {
                 if (data.show) {
                     this.campaign = data;
                     this.open = true;
+                    // Start countdown after campaign is loaded (watcher fires before embed_url is set)
+                    if (data.embed_url) {
+                        this.skipCountdown = 20;
+                        clearInterval(this._skipTimer);
+                        this._skipTimer = setInterval(() => {
+                            if (this.skipCountdown > 0) this.skipCountdown--;
+                            else clearInterval(this._skipTimer);
+                        }, 1000);
+                    }
                 } else {
                     window.dispatchEvent(new CustomEvent('fundraising-ready'));
                 }
