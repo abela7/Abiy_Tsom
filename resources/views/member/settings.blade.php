@@ -109,7 +109,7 @@
         </div>
 
         {{-- App Tour --}}
-        <div class="bg-card rounded-2xl shadow-sm border border-border overflow-hidden"
+        <div data-tour="settings-tour" class="bg-card rounded-2xl shadow-sm border border-border overflow-hidden"
              x-data="{ tourCompleted: {{ ($member && $member->tour_completed_at) ? 'true' : 'false' }} }">
             <button type="button" @click="openId = openId === 'tour' ? null : 'tour'; tourCompleted = typeof window.AbiyTsomIsTourCompleted === 'function' ? window.AbiyTsomIsTourCompleted() : tourCompleted"
                     class="w-full flex items-center justify-between px-4 py-4 text-left">
@@ -363,7 +363,7 @@
         </div>
 
         {{-- Custom Activities --}}
-        <div class="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
+        <div data-tour="settings-custom" class="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
             <button type="button" @click="openId = openId === 'activities' ? null : 'activities'"
                     class="w-full flex items-center justify-between px-4 py-4 text-left">
                 <h3 class="font-semibold text-primary">{{ __('app.custom_activities') }}</h3>
@@ -996,5 +996,8 @@ function settingsPage() {
         }
     };
 }
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => { window.AbiyTsomContinueTour?.('settings'); }, 500);
+});
 </script>
 @endpush

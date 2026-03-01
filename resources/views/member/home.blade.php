@@ -26,6 +26,7 @@
     {{-- View Today — hero CTA card --}}
     @if(isset($viewTodayTarget) && $viewTodayTarget)
     <a href="{{ route('member.day', $viewTodayTarget) }}"
+       data-tour="view-today"
        class="group relative block overflow-hidden rounded-3xl bg-gradient-to-br from-accent via-accent to-accent-hover dark:from-accent-hover dark:via-accent-hover dark:to-[#7a5a08] transition-all duration-300 active:scale-[0.98]">
 
         <div class="relative flex items-center gap-4 p-5 sm:p-6">
@@ -62,6 +63,7 @@
     </a>
     @else
     <a href="{{ route('member.calendar') }}"
+       data-tour="view-today"
        class="group relative block overflow-hidden rounded-3xl bg-card border border-border shadow-md hover:shadow-lg transition-all duration-300 active:scale-[0.98]">
         <div class="relative flex items-center gap-4 p-5 sm:p-6">
             <div class="flex-1 min-w-0">

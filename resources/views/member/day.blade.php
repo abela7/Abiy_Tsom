@@ -36,7 +36,7 @@
     </div>
 
     {{-- Back + day info + share --}}
-    <div class="flex items-center gap-3">
+    <div data-tour="day-header" class="flex items-center gap-3">
         <a href="{{ $backUrl }}" class="p-2 rounded-lg bg-muted shrink-0">
             <svg class="w-5 h-5 text-muted-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
         </a>
@@ -98,7 +98,7 @@
     @php
         $bibleText = localized($daily, 'bible_text');
     @endphp
-    <div class="bg-card rounded-2xl p-4 shadow-sm border border-border">
+    <div data-tour="day-bible" class="bg-card rounded-2xl p-4 shadow-sm border border-border">
         <h3 class="font-semibold text-sm text-accent mb-1">{{ __('app.bible_reading') }}</h3>
         <p class="font-medium text-primary">{{ localized($daily, 'bible_reference') }}</p>
         @if(localized($daily, 'bible_summary'))
@@ -132,7 +132,7 @@
 
     {{-- Mezmur (multiple) — exclusive accordion: when one opens, others collapse --}}
     @if($daily->mezmurs->isNotEmpty())
-    <div class="bg-card rounded-2xl p-4 shadow-sm border border-border" x-data="{ openId: null }">
+    <div data-tour="day-mezmur" class="bg-card rounded-2xl p-4 shadow-sm border border-border" x-data="{ openId: null }">
         <h3 class="font-semibold text-sm text-accent-secondary mb-3">{{ __('app.mezmur') }}</h3>
         <div class="space-y-2">
             @foreach($daily->mezmurs as $mezmur)
@@ -307,7 +307,7 @@
         $customChecklistCompleted = ($customChecklist ?? collect())->mapWithKeys(fn ($c) => [(string) $c->member_custom_activity_id => $c->completed])->all();
     @endphp
     @if(!$publicPreview && ($activities->isNotEmpty() || ($customActivities ?? collect())->isNotEmpty() || $member))
-    <div class="rounded-2xl p-5 shadow-sm border-2 transition-all duration-300"
+    <div data-tour="day-checklist" class="rounded-2xl p-5 shadow-sm border-2 transition-all duration-300"
          x-data="{
              allDone: false,
              checkAllDone() {
@@ -351,7 +351,7 @@
             </template>
         </div>
         @if($member)
-        <div class="mt-4 pt-4 border-t border-border">
+        <div data-tour="day-custom" class="mt-4 pt-4 border-t border-border">
             <p class="text-xs text-muted-text mb-3">{{ __('app.custom_activities_desc') }}</p>
             <form @submit.prevent="addActivity().then(() => $dispatch('checklist-updated'))" class="flex flex-wrap gap-2">
                 <input type="text" x-model="addActivityName" maxlength="255"
@@ -477,5 +477,8 @@ function dayPage() {
         }
     };
 }
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => { window.AbiyTsomContinueTour?.('day'); }, 500);
+});
 </script>
 @endpush

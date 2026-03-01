@@ -179,14 +179,33 @@
     @if(isset($currentMember) && request()->routeIs('member.*'))
     @php
         $tourContent = [
-            'welcome' => ['title' => __('app.tour_welcome_title'), 'desc' => __('app.tour_welcome_desc')],
-            'language' => ['title' => __('app.tour_language_title'), 'desc' => __('app.tour_language_desc')],
-            'theme' => ['title' => __('app.tour_theme_title'), 'desc' => __('app.tour_theme_desc')],
             'next' => __('app.tour_next'),
             'prev' => __('app.tour_prev'),
             'done' => __('app.tour_done'),
             'skip' => __('app.tour_skip'),
             'progressText' => __('app.tour_progress'),
+            'home' => [
+                'welcome'   => ['title' => __('app.tour_welcome_title'),    'desc' => __('app.tour_welcome_desc')],
+                'language'  => ['title' => __('app.tour_language_title'),   'desc' => __('app.tour_language_desc')],
+                'theme'     => ['title' => __('app.tour_theme_title'),      'desc' => __('app.tour_theme_desc')],
+                'viewToday' => ['title' => __('app.tour_view_today_title'), 'desc' => __('app.tour_view_today_desc')],
+            ],
+            'calendar' => [
+                'legend' => ['title' => __('app.tour_cal_legend_title'), 'desc' => __('app.tour_cal_legend_desc')],
+                'week'   => ['title' => __('app.tour_cal_week_title'),   'desc' => __('app.tour_cal_week_desc')],
+                'today'  => ['title' => __('app.tour_cal_today_title'),  'desc' => __('app.tour_cal_today_desc')],
+            ],
+            'day' => [
+                'header'    => ['title' => __('app.tour_day_header_title'),    'desc' => __('app.tour_day_header_desc')],
+                'bible'     => ['title' => __('app.tour_day_bible_title'),     'desc' => __('app.tour_day_bible_desc')],
+                'mezmur'    => ['title' => __('app.tour_day_mezmur_title'),    'desc' => __('app.tour_day_mezmur_desc')],
+                'checklist' => ['title' => __('app.tour_day_checklist_title'), 'desc' => __('app.tour_day_checklist_desc')],
+                'custom'    => ['title' => __('app.tour_day_custom_title'),    'desc' => __('app.tour_day_custom_desc')],
+            ],
+            'settings' => [
+                'custom' => ['title' => __('app.tour_settings_custom_title'), 'desc' => __('app.tour_settings_custom_desc')],
+                'done'   => ['title' => __('app.tour_settings_done_title'),   'desc' => __('app.tour_settings_done_desc')],
+            ],
         ];
     @endphp
     <script>

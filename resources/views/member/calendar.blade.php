@@ -22,7 +22,7 @@
 
     @if(! empty($weeks))
         {{-- Color Legend --}}
-        <div class="flex items-center justify-center gap-3 sm:gap-4 text-[11px] font-medium">
+        <div data-tour="cal-legend" class="flex items-center justify-center gap-3 sm:gap-4 text-[11px] font-medium">
             <span class="inline-flex items-center gap-1.5">
                 <span class="w-3 h-3 rounded-sm border-2 border-cal-past-border bg-cal-past-bg"></span>
                 <span class="text-cal-past-text">{{ __('app.calendar_passed') }}</span>
@@ -39,7 +39,7 @@
 
         <div class="space-y-5">
             @foreach($weeks as $week)
-                <section class="space-y-2">
+                <section @if($loop->first) data-tour="cal-week" @endif class="space-y-2">
                     {{-- Week Header --}}
                     <div class="flex items-center justify-between px-1">
                         <div class="flex items-start gap-2">
@@ -65,7 +65,7 @@
                                 $pct = $day['pct'];
                             @endphp
 
-                            <div @if($isToday) id="current-day" @endif class="relative">
+                            <div @if($isToday) id="current-day" data-tour="cal-today" @endif class="relative">
                                 @if($hasContent)
                                     <a href="{{ route('member.day', $content) }}"
                                        class="relative aspect-square min-w-0 flex flex-col items-center justify-center rounded-xl transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md active:scale-95 group
@@ -140,6 +140,7 @@
                 currentDay.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }, 100);
         }
+        setTimeout(() => { window.AbiyTsomContinueTour?.('calendar'); }, 500);
     });
 </script>
 @endpush

@@ -1,32 +1,31 @@
 /**
- * Member app tour (Driver.js) — language & theme on home screen.
+ * Member app tour (Driver.js) — multi-page guided tour.
  * Tour content comes from window.AbiyTsomTourContent (set by Blade).
- * Completion is stored server-side (tour_completed_at) and synced to localStorage.
+ * Phases: home → calendar → day → settings.
+ * State is kept in sessionStorage (survives reload, clears on tab close).
  */
 
-const TOUR_STORAGE_KEY = 'member_tour_completed';
-const TOUR_STEP_KEY    = 'member_tour_step'; // sessionStorage — survives reload, not tab close
+const TOUR_STORAGE_KEY  = 'member_tour_completed';
+const TOUR_STEP_KEY     = 'member_tour_step';
+const TOUR_PHASE_KEY    = 'member_tour_phase';
+const TOUR_DAY_URL_KEY  = 'member_tour_day_url';
+
+// ─── localStorage / server completion ─────────────────────────────────────
 
 export function isTourCompleted() {
     if (window.AbiyTsomTourCompleted === true) return true;
-    // Server explicitly says not completed — clear any stale localStorage so admin
-    // resets take effect immediately and syncTourCompletion does not re-backfill.
+    // Server explicitly says not completed — clear stale localStorage so admin
+    // resets take effect immediately.
     if (window.AbiyTsomTourCompleted === false) {
         try { localStorage.removeItem(TOUR_STORAGE_KEY); } catch {}
         return false;
     }
-    // Server value unknown (page without tour tracking) — fall back to localStorage.
-    try {
-        return localStorage.getItem(TOUR_STORAGE_KEY) === '1';
-    } catch {
-        return false;
-    }
+    // Server value unknown — fall back to localStorage.
+    try { return localStorage.getItem(TOUR_STORAGE_KEY) === '1'; } catch { return false; }
 }
 
 function setTourCompletedLocal() {
-    try {
-        localStorage.setItem(TOUR_STORAGE_KEY, '1');
-    } catch {}
+    try { localStorage.setItem(TOUR_STORAGE_KEY, '1'); } catch {}
 }
 
 export async function setTourCompleted() {
@@ -47,21 +46,43 @@ export async function resetTour() {
     } catch {}
 }
 
-/**
- * Sync localStorage tour completion to the server.
- * Runs on page load for members who completed the tour before server-side
- * tracking was introduced — their localStorage has '1' but DB has NULL.
- */
 export function syncTourCompletion() {
-    if (window.AbiyTsomTourCompleted === true) return; // already in sync
+    if (window.AbiyTsomTourCompleted === true) return;
     try {
         if (localStorage.getItem(TOUR_STORAGE_KEY) === '1') {
-            setTourCompleted(); // silently backfill the DB record
+            setTourCompleted();
         }
     } catch {}
 }
 
-/** Boost the language dropdown above the Driver.js overlay when on the language step. */
+// ─── sessionStorage phase / step helpers ──────────────────────────────────
+
+function savePhase(phase) { try { sessionStorage.setItem(TOUR_PHASE_KEY, phase); } catch {} }
+function getPhase()       { try { return sessionStorage.getItem(TOUR_PHASE_KEY); } catch { return null; } }
+function saveStep(idx)    { try { sessionStorage.setItem(TOUR_STEP_KEY, String(idx)); } catch {} }
+
+function clearPhase() {
+    try {
+        sessionStorage.removeItem(TOUR_PHASE_KEY);
+        sessionStorage.removeItem(TOUR_STEP_KEY);
+        sessionStorage.removeItem(TOUR_DAY_URL_KEY);
+    } catch {}
+}
+
+function getSavedStep(stepsLength) {
+    try {
+        const saved = sessionStorage.getItem(TOUR_STEP_KEY);
+        if (saved !== null) {
+            const idx = parseInt(saved, 10) || 0;
+            sessionStorage.removeItem(TOUR_STEP_KEY);
+            return Math.max(0, Math.min(idx, stepsLength - 1));
+        }
+    } catch {}
+    return 0;
+}
+
+// ─── z-index helper for language dropdown ────────────────────────────────
+
 function setLangDropdownZIndex(zIndex) {
     try {
         const el = document.querySelector('[data-tour="language"] .fixed');
@@ -69,94 +90,321 @@ function setLangDropdownZIndex(zIndex) {
     } catch {}
 }
 
-export async function startMemberTour(force = false) {
-    if (!force && isTourCompleted()) return;
+// ─── Phase navigation ─────────────────────────────────────────────────────
 
-    const content = window.AbiyTsomTourContent;
-    if (!content) return;
+const PHASE_ORDER = ['home', 'calendar', 'day', 'settings'];
 
-    const steps = [
+/** Called when a phase completes (Done button on last step). */
+function navigateAfterPhase(phase) {
+    const base      = window.AbiyTsom?.baseUrl ?? '';
+    const nextPhase = PHASE_ORDER[PHASE_ORDER.indexOf(phase) + 1];
+
+    if (!nextPhase) {
+        // All phases done — mark tour complete and stay on settings page.
+        clearPhase();
+        setTourCompleted();
+        return;
+    }
+
+    savePhase(nextPhase);
+
+    switch (nextPhase) {
+        case 'calendar':
+            window.location.href = base + '/member/calendar';
+            break;
+
+        case 'day': {
+            // Navigate directly to today's day cell link.
+            const todayLink = document.querySelector('#current-day a')?.href;
+            if (todayLink) {
+                try { sessionStorage.setItem(TOUR_DAY_URL_KEY, todayLink); } catch {}
+                window.location.href = todayLink;
+            } else {
+                // No today entry — skip day phase and go to settings.
+                savePhase('settings');
+                window.location.href = base + '/member/settings';
+            }
+            break;
+        }
+
+        case 'settings':
+            window.location.href = base + '/member/settings';
+            break;
+    }
+}
+
+/** Called when the user arrives at home mid-tour (redirects to saved phase page). */
+function navigateToPhase(phase) {
+    const base = window.AbiyTsom?.baseUrl ?? '';
+    switch (phase) {
+        case 'calendar':
+            window.location.href = base + '/member/calendar';
+            break;
+        case 'day': {
+            const saved = (() => { try { return sessionStorage.getItem(TOUR_DAY_URL_KEY); } catch { return null; } })();
+            if (saved) {
+                window.location.href = saved;
+            } else {
+                // No saved day URL — go back through calendar so it can pick up today's link.
+                savePhase('calendar');
+                window.location.href = base + '/member/calendar';
+            }
+            break;
+        }
+        case 'settings':
+            window.location.href = base + '/member/settings';
+            break;
+    }
+}
+
+// ─── Step builders ────────────────────────────────────────────────────────
+
+function buildHomeSteps(c) {
+    return [
         {
             popover: {
-                title: content.welcome?.title ?? 'Welcome',
-                description: content.welcome?.desc ?? '',
-                side: 'bottom',
-                align: 'center',
+                title:       c?.home?.welcome?.title  ?? 'Welcome',
+                description: c?.home?.welcome?.desc   ?? '',
+                side: 'bottom', align: 'center',
             },
         },
         {
             element: '[data-tour="language"]',
             popover: {
-                title: content.language?.title ?? 'Language',
-                description: content.language?.desc ?? '',
-                side: 'bottom',
-                align: 'end',
+                title:       c?.home?.language?.title ?? 'Language',
+                description: c?.home?.language?.desc  ?? '',
+                side: 'bottom', align: 'end',
             },
         },
         {
             element: '[data-tour="theme"]',
             popover: {
-                title: content.theme?.title ?? 'Theme',
-                description: content.theme?.desc ?? '',
-                side: 'bottom',
-                align: 'end',
+                title:       c?.home?.theme?.title    ?? 'Theme',
+                description: c?.home?.theme?.desc     ?? '',
+                side: 'bottom', align: 'end',
+            },
+        },
+        {
+            element: '[data-tour="view-today"]',
+            popover: {
+                title:       c?.home?.viewToday?.title ?? 'Your Daily Content',
+                description: c?.home?.viewToday?.desc  ?? '',
+                side: 'bottom', align: 'start',
             },
         },
     ].filter((s) => !s.element || document.querySelector(s.element));
+}
 
-    if (steps.length < 2) return;
+function buildCalendarSteps(c) {
+    return [
+        {
+            element: '[data-tour="cal-legend"]',
+            popover: {
+                title:       c?.calendar?.legend?.title ?? 'Day Status',
+                description: c?.calendar?.legend?.desc  ?? '',
+                side: 'bottom', align: 'center',
+            },
+        },
+        {
+            element: '[data-tour="cal-week"]',
+            popover: {
+                title:       c?.calendar?.week?.title ?? 'Weekly Themes',
+                description: c?.calendar?.week?.desc  ?? '',
+                side: 'bottom', align: 'start',
+            },
+        },
+        {
+            element: '[data-tour="cal-today"]',
+            popover: {
+                title:       c?.calendar?.today?.title ?? 'Today',
+                description: c?.calendar?.today?.desc  ?? '',
+                side: 'bottom', align: 'center',
+            },
+        },
+    ].filter((s) => !s.element || document.querySelector(s.element));
+}
+
+function buildDaySteps(c) {
+    return [
+        {
+            element: '[data-tour="day-header"]',
+            popover: {
+                title:       c?.day?.header?.title ?? "Today's Reading",
+                description: c?.day?.header?.desc  ?? '',
+                side: 'bottom', align: 'start',
+            },
+        },
+        {
+            element: '[data-tour="day-bible"]',
+            popover: {
+                title:       c?.day?.bible?.title ?? 'Bible Reading',
+                description: c?.day?.bible?.desc  ?? '',
+                side: 'bottom', align: 'start',
+            },
+        },
+        {
+            element: '[data-tour="day-mezmur"]',
+            popover: {
+                title:       c?.day?.mezmur?.title ?? 'Mezmur',
+                description: c?.day?.mezmur?.desc  ?? '',
+                side: 'bottom', align: 'start',
+            },
+        },
+        {
+            element: '[data-tour="day-checklist"]',
+            popover: {
+                title:       c?.day?.checklist?.title ?? 'Daily Checklist',
+                description: c?.day?.checklist?.desc  ?? '',
+                side: 'bottom', align: 'start',
+            },
+        },
+        {
+            element: '[data-tour="day-custom"]',
+            popover: {
+                title:       c?.day?.custom?.title ?? 'Custom Activities',
+                description: c?.day?.custom?.desc  ?? '',
+                side: 'bottom', align: 'start',
+            },
+        },
+    ].filter((s) => !s.element || document.querySelector(s.element));
+}
+
+function buildSettingsSteps(c) {
+    return [
+        {
+            element: '[data-tour="settings-custom"]',
+            popover: {
+                title:       c?.settings?.custom?.title ?? 'Custom Activities',
+                description: c?.settings?.custom?.desc  ?? '',
+                side: 'bottom', align: 'start',
+            },
+        },
+        {
+            element: '[data-tour="settings-tour"]',
+            popover: {
+                title:       c?.settings?.done?.title ?? "You're All Set!",
+                description: c?.settings?.done?.desc  ?? '',
+                side: 'bottom', align: 'start',
+            },
+        },
+    ].filter((s) => !s.element || document.querySelector(s.element));
+}
+
+// ─── Core tour runner ─────────────────────────────────────────────────────
+
+async function runPhaseTour(phase, steps) {
+    if (steps.length === 0) {
+        navigateAfterPhase(phase);
+        return;
+    }
+
+    const resumeStep = getSavedStep(steps.length);
 
     try {
         const { driver } = await import('driver.js');
+        const isMobile   = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+        const content    = window.AbiyTsomTourContent;
 
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
-
-        // Resume from saved step (e.g. after language change triggers a page reload).
-        let resumeStep = 0;
-        try {
-            const saved = sessionStorage.getItem(TOUR_STEP_KEY);
-            if (saved !== null) {
-                resumeStep = Math.max(0, Math.min(parseInt(saved, 10) || 0, steps.length - 1));
-                sessionStorage.removeItem(TOUR_STEP_KEY);
-            }
-        } catch {}
+        let lastHighlightedIdx = resumeStep;
+        let closedEarly        = false;
 
         const driverObj = driver({
-            showProgress: true,
-            allowClose: false,      // overlay click does NOT close the tour
-            smoothScroll: true,
+            showProgress:   true,
+            allowClose:     false,          // overlay click does NOT close the tour
+            smoothScroll:   true,
             overlayOpacity: 0.6,
-            stagePadding: isMobile ? 8 : 10,
-            popoverOffset: isMobile ? 8 : 10,
-            nextBtnText: content.next ?? 'Next',
-            prevBtnText: content.prev ?? 'Back',
-            doneBtnText: content.done ?? 'Done',
-            progressText: content.progressText ?? '{{current}} of {{total}}',
+            stagePadding:   isMobile ? 8 : 10,
+            popoverOffset:  isMobile ? 8 : 10,
+            nextBtnText:    content?.next         ?? 'Next',
+            prevBtnText:    content?.prev         ?? 'Back',
+            doneBtnText:    content?.done         ?? 'Done',
+            progressText:   content?.progressText ?? '{{current}} of {{total}}',
             steps,
-            onHighlightStarted: (element, _step, opts) => {
-                // Persist current step so a page reload (e.g. language switch) can resume here.
-                const idx = opts?.state?.activeIndex ?? 0;
-                try { sessionStorage.setItem(TOUR_STEP_KEY, String(idx)); } catch {}
 
-                // Language dropdown is position:fixed with z-index 9999. Driver.js overlay
-                // is z-index 10000, but the Driver.js POPOVER is z-index 1000000000 (1 billion).
-                // Boost the dropdown to 1000000001 so it appears above the tour popover.
+            onHighlightStarted: (element, _step, opts) => {
+                lastHighlightedIdx = opts?.state?.activeIndex ?? lastHighlightedIdx;
+                saveStep(lastHighlightedIdx);
+                // Boost language dropdown z-index above the Driver.js popover (z-index 1 billion).
                 if (element?.dataset?.tour === 'language') {
                     setLangDropdownZIndex('1000000001');
                 } else {
                     setLangDropdownZIndex('9999');
                 }
             },
+
+            onCloseClick: () => {
+                // X button was clicked — treat as early exit.
+                closedEarly = true;
+            },
+
             onDestroyed: () => {
-                // Clear resume key and z-index boost, then mark tour done.
                 try { sessionStorage.removeItem(TOUR_STEP_KEY); } catch {}
                 setLangDropdownZIndex('9999');
-                setTourCompleted();
+
+                const completedAllSteps = !closedEarly && lastHighlightedIdx >= steps.length - 1;
+                if (completedAllSteps) {
+                    navigateAfterPhase(phase);
+                } else {
+                    // User closed early — end tour entirely.
+                    clearPhase();
+                    setTourCompleted();
+                }
             },
         });
 
         driverObj.drive(resumeStep);
     } catch (e) {
-        console.warn('Tour: failed to start', e);
+        console.warn('Tour: failed to start phase', phase, e);
     }
+}
+
+// ─── Public API ───────────────────────────────────────────────────────────
+
+/**
+ * Start or resume the tour from the home page.
+ * force=true restarts the whole tour from step 0.
+ */
+export async function startMemberTour(force = false) {
+    if (force) {
+        clearPhase();
+    }
+
+    if (!force && isTourCompleted()) {
+        return;
+    }
+
+    // If the user is mid-tour on a different phase, redirect there.
+    const savedPhase = getPhase();
+    if (savedPhase && savedPhase !== 'home') {
+        navigateToPhase(savedPhase);
+        return;
+    }
+
+    savePhase('home');
+    const steps = buildHomeSteps(window.AbiyTsomTourContent);
+    if (steps.length < 2) return;
+    await runPhaseTour('home', steps);
+}
+
+/**
+ * Called on non-home member pages (calendar, day, settings).
+ * Only runs if the saved tour phase matches this page.
+ */
+export async function continuePageTour(pageName) {
+    if (isTourCompleted()) return;
+
+    const savedPhase = getPhase();
+    if (savedPhase !== pageName) return;
+
+    const content = window.AbiyTsomTourContent;
+    let steps;
+
+    switch (pageName) {
+        case 'calendar': steps = buildCalendarSteps(content); break;
+        case 'day':      steps = buildDaySteps(content);      break;
+        case 'settings': steps = buildSettingsSteps(content); break;
+        default: return;
+    }
+
+    await runPhaseTour(pageName, steps);
 }
