@@ -16,6 +16,17 @@
             </svg>
             {{ __('app.suggest_page_title') }}
         </a>
+        @if($counts['all'] > 0)
+            <form method="POST" action="{{ route('admin.suggestions.clear-all') }}"
+                  onsubmit="return confirm('{{ __('app.suggest_clear_all_confirm') }}')" class="w-full sm:w-auto">
+                @csrf
+                @method('DELETE')
+                <button type="submit"
+                        class="inline-flex w-full items-center justify-center rounded-xl border border-red-300/40 bg-red-50 text-red-600 px-4 py-2.5 text-sm font-semibold transition hover:bg-red-100 active:scale-[0.97] touch-manipulation sm:w-auto">
+                    {{ __('app.suggest_clear_all_btn') }}
+                </button>
+            </form>
+        @endif
     </div>
 </div>
 

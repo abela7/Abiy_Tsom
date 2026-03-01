@@ -156,6 +156,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
 
         // Content suggestions review
         Route::get('/suggestions', [Admin\ContentSuggestionController::class, 'index'])->name('suggestions.index');
+        Route::delete('/suggestions/clear-all', [Admin\ContentSuggestionController::class, 'clearAll'])->name('suggestions.clear-all');
         Route::post('/suggestions/{suggestion}/use', [Admin\ContentSuggestionController::class, 'markUsed'])->name('suggestions.mark-used');
         Route::post('/suggestions/{suggestion}/unuse', [Admin\ContentSuggestionController::class, 'unmarkUsed'])->name('suggestions.unmark-used');
         Route::post('/suggestions/{suggestion}/reject', [Admin\ContentSuggestionController::class, 'reject'])->name('suggestions.reject');

@@ -320,71 +320,209 @@
     @endif
 
     @if($today)
-        {{-- Weekly theme banner --}}
+        {{-- Weekly theme & readings accordion --}}
         @if($weekTheme)
-        <div class="relative overflow-hidden rounded-3xl shadow-2xl border border-white/10 bg-gradient-to-br from-[#0a6286] via-[#134e5e] to-[#0a6286] cursor-pointer hover:shadow-[0_20px_60px_-12px_rgba(10,98,134,0.5)] transition-all duration-300"
-             x-data="{showDetails: false}"
-             @click="showDetails = !showDetails">
+        @php
+            $locale = app()->getLocale();
+            $isAm = $locale === 'am';
+            $themeName = localized($weekTheme, 'name') ?? $weekTheme->name_en ?? $weekTheme->name_geez ?? '-';
+            $themeMeaning = $isAm && $weekTheme->meaning_am ? $weekTheme->meaning_am : $weekTheme->meaning;
+            $themeDescription = $isAm && $weekTheme->description_am ? $weekTheme->description_am : $weekTheme->description;
+            $themeSummary = $isAm && $weekTheme->summary_am ? $weekTheme->summary_am : $weekTheme->theme_summary;
 
-            {{-- Ambient glows --}}
-            <div class="absolute -top-20 -right-20 w-56 h-56 rounded-full bg-easter-gold/15 blur-[70px] pointer-events-none"></div>
-            <div class="absolute -bottom-20 -left-20 w-48 h-48 rounded-full bg-white/5 blur-[70px] pointer-events-none"></div>
+            // Build accordion items dynamically — only include sections that have content
+            $accordionItems = [];
 
-            <div class="relative px-4 py-3 sm:px-6 sm:py-4 text-white">
-                {{-- Week label + name --}}
-                <div class="flex items-center gap-2 mb-1">
-                    <span class="px-2 py-0.5 rounded-md bg-easter-gold/20 text-easter-gold font-bold text-xs tracking-wide">{{ __('app.week', ['number' => $weekTheme->week_number]) }}</span>
-                    <span class="text-white/40">|</span>
-                    <span class="text-sm text-white/80 font-medium">{{ localized($weekTheme, 'name') ?? $weekTheme->name_en ?? $weekTheme->name_geez ?? '-' }}</span>
-                </div>
-                <h3 class="font-black text-lg text-white drop-shadow-sm">{{ app()->getLocale() === 'am' && $weekTheme->meaning_am ? $weekTheme->meaning_am : $weekTheme->meaning }}</h3>
+            // Theme overview
+            if ($themeDescription || $themeSummary) {
+                $accordionItems[] = [
+                    'key' => 'overview',
+                    'label' => __('app.theme_overview'),
+                    'icon' => 'bi-info-circle',
+                ];
+            }
 
-                {{-- Short description (always visible) --}}
-                @php
-                    $description = app()->getLocale() === 'am' && $weekTheme->description_am ? $weekTheme->description_am : $weekTheme->description;
-                @endphp
-                @if($description)
-                    <p class="text-sm text-white/75 mt-2 line-clamp-2" x-show="!showDetails">{{ $description }}</p>
+            // Readings 1–3
+            for ($i = 1; $i <= 3; $i++) {
+                $ref = $isAm
+                    ? ($weekTheme->{"reading_{$i}_reference_am"} ?? $weekTheme->{"reading_{$i}_reference"})
+                    : ($weekTheme->{"reading_{$i}_reference"} ?? $weekTheme->{"reading_{$i}_reference_am"});
+                $text = $isAm
+                    ? ($weekTheme->{"reading_{$i}_text_am"} ?? $weekTheme->{"reading_{$i}_text_en"})
+                    : ($weekTheme->{"reading_{$i}_text_en"} ?? $weekTheme->{"reading_{$i}_text_am"});
+                if ($ref || $text) {
+                    $accordionItems[] = [
+                        'key' => "reading_{$i}",
+                        'label' => __('app.reading_number', ['number' => $i]),
+                        'ref' => $ref,
+                        'text' => $text,
+                        'icon' => 'bi-book',
+                    ];
+                }
+            }
+
+            // Psalm
+            $psalmRef = $isAm
+                ? ($weekTheme->psalm_reference_am ?? $weekTheme->psalm_reference)
+                : ($weekTheme->psalm_reference ?? $weekTheme->psalm_reference_am);
+            $psalmText = $isAm
+                ? ($weekTheme->psalm_text_am ?? $weekTheme->psalm_text_en)
+                : ($weekTheme->psalm_text_en ?? $weekTheme->psalm_text_am);
+            if ($psalmRef || $psalmText) {
+                $accordionItems[] = [
+                    'key' => 'psalm',
+                    'label' => __('app.psalm'),
+                    'ref' => $psalmRef,
+                    'text' => $psalmText,
+                    'icon' => 'bi-music-note-beamed',
+                ];
+            }
+
+            // Gospel
+            $gospelRef = $isAm
+                ? ($weekTheme->gospel_reference_am ?? $weekTheme->gospel_reference)
+                : ($weekTheme->gospel_reference ?? $weekTheme->gospel_reference_am);
+            $gospelText = $isAm
+                ? ($weekTheme->gospel_text_am ?? $weekTheme->gospel_text_en)
+                : ($weekTheme->gospel_text_en ?? $weekTheme->gospel_text_am);
+            if ($gospelRef || $gospelText) {
+                $accordionItems[] = [
+                    'key' => 'gospel',
+                    'label' => __('app.gospel'),
+                    'ref' => $gospelRef,
+                    'text' => $gospelText,
+                    'icon' => 'bi-journal-text',
+                ];
+            }
+
+            // Epistles (reference only — no full text field)
+            $epistlesRef = $weekTheme->epistles_reference;
+            if ($epistlesRef) {
+                $accordionItems[] = [
+                    'key' => 'epistles',
+                    'label' => __('app.epistles'),
+                    'ref' => $epistlesRef,
+                    'text' => null,
+                    'icon' => 'bi-envelope-open',
+                ];
+            }
+
+            // Liturgy / Anaphora
+            $liturgyName = $isAm
+                ? ($weekTheme->liturgy_am ?? $weekTheme->liturgy)
+                : ($weekTheme->liturgy ?? $weekTheme->liturgy_am);
+            $liturgyText = $isAm
+                ? ($weekTheme->liturgy_text_am ?? $weekTheme->liturgy_text_en)
+                : ($weekTheme->liturgy_text_en ?? $weekTheme->liturgy_text_am);
+            if ($liturgyName || $liturgyText) {
+                $accordionItems[] = [
+                    'key' => 'liturgy',
+                    'label' => __('app.liturgy'),
+                    'ref' => $liturgyName,
+                    'text' => $liturgyText,
+                    'icon' => 'bi-cup-hot',
+                ];
+            }
+        @endphp
+
+        <section x-data="{ openItem: null }" class="space-y-3">
+            {{-- Header banner — always visible --}}
+            <div class="relative overflow-hidden rounded-3xl shadow-2xl border border-white/10 bg-gradient-to-br from-[#0a6286] via-[#134e5e] to-[#0a6286]">
+                @if($weekTheme->feature_picture)
+                    <img src="{{ Storage::disk('public')->url($weekTheme->feature_picture) }}" alt="" class="absolute inset-0 w-full h-full object-cover opacity-20">
                 @endif
+                <div class="absolute -top-20 -right-20 w-56 h-56 rounded-full bg-easter-gold/15 blur-[70px] pointer-events-none"></div>
+                <div class="absolute -bottom-20 -left-20 w-48 h-48 rounded-full bg-white/5 blur-[70px] pointer-events-none"></div>
 
-                {{-- Expanded details (click to toggle) --}}
-                <div x-show="showDetails" x-transition class="mt-3 space-y-2">
-                    @if($description)
-                        <p class="text-sm text-white/85">{{ $description }}</p>
+                <div class="relative px-4 py-3 sm:px-6 sm:py-4 text-white">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="px-2 py-0.5 rounded-md bg-easter-gold/20 text-easter-gold font-bold text-xs tracking-wide">{{ __('app.week', ['number' => $weekTheme->week_number]) }}</span>
+                        <span class="text-white/40">|</span>
+                        <span class="text-sm text-white/80 font-medium">{{ $themeName }}</span>
+                    </div>
+                    <h3 class="font-black text-lg text-white drop-shadow-sm">{{ $themeMeaning }}</h3>
+                    @if($themeDescription)
+                        <p class="text-sm text-white/75 mt-1 line-clamp-2">{{ $themeDescription }}</p>
                     @endif
 
-                    @php
-                        $summary = app()->getLocale() === 'am' && $weekTheme->summary_am ? $weekTheme->summary_am : $weekTheme->theme_summary;
-                    @endphp
-                    @if($summary)
-                        <p class="text-sm text-white/85 border-t border-white/10 pt-2">{{ $summary }}</p>
+                    @if(count($accordionItems) > 0)
+                        <p class="text-xs text-white/50 mt-2">{{ __('app.weekly_readings') }}</p>
                     @endif
-
-                    @if($weekTheme->gospel_reference || $weekTheme->epistles_reference || $weekTheme->liturgy)
-                        <div class="text-sm text-white/60 border-t border-white/10 pt-2 space-y-0.5">
-                            @if($weekTheme->gospel_reference)
-                                <p>{{ __('app.gospel_reference') }}: {{ $weekTheme->gospel_reference }}</p>
-                            @endif
-                            @if($weekTheme->epistles_reference)
-                                <p>{{ __('app.epistles_reference') }}: {{ $weekTheme->epistles_reference }}</p>
-                            @endif
-                            @if($weekTheme->liturgy)
-                                <p class="italic">{{ $weekTheme->liturgy }}</p>
-                            @endif
-                        </div>
-                    @endif
-                </div>
-
-                {{-- Click hint --}}
-                <div class="text-xs text-white/50 mt-2 flex items-center gap-1">
-                    <span x-show="!showDetails">{{ __('app.tap_for_details') }}</span>
-                    <span x-show="showDetails">{{ __('app.tap_to_collapse') }}</span>
-                    <svg class="w-4 h-4 transition-transform" :class="showDetails && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                    </svg>
                 </div>
             </div>
-        </div>
+
+            {{-- Accordion items — all collapsed by default --}}
+            @foreach($accordionItems as $item)
+            <div class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+                {{-- Accordion trigger --}}
+                <button type="button"
+                        class="w-full flex items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-muted/50"
+                        @click="openItem = openItem === '{{ $item['key'] }}' ? null : '{{ $item['key'] }}'">
+                    <i class="bi {{ $item['icon'] }} text-accent text-lg shrink-0"></i>
+                    <div class="flex-1 min-w-0">
+                        <span class="font-semibold text-sm text-primary">{{ $item['label'] }}</span>
+                        @if(!empty($item['ref']))
+                            <span class="block text-xs text-muted-text truncate">{{ $item['ref'] }}</span>
+                        @endif
+                    </div>
+                    <svg class="w-5 h-5 text-muted-text shrink-0 transition-transform duration-200"
+                         :class="openItem === '{{ $item['key'] }}' && 'rotate-180'"
+                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+
+                {{-- Accordion content --}}
+                <div x-show="openItem === '{{ $item['key'] }}'"
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 -translate-y-1"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="opacity-100"
+                     x-transition:leave-end="opacity-0"
+                     x-cloak
+                     class="border-t border-border">
+                    <div class="px-4 py-3 space-y-2">
+                        @if($item['key'] === 'overview')
+                            {{-- Theme overview: description + summary --}}
+                            @if($themeDescription)
+                                <p class="text-sm text-secondary leading-relaxed">{{ $themeDescription }}</p>
+                            @endif
+                            @if($themeSummary)
+                                <div class="pt-2 border-t border-border">
+                                    <p class="text-xs font-semibold text-muted-text uppercase tracking-wide mb-1">{{ __('app.theme_summary') }}</p>
+                                    <p class="text-sm text-secondary leading-relaxed">{{ $themeSummary }}</p>
+                                </div>
+                            @endif
+                            @if($weekTheme->gospel_reference || $weekTheme->epistles_reference || $weekTheme->psalm_reference)
+                                <div class="pt-2 border-t border-border space-y-1">
+                                    @if($weekTheme->gospel_reference)
+                                        <p class="text-xs text-muted-text"><span class="font-medium">{{ __('app.gospel_reference') }}:</span> {{ $isAm ? ($weekTheme->gospel_reference_am ?? $weekTheme->gospel_reference) : $weekTheme->gospel_reference }}</p>
+                                    @endif
+                                    @if($weekTheme->epistles_reference)
+                                        <p class="text-xs text-muted-text"><span class="font-medium">{{ __('app.epistles_reference') }}:</span> {{ $weekTheme->epistles_reference }}</p>
+                                    @endif
+                                    @if($weekTheme->psalm_reference)
+                                        <p class="text-xs text-muted-text"><span class="font-medium">{{ __('app.psalm_reference') }}:</span> {{ $isAm ? ($weekTheme->psalm_reference_am ?? $weekTheme->psalm_reference) : $weekTheme->psalm_reference }}</p>
+                                    @endif
+                                </div>
+                            @endif
+                        @else
+                            {{-- Reading / Psalm / Gospel / Epistles / Liturgy --}}
+                            @if(!empty($item['ref']))
+                                <p class="text-xs font-medium text-accent">{{ $item['ref'] }}</p>
+                            @endif
+                            @if(!empty($item['text']))
+                                <div class="text-sm text-secondary leading-relaxed whitespace-pre-line">{{ $item['text'] }}</div>
+                            @elseif(empty($item['text']) && !empty($item['ref']))
+                                {{-- Reference only, no text — already shown above --}}
+                            @endif
+                        @endif
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </section>
         @endif
 
         {{-- Day content (Bible, Mezmur, checklist, etc.) is shown on member.day view only --}}

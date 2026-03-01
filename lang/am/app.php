@@ -148,6 +148,11 @@ return [
     'weekly_theme' => 'የሳምንት ጭብጨባ',
     'gospel_reference' => 'የወንጌል ማጣቀሻ',
     'epistles_reference' => 'የመልእክቶች ማጣቀሻ',
+    'weekly_readings' => 'የሳምንቱ ንባባት',
+    'theme_overview' => 'የሳምንቱ ጭብጥ',
+    'reading_number' => 'ንባብ :number',
+    'epistles' => 'መልእክታት',
+    'liturgy' => 'ቅዳሴ (አናፎራ)',
 
     // Progress
     'progress_title' => 'ሂደትዎ',
@@ -1001,6 +1006,10 @@ return [
     'suggest_unmark_used' => 'Undo',
     'suggest_reject' => 'Reject',
     'suggest_all' => 'All',
+    'suggest_clear_all_btn' => 'Clear All Suggestions',
+    'suggest_clear_all_confirm' => 'Clear all suggestions history? This cannot be undone.',
+    'suggest_all_cleared' => ':count suggestions cleared.',
+    'suggest_nothing_to_clear' => 'No suggestions to clear.',
     'suggest_submitted_by' => 'By :name',
     'suggest_used_by' => 'Used by :name on :date',
     'suggest_content_suggestions' => 'Content Suggestions',

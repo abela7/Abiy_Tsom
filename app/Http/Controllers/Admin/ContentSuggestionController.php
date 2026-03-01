@@ -81,4 +81,15 @@ class ContentSuggestionController extends Controller
 
         return back()->with('success', __('app.suggest_rejected'));
     }
+
+    /**
+     * Delete all suggestion records.
+     */
+    public function clearAll(): RedirectResponse
+    {
+        $count = ContentSuggestion::query()->delete();
+
+        return redirect()->route('admin.suggestions.index')
+            ->with('success', __('app.suggest_all_cleared', ['count' => $count]));
+    }
 }
