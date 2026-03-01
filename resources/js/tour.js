@@ -307,11 +307,12 @@ async function runPhaseTour(phase, steps) {
         const content    = window.AbiyTsomTourContent;
 
         const driverObj = driver({
-            showProgress:   true,
-            allowClose:     false,          // overlay click does NOT close the tour
-            showButtons:    ['next', 'previous'], // no X button — tour must be completed
-            smoothScroll:   true,
-            overlayOpacity: 0.6,
+            showProgress:            true,
+            allowClose:              false,          // overlay click does NOT close the tour
+            showButtons:             ['next', 'previous'], // no X button — tour must be completed
+            disableActiveInteraction: true,          // highlighted element is view-only, not clickable
+            smoothScroll:            true,
+            overlayOpacity:          0.6,
             stagePadding:   isMobile ? 8 : 10,
             popoverOffset:  isMobile ? 8 : 10,
             nextBtnText:    content?.next         ?? 'Next',
