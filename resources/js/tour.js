@@ -8,6 +8,13 @@ const TOUR_STORAGE_KEY = 'member_tour_completed';
 
 export function isTourCompleted() {
     if (window.AbiyTsomTourCompleted === true) return true;
+    // Server explicitly says not completed — clear any stale localStorage so admin
+    // resets take effect immediately and syncTourCompletion does not re-backfill.
+    if (window.AbiyTsomTourCompleted === false) {
+        try { localStorage.removeItem(TOUR_STORAGE_KEY); } catch {}
+        return false;
+    }
+    // Server value unknown (page without tour tracking) — fall back to localStorage.
     try {
         return localStorage.getItem(TOUR_STORAGE_KEY) === '1';
     } catch {
