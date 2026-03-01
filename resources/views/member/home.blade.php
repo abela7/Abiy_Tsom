@@ -396,9 +396,6 @@
             {{-- Collapsible header --}}
             <div @click="open = !open" role="button"
                  class="cursor-pointer relative overflow-hidden bg-gradient-to-br from-[#0a6286] via-[#134e5e] to-[#0a6286]">
-                @if($weekTheme->feature_picture)
-                    <img src="{{ Storage::disk('public')->url($weekTheme->feature_picture) }}" alt="" class="absolute inset-0 w-full h-full object-cover opacity-20">
-                @endif
                 <div class="absolute -top-20 -right-20 w-56 h-56 rounded-full bg-easter-gold/15 blur-[70px] pointer-events-none"></div>
                 <div class="absolute -bottom-16 -left-16 w-40 h-40 rounded-full bg-white/5 blur-[60px] pointer-events-none"></div>
                 <div class="relative px-4 py-4 sm:px-5">
@@ -434,8 +431,16 @@
                  x-transition:leave="transition ease-in duration-200"
                  x-transition:leave-start="opacity-100"
                  x-transition:leave-end="opacity-0"
-                 x-cloak
-                 class="p-3 space-y-3">
+                 x-cloak>
+
+                {{-- Feature picture — shown at top when accordion is open --}}
+                @if($weekTheme->feature_picture)
+                <img src="{{ Storage::disk('public')->url($weekTheme->feature_picture) }}"
+                     alt="{{ $themeName }}"
+                     class="w-full aspect-video object-cover">
+                @endif
+
+                <div class="p-3 space-y-3">
 
                 {{-- Theme overview --}}
                 @if($hasOverview)
@@ -518,6 +523,7 @@
                     </div>
                 </div>
                 @endforeach
+                </div>
             </div>
         </section>
         @endif
