@@ -95,14 +95,17 @@ function setLangDropdownZIndex(zIndex) {
 const PHASE_ORDER = ['home', 'calendar', 'day', 'settings'];
 
 /** Called when a phase completes (Done button on last step). */
-function navigateAfterPhase(phase) {
+async function navigateAfterPhase(phase) {
     const base      = window.AbiyTsom?.baseUrl ?? '';
     const nextPhase = PHASE_ORDER[PHASE_ORDER.indexOf(phase) + 1];
 
     if (!nextPhase) {
-        // All phases done — mark complete and return to home.
+        // All phases done — await the API call so the DB is updated BEFORE the
+        // page navigates away. Without await the redirect aborts the request,
+        // the server still returns tour_completed = false on the next load, which
+        // then clears localStorage and restarts the tour.
         clearPhase();
-        setTourCompleted();
+        await setTourCompleted();
         window.location.href = base + '/member/home';
         return;
     }
