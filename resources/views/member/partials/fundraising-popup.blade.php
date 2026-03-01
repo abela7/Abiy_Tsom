@@ -28,11 +28,31 @@
                 <div class="overflow-y-auto flex-1 overscroll-contain min-h-0" @touchmove.stop>
                     <template x-if="campaign.embed_url">
                         <div class="fund-video relative w-full bg-black shrink-0">
-                            <iframe :src="cleanEmbedUrl"
-                                    class="absolute inset-0 w-full h-full"
-                                    frameborder="0"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowfullscreen loading="lazy"></iframe>
+                            {{-- Thumbnail facade: clean thumbnail + custom play button, no YouTube UI --}}
+                            <template x-if="!videoPlaying">
+                                <div class="absolute inset-0 cursor-pointer group" @click="videoPlaying = true">
+                                    <img :src="thumbnailUrl"
+                                         class="w-full h-full object-cover"
+                                         @error="$el.src = 'https://img.youtube.com/vi/' + videoId + '/hqdefault.jpg'">
+                                    <div class="absolute inset-0 bg-black/25 group-hover:bg-black/15 transition-colors"></div>
+                                    <div class="absolute inset-0 flex items-center justify-center">
+                                        <div class="w-16 h-16 rounded-full flex items-center justify-center shadow-2xl transition-transform group-hover:scale-110 group-active:scale-95"
+                                             style="background:#FF0000">
+                                            <svg class="w-7 h-7 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M8 5v14l11-7z"/>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                            {{-- Actual iframe: only inserted into DOM when user presses play --}}
+                            <template x-if="videoPlaying">
+                                <iframe :src="autoplayUrl"
+                                        class="absolute inset-0 w-full h-full"
+                                        frameborder="0"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowfullscreen></iframe>
+                            </template>
                         </div>
                     </template>
                     <div class="px-5 sm:px-6 pt-3 pb-5">
@@ -258,14 +278,29 @@ function fundraisingPopup() {
         shareCopied: false,
         skipCountdown: 0,
         _skipTimer: null,
+        videoPlaying: false,
 
-        get cleanEmbedUrl() {
+        get videoId() {
+            if (!this.campaign.embed_url) return '';
+            try {
+                const parts = new URL(this.campaign.embed_url).pathname.split('/');
+                const idx = parts.indexOf('embed');
+                return idx >= 0 ? (parts[idx + 1] ?? '').split('?')[0] : '';
+            } catch { return ''; }
+        },
+
+        get thumbnailUrl() {
+            return this.videoId
+                ? `https://img.youtube.com/vi/${this.videoId}/maxresdefault.jpg`
+                : '';
+        },
+
+        get autoplayUrl() {
             if (!this.campaign.embed_url) return '';
             try {
                 const url = new URL(this.campaign.embed_url);
+                url.searchParams.set('autoplay', '1');
                 url.searchParams.set('rel', '0');
-                url.searchParams.set('modestbranding', '1');
-                url.searchParams.set('iv_load_policy', '3'); // hide annotations
                 return url.toString();
             } catch { return this.campaign.embed_url; }
         },
@@ -289,6 +324,7 @@ function fundraisingPopup() {
                     window.scrollTo(0, scrollY.value);
                     clearInterval(this._skipTimer);
                     this.skipCountdown = 0;
+                    this.videoPlaying = false;
                     if (oldVal === true) {
                         window.dispatchEvent(new CustomEvent('fundraising-ready'));
                     }
