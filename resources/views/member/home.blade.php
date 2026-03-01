@@ -387,8 +387,8 @@
         @endphp
 
         @if($hasContent)
-        <section x-data="{ open: false, detail: null }" class="rounded-2xl border border-border bg-card shadow-lg overflow-hidden">
-            {{-- Single collapsible header --}}
+        <section x-data="{ open: false, detail: null }" class="rounded-2xl bg-card shadow-lg overflow-hidden">
+            {{-- Collapsible header --}}
             <button type="button" @click="open = !open"
                     class="w-full text-left relative overflow-hidden bg-gradient-to-br from-[#0a6286] via-[#134e5e] to-[#0a6286]">
                 @if($weekTheme->feature_picture)
@@ -424,13 +424,14 @@
                  x-transition:leave="transition ease-in duration-200"
                  x-transition:leave-start="opacity-100"
                  x-transition:leave-end="opacity-0"
-                 x-cloak>
+                 x-cloak
+                 class="p-3 space-y-3">
 
                 {{-- Theme overview --}}
                 @if($hasOverview)
-                <div class="px-4 py-3 border-b border-border/40">
+                <div class="rounded-xl bg-accent/5 p-3.5">
                     <div class="flex items-start gap-2.5">
-                        <div class="w-7 h-7 rounded-lg bg-accent/10 flex items-center justify-center shrink-0 mt-0.5">
+                        <div class="w-7 h-7 rounded-lg bg-accent/15 flex items-center justify-center shrink-0 mt-0.5">
                             <i class="bi bi-info-circle-fill text-accent text-sm"></i>
                         </div>
                         <div class="flex-1 min-w-0">
@@ -438,7 +439,7 @@
                                 <p class="text-sm text-secondary leading-relaxed">{{ $themeDescription }}</p>
                             @endif
                             @if($themeSummary)
-                                <div class="{{ $themeDescription ? 'mt-2 pt-2 border-t border-border/30' : '' }}">
+                                <div class="{{ $themeDescription ? 'mt-2' : '' }}">
                                     <p class="text-[11px] font-semibold text-muted-text uppercase tracking-wide mb-1">{{ __('app.theme_summary') }}</p>
                                     <p class="text-sm text-secondary leading-relaxed">{{ $themeSummary }}</p>
                                 </div>
@@ -450,23 +451,23 @@
 
                 {{-- Grouped content sections --}}
                 @foreach($contentGroups as $group)
-                <div class="{{ !$loop->last ? 'border-b border-border/30' : '' }}">
+                <div class="rounded-xl bg-muted/20 overflow-hidden">
                     {{-- Group header --}}
-                    <div class="flex items-center gap-2 px-4 py-2 bg-muted/30 border-b border-border/20">
+                    <div class="flex items-center gap-2 px-3.5 pt-3 pb-1.5">
                         <i class="bi {{ $group['icon'] }} text-accent/70 text-xs"></i>
                         <span class="text-[11px] font-bold text-muted-text uppercase tracking-wider">{{ $group['label'] }}</span>
                     </div>
                     {{-- Group items --}}
-                    <div class="divide-y divide-border/15">
+                    <div class="px-2 pb-2 space-y-1">
                         @foreach($group['items'] as $item)
-                        <div>
+                        <div class="rounded-lg overflow-hidden">
                             @if($item['text'])
                             {{-- Expandable item --}}
                             <button type="button"
-                                    class="w-full flex items-center gap-2.5 px-4 py-2.5 text-left transition-colors hover:bg-muted/30"
+                                    class="w-full flex items-center gap-2.5 px-2.5 py-2 text-left rounded-lg transition-colors hover:bg-card/60"
                                     @click="detail = detail === '{{ $item['key'] }}' ? null : '{{ $item['key'] }}'">
-                                <div class="w-6 h-6 rounded-md bg-accent/10 flex items-center justify-center shrink-0">
-                                    <i class="bi {{ $item['icon'] }} text-accent text-xs"></i>
+                                <div class="w-7 h-7 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
+                                    <i class="bi {{ $item['icon'] }} text-accent text-[13px]"></i>
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <span class="text-[13px] font-semibold text-primary">{{ $item['label'] }}</span>
@@ -474,7 +475,7 @@
                                         <span class="block text-xs text-muted-text truncate mt-0.5">{{ $item['ref'] }}</span>
                                     @endif
                                 </div>
-                                <svg class="w-4 h-4 text-muted-text/60 shrink-0 transition-transform duration-200"
+                                <svg class="w-4 h-4 text-muted-text/50 shrink-0 transition-transform duration-200"
                                      :class="detail === '{{ $item['key'] }}' && 'rotate-180'"
                                      fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -488,7 +489,7 @@
                                  x-transition:leave-start="opacity-100"
                                  x-transition:leave-end="opacity-0"
                                  x-cloak
-                                 class="ml-[2.625rem] mr-4 mb-3 pl-3 border-l-2 border-accent/30">
+                                 class="mx-2.5 mb-2 mt-1 p-3 rounded-lg bg-card/80">
                                 @if($item['ref'])
                                     <p class="text-xs font-medium text-accent mb-1.5">{{ $item['ref'] }}</p>
                                 @endif
@@ -496,9 +497,9 @@
                             </div>
                             @else
                             {{-- Reference-only item --}}
-                            <div class="flex items-center gap-2.5 px-4 py-2.5">
-                                <div class="w-6 h-6 rounded-md bg-accent/10 flex items-center justify-center shrink-0">
-                                    <i class="bi {{ $item['icon'] }} text-accent text-xs"></i>
+                            <div class="flex items-center gap-2.5 px-2.5 py-2">
+                                <div class="w-7 h-7 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
+                                    <i class="bi {{ $item['icon'] }} text-accent text-[13px]"></i>
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <span class="text-[13px] font-semibold text-primary">{{ $item['label'] }}</span>
