@@ -33,7 +33,7 @@
                                 <div class="absolute inset-0 cursor-pointer group" @click="videoPlaying = true">
                                     <img :src="thumbnailUrl"
                                          class="w-full h-full object-cover"
-                                         @error="$el.src = 'https://img.youtube.com/vi/' + videoId + '/hqdefault.jpg'">
+                                         x-on:error="$el.src = 'https://img.youtube.com/vi/' + videoId + '/hqdefault.jpg'">
                                     <div class="absolute inset-0 bg-black/25 group-hover:bg-black/15 transition-colors"></div>
                                     <div class="absolute inset-0 flex items-center justify-center">
                                         <div class="w-16 h-16 rounded-full flex items-center justify-center shadow-2xl transition-transform group-hover:scale-110 group-active:scale-95"
