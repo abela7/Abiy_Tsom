@@ -673,6 +673,13 @@ class DailyContentController extends Controller
         }
     }
 
+    public function destroy(DailyContent $daily): RedirectResponse
+    {
+        $daily->delete();
+
+        return redirect('/admin/daily')->with('success', __('app.daily_deleted'));
+    }
+
     /**
      * Normalize incoming wizard step number.
      */

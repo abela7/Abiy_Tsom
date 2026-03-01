@@ -746,6 +746,8 @@ return [
     'start' => 'መገኛ',
     'end' => 'መጨረሻ',
     'no_daily_content_yet' => 'ዕለታዊ ይዘት ገና የለም። መጨመር ጀምር!',
+    'confirm_delete_daily' => 'ይህን ዕለታዊ ይዘት መሰረዝ ይፈልጋሉ?',
+    'daily_deleted' => 'ዕለታዊ ይዘት ተሰርዟል።',
     'no_seasons_yet' => 'ገና ወቅቶች የሉም።',
     'edit_season' => 'ወቅት አርትዕ',
     'create_season' => 'ወቅት ፍጠር',

@@ -62,6 +62,12 @@
                                 <a href="{{ route('admin.daily.preview', $content) }}" target="_blank" rel="noopener" class="text-accent hover:underline">{{ __('app.view') }}</a>
                                 <span class="text-muted-text">|</span>
                                 <a href="{{ route('admin.daily.edit', $content) }}" class="text-accent hover:underline">{{ __('app.edit') }}</a>
+                                <span class="text-muted-text">|</span>
+                                <form action="{{ route('admin.daily.destroy', $content) }}" method="POST" class="inline"
+                                      onsubmit="return confirm('{{ __('app.confirm_delete_daily') }}')">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="text-red-500 hover:underline">{{ __('app.delete') }}</button>
+                                </form>
                             </span>
                         </td>
                     </tr>
@@ -119,6 +125,11 @@
             <div class="flex border-t border-border">
                 <a href="{{ route('admin.daily.preview', $content) }}" target="_blank" rel="noopener" class="flex-1 py-2.5 text-center text-sm font-medium text-accent hover:bg-muted/50 transition">{{ __('app.view') }}</a>
                 <a href="{{ route('admin.daily.edit', $content) }}" class="flex-1 py-2.5 text-center text-sm font-medium text-accent hover:bg-muted/50 transition border-l border-border">{{ __('app.edit') }}</a>
+                <form action="{{ route('admin.daily.destroy', $content) }}" method="POST" class="flex-1 border-l border-border"
+                      onsubmit="return confirm('{{ __('app.confirm_delete_daily') }}')">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="w-full py-2.5 text-center text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition">{{ __('app.delete') }}</button>
+                </form>
             </div>
             </div>
         @empty

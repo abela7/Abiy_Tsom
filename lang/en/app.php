@@ -766,6 +766,8 @@ return [
     'start' => 'Start',
     'end' => 'End',
     'no_daily_content_yet' => 'No daily content yet. Start adding!',
+    'confirm_delete_daily' => 'Are you sure you want to delete this daily content?',
+    'daily_deleted' => 'Daily content deleted.',
     'no_seasons_yet' => 'No seasons yet.',
     'edit_season' => 'Edit Season',
     'create_season' => 'Create Season',

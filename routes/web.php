@@ -123,6 +123,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/daily/{daily}/edit', [Admin\DailyContentController::class, 'edit'])->name('daily.edit');
         Route::patch('/daily/{daily}', [Admin\DailyContentController::class, 'patch'])->name('daily.patch');
         Route::put('/daily/{daily}', [Admin\DailyContentController::class, 'update'])->name('daily.update');
+        Route::delete('/daily/{daily}', [Admin\DailyContentController::class, 'destroy'])->name('daily.destroy');
 
         // Announcements
         Route::resource('announcements', Admin\AnnouncementController::class)->except(['show']);
