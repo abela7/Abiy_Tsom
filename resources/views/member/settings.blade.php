@@ -136,7 +136,7 @@
         </div>
 
         {{-- WhatsApp Reminder --}}
-        <div class="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
+        <div data-tour="settings-whatsapp" class="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
             <button type="button" @click="openId = openId === 'whatsapp' ? null : 'whatsapp'"
                     class="w-full flex items-center justify-between px-4 py-4 text-left">
                 <div class="flex items-center gap-3 min-w-0">
@@ -452,7 +452,7 @@
         </div>
 
         {{-- Passcode --}}
-        <div class="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
+        <div data-tour="settings-passcode" class="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
             <button type="button" @click="openId = openId === 'passcode' ? null : 'passcode'"
                     class="w-full flex items-center justify-between px-4 py-4 text-left">
                 <h3 class="font-semibold text-primary">{{ __('app.passcode_lock') }}</h3>

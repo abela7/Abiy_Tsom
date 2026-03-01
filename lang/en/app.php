@@ -285,6 +285,27 @@ return [
     'tour_settings_custom_desc' => 'Create, edit, or delete your personal daily activities here. They will appear in the checklist on each day\'s page.',
     'tour_settings_done_title' => 'You\'re All Set!',
     'tour_settings_done_desc' => 'You\'ve completed the tour. Explore your daily content, track your progress, and enjoy the fasting season. You can always replay this tour from Settings.',
+
+    // Extended tour — home
+    'tour_home_countdown_title' => 'Easter Countdown',
+    'tour_home_countdown_desc'  => 'See exactly how many days remain until Easter and track your Great Lent journey as a percentage — London time.',
+
+    // Extended tour — day page
+    'tour_day_sinksar_title'    => 'Sinksar (Synaxarium)',
+    'tour_day_sinksar_desc'     => 'Read or listen to the commemoration of the saint or holy day observed today in the Ethiopian Orthodox tradition.',
+    'tour_day_book_title'       => 'Spiritual Reading',
+    'tour_day_book_desc'        => 'A recommended spiritual book to deepen your faith and reflection during this fasting season.',
+    'tour_day_references_title' => 'Further References',
+    'tour_day_references_desc'  => 'Explore extra resources — videos, articles, and files — to learn more about today\'s spiritual content.',
+    'tour_day_privacy_title'    => 'Your Privacy',
+    'tour_day_privacy_desc'     => 'Your daily check-ins and activity progress are stored privately on your account — no one else can see what you have ticked.',
+
+    // Extended tour — settings page
+    'tour_settings_whatsapp_title' => 'WhatsApp Reminders',
+    'tour_settings_whatsapp_desc'  => 'Get a daily WhatsApp message with your spiritual content. Turn it on or off, choose your preferred time, and pick your language.',
+    'tour_settings_passcode_title' => 'Passcode Lock',
+    'tour_settings_passcode_desc'  => 'Protect your spiritual journey with a PIN. Enable the passcode lock so that only you can open the app.',
+
     'passcode_lock' => 'Passcode Lock',
     'lock_app' => 'Lock app',
     'passcode_enable' => 'Enable Passcode',

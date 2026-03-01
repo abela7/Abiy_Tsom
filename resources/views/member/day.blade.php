@@ -177,7 +177,7 @@
 
     {{-- Sinksar (Synaxarium) — same layout as Mezmur with YouTube/video link --}}
     @if(localized($daily, 'sinksar_title'))
-    <div class="bg-card rounded-2xl p-4 shadow-sm border border-border">
+    <div data-tour="day-sinksar" class="bg-card rounded-2xl p-4 shadow-sm border border-border">
         <h3 class="font-semibold text-sm text-sinksar mb-1">📖 {{ __('app.sinksar') }}</h3>
         <p class="font-medium text-primary">{{ localized($daily, 'sinksar_title') }}</p>
         @if(localized($daily, 'sinksar_description'))
@@ -191,7 +191,7 @@
 
     {{-- Spiritual books (multiple per day) --}}
     @if($daily->books && $daily->books->isNotEmpty())
-    <div class="space-y-3">
+    <div data-tour="day-book" class="space-y-3">
         <h3 class="font-semibold text-sm text-book">{{ __('app.spiritual_book') }}</h3>
         @foreach($daily->books as $book)
                 @php
@@ -222,7 +222,7 @@
 
     {{-- References (know more) — accordion with name + Read more per link --}}
     @if($daily->references->isNotEmpty())
-    <div class="bg-card rounded-2xl p-4 shadow-sm border border-border" x-data="{ open: false }">
+    <div data-tour="day-references" class="bg-card rounded-2xl p-4 shadow-sm border border-border" x-data="{ open: false }">
         <button type="button"
                 @click="open = !open"
                 class="w-full flex items-center justify-between gap-2 py-2 text-left">

@@ -188,6 +188,7 @@
                 'welcome'   => ['title' => __('app.tour_welcome_title'),    'desc' => __('app.tour_welcome_desc')],
                 'language'  => ['title' => __('app.tour_language_title'),   'desc' => __('app.tour_language_desc')],
                 'theme'     => ['title' => __('app.tour_theme_title'),      'desc' => __('app.tour_theme_desc')],
+                'countdown' => ['title' => __('app.tour_home_countdown_title'), 'desc' => __('app.tour_home_countdown_desc')],
                 'viewToday' => ['title' => __('app.tour_view_today_title'), 'desc' => __('app.tour_view_today_desc')],
             ],
             'calendar' => [
@@ -196,15 +197,21 @@
                 'today'  => ['title' => __('app.tour_cal_today_title'),  'desc' => __('app.tour_cal_today_desc')],
             ],
             'day' => [
-                'header'    => ['title' => __('app.tour_day_header_title'),    'desc' => __('app.tour_day_header_desc')],
-                'bible'     => ['title' => __('app.tour_day_bible_title'),     'desc' => __('app.tour_day_bible_desc')],
-                'mezmur'    => ['title' => __('app.tour_day_mezmur_title'),    'desc' => __('app.tour_day_mezmur_desc')],
-                'checklist' => ['title' => __('app.tour_day_checklist_title'), 'desc' => __('app.tour_day_checklist_desc')],
-                'custom'    => ['title' => __('app.tour_day_custom_title'),    'desc' => __('app.tour_day_custom_desc')],
+                'header'     => ['title' => __('app.tour_day_header_title'),     'desc' => __('app.tour_day_header_desc')],
+                'bible'      => ['title' => __('app.tour_day_bible_title'),      'desc' => __('app.tour_day_bible_desc')],
+                'mezmur'     => ['title' => __('app.tour_day_mezmur_title'),     'desc' => __('app.tour_day_mezmur_desc')],
+                'sinksar'    => ['title' => __('app.tour_day_sinksar_title'),    'desc' => __('app.tour_day_sinksar_desc')],
+                'book'       => ['title' => __('app.tour_day_book_title'),       'desc' => __('app.tour_day_book_desc')],
+                'references' => ['title' => __('app.tour_day_references_title'), 'desc' => __('app.tour_day_references_desc')],
+                'checklist'  => ['title' => __('app.tour_day_checklist_title'),  'desc' => __('app.tour_day_checklist_desc')],
+                'custom'     => ['title' => __('app.tour_day_custom_title'),     'desc' => __('app.tour_day_custom_desc')],
+                'privacy'    => ['title' => __('app.tour_day_privacy_title'),    'desc' => __('app.tour_day_privacy_desc')],
             ],
             'settings' => [
-                'custom' => ['title' => __('app.tour_settings_custom_title'), 'desc' => __('app.tour_settings_custom_desc')],
-                'done'   => ['title' => __('app.tour_settings_done_title'),   'desc' => __('app.tour_settings_done_desc')],
+                'whatsapp' => ['title' => __('app.tour_settings_whatsapp_title'), 'desc' => __('app.tour_settings_whatsapp_desc')],
+                'custom'   => ['title' => __('app.tour_settings_custom_title'),   'desc' => __('app.tour_settings_custom_desc')],
+                'passcode' => ['title' => __('app.tour_settings_passcode_title'), 'desc' => __('app.tour_settings_passcode_desc')],
+                'done'     => ['title' => __('app.tour_settings_done_title'),     'desc' => __('app.tour_settings_done_desc')],
             ],
         ];
     @endphp

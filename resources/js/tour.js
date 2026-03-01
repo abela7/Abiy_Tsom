@@ -186,6 +186,14 @@ function buildHomeSteps(c) {
             },
         },
         {
+            element: '[data-tour="home-countdown"]',
+            popover: {
+                title:       c?.home?.countdown?.title ?? 'Easter Countdown',
+                description: c?.home?.countdown?.desc  ?? '',
+                side: 'bottom', align: 'center',
+            },
+        },
+        {
             element: '[data-tour="view-today"]',
             popover: {
                 title:       c?.home?.viewToday?.title ?? 'Your Daily Content',
@@ -252,6 +260,30 @@ function buildDaySteps(c) {
             },
         },
         {
+            element: '[data-tour="day-sinksar"]',
+            popover: {
+                title:       c?.day?.sinksar?.title ?? 'Sinksar',
+                description: c?.day?.sinksar?.desc  ?? '',
+                side: 'bottom', align: 'start',
+            },
+        },
+        {
+            element: '[data-tour="day-book"]',
+            popover: {
+                title:       c?.day?.book?.title ?? 'Spiritual Reading',
+                description: c?.day?.book?.desc  ?? '',
+                side: 'bottom', align: 'start',
+            },
+        },
+        {
+            element: '[data-tour="day-references"]',
+            popover: {
+                title:       c?.day?.references?.title ?? 'References',
+                description: c?.day?.references?.desc  ?? '',
+                side: 'bottom', align: 'start',
+            },
+        },
+        {
             element: '[data-tour="day-checklist"]',
             popover: {
                 title:       c?.day?.checklist?.title ?? 'Daily Checklist',
@@ -267,16 +299,40 @@ function buildDaySteps(c) {
                 side: 'bottom', align: 'start',
             },
         },
+        {
+            element: '[data-tour="day-checklist"]',
+            popover: {
+                title:       c?.day?.privacy?.title ?? 'Your Privacy',
+                description: c?.day?.privacy?.desc  ?? '',
+                side: 'top', align: 'center',
+            },
+        },
     ].filter((s) => !s.element || document.querySelector(s.element));
 }
 
 function buildSettingsSteps(c) {
     return [
         {
+            element: '[data-tour="settings-whatsapp"]',
+            popover: {
+                title:       c?.settings?.whatsapp?.title ?? 'WhatsApp Reminders',
+                description: c?.settings?.whatsapp?.desc  ?? '',
+                side: 'bottom', align: 'start',
+            },
+        },
+        {
             element: '[data-tour="settings-custom"]',
             popover: {
                 title:       c?.settings?.custom?.title ?? 'Custom Activities',
                 description: c?.settings?.custom?.desc  ?? '',
+                side: 'bottom', align: 'start',
+            },
+        },
+        {
+            element: '[data-tour="settings-passcode"]',
+            popover: {
+                title:       c?.settings?.passcode?.title ?? 'Passcode Lock',
+                description: c?.settings?.passcode?.desc  ?? '',
                 side: 'bottom', align: 'start',
             },
         },

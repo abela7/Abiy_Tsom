@@ -288,6 +288,27 @@ return [
     'tour_settings_custom_desc' => 'ግላዊ ዕለታዊ እንቅስቃሴዎችዎን ይፍጠሩ፣ ያስተካክሉ ወይም ይሰርዙ። በእያንዳንዱ ቀን ገጽ ዝርዝር ውስጥ ይታያሉ።',
     'tour_settings_done_title' => 'ሁሉም ዝግጁ ነው!',
     'tour_settings_done_desc' => 'ጉብኝቱን አጠናቅቀዋል። ዕለታዊ ይዘትዎን ያስሱ፣ ሂደትዎን ይከታተሉ እና የጾም ወቅቱን ይደሰቱ። ይህን ጉብኝት ከቅንብሮች ማዕከል ሁልጊዜ እንደገና ማየት ይችላሉ።',
+
+    // Extended tour — home
+    'tour_home_countdown_title' => 'የፋሲካ ቆጠራ',
+    'tour_home_countdown_desc'  => 'እስከ ፋሲካ ድረስ ምን ያህል ቀናት እንደቀሩ ይከታተሉ። የታላቁ ጾም ሂደትዎን እንደ መቶኛ ይመልከቱ — በለንደን ሰዓት።',
+
+    // Extended tour — day page
+    'tour_day_sinksar_title'    => 'ስንክሳር',
+    'tour_day_sinksar_desc'     => 'ዛሬ በኢትዮጵያ ኦርቶዶክስ ቤተ ክርስቲያን ወግ የሚዘከረው ቅዱስ ወይም ቅድስት ዕለት ታሪክ ያንብቡ ወይም ያዳምጡ።',
+    'tour_day_book_title'       => 'መንፈሳዊ ንባብ',
+    'tour_day_book_desc'        => 'ለዚህ የጾም ወቅት እምነትዎን ለማጠናከር የሚረዳ የተመረጠ መንፈሳዊ መጽሐፍ።',
+    'tour_day_references_title' => 'ተጨማሪ ምንጮች',
+    'tour_day_references_desc'  => 'ዛሬን ስለ መንፈሳዊ ይዘቱ የበለጠ ለማወቅ ቪዲዮዎችን፣ ጽሑፎችን እና ፋይሎችን ይፈልጉ።',
+    'tour_day_privacy_title'    => 'ብቸኝነትዎ',
+    'tour_day_privacy_desc'     => 'ዕለታዊ እንቅስቃሴዎችዎ እና ሂደትዎ በሂሳብዎ ውስጥ ብቸኛ ሆኖ ይቀመጣል — ሌላ ሰው ምን እንደ ምርጡ ሊያይ አይችልም።',
+
+    // Extended tour — settings page
+    'tour_settings_whatsapp_title' => 'የዋትሳፕ ማሳወቂያዎች',
+    'tour_settings_whatsapp_desc'  => 'ዕለታዊ መንፈሳዊ ይዘትዎን የሚያካትት የዋትሳፕ መልዕክት ይቀበሉ። ይክፈቱ ወይም ይዝጉ፣ የሚፈለጉትን ሰዓት ይምረጡ እና ቋንቋ ይምረጡ።',
+    'tour_settings_passcode_title' => 'የይለፍ ቃል መቆለፊያ',
+    'tour_settings_passcode_desc'  => 'ፒን በማዘጋጀት የመንፈሳዊ ጉዞዎን ይጠብቁ። የይለፍ ቃሉን ያስፈቅዱ — መተግበሪያዎን ሊከፍት የሚችለው እርስዎ ብቻ ነው።',
+
     'passcode_lock' => 'የይለፍ ቃል መቆለፊያ',
     'lock_app' => 'መቸገስ አስቀምጥ',
     'passcode_enable' => 'ይለፍ ቃል አስብ',

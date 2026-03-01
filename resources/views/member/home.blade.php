@@ -86,7 +86,8 @@
     @endif
 
     {{-- Easter countdown — visible to all members, mobile-first --}}
-    <div class="relative overflow-hidden rounded-3xl shadow-2xl border border-white/10 bg-gradient-to-br from-[#0a6286] via-[#134e5e] to-[#0a6286]"
+    <div data-tour="home-countdown"
+         class="relative overflow-hidden rounded-3xl shadow-2xl border border-white/10 bg-gradient-to-br from-[#0a6286] via-[#134e5e] to-[#0a6286]"
          x-data="easterCountdown('{{ $easterAt->format('c') }}', '{{ $lentStartAt->format('c') }}')">
 
         {{-- Decorative ambient glows (fixed gold — same in light/dark) --}}

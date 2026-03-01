@@ -127,11 +127,19 @@ class TranslationSeeder extends Seeder
                 'tour_day_header_title', 'tour_day_header_desc',
                 'tour_day_bible_title', 'tour_day_bible_desc',
                 'tour_day_mezmur_title', 'tour_day_mezmur_desc',
+                'tour_day_sinksar_title', 'tour_day_sinksar_desc',
+                'tour_day_book_title', 'tour_day_book_desc',
+                'tour_day_references_title', 'tour_day_references_desc',
                 'tour_day_checklist_title', 'tour_day_checklist_desc',
                 'tour_day_custom_title', 'tour_day_custom_desc',
+                'tour_day_privacy_title', 'tour_day_privacy_desc',
                 // Multi-page tour step content — settings phase
+                'tour_settings_whatsapp_title', 'tour_settings_whatsapp_desc',
                 'tour_settings_custom_title', 'tour_settings_custom_desc',
+                'tour_settings_passcode_title', 'tour_settings_passcode_desc',
                 'tour_settings_done_title', 'tour_settings_done_desc',
+                // Extended tour — home phase
+                'tour_home_countdown_title', 'tour_home_countdown_desc',
             ],
             'settings' => [
                 'settings_title', 'language', 'theme', 'theme_light', 'theme_dark',
