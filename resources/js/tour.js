@@ -100,9 +100,10 @@ function navigateAfterPhase(phase) {
     const nextPhase = PHASE_ORDER[PHASE_ORDER.indexOf(phase) + 1];
 
     if (!nextPhase) {
-        // All phases done — mark tour complete and stay on settings page.
+        // All phases done — mark complete and return to home.
         clearPhase();
         setTourCompleted();
+        window.location.href = base + '/member/home';
         return;
     }
 
@@ -305,11 +306,10 @@ async function runPhaseTour(phase, steps) {
         const isMobile   = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
         const content    = window.AbiyTsomTourContent;
 
-        let closedEarly = false;
-
         const driverObj = driver({
             showProgress:   true,
             allowClose:     false,          // overlay click does NOT close the tour
+            showButtons:    ['next', 'previous'], // no X button — tour must be completed
             smoothScroll:   true,
             overlayOpacity: 0.6,
             stagePadding:   isMobile ? 8 : 10,
@@ -333,23 +333,11 @@ async function runPhaseTour(phase, steps) {
                 }
             },
 
-            onCloseClick: () => {
-                // X button was clicked — treat as early exit.
-                closedEarly = true;
-            },
-
             onDestroyed: () => {
                 try { sessionStorage.removeItem(TOUR_STEP_KEY); } catch {}
                 setLangDropdownZIndex('9999');
-
-                if (closedEarly) {
-                    // User pressed X — end tour entirely.
-                    clearPhase();
-                    setTourCompleted();
-                } else {
-                    // Done button pressed — advance to the next phase.
-                    navigateAfterPhase(phase);
-                }
+                // No X button exists — onDestroyed only fires on Done. Always advance.
+                navigateAfterPhase(phase);
             },
         });
 
