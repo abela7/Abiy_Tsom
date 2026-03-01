@@ -177,8 +177,8 @@
 
     {{-- Tour content (locale-aware) --}}
     @if(isset($currentMember) && request()->routeIs('member.*'))
-    <script>
-        window.AbiyTsomTourContent = @json([
+    @php
+        $tourContent = [
             'welcome' => ['title' => __('app.tour_welcome_title'), 'desc' => __('app.tour_welcome_desc')],
             'language' => ['title' => __('app.tour_language_title'), 'desc' => __('app.tour_language_desc')],
             'theme' => ['title' => __('app.tour_theme_title'), 'desc' => __('app.tour_theme_desc')],
@@ -187,7 +187,10 @@
             'done' => __('app.tour_done'),
             'skip' => __('app.tour_skip'),
             'progressText' => __('app.tour_progress'),
-        ]);
+        ];
+    @endphp
+    <script>
+        window.AbiyTsomTourContent = @json($tourContent);
     </script>
     @endif
 
