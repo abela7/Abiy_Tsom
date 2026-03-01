@@ -235,6 +235,14 @@ return [
     'tour_done' => 'Done',
     'tour_skip' => 'Skip',
     'tour_progress' => '{{current}} of {{total}}',
+
+    // Admin: Tour management
+    'tour_column' => 'Tour',
+    'tour_completed_short' => 'Yes',
+    'tour_not_completed_short' => 'No',
+    'tour_restart_btn' => 'Restart Tour',
+    'tour_restarted_for_member' => 'Tour restarted for :name. They will see it again on their next home visit.',
+    'tour_completed_count' => 'Tour completed',
     'passcode_lock' => 'Passcode Lock',
     'lock_app' => 'Lock app',
     'passcode_enable' => 'Enable Passcode',
@@ -722,6 +730,7 @@ return [
     'group_day_content' => 'Day Content (Bible, Mezmur, etc.)',
     'group_calendar' => 'Calendar',
     'group_progress' => 'Progress',
+    'group_tour' => 'App Tour',
     'group_settings' => 'Settings',
     'group_telegram_bot' => 'Telegram Bot Messages',
     'group_fundraising_popup' => 'Fundraising Popup',

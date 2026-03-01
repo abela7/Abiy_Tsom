@@ -1,11 +1,13 @@
 /**
  * Member app tour (Driver.js) — language & theme on home screen.
  * Tour content comes from window.AbiyTsomTourContent (set by Blade).
+ * Completion is stored server-side (tour_completed_at) and synced to localStorage.
  */
 
 const TOUR_STORAGE_KEY = 'member_tour_completed';
 
 export function isTourCompleted() {
+    if (window.AbiyTsomTourCompleted === true) return true;
     try {
         return localStorage.getItem(TOUR_STORAGE_KEY) === '1';
     } catch {
@@ -13,15 +15,27 @@ export function isTourCompleted() {
     }
 }
 
-export function setTourCompleted() {
+function setTourCompletedLocal() {
     try {
         localStorage.setItem(TOUR_STORAGE_KEY, '1');
     } catch {}
 }
 
-export function resetTour() {
+export async function setTourCompleted() {
+    setTourCompletedLocal();
+    try {
+        if (window.AbiyTsom?.api) {
+            await window.AbiyTsom.api('/api/member/tour/complete', {});
+        }
+    } catch {}
+}
+
+export async function resetTour() {
     try {
         localStorage.removeItem(TOUR_STORAGE_KEY);
+        if (window.AbiyTsom?.api) {
+            await window.AbiyTsom.api('/api/member/tour/reset', {});
+        }
     } catch {}
 }
 

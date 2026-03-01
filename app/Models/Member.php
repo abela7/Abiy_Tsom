@@ -25,6 +25,7 @@ class Member extends Model
         'passcode_enabled',
         'locale',
         'theme',
+        'tour_completed_at',
         'whatsapp_reminder_enabled',
         'whatsapp_phone',
         'whatsapp_reminder_time',
@@ -50,6 +51,7 @@ class Member extends Model
             'whatsapp_last_sent_date' => 'date',
             'whatsapp_confirmation_requested_at' => 'datetime',
             'whatsapp_confirmation_responded_at' => 'datetime',
+            'tour_completed_at' => 'datetime',
         ];
     }
 

@@ -13,7 +13,7 @@
 @endif
 
 {{-- Summary cards --}}
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
     <div class="bg-card rounded-xl p-4 shadow-sm border border-border">
         <p class="text-xs font-semibold text-muted-text uppercase tracking-wider">{{ __('app.total_members') }}</p>
         <p class="text-2xl font-black text-accent mt-1">{{ number_format($totalMembers) }}</p>
@@ -33,6 +33,10 @@
     <div class="bg-card rounded-xl p-4 shadow-sm border border-border">
         <p class="text-xs font-semibold text-muted-text uppercase tracking-wider">{{ __('app.passcode_users') }}</p>
         <p class="text-2xl font-black text-primary mt-1">{{ number_format($passcodeEnabled) }}</p>
+    </div>
+    <div class="bg-card rounded-xl p-4 shadow-sm border border-border">
+        <p class="text-xs font-semibold text-muted-text uppercase tracking-wider">{{ __('app.tour_completed_count') }}</p>
+        <p class="text-2xl font-black text-accent-secondary mt-1">{{ number_format($tourCompletedCount) }}</p>
     </div>
 </div>
 
@@ -175,6 +179,7 @@
                     <th class="text-left px-4 py-3 font-semibold text-secondary">{{ __('app.baptism_name') }}</th>
                     <th class="text-left px-4 py-3 font-semibold text-secondary">{{ __('app.locale_label') }}</th>
                     <th class="text-left px-4 py-3 font-semibold text-secondary">{{ __('app.theme') }}</th>
+                    <th class="text-left px-4 py-3 font-semibold text-secondary">{{ __('app.tour_column') }}</th>
                     <th class="text-left px-4 py-3 font-semibold text-secondary">{{ __('app.passcode') }}</th>
                     <th class="text-left px-4 py-3 font-semibold text-secondary">{{ __('app.registered_at') }}</th>
                     <th class="text-right px-4 py-3 font-semibold text-secondary">{{ __('app.actions') }}</th>
@@ -192,6 +197,13 @@
                     </td>
                     <td class="px-4 py-3 capitalize text-secondary">{{ $member->theme ?? '—' }}</td>
                     <td class="px-4 py-3">
+                        @if($member->tour_completed_at)
+                            <span class="px-2 py-0.5 rounded-md bg-success/10 text-success text-xs font-semibold">{{ __('app.tour_completed_short') }}</span>
+                        @else
+                            <span class="px-2 py-0.5 rounded-md bg-muted text-muted-text text-xs font-semibold">{{ __('app.tour_not_completed_short') }}</span>
+                        @endif
+                    </td>
+                    <td class="px-4 py-3">
                         @if($member->passcode_enabled)
                             <span class="px-2 py-0.5 rounded-md bg-success/10 text-success text-xs font-semibold">{{ __('app.on') }}</span>
                         @else
@@ -203,6 +215,13 @@
                     </td>
                     <td class="px-4 py-3 text-right">
                         <div class="flex items-center justify-end gap-2 flex-wrap">
+                            <form method="POST" action="{{ route('admin.members.restart-tour', $member) }}" class="inline">
+                                @csrf
+                                <button type="submit"
+                                        class="px-3 py-1.5 rounded-lg bg-accent-secondary/10 text-accent-secondary hover:bg-accent-secondary/20 text-xs font-semibold transition border border-accent-secondary/20">
+                                    {{ __('app.tour_restart_btn') }}
+                                </button>
+                            </form>
                             @if ($telegramBotUsername)
                                 <form method="POST" action="{{ route('admin.members.telegram-link', $member) }}">
                                     @csrf
@@ -289,7 +308,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="7" class="px-4 py-12 text-center text-muted-text">
+                    <td colspan="8" class="px-4 py-12 text-center text-muted-text">
                         {{ __('app.no_members_yet') }}
                     </td>
                 </tr>

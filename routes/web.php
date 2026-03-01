@@ -88,6 +88,8 @@ Route::prefix('api/member')->middleware('api.member')->name('api.member.')->grou
     Route::post('/fundraising/snooze', [Member\FundraisingController::class, 'snooze'])->name('fundraising.snooze');
     Route::post('/fundraising/interested', [Member\FundraisingController::class, 'interested'])->name('fundraising.interested');
     Route::post('/banner/{banner}/respond', [Member\BannerController::class, 'respond'])->name('banner.respond');
+    Route::post('/tour/complete', [Member\TourController::class, 'complete'])->name('tour.complete');
+    Route::post('/tour/reset', [Member\TourController::class, 'reset'])->name('tour.reset');
 });
 
 /*
@@ -187,6 +189,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::delete('/members/wipe-all', [Admin\MembersController::class, 'wipeAll'])->name('members.wipe-all');
         Route::delete('/members/{member}', [Admin\MembersController::class, 'destroy'])->name('members.destroy');
         Route::delete('/members/{member}/data', [Admin\MembersController::class, 'wipeData'])->name('members.wipe-data');
+        Route::post('/members/{member}/restart-tour', [Admin\MembersController::class, 'restartTour'])->name('members.restart-tour');
 
         // Translations
         Route::get('/translations', [Admin\TranslationController::class, 'index'])->name('translations.index');

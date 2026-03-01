@@ -35,6 +35,7 @@ class TranslationController extends Controller
                 'content_sections' => __('app.group_day_content'),
                 'calendar' => __('app.group_calendar'),
                 'progress' => __('app.group_progress'),
+                'tour' => __('app.group_tour'),
                 'settings' => __('app.group_settings'),
                 'telegram_bot' => __('app.group_telegram_bot'),
                 'fundraising_popup' => __('app.group_fundraising_popup'),

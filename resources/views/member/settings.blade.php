@@ -110,8 +110,8 @@
 
         {{-- App Tour --}}
         <div class="bg-card rounded-2xl shadow-sm border border-border overflow-hidden"
-             x-data="{ tourCompleted: typeof window.AbiyTsomIsTourCompleted === 'function' && window.AbiyTsomIsTourCompleted() }">
-            <button type="button" @click="openId = openId === 'tour' ? null : 'tour'; tourCompleted = typeof window.AbiyTsomIsTourCompleted === 'function' && window.AbiyTsomIsTourCompleted()"
+             x-data="{ tourCompleted: {{ ($member && $member->tour_completed_at) ? 'true' : 'false' }} }">
+            <button type="button" @click="openId = openId === 'tour' ? null : 'tour'; tourCompleted = typeof window.AbiyTsomIsTourCompleted === 'function' ? window.AbiyTsomIsTourCompleted() : tourCompleted"
                     class="w-full flex items-center justify-between px-4 py-4 text-left">
                 <div>
                     <h3 class="font-semibold text-primary">{{ __('app.tour_section_title') }}</h3>
@@ -128,7 +128,7 @@
             x-transition:leave-start="opacity-100"
             x-transition:leave-end="opacity-0" class="px-4 pb-4 pt-0">
                 <p class="text-sm text-muted-text mb-4">{{ __('app.tour_section_desc') }}</p>
-                <button type="button" @click="window.AbiyTsomResetTour?.(); tourCompleted = false; window.location.href = '{{ route('member.home') }}?tour=1'"
+                <button type="button" @click="(async () => { await window.AbiyTsomResetTour?.(); tourCompleted = false; window.location.href = '{{ route('member.home') }}?tour=1'; })()"
                         class="w-full py-2.5 bg-accent text-on-accent rounded-xl font-medium text-sm transition hover:opacity-90">
                     {{ __('app.tour_show_again') }}
                 </button>

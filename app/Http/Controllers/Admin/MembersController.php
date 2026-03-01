@@ -51,6 +51,7 @@ class MembersController extends Controller
             ->get();
 
         $passcodeEnabled = Member::where('passcode_enabled', true)->count();
+        $tourCompletedCount = Member::whereNotNull('tour_completed_at')->count();
 
         $totalChecklistCompletions = MemberChecklist::where('completed', true)->count();
         $totalCustomCompletions = MemberCustomChecklist::where('completed', true)->count();
@@ -72,6 +73,7 @@ class MembersController extends Controller
             'localeDistribution',
             'themeDistribution',
             'passcodeEnabled',
+            'tourCompletedCount',
             'totalChecklistCompletions',
             'totalCustomCompletions',
             'engagedMembers',
@@ -93,6 +95,17 @@ class MembersController extends Controller
 
         return redirect()->route('admin.members.index')
             ->with('success', __('app.member_deleted'));
+    }
+
+    /**
+     * Reset the app tour for a member so it will show again on their next home visit.
+     */
+    public function restartTour(Member $member): RedirectResponse
+    {
+        $member->update(['tour_completed_at' => null]);
+
+        return redirect()->route('admin.members.index')
+            ->with('success', __('app.tour_restarted_for_member', ['name' => $member->baptism_name]));
     }
 
     /**

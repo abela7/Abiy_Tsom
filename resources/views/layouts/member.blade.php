@@ -191,6 +191,7 @@
     @endphp
     <script>
         window.AbiyTsomTourContent = @json($tourContent);
+        window.AbiyTsomTourCompleted = {{ ($currentMember->tour_completed_at ?? null) ? 'true' : 'false' }};
     </script>
     @endif
 

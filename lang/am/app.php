@@ -238,6 +238,14 @@ return [
     'tour_done' => 'ጨርስ',
     'tour_skip' => 'ዝለል',
     'tour_progress' => '{{current}} ከ {{total}}',
+
+    // Admin: Tour management
+    'tour_column' => 'ጉብኝት',
+    'tour_completed_short' => 'አዎ',
+    'tour_not_completed_short' => 'አይ',
+    'tour_restart_btn' => 'ጉብኝት እንደገና ጀምር',
+    'tour_restarted_for_member' => 'ጉብኝት ለ :name እንደገና ተጀምሯል። በቀጣይ የመነሻ ገጽ ጉብኝት ይገለጻሉ።',
+    'tour_completed_count' => 'ጉብኝት ተጠናቅቋል',
     'passcode_lock' => 'የይለፍ ቃል መቆለፊያ',
     'lock_app' => 'መቸገስ አስቀምጥ',
     'passcode_enable' => 'ይለፍ ቃል አስብ',
@@ -702,6 +710,7 @@ return [
     'group_day_content' => 'የቀን ይዘት (መጽሐፍ ቅዱስ፣ መዝሙር፣ ወዘተ)',
     'group_calendar' => 'ቀጠሮ',
     'group_progress' => 'ሂደት',
+    'group_tour' => 'የመተግበሪያ ጉብኝት',
     'group_settings' => 'ቅንብሮች',
     'group_telegram_bot' => 'Telegram Bot Messages',
     'group_fundraising_popup' => 'Fundraising Popup',
