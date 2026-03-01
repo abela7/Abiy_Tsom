@@ -138,16 +138,17 @@ export async function startMemberTour(force = false) {
                 const idx = opts?.state?.activeIndex ?? 0;
                 try { sessionStorage.setItem(TOUR_STEP_KEY, String(idx)); } catch {}
 
-                // Language dropdown is position:fixed with z-index 9999, which sits below
-                // the Driver.js overlay (~10000). Boost it when the language step is active.
+                // Language dropdown is position:fixed with z-index 9999. Driver.js overlay
+                // is z-index 10000, but the Driver.js POPOVER is z-index 1000000000 (1 billion).
+                // Boost the dropdown to 1000000001 so it appears above the tour popover.
                 if (element?.dataset?.tour === 'language') {
-                    setLangDropdownZIndex('100002');
+                    setLangDropdownZIndex('1000000001');
                 } else {
                     setLangDropdownZIndex('9999');
                 }
             },
             onDestroyed: () => {
-                // Clear resume key and z-index fix, then mark tour done.
+                // Clear resume key and z-index boost, then mark tour done.
                 try { sessionStorage.removeItem(TOUR_STEP_KEY); } catch {}
                 setLangDropdownZIndex('9999');
                 setTourCompleted();
