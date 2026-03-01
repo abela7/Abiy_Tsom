@@ -332,11 +332,33 @@ function fundraisingPopup() {
                     this.skipCountdown = 0;
                     this.videoPlaying = false;
                     if (oldVal === true) {
+                        // Mark popup as answered so the tour knows it can start.
+                        try { sessionStorage.setItem('member_popup_answered', '1'); } catch {}
                         window.dispatchEvent(new CustomEvent('fundraising-ready'));
                     }
                 }
             });
+
             await new Promise(r => setTimeout(r, 5000));
+
+            // ── Tour-active guard ──────────────────────────────────────────
+            // The popup lives in the shared layout so it runs on every member
+            // page. If a tour phase is already saved in sessionStorage the
+            // Driver.js overlay is either showing or about to show — skip the
+            // popup entirely so they never overlap.
+            // NOTE: on the home page this check fires BEFORE savePhase('home')
+            // is called (that only happens after waitForPopup resolves), so the
+            // home-page first-visit flow is unaffected.
+            const tourActive = (() => {
+                try { return !!sessionStorage.getItem('member_tour_phase'); } catch { return false; }
+            })();
+            if (tourActive) {
+                try { sessionStorage.setItem('member_popup_answered', '1'); } catch {}
+                window.dispatchEvent(new CustomEvent('fundraising-ready'));
+                return;
+            }
+            // ──────────────────────────────────────────────────────────────
+
             try {
                 const data = await AbiyTsom.get('/api/member/fundraising/popup');
                 if (data.show) {
@@ -352,9 +374,13 @@ function fundraisingPopup() {
                         }, 1000);
                     }
                 } else {
+                    // No popup to show — mark answered immediately so tour isn't blocked.
+                    try { sessionStorage.setItem('member_popup_answered', '1'); } catch {}
                     window.dispatchEvent(new CustomEvent('fundraising-ready'));
                 }
             } catch (e) {
+                // API failure — don't block the tour forever.
+                try { sessionStorage.setItem('member_popup_answered', '1'); } catch {}
                 window.dispatchEvent(new CustomEvent('fundraising-ready'));
             }
         },

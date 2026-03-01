@@ -441,25 +441,53 @@ async function runPhaseTour(phase, steps) {
 
 // ─── Public API ───────────────────────────────────────────────────────────
 
+// ─── Popup acknowledgement helper ─────────────────────────────────────────
+
+function popupAnswered() {
+    try { return sessionStorage.getItem('member_popup_answered') === '1'; } catch { return false; }
+}
+
+/**
+ * Wait until the fundraising popup has been answered (interested OR not today),
+ * or until it is confirmed that no popup needs to be shown this session.
+ *
+ * No timeout — the user may spend several minutes watching a video or filling
+ * in the form. The popup component guarantees it fires 'fundraising-ready' in
+ * every exit path (user dismissed, no campaign to show, API error), so this
+ * promise will always resolve once the user is done with the popup.
+ */
+async function waitForPopup() {
+    if (popupAnswered()) return;
+    await new Promise(resolve => window.addEventListener('fundraising-ready', resolve, { once: true }));
+    try { sessionStorage.setItem('member_popup_answered', '1'); } catch {}
+    // Brief pause for the popup's exit animation to finish.
+    await new Promise(resolve => setTimeout(resolve, 350));
+}
+
 /**
  * Start or resume the tour from the home page.
  * force=true restarts the whole tour from step 0.
+ *
+ * Guarantees:
+ *  1. The fundraising popup is fully answered before the tour starts.
+ *  2. The tour is only marked complete after all phases are stepped through.
  */
 export async function startMemberTour(force = false) {
-    // If a blocking modal (fundraising popup) is still visible, wait for it to
-    // close before starting the tour so they don't overlap.
-    if (document.body.classList.contains('fund-body-lock')) {
-        await new Promise(resolve => {
-            window.addEventListener('fundraising-ready', resolve, { once: true });
-        });
-        // Extra pause for the modal's exit animation to finish.
-        await new Promise(resolve => setTimeout(resolve, 350));
-    }
-
     if (force) {
         clearPhase();
     }
 
+    if (!force && isTourCompleted()) {
+        return;
+    }
+
+    // For a forced restart (settings reset) the popup was already answered
+    // earlier in the session — skip the wait to avoid double-blocking.
+    if (!force) {
+        await waitForPopup();
+    }
+
+    // Re-check completion after potentially waiting for the popup.
     if (!force && isTourCompleted()) {
         return;
     }

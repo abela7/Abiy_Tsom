@@ -6,23 +6,12 @@
 <div class="px-4 pt-4 space-y-4"
      x-data="{}"
      x-init="$nextTick(() => {
-        const startTourIfNeeded = () => {
-            if (!window.AbiyTsomStartTour) return;
-            const force = new URLSearchParams(location.search).get('tour') === '1';
-            if (force || !window.AbiyTsomIsTourCompleted?.()) {
-                window.AbiyTsomStartTour(force);
-                if (force) history.replaceState({}, '', location.pathname);
-            }
-        };
-        const onFundraisingReady = () => {
-            window.removeEventListener('fundraising-ready', onFundraisingReady);
-            clearTimeout(fallback);
-            // Delay slightly so the modal's exit animation (200ms) fully finishes
-            // before the tour overlay appears on top of it.
-            setTimeout(startTourIfNeeded, 350);
-        };
-        window.addEventListener('fundraising-ready', onFundraisingReady);
-        const fallback = setTimeout(onFundraisingReady, 60000);
+        if (!window.AbiyTsomStartTour) return;
+        const force = new URLSearchParams(location.search).get('tour') === '1';
+        if (force || !window.AbiyTsomIsTourCompleted?.()) {
+            window.AbiyTsomStartTour(force);
+            if (force) history.replaceState({}, '', location.pathname);
+        }
      })">
 
     {{-- View Today — hero CTA card --}}
