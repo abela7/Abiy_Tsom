@@ -36,11 +36,17 @@
                                          x-on:error="$el.src = 'https://img.youtube.com/vi/' + videoId + '/hqdefault.jpg'">
                                     <div class="absolute inset-0 bg-black/25 group-hover:bg-black/15 transition-colors"></div>
                                     <div class="absolute inset-0 flex items-center justify-center">
-                                        <div class="w-16 h-16 rounded-full flex items-center justify-center shadow-2xl transition-transform group-hover:scale-110 group-active:scale-95"
-                                             style="background:#FF0000">
-                                            <svg class="w-7 h-7 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
-                                                <path d="M8 5v14l11-7z"/>
-                                            </svg>
+                                        <div class="relative flex items-center justify-center">
+                                            {{-- Ripple ring --}}
+                                            <div class="absolute w-16 h-16 rounded-full animate-ping opacity-40"
+                                                 style="background:#FF0000"></div>
+                                            {{-- Play button --}}
+                                            <div class="relative w-16 h-16 rounded-full flex items-center justify-center shadow-2xl transition-transform group-hover:scale-110 group-active:scale-95"
+                                                 style="background:#FF0000">
+                                                <svg class="w-7 h-7 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path d="M8 5v14l11-7z"/>
+                                                </svg>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
