@@ -380,10 +380,13 @@ export async function startMemberTour(force = false) {
  * Only runs if the saved tour phase matches this page.
  */
 export async function continuePageTour(pageName) {
-    if (isTourCompleted()) return;
-
+    // Check the active phase FIRST — if we're mid-tour the session phase is the
+    // source of truth, even if the DB/localStorage completed flag is stale.
     const savedPhase = getPhase();
     if (savedPhase !== pageName) return;
+
+    // Phase matches — we are actively mid-tour. Skip the completed check so a
+    // stale tour_completed_at from a previous run doesn't block continuation.
 
     const content = window.AbiyTsomTourContent;
     let steps;
