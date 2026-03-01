@@ -924,6 +924,7 @@ return [
     'psalm_text' => 'Psalm Text',
     'gospel' => 'Gospel',
     'gospel_text' => 'Gospel Text',
+    'epistles_text' => 'Epistles Text',
     'liturgy_text' => 'Liturgy Text',
     'description_and_summary' => 'Description & Summary',
     'theme_name_en_placeholder' => 'e.g. Zewerede',

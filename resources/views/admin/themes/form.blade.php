@@ -240,6 +240,47 @@
         </div>
 
         {{-- ───────────────────────────────────────────────────────── --}}
+        {{-- SECTION 7b: Epistles                                      --}}
+        {{-- ───────────────────────────────────────────────────────── --}}
+        <div class="bg-card rounded-xl shadow-sm border border-border p-6 space-y-4">
+            <h2 class="text-sm font-bold text-primary uppercase tracking-wide">{{ __('app.epistles') }}</h2>
+
+            {{-- Reference: EN and AM side by side --}}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.epistles_reference') }} (EN)</label>
+                    <input type="text" name="epistles_reference"
+                           value="{{ old('epistles_reference', $theme->epistles_reference ?? '') }}"
+                           placeholder="{{ __('app.epistles_placeholder') }}"
+                           class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.epistles_reference') }} (AM)</label>
+                    <input type="text" name="epistles_reference_am"
+                           value="{{ old('epistles_reference_am', $theme->epistles_reference_am ?? '') }}"
+                           placeholder="ለምሳሌ፡ ሮሜ 8:1-4"
+                           class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
+                </div>
+            </div>
+
+            {{-- Full text: EN and AM side by side --}}
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.epistles_text') }} (EN)</label>
+                    <textarea name="epistles_text_en" rows="6"
+                              placeholder="Epistles text in English..."
+                              class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none resize-y">{{ old('epistles_text_en', $theme->epistles_text_en ?? '') }}</textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.epistles_text') }} (AM)</label>
+                    <textarea name="epistles_text_am" rows="6"
+                              placeholder="የመልእክት ጽሑፍ..."
+                              class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none resize-y">{{ old('epistles_text_am', $theme->epistles_text_am ?? '') }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        {{-- ───────────────────────────────────────────────────────── --}}
         {{-- SECTION 8: Liturgy / Anaphora                            --}}
         {{-- ───────────────────────────────────────────────────────── --}}
         <div class="bg-card rounded-xl shadow-sm border border-border p-6 space-y-4">

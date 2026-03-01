@@ -77,6 +77,10 @@ class WeeklyThemeController extends Controller
             'gospel_reference_am' => ['nullable', 'string', 'max:255'],
             'gospel_text_en' => ['nullable', 'string'],
             'gospel_text_am' => ['nullable', 'string'],
+            // Epistles (reference EN + AM, full text EN + AM)
+            'epistles_reference_am' => ['nullable', 'string', 'max:500'],
+            'epistles_text_en' => ['nullable', 'string'],
+            'epistles_text_am' => ['nullable', 'string'],
             // Liturgy (anaphora name EN + AM, full text EN + AM)
             'liturgy_am' => ['nullable', 'string', 'max:255'],
             'liturgy_text_en' => ['nullable', 'string'],
@@ -142,6 +146,10 @@ class WeeklyThemeController extends Controller
             'gospel_reference_am' => ['nullable', 'string', 'max:255'],
             'gospel_text_en' => ['nullable', 'string'],
             'gospel_text_am' => ['nullable', 'string'],
+            // Epistles (reference EN + AM, full text EN + AM)
+            'epistles_reference_am' => ['nullable', 'string', 'max:500'],
+            'epistles_text_en' => ['nullable', 'string'],
+            'epistles_text_am' => ['nullable', 'string'],
             // Liturgy (anaphora name EN + AM, full text EN + AM)
             'liturgy_am' => ['nullable', 'string', 'max:255'],
             'liturgy_text_en' => ['nullable', 'string'],

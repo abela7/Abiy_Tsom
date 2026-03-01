@@ -904,6 +904,7 @@ return [
     'psalm_text' => 'የመዝሙር ጽሑፍ',
     'gospel' => 'ወንጌል',
     'gospel_text' => 'የወንጌል ጽሑፍ',
+    'epistles_text' => 'የመልእክት ጽሑፍ',
     'liturgy_text' => 'የቅዳሴ ጽሑፍ',
     'description_and_summary' => 'መግለጫ እና ማጠቃለያ',
     'theme_name_en_placeholder' => 'ምሳሌ፡ ዘወርደ',

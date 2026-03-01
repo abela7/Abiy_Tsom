@@ -370,9 +370,14 @@
 
             // Group: Epistles & Liturgy
             $elItems = [];
-            $epistlesRef = $weekTheme->epistles_reference;
-            if ($epistlesRef) {
-                $elItems[] = ['key' => 'epistles', 'label' => __('app.epistles'), 'ref' => $epistlesRef, 'text' => null, 'icon' => 'bi-envelope-open'];
+            $epistlesRef = $isAm
+                ? ($weekTheme->epistles_reference_am ?? $weekTheme->epistles_reference)
+                : ($weekTheme->epistles_reference ?? $weekTheme->epistles_reference_am);
+            $epistlesText = $isAm
+                ? ($weekTheme->epistles_text_am ?? $weekTheme->epistles_text_en)
+                : ($weekTheme->epistles_text_en ?? $weekTheme->epistles_text_am);
+            if ($epistlesRef || $epistlesText) {
+                $elItems[] = ['key' => 'epistles', 'label' => __('app.epistles'), 'ref' => $epistlesRef, 'text' => $epistlesText, 'icon' => 'bi-envelope-open'];
             }
             $liturgyName = $isAm ? ($weekTheme->liturgy_am ?? $weekTheme->liturgy) : ($weekTheme->liturgy ?? $weekTheme->liturgy_am);
             $liturgyText = $isAm ? ($weekTheme->liturgy_text_am ?? $weekTheme->liturgy_text_en) : ($weekTheme->liturgy_text_en ?? $weekTheme->liturgy_text_am);
@@ -408,7 +413,7 @@
                     {{-- Read more / Show less pill --}}
                     <div class="mt-3 flex items-center gap-2">
                         <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-200"
-                              :class="open ? 'bg-white/20 text-white' : 'bg-easter-gold/90 text-[#0a3d52]'">
+                              :class="open ? 'bg-white/20 text-white' : 'bg-white text-[#0a6286]'">
                             <span x-text="open ? '{{ __('app.show_less') }}' : '{{ __('app.read_more') }}'"></span>
                             <svg class="w-3.5 h-3.5 transition-transform duration-300"
                                  :class="open && 'rotate-180'"
