@@ -286,6 +286,12 @@
                     <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse shrink-0"></span>
                     <span>{{ __('app.wizard_whatsapp_waiting') }}</span>
                 </div>
+
+                {{-- Start over — lets the user correct a typo or change their name --}}
+                <button @click="startOver()"
+                        class="w-full py-2 text-sm font-medium text-muted-text hover:text-primary transition-colors active:scale-[0.98]">
+                    ← {{ __('app.wizard_start_over') }}
+                </button>
             </div>
         </div>
     </div>
@@ -452,6 +458,28 @@ function onboarding() {
             this.stopConfirmationPolling();
             this.showWhatsAppModal = false;
             window.location.href = this.pendingRedirect;
+        },
+
+        startOver() {
+            this.stopConfirmationPolling();
+            // Remove stored token so the user can re-register from scratch.
+            try {
+                localStorage.removeItem('member_token');
+                localStorage.removeItem('member_name');
+            } catch {}
+            // Reset all form state back to step 1.
+            this.showWhatsAppModal = false;
+            this.step            = 1;
+            this.baptismName     = '';
+            this.phone           = '';
+            this.wantsWhatsApp   = false;
+            this.reminderTime    = '18:00';
+            this.errorMessage    = '';
+            this.isLoading       = false;
+            this.pendingRedirect = '';
+            this.modalMessage    = '';
+            this.modalPhone      = '';
+            this.hasToken        = false;
         }
     };
 }
