@@ -80,6 +80,7 @@ class TranslationSeeder extends Seeder
                 'view_video', 'view_file',
                 'close', 'weekly_theme', 'gospel_reference', 'epistles_reference',
                 'weekly_readings', 'theme_overview', 'reading_number', 'epistles', 'liturgy',
+                'psalm', 'gospel', 'theme_summary',
                 'video_player',
             ],
             'calendar' => [
