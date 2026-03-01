@@ -70,5 +70,96 @@
     <p class="mt-4 text-xs text-muted-text">
         {{ __('app.tour_management_hint') }}
     </p>
+
+    {{-- Member list --}}
+    <div class="mt-8">
+        <h2 class="text-base font-semibold text-primary mb-3">{{ __('app.tour_member_list_title') }}</h2>
+
+        {{-- Desktop table --}}
+        <div class="hidden sm:block bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-border bg-muted/40">
+                        <th class="text-left px-5 py-3 font-semibold text-muted-text">{{ __('app.member_name') }}</th>
+                        <th class="text-left px-5 py-3 font-semibold text-muted-text">{{ __('app.tour_status') }}</th>
+                        <th class="text-left px-5 py-3 font-semibold text-muted-text">{{ __('app.tour_completed_at_label') }}</th>
+                        <th class="px-5 py-3"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-border">
+                    @foreach($members as $member)
+                    <tr class="hover:bg-muted/30 transition">
+                        <td class="px-5 py-3 font-medium text-primary">{{ $member->baptism_name }}</td>
+                        <td class="px-5 py-3">
+                            @if($member->tour_completed_at)
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs font-semibold">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                    {{ __('app.tour_status_done') }}
+                                </span>
+                            @else
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted text-muted-text text-xs font-semibold">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-border"></span>
+                                    {{ __('app.tour_status_pending') }}
+                                </span>
+                            @endif
+                        </td>
+                        <td class="px-5 py-3 text-muted-text text-xs">
+                            {{ $member->tour_completed_at ? $member->tour_completed_at->format('d M Y, H:i') : '—' }}
+                        </td>
+                        <td class="px-5 py-3 text-right">
+                            @if($member->tour_completed_at)
+                            <form method="POST" action="{{ route('admin.tour.reset-member', $member) }}"
+                                  onsubmit="return confirm('{{ __('app.tour_reset_member_confirm', ['name' => $member->baptism_name]) }}')">
+                                @csrf
+                                <button type="submit"
+                                        class="text-xs text-amber-600 dark:text-amber-400 hover:underline font-semibold">
+                                    {{ __('app.tour_reset_btn') }}
+                                </button>
+                            </form>
+                            @else
+                                <span class="text-xs text-muted-text">—</span>
+                            @endif
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+
+        {{-- Mobile cards --}}
+        <div class="sm:hidden space-y-3">
+            @foreach($members as $member)
+            <div class="bg-card rounded-xl border border-border shadow-sm p-4">
+                <div class="flex items-start justify-between gap-3 mb-2">
+                    <p class="font-semibold text-primary text-sm">{{ $member->baptism_name }}</p>
+                    @if($member->tour_completed_at)
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs font-semibold shrink-0">
+                            <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                            {{ __('app.tour_status_done') }}
+                        </span>
+                    @else
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted text-muted-text text-xs font-semibold shrink-0">
+                            <span class="w-1.5 h-1.5 rounded-full bg-border"></span>
+                            {{ __('app.tour_status_pending') }}
+                        </span>
+                    @endif
+                </div>
+                <p class="text-xs text-muted-text mb-3">
+                    {{ $member->tour_completed_at ? $member->tour_completed_at->format('d M Y, H:i') : __('app.tour_not_completed_yet') }}
+                </p>
+                @if($member->tour_completed_at)
+                <form method="POST" action="{{ route('admin.tour.reset-member', $member) }}"
+                      onsubmit="return confirm('{{ __('app.tour_reset_member_confirm', ['name' => $member->baptism_name]) }}')">
+                    @csrf
+                    <button type="submit"
+                            class="w-full text-xs font-semibold text-amber-600 dark:text-amber-400 border border-amber-400/40 rounded-lg py-1.5 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition">
+                        {{ __('app.tour_reset_btn') }}
+                    </button>
+                </form>
+                @endif
+            </div>
+            @endforeach
+        </div>
+    </div>
 </div>
 @endsection

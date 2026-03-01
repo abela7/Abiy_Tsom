@@ -20,11 +20,27 @@ class TourController extends Controller
         $tourCompletedCount = Member::whereNotNull('tour_completed_at')->count();
         $tourNotCompletedCount = $totalMembers - $tourCompletedCount;
 
+        $members = Member::orderByDesc('tour_completed_at')
+            ->orderBy('baptism_name')
+            ->get(['id', 'baptism_name', 'tour_completed_at', 'created_at']);
+
         return view('admin.tour.index', compact(
             'totalMembers',
             'tourCompletedCount',
-            'tourNotCompletedCount'
+            'tourNotCompletedCount',
+            'members'
         ));
+    }
+
+    /**
+     * Reset tour for a single member — they will see it again on next home visit.
+     */
+    public function resetMember(Member $member): RedirectResponse
+    {
+        $member->update(['tour_completed_at' => null]);
+
+        return redirect()->route('admin.tour.index')
+            ->with('success', __('app.tour_restarted_for_member', ['name' => $member->baptism_name]));
     }
 
     /**

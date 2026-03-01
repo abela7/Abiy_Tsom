@@ -192,6 +192,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::post('/members/{member}/restart-tour', [Admin\MembersController::class, 'restartTour'])->name('members.restart-tour');
         Route::get('/tour', [Admin\TourController::class, 'index'])->name('tour.index');
         Route::delete('/tour/clear-all', [Admin\TourController::class, 'clearAll'])->name('tour.clear-all');
+        Route::post('/tour/{member}/reset', [Admin\TourController::class, 'resetMember'])->name('tour.reset-member');
 
         // Translations
         Route::get('/translations', [Admin\TranslationController::class, 'index'])->name('translations.index');
