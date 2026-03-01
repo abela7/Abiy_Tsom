@@ -1096,6 +1096,7 @@ return [
     'telegram_suggest_skip' => 'Skip',
     'telegram_suggest_submitted' => 'Suggestion submitted! Thank you.',
     'telegram_suggest_cancelled' => 'Suggestion cancelled.',
+    'telegram_suggest_error' => 'Something went wrong. Please try again later.',
     'telegram_suggest_no_suggestions' => 'You have not submitted any suggestions yet.',
 
     // Telegram bot — account linking (shared)

@@ -1074,8 +1074,9 @@ return [
     'telegram_suggest_back' => 'ተመለስ',
     'telegram_suggest_cancel' => 'ሰርዝ',
     'telegram_suggest_skip' => 'Skip',
-    'telegram_suggest_submitted' => 'Suggestion submitted! Thank you.',
-    'telegram_suggest_cancelled' => 'Suggestion cancelled.',
+    'telegram_suggest_submitted' => '✅ ምክሩ ተላልፏል! አመሰግናለሁ።',
+    'telegram_suggest_cancelled' => 'ምክሩ ተሰርዟል።',
+    'telegram_suggest_error' => '❌ ስህተት ተከስቷል። እባክዎ ቆይተው እንደገና ይሞክሩ።',
     'telegram_suggest_no_suggestions' => 'You have not submitted any suggestions yet.',
 
     // Telegram bot — admin account linking via WhatsApp

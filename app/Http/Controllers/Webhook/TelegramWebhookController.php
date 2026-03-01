@@ -2339,18 +2339,33 @@ class TelegramWebhookController extends Controller
         $type = $data['type'] ?? 'reference';
         $language = $data['language'] ?? 'en';
 
-        ContentSuggestion::create([
-            'user_id' => $user->id,
-            'type' => $type,
-            'language' => $language,
-            'title' => $data['title'] ?? null,
-            'reference' => $data['reference'] ?? null,
-            'author' => $data['author'] ?? null,
-            'url' => $data['url'] ?? null,
-            'content_detail' => $data['content_detail'] ?? null,
-            'submitter_name' => $user->name,
-            'status' => 'pending',
-        ]);
+        try {
+            ContentSuggestion::create([
+                'user_id' => $user->id,
+                'type' => $type,
+                'language' => $language,
+                'title' => $data['title'] ?? null,
+                'reference' => $data['reference'] ?? null,
+                'author' => $data['author'] ?? null,
+                'url' => $data['url'] ?? null,
+                'content_detail' => $data['content_detail'] ?? null,
+                'submitter_name' => $user->name,
+                'status' => 'pending',
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('[TelegramBot] confirmSuggestion DB error.', [
+                'chat_id' => $chatId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return $this->replyOrEdit(
+                $telegramService,
+                $chatId,
+                '❌ '.__('app.telegram_suggest_error'),
+                [],
+                $messageId
+            );
+        }
 
         $state->clear();
 

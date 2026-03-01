@@ -131,14 +131,20 @@ final class TelegramService
 
     /**
      * Acknowledge callback button taps from inline keyboards.
+     * Only include 'text' when non-empty — passing text:'' causes some Telegram
+     * clients to show a "Loading..." placeholder toast unnecessarily.
      */
     public function answerCallbackQuery(string $callbackQueryId, string $text = '', bool $showAlert = false): bool
     {
-        return $this->apiCall('answerCallbackQuery', [
+        $payload = [
             'callback_query_id' => $callbackQueryId,
-            'text' => $text,
             'show_alert' => $showAlert,
-        ]);
+        ];
+        if ($text !== '') {
+            $payload['text'] = $text;
+        }
+
+        return $this->apiCall('answerCallbackQuery', $payload);
     }
 
     private function apiCall(string $method, array $payload): bool
