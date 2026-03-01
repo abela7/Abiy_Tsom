@@ -109,6 +109,10 @@ class TranslationSeeder extends Seeder
                 'tour_progress',
                 'tour_column', 'tour_completed_short', 'tour_not_completed_short',
                 'tour_restart_btn', 'tour_restarted_for_member', 'tour_completed_count',
+                'tour_not_completed_count', 'tour_management_title', 'tour_management_nav',
+                'tour_management_subtitle', 'tour_clear_section_title', 'tour_clear_section_desc',
+                'tour_clear_all_btn', 'tour_clear_confirm', 'tour_data_cleared',
+                'tour_nothing_to_clear', 'tour_management_hint',
             ],
             'settings' => [
                 'settings_title', 'language', 'theme', 'theme_light', 'theme_dark',

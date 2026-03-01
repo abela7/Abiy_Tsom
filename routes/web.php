@@ -190,6 +190,8 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::delete('/members/{member}', [Admin\MembersController::class, 'destroy'])->name('members.destroy');
         Route::delete('/members/{member}/data', [Admin\MembersController::class, 'wipeData'])->name('members.wipe-data');
         Route::post('/members/{member}/restart-tour', [Admin\MembersController::class, 'restartTour'])->name('members.restart-tour');
+        Route::get('/tour', [Admin\TourController::class, 'index'])->name('tour.index');
+        Route::delete('/tour/clear-all', [Admin\TourController::class, 'clearAll'])->name('tour.clear-all');
 
         // Translations
         Route::get('/translations', [Admin\TranslationController::class, 'index'])->name('translations.index');
