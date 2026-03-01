@@ -370,7 +370,29 @@ async function runPhaseTour(phase, steps) {
         const isMobile   = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
         const content    = window.AbiyTsomTourContent;
 
-        const driverObj = driver({
+        // Flag set only when user intentionally clicks Done on the last step.
+        // Page refresh/unload also triggers onDestroyed — this guards against
+        // treating an unload as tour completion.
+        let phaseCompleted = false;
+
+        // Attach onNextClick to the last step so we know the user clicked Done.
+        let driverObj;
+        const stepsWithCompletion = steps.map((step, i) =>
+            i === steps.length - 1
+                ? {
+                    ...step,
+                    popover: {
+                        ...step.popover,
+                        onNextClick: () => {
+                            phaseCompleted = true;
+                            driverObj?.destroy();
+                        },
+                    },
+                  }
+                : step
+        );
+
+        driverObj = driver({
             showProgress:            true,
             allowClose:              false,          // overlay click does NOT close the tour
             showButtons:             ['next', 'previous'], // no X button — tour must be completed
@@ -383,7 +405,7 @@ async function runPhaseTour(phase, steps) {
             prevBtnText:    content?.prev         ?? 'Back',
             doneBtnText:    content?.done         ?? 'Done',
             progressText:   content?.progressText ?? '{{current}} of {{total}}',
-            steps,
+            steps: stepsWithCompletion,
 
             onHighlightStarted: (element, _step, opts) => {
                 // Save step for language-change resume (best-effort — some Driver.js builds
@@ -401,8 +423,13 @@ async function runPhaseTour(phase, steps) {
             onDestroyed: () => {
                 try { sessionStorage.removeItem(TOUR_STEP_KEY); } catch {}
                 setLangDropdownZIndex('9999');
-                // No X button exists — onDestroyed only fires on Done. Always advance.
-                navigateAfterPhase(phase);
+                // Only advance the tour if the user intentionally clicked Done.
+                // Refreshing the page also fires onDestroyed — without this guard
+                // a refresh on the settings phase would call setTourCompleted()
+                // and make the tour vanish permanently.
+                if (phaseCompleted) {
+                    navigateAfterPhase(phase);
+                }
             },
         });
 
