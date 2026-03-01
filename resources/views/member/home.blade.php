@@ -331,11 +331,12 @@
             $themeSummary = $isAm && $weekTheme->summary_am ? $weekTheme->summary_am : $weekTheme->theme_summary;
             $hasOverview = $themeDescription || $themeSummary;
 
-            // Build grouped content — each group holds related items
+            // Build grouped content — each group holds related items with individual icons
             $contentGroups = [];
 
             // Group: Scripture Readings
             $readingItems = [];
+            $readingIcons = ['bi-1-circle-fill', 'bi-2-circle-fill', 'bi-3-circle-fill'];
             for ($i = 1; $i <= 3; $i++) {
                 $ref = $isAm
                     ? ($weekTheme->{"reading_{$i}_reference_am"} ?? $weekTheme->{"reading_{$i}_reference"})
@@ -344,7 +345,7 @@
                     ? ($weekTheme->{"reading_{$i}_text_am"} ?? $weekTheme->{"reading_{$i}_text_en"})
                     : ($weekTheme->{"reading_{$i}_text_en"} ?? $weekTheme->{"reading_{$i}_text_am"});
                 if ($ref || $text) {
-                    $readingItems[] = ['key' => "reading_{$i}", 'label' => __('app.reading_number', ['number' => $i]), 'ref' => $ref, 'text' => $text];
+                    $readingItems[] = ['key' => "reading_{$i}", 'label' => __('app.reading_number', ['number' => $i]), 'ref' => $ref, 'text' => $text, 'icon' => $readingIcons[$i - 1]];
                 }
             }
             if (!empty($readingItems)) {
@@ -356,12 +357,12 @@
             $psalmRef = $isAm ? ($weekTheme->psalm_reference_am ?? $weekTheme->psalm_reference) : ($weekTheme->psalm_reference ?? $weekTheme->psalm_reference_am);
             $psalmText = $isAm ? ($weekTheme->psalm_text_am ?? $weekTheme->psalm_text_en) : ($weekTheme->psalm_text_en ?? $weekTheme->psalm_text_am);
             if ($psalmRef || $psalmText) {
-                $pgItems[] = ['key' => 'psalm', 'label' => __('app.psalm'), 'ref' => $psalmRef, 'text' => $psalmText];
+                $pgItems[] = ['key' => 'psalm', 'label' => __('app.psalm'), 'ref' => $psalmRef, 'text' => $psalmText, 'icon' => 'bi-book-half'];
             }
             $gospelRef = $isAm ? ($weekTheme->gospel_reference_am ?? $weekTheme->gospel_reference) : ($weekTheme->gospel_reference ?? $weekTheme->gospel_reference_am);
             $gospelText = $isAm ? ($weekTheme->gospel_text_am ?? $weekTheme->gospel_text_en) : ($weekTheme->gospel_text_en ?? $weekTheme->gospel_text_am);
             if ($gospelRef || $gospelText) {
-                $pgItems[] = ['key' => 'gospel', 'label' => __('app.gospel'), 'ref' => $gospelRef, 'text' => $gospelText];
+                $pgItems[] = ['key' => 'gospel', 'label' => __('app.gospel'), 'ref' => $gospelRef, 'text' => $gospelText, 'icon' => 'bi-journal-text'];
             }
             if (!empty($pgItems)) {
                 $contentGroups[] = ['label' => __('app.psalm') . ' & ' . __('app.gospel'), 'icon' => 'bi-book-half', 'items' => $pgItems];
@@ -371,12 +372,12 @@
             $elItems = [];
             $epistlesRef = $weekTheme->epistles_reference;
             if ($epistlesRef) {
-                $elItems[] = ['key' => 'epistles', 'label' => __('app.epistles'), 'ref' => $epistlesRef, 'text' => null];
+                $elItems[] = ['key' => 'epistles', 'label' => __('app.epistles'), 'ref' => $epistlesRef, 'text' => null, 'icon' => 'bi-envelope-open'];
             }
             $liturgyName = $isAm ? ($weekTheme->liturgy_am ?? $weekTheme->liturgy) : ($weekTheme->liturgy ?? $weekTheme->liturgy_am);
             $liturgyText = $isAm ? ($weekTheme->liturgy_text_am ?? $weekTheme->liturgy_text_en) : ($weekTheme->liturgy_text_en ?? $weekTheme->liturgy_text_am);
             if ($liturgyName || $liturgyText) {
-                $elItems[] = ['key' => 'liturgy', 'label' => __('app.liturgy'), 'ref' => $liturgyName, 'text' => $liturgyText];
+                $elItems[] = ['key' => 'liturgy', 'label' => __('app.liturgy'), 'ref' => $liturgyName, 'text' => $liturgyText, 'icon' => 'bi-brightness-high'];
             }
             if (!empty($elItems)) {
                 $contentGroups[] = ['label' => __('app.epistles') . ' & ' . __('app.liturgy'), 'icon' => 'bi-brightness-high', 'items' => $elItems];
@@ -387,31 +388,35 @@
 
         @if($hasContent)
         <section x-data="{ open: false, detail: null }" class="rounded-2xl border border-border bg-card shadow-lg overflow-hidden">
-            {{-- Single collapsible header — tap to expand the whole section --}}
+            {{-- Single collapsible header --}}
             <button type="button" @click="open = !open"
                     class="w-full text-left relative overflow-hidden bg-gradient-to-br from-[#0a6286] via-[#134e5e] to-[#0a6286]">
                 @if($weekTheme->feature_picture)
                     <img src="{{ Storage::disk('public')->url($weekTheme->feature_picture) }}" alt="" class="absolute inset-0 w-full h-full object-cover opacity-20">
                 @endif
                 <div class="absolute -top-20 -right-20 w-56 h-56 rounded-full bg-easter-gold/15 blur-[70px] pointer-events-none"></div>
-                <div class="relative flex items-center gap-3 px-4 py-3 sm:px-5">
+                <div class="absolute -bottom-16 -left-16 w-40 h-40 rounded-full bg-white/5 blur-[60px] pointer-events-none"></div>
+                <div class="relative flex items-center gap-3 px-4 py-3.5 sm:px-5">
                     <div class="flex-1 min-w-0 text-white">
                         <div class="flex items-center gap-2 mb-0.5">
                             <span class="px-2 py-0.5 rounded-md bg-easter-gold/20 text-easter-gold font-bold text-[11px] tracking-wide">{{ __('app.week', ['number' => $weekTheme->week_number]) }}</span>
-                            <span class="text-white/40">|</span>
+                            <span class="text-white/30">|</span>
                             <span class="text-sm text-white/80 font-medium">{{ $themeName }}</span>
                         </div>
                         <h3 class="font-black text-base text-white drop-shadow-sm leading-tight">{{ $themeMeaning }}</h3>
+                        <p class="text-[11px] text-white/40 mt-1">{{ __('app.weekly_readings') }}</p>
                     </div>
-                    <svg class="w-5 h-5 text-white/60 shrink-0 transition-transform duration-300"
-                         :class="open && 'rotate-180'"
-                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                    </svg>
+                    <div class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+                        <svg class="w-4 h-4 text-white/70 transition-transform duration-300"
+                             :class="open && 'rotate-180'"
+                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </div>
                 </div>
             </button>
 
-            {{-- Expandable body — all weekly content lives here --}}
+            {{-- Expandable body --}}
             <div x-show="open"
                  x-transition:enter="transition ease-out duration-300"
                  x-transition:enter-start="opacity-0"
@@ -421,18 +426,25 @@
                  x-transition:leave-end="opacity-0"
                  x-cloak>
 
-                {{-- Theme overview (shown directly, not a sub-accordion) --}}
+                {{-- Theme overview --}}
                 @if($hasOverview)
-                <div class="px-4 py-3 border-b border-border/50">
-                    @if($themeDescription)
-                        <p class="text-sm text-secondary leading-relaxed">{{ $themeDescription }}</p>
-                    @endif
-                    @if($themeSummary)
-                        <div class="{{ $themeDescription ? 'mt-2 pt-2 border-t border-border/30' : '' }}">
-                            <p class="text-[11px] font-semibold text-muted-text uppercase tracking-wide mb-1">{{ __('app.theme_summary') }}</p>
-                            <p class="text-sm text-secondary leading-relaxed">{{ $themeSummary }}</p>
+                <div class="px-4 py-3 border-b border-border/40">
+                    <div class="flex items-start gap-2.5">
+                        <div class="w-7 h-7 rounded-lg bg-accent/10 flex items-center justify-center shrink-0 mt-0.5">
+                            <i class="bi bi-info-circle-fill text-accent text-sm"></i>
                         </div>
-                    @endif
+                        <div class="flex-1 min-w-0">
+                            @if($themeDescription)
+                                <p class="text-sm text-secondary leading-relaxed">{{ $themeDescription }}</p>
+                            @endif
+                            @if($themeSummary)
+                                <div class="{{ $themeDescription ? 'mt-2 pt-2 border-t border-border/30' : '' }}">
+                                    <p class="text-[11px] font-semibold text-muted-text uppercase tracking-wide mb-1">{{ __('app.theme_summary') }}</p>
+                                    <p class="text-sm text-secondary leading-relaxed">{{ $themeSummary }}</p>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
                 </div>
                 @endif
 
@@ -440,27 +452,29 @@
                 @foreach($contentGroups as $group)
                 <div class="{{ !$loop->last ? 'border-b border-border/30' : '' }}">
                     {{-- Group header --}}
-                    <div class="px-4 py-1.5 bg-muted/40">
-                        <span class="text-[11px] font-bold text-muted-text uppercase tracking-wider">
-                            <i class="bi {{ $group['icon'] }} mr-1 text-accent/60"></i>{{ $group['label'] }}
-                        </span>
+                    <div class="flex items-center gap-2 px-4 py-2 bg-muted/30 border-b border-border/20">
+                        <i class="bi {{ $group['icon'] }} text-accent/70 text-xs"></i>
+                        <span class="text-[11px] font-bold text-muted-text uppercase tracking-wider">{{ $group['label'] }}</span>
                     </div>
                     {{-- Group items --}}
-                    <div class="divide-y divide-border/20">
+                    <div class="divide-y divide-border/15">
                         @foreach($group['items'] as $item)
                         <div>
                             @if($item['text'])
-                            {{-- Expandable item (has full text) --}}
+                            {{-- Expandable item --}}
                             <button type="button"
-                                    class="w-full flex items-center gap-2 px-4 py-2.5 text-left transition-colors hover:bg-muted/30"
+                                    class="w-full flex items-center gap-2.5 px-4 py-2.5 text-left transition-colors hover:bg-muted/30"
                                     @click="detail = detail === '{{ $item['key'] }}' ? null : '{{ $item['key'] }}'">
+                                <div class="w-6 h-6 rounded-md bg-accent/10 flex items-center justify-center shrink-0">
+                                    <i class="bi {{ $item['icon'] }} text-accent text-xs"></i>
+                                </div>
                                 <div class="flex-1 min-w-0">
                                     <span class="text-[13px] font-semibold text-primary">{{ $item['label'] }}</span>
                                     @if($item['ref'])
-                                        <span class="ml-1 text-xs text-muted-text">— {{ Str::limit($item['ref'], 40) }}</span>
+                                        <span class="block text-xs text-muted-text truncate mt-0.5">{{ $item['ref'] }}</span>
                                     @endif
                                 </div>
-                                <svg class="w-3.5 h-3.5 text-muted-text shrink-0 transition-transform duration-200"
+                                <svg class="w-4 h-4 text-muted-text/60 shrink-0 transition-transform duration-200"
                                      :class="detail === '{{ $item['key'] }}' && 'rotate-180'"
                                      fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -474,19 +488,24 @@
                                  x-transition:leave-start="opacity-100"
                                  x-transition:leave-end="opacity-0"
                                  x-cloak
-                                 class="px-4 py-2.5 bg-muted/20 border-t border-border/20">
+                                 class="ml-[2.625rem] mr-4 mb-3 pl-3 border-l-2 border-accent/30">
                                 @if($item['ref'])
-                                    <p class="text-xs font-medium text-accent mb-1">{{ $item['ref'] }}</p>
+                                    <p class="text-xs font-medium text-accent mb-1.5">{{ $item['ref'] }}</p>
                                 @endif
-                                <div class="text-sm text-secondary leading-relaxed whitespace-pre-line">{{ $item['text'] }}</div>
+                                <div class="text-[13px] text-secondary leading-relaxed whitespace-pre-line">{{ $item['text'] }}</div>
                             </div>
                             @else
-                            {{-- Reference-only item (no expandable text) --}}
-                            <div class="px-4 py-2.5">
-                                <span class="text-[13px] font-semibold text-primary">{{ $item['label'] }}</span>
-                                @if($item['ref'])
-                                    <span class="ml-1 text-xs text-muted-text">— {{ $item['ref'] }}</span>
-                                @endif
+                            {{-- Reference-only item --}}
+                            <div class="flex items-center gap-2.5 px-4 py-2.5">
+                                <div class="w-6 h-6 rounded-md bg-accent/10 flex items-center justify-center shrink-0">
+                                    <i class="bi {{ $item['icon'] }} text-accent text-xs"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <span class="text-[13px] font-semibold text-primary">{{ $item['label'] }}</span>
+                                    @if($item['ref'])
+                                        <span class="block text-xs text-muted-text truncate mt-0.5">{{ $item['ref'] }}</span>
+                                    @endif
+                                </div>
                             </div>
                             @endif
                         </div>
