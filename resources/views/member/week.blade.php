@@ -1,5 +1,7 @@
 @extends('layouts.member')
 
+@section('title', __('app.week_page_title', ['number' => $weeklyTheme->week_number, 'name' => localized($weeklyTheme, 'name') ?? $weeklyTheme->name_en ?? '-']) . ' - ' . __('app.app_name'))
+
 @php
     $locale = app()->getLocale();
     $isAm = $locale === 'am';
@@ -31,7 +33,7 @@
         }
     }
     if (!empty($readingItems)) {
-        $contentGroups[] = ['label' => __('app.bible_reading'), 'icon' => 'bi-book', 'items' => $readingItems];
+        $contentGroups[] = ['label' => __('app.week_scripture_readings'), 'icon' => 'bi-book', 'items' => $readingItems];
     }
 
     // Group: Psalm & Gospel
@@ -47,7 +49,7 @@
         $pgItems[] = ['key' => 'gospel', 'label' => __('app.gospel'), 'ref' => $gospelRef, 'text' => $gospelText, 'icon' => 'bi-journal-text'];
     }
     if (!empty($pgItems)) {
-        $contentGroups[] = ['label' => __('app.psalm') . ' & ' . __('app.gospel'), 'icon' => 'bi-book-half', 'items' => $pgItems];
+        $contentGroups[] = ['label' => __('app.week_psalm_and_gospel'), 'icon' => 'bi-book-half', 'items' => $pgItems];
     }
 
     // Group: Liturgy (Anaphora)
@@ -58,7 +60,7 @@
         $liturgyItems[] = ['key' => 'liturgy', 'label' => __('app.liturgy'), 'ref' => $liturgyName, 'text' => $liturgyText, 'icon' => 'bi-brightness-high'];
     }
     if (!empty($liturgyItems)) {
-        $contentGroups[] = ['label' => __('app.liturgy'), 'icon' => 'bi-brightness-high', 'items' => $liturgyItems];
+        $contentGroups[] = ['label' => __('app.week_liturgy_section'), 'icon' => 'bi-brightness-high', 'items' => $liturgyItems];
     }
 @endphp
 
@@ -101,24 +103,26 @@
     {{-- Theme description --}}
     @if($themeDescription)
     <div class="rounded-xl bg-accent/5 p-3.5">
-        <div class="flex items-start gap-2.5">
-            <div class="w-7 h-7 rounded-lg bg-accent/15 flex items-center justify-center shrink-0 mt-0.5">
-                <i class="bi bi-info-circle-fill text-accent text-sm"></i>
-            </div>
-            <p class="text-sm text-secondary leading-relaxed">{{ $themeDescription }}</p>
-        </div>
+        <p class="text-[11px] font-semibold text-muted-text uppercase tracking-wide mb-1.5">{{ __('app.week_about') }}</p>
+        <p class="text-sm text-secondary leading-relaxed">{{ $themeDescription }}</p>
     </div>
     @endif
 
     {{-- Theme summary --}}
     @if($themeSummary)
     <div class="rounded-xl bg-muted/20 p-3.5">
-        <p class="text-[11px] font-semibold text-muted-text uppercase tracking-wide mb-1.5">{{ __('app.theme_summary') }}</p>
+        <p class="text-[11px] font-semibold text-muted-text uppercase tracking-wide mb-1.5">{{ __('app.week_summary_label') }}</p>
         <p class="text-sm text-secondary leading-relaxed">{{ $themeSummary }}</p>
     </div>
     @endif
 
     {{-- Content sections — each group is open by default --}}
+    @if(empty($contentGroups) && !$themeDescription && !$themeSummary)
+    <div class="rounded-xl bg-muted/20 p-6 text-center">
+        <p class="text-sm text-muted-text">{{ __('app.week_no_content') }}</p>
+    </div>
+    @endif
+
     <div x-data="{ detail: null }" class="space-y-3">
         @foreach($contentGroups as $group)
         <div class="rounded-2xl bg-card shadow-lg overflow-hidden">

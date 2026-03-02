@@ -84,9 +84,9 @@ class TranslationSeeder extends Seeder
                 'video_player',
             ],
             'week_detail' => [
-                'week', 'back', 'bible_reading', 'reading_number',
-                'psalm', 'gospel', 'liturgy', 'theme_summary',
-                'weekly_readings', 'read_more', 'show_less',
+                'week_page_title', 'week_about', 'week_summary_label',
+                'week_scripture_readings', 'week_psalm_and_gospel',
+                'week_liturgy_section', 'week_tap_to_read', 'week_no_content',
             ],
             'calendar' => [
                 'calendar_title', 'no_calendar_content', 'completed', 'not_started',

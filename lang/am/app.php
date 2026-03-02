@@ -784,6 +784,16 @@ return [
     'group_home' => 'መነሻ',
     'group_day_content' => 'የቀን ይዘት (መጽሐፍ ቅዱስ፣ መዝሙር፣ ወዘተ)',
     'group_week_detail' => 'የሳምንት ዝርዝር ገጽ',
+
+    // Week detail page
+    'week_page_title' => 'ሳምንት :number — :name',
+    'week_about' => 'ስለዚህ ሳምንት',
+    'week_summary_label' => 'ማጠቃለያ',
+    'week_scripture_readings' => 'የመጽሐፍ ቅዱስ ንባቦች',
+    'week_psalm_and_gospel' => 'መዝሙረ ዳዊት እና ወንጌል',
+    'week_liturgy_section' => 'ቅዳሴ (አናፎራ)',
+    'week_tap_to_read' => 'ለማንበብ ይንኩ',
+    'week_no_content' => 'ለዚህ ሳምንት ገና ይዘት የለም።',
     'group_calendar' => 'ቀጠሮ',
     'group_progress' => 'ሂደት',
     'group_tour' => 'የመተግበሪያ ጉብኝት',

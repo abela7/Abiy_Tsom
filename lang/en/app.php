@@ -804,6 +804,16 @@ return [
     'group_home' => 'Home',
     'group_day_content' => 'Day Content (Bible, Mezmur, etc.)',
     'group_week_detail' => 'Week Detail Page',
+
+    // Week detail page
+    'week_page_title' => 'Week :number — :name',
+    'week_about' => 'About This Week',
+    'week_summary_label' => 'Summary',
+    'week_scripture_readings' => 'Scripture Readings',
+    'week_psalm_and_gospel' => 'Psalm & Gospel',
+    'week_liturgy_section' => 'Liturgy (Anaphora)',
+    'week_tap_to_read' => 'Tap to read',
+    'week_no_content' => 'No content available for this week yet.',
     'group_calendar' => 'Calendar',
     'group_progress' => 'Progress',
     'group_tour' => 'App Tour',
