@@ -12,9 +12,7 @@ return new class extends Migration
     {
         Schema::create('volunteer_invitation_submissions', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('volunteer_invitation_campaign_id')
-                ->constrained('volunteer_invitation_campaigns')
-                ->cascadeOnDelete();
+            $table->unsignedBigInteger('volunteer_invitation_campaign_id');
             $table->string('visitor_token', 64);
             $table->string('ip_address', 45)->nullable();
             $table->string('user_agent', 512)->nullable();
@@ -31,12 +29,22 @@ return new class extends Migration
             $table->unsignedInteger('open_count')->default(0);
             $table->timestamps();
 
-            $table->unique(['volunteer_invitation_campaign_id', 'visitor_token']);
-            $table->index('decision');
-            $table->index('opened_at');
-            $table->index('video_started_at');
-            $table->index('video_completed_at');
-            $table->index('contact_submitted_at');
+            $table->foreign(
+                'volunteer_invitation_campaign_id',
+                'v_inv_sub_campaign_fk'
+            )->references('id')
+                ->on('volunteer_invitation_campaigns')
+                ->cascadeOnDelete();
+
+            $table->unique(
+                ['volunteer_invitation_campaign_id', 'visitor_token'],
+                'v_inv_sub_campaign_token_uq'
+            );
+            $table->index('decision', 'v_inv_sub_decision_idx');
+            $table->index('opened_at', 'v_inv_sub_opened_at_idx');
+            $table->index('video_started_at', 'v_inv_sub_video_start_idx');
+            $table->index('video_completed_at', 'v_inv_sub_video_done_idx');
+            $table->index('contact_submitted_at', 'v_inv_sub_contact_idx');
         });
     }
 
