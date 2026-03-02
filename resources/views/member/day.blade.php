@@ -79,15 +79,11 @@
         </div>
     </div>
 
-    {{-- Weekly theme badge (clickable) --}}
+    {{-- Weekly theme link --}}
     @if($daily->weeklyTheme)
-    <a href="{{ route('member.week', $daily->weeklyTheme) }}" class="block bg-accent/10 border border-accent/20 rounded-xl px-3 py-2 transition-colors hover:bg-accent/15 active:bg-accent/20">
-        <div class="flex items-center justify-between gap-2">
-            <span class="text-xs font-semibold text-accent">
-                {{ __('app.week', ['number' => $daily->weeklyTheme->week_number]) }} &mdash; {{ localized($daily->weeklyTheme, 'name') ?? $daily->weeklyTheme->name_en ?? $daily->weeklyTheme->name_geez ?? '-' }} ({{ app()->getLocale() === 'am' && $daily->weeklyTheme->meaning_am ? $daily->weeklyTheme->meaning_am : $daily->weeklyTheme->meaning }})
-            </span>
-            <svg class="w-4 h-4 text-accent/50 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-        </div>
+    <a href="{{ route('member.week', $daily->weeklyTheme) }}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-accent hover:text-accent-hover transition-colors">
+        {{ __('app.week', ['number' => $daily->weeklyTheme->week_number]) }} &mdash; {{ localized($daily->weeklyTheme, 'name') ?? $daily->weeklyTheme->name_en ?? $daily->weeklyTheme->name_geez ?? '-' }}
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
     </a>
     @endif
 

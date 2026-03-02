@@ -163,7 +163,9 @@ class HomeController extends Controller
                 $weeks[] = [
                     'number' => $weekNum,
                     'name' => $weekName ?? $weekInfo['name_en'],
-                    'meaning' => $theme?->meaning ?? $weekInfo['meaning'],
+                    'meaning' => $theme
+                        ? ($locale === 'am' ? ($theme->meaning_am ?? $theme->meaning) : ($theme->meaning ?? $theme->meaning_am))
+                        : $weekInfo['meaning'],
                     'days' => $daysInWeek,
                 ];
             }
