@@ -38,51 +38,55 @@
     <div class="min-h-screen flex flex-col justify-center">
         <div class="flex flex-col justify-center p-4 sm:p-6 lg:p-12 relative min-h-[100dvh] lg:min-h-0 bg-surface">
             {{-- Mobile: background image with soft gradient overlay --}}
-            <div class="fixed inset-0 -z-10 lg:hidden">
-                <img src="{{ asset('images/og-cover.png') }}" alt="" class="absolute inset-0 w-full h-full object-cover object-center">
-                <div class="absolute inset-0 bg-gradient-to-b from-surface/70 via-surface/50 to-surface/90"></div>
-            </div>
+            @if(!request()->routeIs('volunteer.invite.*'))
+                <div class="fixed inset-0 -z-10 lg:hidden">
+                    <img src="{{ asset('images/og-cover.png') }}" alt="" class="absolute inset-0 w-full h-full object-cover object-center">
+                    <div class="absolute inset-0 bg-gradient-to-b from-surface/70 via-surface/50 to-surface/90"></div>
+                </div>
+            @endif
 
             <div class="relative w-full max-w-sm mx-auto">
                 {{-- Theme & Language toggles --}}
                 <div class="absolute -top-2 right-0 flex gap-1 z-10">
-                    <div class="relative overflow-visible" x-data="{ open: false }" @click.away="open = false">
-                        <button type="button"
-                                @click="open = !open"
-                                class="p-2 rounded-xl bg-card/80 dark:bg-card/80 border border-border shadow-sm hover:bg-muted transition touch-manipulation"
-                                :aria-label="'{{ __('app.language') }}'">
-                            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
-                            </svg>
-                        </button>
-                        <div x-show="open" 
-                             x-transition:enter="transition ease-out duration-100"
-                             x-transition:enter-start="opacity-0 scale-95"
-                             x-transition:enter-end="opacity-100 scale-100"
-                             x-transition:leave="transition ease-in duration-75"
-                             x-transition:leave-start="opacity-100 scale-100"
-                             x-transition:leave-end="opacity-0 scale-95"
-                             @click.away="open = false"
-                             class="fixed right-2 mt-2 w-44 bg-card border border-border rounded-xl shadow-2xl overflow-hidden"
-                             style="display: none; z-index: 9999; top: 44px;">
-                            <button @click="setLocale('en'); open = false"
-                                    class="w-full px-4 py-3 text-left text-sm hover:bg-muted transition flex items-center justify-between touch-manipulation"
-                                    :class="locale === 'en' ? 'bg-accent/10 text-accent font-medium' : 'text-primary'">
-                                <span>English</span>
-                                <svg x-show="locale === 'en'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    @if(!request()->routeIs('volunteer.invite.*'))
+                        <div class="relative overflow-visible" x-data="{ open: false }" @click.away="open = false">
+                            <button type="button"
+                                    @click="open = !open"
+                                    class="p-2 rounded-xl bg-card/80 dark:bg-card/80 border border-border shadow-sm hover:bg-muted transition touch-manipulation"
+                                    :aria-label="'{{ __('app.language') }}'">
+                                <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
                                 </svg>
                             </button>
-                            <button @click="setLocale('am'); open = false"
-                                    class="w-full px-4 py-3 text-left text-sm hover:bg-muted transition flex items-center justify-between touch-manipulation"
-                                    :class="locale === 'am' ? 'bg-accent/10 text-accent font-medium' : 'text-primary'">
-                                <span>አማርኛ</span>
-                                <svg x-show="locale === 'am'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                </svg>
-                            </button>
+                            <div x-show="open" 
+                                 x-transition:enter="transition ease-out duration-100"
+                                 x-transition:enter-start="opacity-0 scale-95"
+                                 x-transition:enter-end="opacity-100 scale-100"
+                                 x-transition:leave="transition ease-in duration-75"
+                                 x-transition:leave-start="opacity-100 scale-100"
+                                 x-transition:leave-end="opacity-0 scale-95"
+                                 @click.away="open = false"
+                                 class="fixed right-2 mt-2 w-44 bg-card border border-border rounded-xl shadow-2xl overflow-hidden"
+                                 style="display: none; z-index: 9999; top: 44px;">
+                                <button @click="setLocale('en'); open = false"
+                                        class="w-full px-4 py-3 text-left text-sm hover:bg-muted transition flex items-center justify-between touch-manipulation"
+                                        :class="locale === 'en' ? 'bg-accent/10 text-accent font-medium' : 'text-primary'">
+                                    <span>English</span>
+                                    <svg x-show="locale === 'en'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                </button>
+                                <button @click="setLocale('am'); open = false"
+                                        class="w-full px-4 py-3 text-left text-sm hover:bg-muted transition flex items-center justify-between touch-manipulation"
+                                        :class="locale === 'am' ? 'bg-accent/10 text-accent font-medium' : 'text-primary'">
+                                    <span>አማርኛ</span>
+                                    <svg x-show="locale === 'am'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
-                    </div>
+                    @endif
                     <button type="button"
                             @click="darkMode = !darkMode; localStorage.setItem('theme', darkMode ? 'dark' : 'light')"
                             class="p-2 rounded-xl bg-card/80 dark:bg-card/80 border border-border shadow-sm hover:bg-muted transition"
@@ -96,13 +100,15 @@
                     </button>
                 </div>
 
-                {{-- Quote image & title --}}
-                <div class="text-center mb-8">
-                    <img src="{{ asset('images/og-cover.png') }}" alt="{{ __('app.app_name') }}"
-                         class="inline-block w-full max-w-[340px] sm:max-w-[400px] rounded-2xl object-contain shadow-xl shadow-black/10 mb-6 ring-2 ring-white/30 dark:ring-white/10">
-                    <h1 class="text-2xl sm:text-3xl font-black text-primary tracking-tight">{{ __('app.app_name') }}</h1>
-                    <p class="text-sm text-muted-text mt-1 font-medium">{{ __('app.tagline') }}</p>
-                </div>
+                @if(!request()->routeIs('volunteer.invite.*'))
+                    {{-- Quote image & title --}}
+                    <div class="text-center mb-8">
+                        <img src="{{ asset('images/og-cover.png') }}" alt="{{ __('app.app_name') }}"
+                             class="inline-block w-full max-w-[340px] sm:max-w-[400px] rounded-2xl object-contain shadow-xl shadow-black/10 mb-6 ring-2 ring-white/30 dark:ring-white/10">
+                        <h1 class="text-2xl sm:text-3xl font-black text-primary tracking-tight">{{ __('app.app_name') }}</h1>
+                        <p class="text-sm text-muted-text mt-1 font-medium">{{ __('app.tagline') }}</p>
+                    </div>
+                @endif
 
                 @yield('content')
             </div>

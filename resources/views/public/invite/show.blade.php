@@ -40,9 +40,9 @@
                 </div>
 
                 {{-- STEP 1: Video --}}
-                <div x-show="step === 'video'" x-transition.opacity class="mt-8">
+                <div x-show="step === 'video'" x-transition.opacity class="mt-8 -mx-4 sm:-mx-8">
                     @if($hasVideo)
-                        <div class="aspect-video w-full rounded-2xl overflow-hidden border border-border bg-muted">
+                        <div class="aspect-video w-full rounded-none sm:rounded-2xl overflow-hidden border border-border bg-muted">
                             <div id="invite-youtube-player" class="w-full h-full bg-black"></div>
                         </div>
                         <div class="mt-5 space-y-2">
