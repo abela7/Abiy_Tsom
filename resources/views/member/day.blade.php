@@ -81,7 +81,8 @@
 
     {{-- Weekly theme link --}}
     @if($daily->weeklyTheme)
-    <a href="{{ route('member.week', $daily->weeklyTheme) }}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-accent hover:text-accent-hover transition-colors">
+    <a href="{{ route('member.week', $daily->weeklyTheme) }}" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-accent/10 text-xs font-semibold text-accent hover:bg-accent/20 active:bg-accent/25 transition-colors">
+        <i class="bi bi-journal-bookmark-fill text-[11px]"></i>
         {{ __('app.week', ['number' => $daily->weeklyTheme->week_number]) }} &mdash; {{ localized($daily->weeklyTheme, 'name') ?? $daily->weeklyTheme->name_en ?? $daily->weeklyTheme->name_geez ?? '-' }}
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
     </a>
