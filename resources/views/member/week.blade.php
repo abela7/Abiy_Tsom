@@ -108,14 +108,6 @@
     </div>
     @endif
 
-    {{-- Theme summary --}}
-    @if($themeSummary)
-    <div class="rounded-xl bg-muted/20 p-3.5">
-        <p class="text-[11px] font-semibold text-muted-text uppercase tracking-wide mb-1.5">{{ __('app.week_summary_label') }}</p>
-        <p class="text-sm text-secondary leading-relaxed">{{ $themeSummary }}</p>
-    </div>
-    @endif
-
     {{-- Content sections — each group is open by default --}}
     @if(empty($contentGroups) && !$themeDescription && !$themeSummary)
     <div class="rounded-xl bg-muted/20 p-6 text-center">
@@ -189,6 +181,14 @@
         </div>
         @endforeach
     </div>
+
+    {{-- Theme summary --}}
+    @if($themeSummary)
+    <div class="rounded-xl bg-muted/20 p-3.5">
+        <p class="text-[11px] font-semibold text-muted-text uppercase tracking-wide mb-1.5">{{ __('app.week_summary_label') }}</p>
+        <p class="text-sm text-secondary leading-relaxed">{{ $themeSummary }}</p>
+    </div>
+    @endif
 
 </div>
 @endsection
