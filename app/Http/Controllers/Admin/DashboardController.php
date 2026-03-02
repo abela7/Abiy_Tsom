@@ -59,6 +59,9 @@ class DashboardController extends Controller
         $telegramConnected = Member::whereNotNull('telegram_chat_id')->count();
         $whatsappConnected = Member::where('whatsapp_reminder_enabled', true)->count();
 
+        // Referrals
+        $totalReferredMembers = Member::whereNotNull('referred_by')->count();
+
         // Registration trend (last 14 days)
         $registrationTrend = Member::query()
             ->where('created_at', '>=', now()->subDays(13)->startOfDay())
@@ -89,7 +92,7 @@ class DashboardController extends Controller
             'newToday', 'new7d', 'new30d',
             'active24h', 'active7d', 'active30d',
             'engagedMembers', 'totalCompletions',
-            'telegramConnected', 'whatsappConnected',
+            'telegramConnected', 'whatsappConnected', 'totalReferredMembers',
             'trendData',
             'localeDistribution', 'themeDistribution'
         ));

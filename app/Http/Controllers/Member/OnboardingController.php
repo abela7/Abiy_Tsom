@@ -91,6 +91,15 @@ class OnboardingController extends Controller
 
         $member = Member::create($memberPayload);
 
+        // Attribute referral if cookie exists
+        $refCode = $request->cookie('ref');
+        if (is_string($refCode) && preg_match('/^[a-z0-9]{8}$/', $refCode)) {
+            $referrer = Member::where('referral_code', $refCode)->first();
+            if ($referrer && $referrer->id !== $member->id) {
+                $member->update(['referred_by' => $referrer->id]);
+            }
+        }
+
         // Bind and persist this browser as the trusted member device.
         if (! $this->sessions->establishSession($member, $request)) {
             return response()->json([

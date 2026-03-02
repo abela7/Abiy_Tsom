@@ -18,6 +18,9 @@ use Illuminate\Support\Facades\Route;
 // Welcome / onboarding (no auth required)
 Route::get('/', [Member\OnboardingController::class, 'welcome'])->name('home');
 Route::post('/member/register', [Member\OnboardingController::class, 'register'])->name('member.register');
+Route::get('/r/{code}', [Member\ReferralController::class, 'track'])
+    ->where('code', '[A-Za-z0-9]{8}')
+    ->name('referral.track');
 Route::post('/member/identify', [Member\OnboardingController::class, 'identify'])
     ->middleware('member')
     ->name('member.identify');
@@ -192,6 +195,13 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::delete('/members/{member}', [Admin\MembersController::class, 'destroy'])->name('members.destroy');
         Route::delete('/members/{member}/data', [Admin\MembersController::class, 'wipeData'])->name('members.wipe-data');
         Route::post('/members/{member}/restart-tour', [Admin\MembersController::class, 'restartTour'])->name('members.restart-tour');
+
+        // Referrals
+        Route::get('/referrals', [Admin\ReferralController::class, 'index'])->name('referrals.index');
+        Route::post('/referrals/{member}/enable', [Admin\ReferralController::class, 'enable'])->name('referrals.enable');
+        Route::post('/referrals/{member}/disable', [Admin\ReferralController::class, 'disable'])->name('referrals.disable');
+        Route::post('/referrals/{member}/regenerate', [Admin\ReferralController::class, 'regenerate'])->name('referrals.regenerate');
+
         Route::get('/tour', [Admin\TourController::class, 'index'])->name('tour.index');
         Route::delete('/tour/clear-all', [Admin\TourController::class, 'clearAll'])->name('tour.clear-all');
         Route::post('/tour/{member}/reset', [Admin\TourController::class, 'resetMember'])->name('tour.reset-member');

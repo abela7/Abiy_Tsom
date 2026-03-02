@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
@@ -19,6 +20,8 @@ class Member extends Model
     protected $fillable = [
         'baptism_name',
         'token',
+        'referral_code',
+        'referred_by',
         'telegram_chat_id',
         'trusted_device_hash',
         'passcode',
@@ -82,5 +85,20 @@ class Member extends Model
     public function sessions(): HasMany
     {
         return $this->hasMany(MemberSession::class);
+    }
+
+    public function referrer(): BelongsTo
+    {
+        return $this->belongsTo(Member::class, 'referred_by');
+    }
+
+    public function referrals(): HasMany
+    {
+        return $this->hasMany(Member::class, 'referred_by');
+    }
+
+    public function referralClicks(): HasMany
+    {
+        return $this->hasMany(ReferralClick::class);
     }
 }

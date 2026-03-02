@@ -99,7 +99,7 @@
 </div>
 
 {{-- Row 4: Engagement + Connections --}}
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+<div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
     <div class="bg-card rounded-xl p-4 shadow-sm border border-border">
         <p class="text-xs text-muted-text font-medium mb-1">Engaged Members</p>
         <p class="text-2xl font-bold text-primary">{{ $engagedMembers }}</p>
@@ -124,6 +124,11 @@
         <p class="text-xs text-muted-text font-medium mb-1">WhatsApp</p>
         <p class="text-2xl font-bold text-green-500">{{ $whatsappConnected }}</p>
         <p class="text-[11px] text-muted-text mt-1">Reminders active</p>
+    </div>
+    <div class="bg-card rounded-xl p-4 shadow-sm border border-border">
+        <p class="text-xs text-muted-text font-medium mb-1">{{ __('app.referrals') }}</p>
+        <p class="text-2xl font-bold text-accent">{{ $totalReferredMembers }}</p>
+        <a href="{{ route('admin.referrals.index') }}" class="text-[11px] text-accent font-medium hover:underline">{{ __('app.referral_leaderboard') }} &rarr;</a>
     </div>
 </div>
 
