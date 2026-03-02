@@ -169,16 +169,16 @@
             <div class="absolute -bottom-16 -left-16 w-40 h-40 rounded-full bg-white/5 blur-[60px] pointer-events-none"></div>
             <div class="relative px-4 py-4 sm:px-5">
                 <div class="flex items-center gap-2.5 mb-2">
-                    <span class="px-2.5 py-1 rounded-full bg-easter-gold/20 text-easter-gold font-bold text-[11px] tracking-wide uppercase">{{ __('app.week', ['number' => $weekTheme->week_number]) }}</span>
+                    <span class="px-2.5 py-1 rounded-full bg-easter-gold/20 text-easter-gold font-bold text-xs tracking-wide uppercase">{{ __('app.week', ['number' => $weekTheme->week_number]) }}</span>
                     <span class="text-sm text-white/70 font-semibold">{{ $themeName }}</span>
                 </div>
-                <p class="text-[15px] font-bold text-white leading-snug line-clamp-2">{{ $themeMeaning }}</p>
+                <p class="text-sm sm:text-base font-bold text-white leading-snug line-clamp-2">{{ $themeMeaning }}</p>
                 <div class="mt-3 flex items-center gap-3">
                     <span class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold shadow-sm bg-easter-gold text-[#1a1a1a] group-hover:bg-easter-gold/80 transition-colors">
                         {{ __('app.read_more') }}
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                     </span>
-                    <span class="text-[11px] text-white/35">{{ __('app.weekly_readings') }}</span>
+                    <span class="text-xs text-white/35">{{ __('app.weekly_readings') }}</span>
                 </div>
             </div>
         </div>
