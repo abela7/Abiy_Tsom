@@ -114,25 +114,44 @@
                 </div>
 
                 {{-- STEP 3A: Thanks + share --}}
-                <div x-show="step === 'thanks'" x-transition.opacity class="mt-8 text-center space-y-5">
-                    <div class="mx-auto w-16 h-16 rounded-full bg-accent/15 flex items-center justify-center">
-                        <svg class="w-8 h-8 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                        </svg>
+                <div x-show="step === 'thanks'" x-transition.opacity class="mt-8 space-y-6">
+                    <div class="text-center space-y-3">
+                        <div class="mx-auto w-16 h-16 rounded-full bg-accent/15 flex items-center justify-center">
+                            <svg class="w-8 h-8 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </div>
+                        <h2 class="text-2xl font-black text-primary">Thank you!</h2>
+                        <p class="text-sm text-muted-text max-w-sm mx-auto">We appreciate your honesty. Your response helps us plan better.</p>
                     </div>
-                    <h2 class="text-2xl font-black text-primary">Thank you!</h2>
-                    <p class="text-sm text-muted-text">Thank you for your honesty. Your answer helps us improve this campaign.</p>
-                    <div class="grid gap-2.5 sm:grid-cols-2">
+
+                    {{-- Share card --}}
+                    <div class="rounded-2xl border border-accent/20 bg-gradient-to-b from-accent/5 to-transparent p-5 space-y-4">
+                        <div class="text-center space-y-1">
+                            <div class="inline-flex items-center gap-2 text-accent">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                                <p class="text-sm font-bold">Know someone who can help?</p>
+                            </div>
+                            <p class="text-xs text-muted-text">Share this invitation and help us find content creators.</p>
+                        </div>
+
                         <button type="button" @click="shareInvite()"
-                                class="h-12 rounded-xl border border-accent/30 bg-accent/10 text-accent font-bold hover:bg-accent/20 transition">
-                            Share this invitation with someone else
+                                class="w-full h-12 rounded-xl bg-accent text-on-accent font-bold text-sm hover:bg-accent-hover active:scale-[0.985] transition flex items-center justify-center gap-2.5 shadow-lg shadow-accent/20">
+                            <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                            </svg>
+                            Share this invitation
                         </button>
-                        <button type="button" @click="closePage()"
-                                class="h-12 rounded-xl border border-border text-sm font-bold text-muted-text hover:bg-muted transition">
-                            Close page
-                        </button>
+
+                        <p x-show="copyNotice" x-text="copyNotice" x-transition class="text-xs text-green-600 text-center font-medium"></p>
                     </div>
-                    <p x-show="copyNotice" x-text="copyNotice" class="text-xs text-green-600 pt-1"></p>
+
+                    <button type="button" @click="closePage()"
+                            class="w-full h-10 rounded-xl text-xs font-semibold text-muted-text hover:text-secondary hover:bg-muted/60 transition">
+                        Close page
+                    </button>
                 </div>
 
                 {{-- STEP 3B: contact collection --}}
@@ -191,11 +210,42 @@
                 </div>
 
                 {{-- STEP 4: success --}}
-                <div x-show="step === 'contact-thank'" x-transition.opacity class="mt-8 text-center space-y-4">
-                    <p class="text-lg font-black text-primary">Thank you, your details are saved.</p>
-                    <p class="text-sm text-muted-text">We will contact you as soon as possible.</p>
+                <div x-show="step === 'contact-thank'" x-transition.opacity class="mt-8 space-y-6">
+                    <div class="text-center space-y-3">
+                        <div class="mx-auto w-16 h-16 rounded-full bg-green-500/15 flex items-center justify-center">
+                            <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <h2 class="text-2xl font-black text-primary">You're all set!</h2>
+                        <p class="text-sm text-muted-text max-w-sm mx-auto">Thank you for volunteering. We will contact you soon to get started.</p>
+                    </div>
+
+                    {{-- Share card --}}
+                    <div class="rounded-2xl border border-accent/20 bg-gradient-to-b from-accent/5 to-transparent p-5 space-y-4">
+                        <div class="text-center space-y-1">
+                            <div class="inline-flex items-center gap-2 text-accent">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                                </svg>
+                                <p class="text-sm font-bold">Invite a friend to join too!</p>
+                            </div>
+                            <p class="text-xs text-muted-text">The more people help, the better the content will be.</p>
+                        </div>
+
+                        <button type="button" @click="shareInvite()"
+                                class="w-full h-12 rounded-xl bg-accent text-on-accent font-bold text-sm hover:bg-accent-hover active:scale-[0.985] transition flex items-center justify-center gap-2.5 shadow-lg shadow-accent/20">
+                            <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                            </svg>
+                            Share this invitation
+                        </button>
+
+                        <p x-show="copyNotice" x-text="copyNotice" x-transition class="text-xs text-green-600 text-center font-medium"></p>
+                    </div>
+
                     <button type="button" @click="closePage()"
-                            class="h-12 rounded-xl border border-border text-sm font-bold text-muted-text hover:bg-muted transition">
+                            class="w-full h-10 rounded-xl text-xs font-semibold text-muted-text hover:text-secondary hover:bg-muted/60 transition">
                         Close page
                     </button>
                 </div>
