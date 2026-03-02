@@ -269,82 +269,105 @@
         </div>
 
         <div x-show="mode === 'carousel'" x-cloak x-transition.opacity>
-            <div class="relative w-full pt-5" :style="'height: ' + containerHeight + 'px'"
+            <div class="relative w-full"
                  @mouseenter="pauseAutoplay()"
                  @mouseleave="resumeAutoplay()"
                  @touchstart.passive="onTouchStart($event)"
                  @touchend.passive="onTouchEnd($event)">
-                @foreach($announcements as $index => $announcement)
-                @php
-                    $announcementTitle = $announcement->titleForLocale();
-                    $announcementDescription = $announcement->descriptionForLocale();
-                    $announcementPhotoUrl = $announcement->photoUrlForLocale();
-                @endphp
-                <article class="carousel-card absolute top-0 left-0 w-full rounded-2xl shadow-lg border border-border overflow-hidden transition-all duration-500 ease-out"
-                         :class="getCardClasses({{ $index }})"
-                         :style="getCardStyles({{ $index }})"
-                         @click="handleCardClick({{ $index }}, '{{ route('member.announcement.show', $announcement) }}')">
-                    <a href="{{ route('member.announcement.show', $announcement) }}"
-                       class="block group"
-                       @click.prevent>
-                        @if($announcementPhotoUrl)
-                            <div class="relative w-full aspect-[16/9] overflow-hidden bg-muted">
-                                <img src="{{ $announcementPhotoUrl }}" alt=""
-                                     class="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-[1.02] transition-transform duration-300"
-                                     loading="{{ $index === 0 ? 'eager' : 'lazy' }}">
-                                @if($announcement->hasYoutubeVideo())
-                                    <div class="absolute bottom-2 right-2 flex items-center gap-1 px-2 py-1 rounded-lg bg-black/60 text-white text-xs font-medium">
-                                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                                        {{ __('app.watch') }}
-                                    </div>
-                                @endif
-                            </div>
-                        @elseif($announcement->hasYoutubeVideo())
-                            <div class="relative w-full aspect-video overflow-hidden bg-muted">
-                                <img src="https://img.youtube.com/vi/{{ $announcement->youtubeVideoId() }}/mqdefault.jpg" alt=""
-                                     class="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-[1.02] transition-transform duration-300"
-                                     loading="{{ $index === 0 ? 'eager' : 'lazy' }}">
-                                <div class="absolute inset-0 flex items-center justify-center">
-                                    <div class="w-14 h-14 rounded-full bg-black/60 flex items-center justify-center text-white">
-                                        <svg class="w-7 h-7 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+
+                {{-- Cards container --}}
+                <div class="relative w-full overflow-hidden rounded-2xl" :style="'height: ' + containerHeight + 'px'">
+                    @foreach($announcements as $index => $announcement)
+                    @php
+                        $announcementTitle = $announcement->titleForLocale();
+                        $announcementDescription = $announcement->descriptionForLocale();
+                        $announcementPhotoUrl = $announcement->photoUrlForLocale();
+                    @endphp
+                    <article class="carousel-card absolute top-0 left-0 w-full rounded-2xl shadow-lg border border-border overflow-hidden bg-card transition-all duration-500 ease-out"
+                             :style="getCardStyles({{ $index }})"
+                             @click="handleCardClick({{ $index }}, '{{ route('member.announcement.show', $announcement) }}')">
+                        <a href="{{ route('member.announcement.show', $announcement) }}"
+                           class="block group"
+                           @click.prevent>
+                            @if($announcementPhotoUrl)
+                                <div class="relative w-full aspect-[16/9] overflow-hidden bg-muted">
+                                    <img src="{{ $announcementPhotoUrl }}" alt=""
+                                         class="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-[1.02] transition-transform duration-300"
+                                         loading="{{ $index === 0 ? 'eager' : 'lazy' }}">
+                                    @if($announcement->hasYoutubeVideo())
+                                        <div class="absolute bottom-2 right-2 flex items-center gap-1 px-2 py-1 rounded-lg bg-black/60 text-white text-xs font-medium">
+                                            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                            {{ __('app.watch') }}
+                                        </div>
+                                    @endif
+                                </div>
+                            @elseif($announcement->hasYoutubeVideo())
+                                <div class="relative w-full aspect-video overflow-hidden bg-muted">
+                                    <img src="https://img.youtube.com/vi/{{ $announcement->youtubeVideoId() }}/mqdefault.jpg" alt=""
+                                         class="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-[1.02] transition-transform duration-300"
+                                         loading="{{ $index === 0 ? 'eager' : 'lazy' }}">
+                                    <div class="absolute inset-0 flex items-center justify-center">
+                                        <div class="w-14 h-14 rounded-full bg-black/60 flex items-center justify-center text-white">
+                                            <svg class="w-7 h-7 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        @endif
-                        <div class="p-4 sm:p-5">
-                            <h3 class="text-lg sm:text-xl font-bold text-primary group-hover:text-accent transition">
-                                {{ $announcementTitle }}
-                            </h3>
-                            @if($announcementDescription)
-                                <p class="mt-2 text-sm text-secondary leading-relaxed line-clamp-2 sm:line-clamp-3">
-                                    {{ $announcementDescription }}
-                                </p>
-                                <span class="mt-3 text-accent font-semibold text-sm inline-flex items-center gap-1 group-hover:gap-2 transition-all">
-                                    {{ __('app.read_more') }}
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-                                    </svg>
-                                </span>
                             @endif
-                        </div>
-                    </a>
-                </article>
-                @endforeach
-            </div>
+                            <div class="p-4 sm:p-5">
+                                <h3 class="text-lg sm:text-xl font-bold text-primary group-hover:text-accent transition">
+                                    {{ $announcementTitle }}
+                                </h3>
+                                @if($announcementDescription)
+                                    <p class="mt-2 text-sm text-secondary leading-relaxed line-clamp-2 sm:line-clamp-3">
+                                        {{ $announcementDescription }}
+                                    </p>
+                                    <span class="mt-3 text-accent font-semibold text-sm inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+                                        {{ __('app.read_more') }}
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                                        </svg>
+                                    </span>
+                                @endif
+                            </div>
+                        </a>
+                    </article>
+                    @endforeach
+                </div>
 
-            @if($announcements->count() > 1)
-            <div class="flex items-center justify-center gap-2 mt-5">
-                @foreach($announcements as $index => $announcement)
-                <button class="carousel-dot transition-all duration-300"
-                        :class="current === {{ $index }}
-                            ? 'w-6 h-2 rounded-full bg-accent'
-                            : 'w-2 h-2 rounded-full bg-border hover:bg-muted-text'"
-                        @click="goTo({{ $index }})"
-                        aria-label="Go to announcement {{ $index + 1 }}">
-                </button>
-                @endforeach
+                @if($announcements->count() > 1)
+                {{-- Controls: prev/next + dots + counter --}}
+                <div class="flex items-center justify-between mt-3 px-1">
+                    {{-- Prev button --}}
+                    <button type="button"
+                            class="w-8 h-8 rounded-full bg-card border border-border shadow-sm flex items-center justify-center text-muted-text hover:text-primary hover:bg-muted/50 active:scale-95 transition-all"
+                            @click="prev()"
+                            aria-label="Previous">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                    </button>
+
+                    {{-- Dots --}}
+                    <div class="flex items-center gap-1.5">
+                        @foreach($announcements as $index => $announcement)
+                        <button class="transition-all duration-300"
+                                :class="current === {{ $index }}
+                                    ? 'w-5 h-1.5 rounded-full bg-accent'
+                                    : 'w-1.5 h-1.5 rounded-full bg-border hover:bg-muted-text'"
+                                @click="goTo({{ $index }})"
+                                aria-label="Go to announcement {{ $index + 1 }}">
+                        </button>
+                        @endforeach
+                    </div>
+
+                    {{-- Next button --}}
+                    <button type="button"
+                            class="w-8 h-8 rounded-full bg-card border border-border shadow-sm flex items-center justify-center text-muted-text hover:text-primary hover:bg-muted/50 active:scale-95 transition-all"
+                            @click="next()"
+                            aria-label="Next">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    </button>
+                </div>
+                @endif
             </div>
-            @endif
         </div>
     </section>
     @endif
@@ -366,6 +389,7 @@ document.addEventListener('alpine:init', function() {
         return {
             total: total,
             current: 0,
+            direction: 1,
             mode: 'carousel',
             autoplayInterval: null,
             autoplayDelay: 5000,
@@ -446,11 +470,13 @@ document.addEventListener('alpine:init', function() {
             },
 
             next: function() {
+                this.direction = 1;
                 this.current = (this.current + 1) % this.total;
                 this.updateHeight();
             },
 
             prev: function() {
+                this.direction = -1;
                 this.current = (this.current - 1 + this.total) % this.total;
                 this.updateHeight();
             },
@@ -495,41 +521,18 @@ document.addEventListener('alpine:init', function() {
                 }
             },
 
-            getOffset: function(index) {
-                return index - this.current;
-            },
-
-            getCardClasses: function(index) {
-                if (index === this.current) {
-                    return 'carousel-card--active z-30 bg-card';
-                }
-
-                var offset = this.getOffset(index);
-                if (offset === 1 || offset === -(this.total - 1)) {
-                    return 'carousel-card--next z-20 bg-card';
-                }
-                if (offset === 2 || offset === -(this.total - 2)) {
-                    return 'carousel-card--behind z-10 bg-card';
-                }
-
-                return 'carousel-card--hidden z-0 bg-card';
-            },
-
             getCardStyles: function(index) {
                 if (index === this.current) {
-                    return 'transform: translate(0,0) scale(1) rotate(0deg); opacity: 1; pointer-events: auto;';
+                    return 'transform: translateX(0); opacity: 1; pointer-events: auto; z-index: 20;';
                 }
+                // Slide off in the direction of navigation
+                var offset = index - this.current;
+                // Normalize for wrap-around
+                if (offset > this.total / 2) offset -= this.total;
+                if (offset < -this.total / 2) offset += this.total;
 
-                var offset = this.getOffset(index);
-                var absOffset = Math.min(Math.abs(offset), this.total - Math.abs(offset));
-                if (absOffset === 1) {
-                    return 'transform: translate(6px,-8px) scale(0.97) rotate(1.5deg); opacity: 0.5; pointer-events: none;';
-                }
-                if (absOffset === 2) {
-                    return 'transform: translate(12px,-16px) scale(0.94) rotate(2.5deg); opacity: 0.25; pointer-events: none;';
-                }
-
-                return 'transform: translate(16px,-20px) scale(0.91) rotate(3deg); opacity: 0; pointer-events: none;';
+                var translateX = offset * 105;
+                return 'transform: translateX(' + translateX + '%) scale(0.95); opacity: 0; pointer-events: none; z-index: 10;';
             }
         };
     });
