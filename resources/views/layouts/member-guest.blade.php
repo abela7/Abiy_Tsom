@@ -12,7 +12,11 @@
       }"
       x-effect="document.documentElement.classList.toggle('dark', darkMode)"
       :class="{ 'dark': darkMode }"
-      x-init="if (!localStorage.getItem('theme')) { localStorage.setItem('theme', 'dark'); darkMode = true; }">
+      x-init="
+        var forceInviteDark = {{ request()->routeIs('volunteer.invite.*') ? 'true' : 'false' }};
+        if (forceInviteDark) { darkMode = true; }
+        else if (!localStorage.getItem('theme')) { localStorage.setItem('theme', 'dark'); darkMode = true; }
+      ">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,7 +26,11 @@
     @include('partials.seo-meta')
     <title>@yield('title', __('app.app_name'))</title>
     <script>
-        (function(){var t=localStorage.getItem('theme');if(t!=='light')document.documentElement.classList.add('dark');})();
+        (function(){
+            var forceInviteDark = @json(request()->routeIs('volunteer.invite.*'));
+            var t = localStorage.getItem('theme');
+            if (forceInviteDark || t !== 'light') document.documentElement.classList.add('dark');
+        })();
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
