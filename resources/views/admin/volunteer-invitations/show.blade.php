@@ -94,12 +94,23 @@
                 @csrf
                 <div class="px-4 py-3 border-b border-border flex flex-wrap gap-2 sm:items-center justify-between">
                     <p class="text-xs text-muted-text" id="selected-submissions-count">0 selected</p>
-                    <button id="export-selected-button"
-                            type="submit"
-                            disabled
-                            class="inline-flex items-center justify-center rounded-lg bg-accent text-on-accent px-3 py-2 text-xs font-semibold hover:bg-accent-hover transition disabled:opacity-50 disabled:cursor-not-allowed">
-                        Export selected as CSV
-                    </button>
+                    <div class="flex flex-wrap gap-2 justify-end">
+                        <button id="export-selected-button"
+                                type="submit"
+                                formaction="{{ route('admin.volunteer-invitations.submissions.export', $campaign) }}"
+                                disabled
+                                class="inline-flex items-center justify-center rounded-lg bg-accent text-on-accent px-3 py-2 text-xs font-semibold hover:bg-accent-hover transition disabled:opacity-50 disabled:cursor-not-allowed">
+                            Export selected as CSV
+                        </button>
+                        <button id="delete-selected-button"
+                                type="submit"
+                                formaction="{{ route('admin.volunteer-invitations.submissions.delete', $campaign) }}"
+                                onclick="return confirm('Delete selected submission records?')"
+                                disabled
+                                class="inline-flex items-center justify-center rounded-lg bg-red-600 text-white px-3 py-2 text-xs font-semibold hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                            Delete selected
+                        </button>
+                    </div>
                 </div>
 
                 <div class="hidden md:block overflow-x-auto">
@@ -240,14 +251,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const selectAll = document.getElementById('select-all-submissions');
     const checkboxes = Array.from(form.querySelectorAll('.submission-checkbox'));
     const selectedLabel = document.getElementById('selected-submissions-count');
-    const submitButton = document.getElementById('export-selected-button');
 
     const updateSelection = () => {
         const checkedCount = form.querySelectorAll('.submission-checkbox:checked').length;
         const totalCount = checkboxes.length;
 
         selectedLabel.textContent = `${checkedCount} selected`;
-        submitButton.disabled = checkedCount === 0;
+        const deleteButton = document.getElementById('delete-selected-button');
+        const exportButton = document.getElementById('export-selected-button');
+
+        deleteButton.disabled = checkedCount === 0;
+        exportButton.disabled = checkedCount === 0;
 
         if (selectAll) {
             selectAll.checked = totalCount > 0 && checkedCount === totalCount;

@@ -327,6 +327,32 @@ class VolunteerInviteController extends Controller
         ]);
     }
 
+    public function deleteSubmissions(Request $request, VolunteerInvitationCampaign $campaign): RedirectResponse|JsonResponse
+    {
+        $validated = $request->validate([
+            'submission_ids' => ['required', 'array', 'min:1'],
+            'submission_ids.*' => ['integer', 'min:1'],
+        ]);
+
+        $submissionIds = array_values(array_unique(array_map('intval', $validated['submission_ids'])));
+
+        $deletedCount = VolunteerInvitationSubmission::query()
+            ->where('volunteer_invitation_campaign_id', $campaign->id)
+            ->whereIn('id', $submissionIds)
+            ->delete();
+
+        if ($request->wantsJson() || $request->expectsJson()) {
+            return response()->json([
+                'message' => 'submissions_deleted',
+                'deleted' => $deletedCount,
+            ]);
+        }
+
+        return redirect()
+            ->route('admin.volunteer-invitations.stats', $campaign)
+            ->with('success', $deletedCount . ' submission(s) deleted.');
+    }
+
     private function buildCampaignQuery()
     {
         return VolunteerInvitationCampaign::query()->withCount([
