@@ -301,7 +301,7 @@ class VolunteerInviteController extends Controller
                     VolunteerInvitationSubmission::CONTACT_METHOD_TELEGRAM => 'Telegram',
                     VolunteerInvitationSubmission::CONTACT_METHOD_WHATSAPP => 'WhatsApp',
                     default => 'Not provided',
-                ];
+                };
 
                 fputcsv($handle, [
                     $submission->ip_address,
