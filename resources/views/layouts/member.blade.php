@@ -30,6 +30,7 @@
     <script>
         (function(){var t=localStorage.getItem('theme');if(t!=='light')document.documentElement.classList.add('dark');})();
     </script>
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     @include('partials.favicon')
