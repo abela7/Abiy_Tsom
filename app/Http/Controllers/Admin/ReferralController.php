@@ -72,6 +72,66 @@ class ReferralController extends Controller
         ));
     }
 
+    public function show(User $user): View
+    {
+        // Stats
+        $totalClicks = $user->referralClicks()->count();
+        $uniqueClicks = $user->referralClicks()->where('is_unique', true)->count();
+        $totalRegistrations = $user->referrals()->count();
+        $conversionRate = $uniqueClicks > 0
+            ? round(($totalRegistrations / $uniqueClicks) * 100, 1)
+            : 0;
+        $bounces = max(0, $uniqueClicks - $totalRegistrations);
+
+        // Click trend (last 14 days) for this affiliate
+        $clickTrend = $user->referralClicks()
+            ->where('created_at', '>=', now()->subDays(13)->startOfDay())
+            ->selectRaw('DATE(created_at) as date, COUNT(*) as total')
+            ->groupBy('date')
+            ->orderBy('date')
+            ->pluck('total', 'date');
+
+        $trendData = [];
+        for ($i = 13; $i >= 0; $i--) {
+            $date = now()->subDays($i)->format('Y-m-d');
+            $trendData[$date] = $clickTrend[$date] ?? 0;
+        }
+
+        // Referred members
+        $referredMembers = $user->referrals()
+            ->orderByDesc('created_at')
+            ->get(['id', 'baptism_name', 'created_at']);
+
+        // Recent clicks (last 50)
+        $recentClicks = $user->referralClicks()
+            ->orderByDesc('created_at')
+            ->limit(50)
+            ->get(['visitor_hash', 'ip_address', 'referer', 'is_unique', 'created_at']);
+
+        // Top referrer sources
+        $topSources = $user->referralClicks()
+            ->whereNotNull('referer')
+            ->where('referer', '!=', '')
+            ->selectRaw('referer, COUNT(*) as total')
+            ->groupBy('referer')
+            ->orderByDesc('total')
+            ->limit(5)
+            ->get();
+
+        return view('admin.referrals.show', compact(
+            'user',
+            'totalClicks',
+            'uniqueClicks',
+            'totalRegistrations',
+            'conversionRate',
+            'bounces',
+            'trendData',
+            'referredMembers',
+            'recentClicks',
+            'topSources',
+        ));
+    }
+
     public function enable(User $user): RedirectResponse
     {
         if ($user->referral_code) {

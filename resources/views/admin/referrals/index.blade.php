@@ -129,10 +129,10 @@
                             @endif
                         </td>
                         <td class="px-4 py-3">
-                            <div>
-                                <p class="font-semibold text-primary">{{ $affiliate->name }}</p>
+                            <a href="{{ route('admin.referrals.show', $affiliate) }}" class="block group/name">
+                                <p class="font-semibold text-primary group-hover/name:text-accent transition">{{ $affiliate->name }}</p>
                                 <p class="text-xs text-muted-text capitalize">{{ $affiliate->role }}</p>
-                            </div>
+                            </a>
                         </td>
                         <td class="px-4 py-3">
                             <div class="flex items-center gap-1.5">

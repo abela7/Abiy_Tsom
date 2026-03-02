@@ -198,6 +198,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
 
         // Referrals
         Route::get('/referrals', [Admin\ReferralController::class, 'index'])->name('referrals.index');
+        Route::get('/referrals/{user}', [Admin\ReferralController::class, 'show'])->name('referrals.show');
         Route::post('/referrals/{user}/enable', [Admin\ReferralController::class, 'enable'])->name('referrals.enable');
         Route::post('/referrals/{user}/disable', [Admin\ReferralController::class, 'disable'])->name('referrals.disable');
         Route::post('/referrals/{user}/regenerate', [Admin\ReferralController::class, 'regenerate'])->name('referrals.regenerate');
