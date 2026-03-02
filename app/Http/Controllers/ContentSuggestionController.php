@@ -20,6 +20,7 @@ class ContentSuggestionController extends Controller
     public function show(): View
     {
         $authUser = Auth::user();
+        $canAccessWriterSuggestions = (bool) ($authUser?->isAdmin());
         $recentSuggestions = $authUser
             ? ContentSuggestion::where('user_id', $authUser->id)
                 ->orderByDesc('created_at')
@@ -27,7 +28,7 @@ class ContentSuggestionController extends Controller
                 ->get()
             : collect();
 
-        return view('public.suggest', compact('authUser', 'recentSuggestions'));
+        return view('public.suggest', compact('authUser', 'recentSuggestions', 'canAccessWriterSuggestions'));
     }
 
     /**

@@ -41,7 +41,7 @@
                     <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                     <span class="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full bg-accent text-on-accent text-[10px] font-black flex items-center justify-center px-1" x-text="cart.length"></span>
                 </button>
-                @if($authUser)
+                @if($canAccessWriterSuggestions)
                     <a href="{{ route('admin.suggestions.my') }}" class="p-2 rounded-xl hover:bg-muted transition touch-manipulation" title="{{ __('app.suggest_my_suggestions') }}">
                         <svg class="w-5 h-5 text-muted-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                     </a>
@@ -79,7 +79,7 @@
                 </div>
 
                 {{-- Recent submissions: from server (logged-in) or localStorage (anonymous) --}}
-                @if($authUser && $recentSuggestions->isNotEmpty())
+                @if($canAccessWriterSuggestions && $recentSuggestions->isNotEmpty())
                     <div class="mt-8">
                         <h3 class="text-xs font-bold text-muted-text uppercase tracking-widest mb-3">{{ __('app.suggest_your_recent') }}</h3>
                         <div class="space-y-2">
@@ -375,7 +375,7 @@
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                             {{ __('app.suggest_another') }}
                         </button>
-                        @if($authUser)
+                        @if($canAccessWriterSuggestions)
                             <a href="{{ route('admin.suggestions.my') }}"
                                class="w-full h-12 rounded-xl border border-border text-sm font-semibold text-secondary hover:bg-muted active:scale-[0.97] transition touch-manipulation flex items-center justify-center gap-2">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
