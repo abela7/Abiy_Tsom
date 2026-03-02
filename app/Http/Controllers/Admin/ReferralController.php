@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Member;
 use App\Models\ReferralClick;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -15,7 +16,8 @@ class ReferralController extends Controller
 {
     public function index(): View
     {
-        $affiliates = Member::whereNotNull('referral_code')
+        // Affiliates = admin users with a referral code
+        $affiliates = User::whereNotNull('referral_code')
             ->withCount([
                 'referralClicks as total_clicks',
                 'referralClicks as unique_clicks' => fn ($q) => $q->where('is_unique', true),
@@ -24,7 +26,7 @@ class ReferralController extends Controller
             ->orderByDesc('total_registrations')
             ->orderByDesc('unique_clicks')
             ->get()
-            ->map(function (Member $affiliate) {
+            ->map(function (User $affiliate) {
                 $affiliate->conversion_rate = $affiliate->unique_clicks > 0
                     ? round(($affiliate->total_registrations / $affiliate->unique_clicks) * 100, 1)
                     : 0;
@@ -54,9 +56,10 @@ class ReferralController extends Controller
             $trendData[$date] = $clickTrend[$date] ?? 0;
         }
 
-        $nonAffiliateMembers = Member::whereNull('referral_code')
-            ->orderBy('baptism_name')
-            ->get(['id', 'baptism_name']);
+        // Admin users without referral codes (for the "enable" dropdown)
+        $availableAdmins = User::whereNull('referral_code')
+            ->orderBy('name')
+            ->get(['id', 'name', 'role']);
 
         return view('admin.referrals.index', compact(
             'affiliates',
@@ -65,48 +68,48 @@ class ReferralController extends Controller
             'totalReferredMembers',
             'overallConversionRate',
             'trendData',
-            'nonAffiliateMembers',
+            'availableAdmins',
         ));
     }
 
-    public function enable(Member $member): RedirectResponse
+    public function enable(User $user): RedirectResponse
     {
-        if ($member->referral_code) {
+        if ($user->referral_code) {
             return redirect()->route('admin.referrals.index')
-                ->with('error', $member->baptism_name . ' already has a referral code.');
+                ->with('error', $user->name . ' already has a referral code.');
         }
 
-        $member->update([
+        $user->update([
             'referral_code' => $this->generateUniqueCode(),
         ]);
 
         return redirect()->route('admin.referrals.index')
-            ->with('success', __('app.referral_enabled_for', ['name' => $member->baptism_name]));
+            ->with('success', __('app.referral_enabled_for', ['name' => $user->name]));
     }
 
-    public function disable(Member $member): RedirectResponse
+    public function disable(User $user): RedirectResponse
     {
-        $member->update(['referral_code' => null]);
+        $user->update(['referral_code' => null]);
 
         return redirect()->route('admin.referrals.index')
-            ->with('success', __('app.referral_disabled_for', ['name' => $member->baptism_name]));
+            ->with('success', __('app.referral_disabled_for', ['name' => $user->name]));
     }
 
-    public function regenerate(Member $member): RedirectResponse
+    public function regenerate(User $user): RedirectResponse
     {
-        $member->update([
+        $user->update([
             'referral_code' => $this->generateUniqueCode(),
         ]);
 
         return redirect()->route('admin.referrals.index')
-            ->with('success', __('app.referral_regenerated_for', ['name' => $member->baptism_name]));
+            ->with('success', __('app.referral_regenerated_for', ['name' => $user->name]));
     }
 
     private function generateUniqueCode(): string
     {
         do {
             $code = strtolower(Str::random(8));
-        } while (Member::where('referral_code', $code)->exists());
+        } while (User::where('referral_code', $code)->exists());
 
         return $code;
     }

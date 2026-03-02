@@ -12,7 +12,7 @@ return new class extends Migration
     {
         Schema::create('referral_clicks', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('member_id')
+            $table->foreignId('user_id')
                 ->constrained()
                 ->cascadeOnDelete();
             $table->string('visitor_hash', 64)->index();

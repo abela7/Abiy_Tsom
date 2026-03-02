@@ -66,22 +66,22 @@
 </div>
 
 {{-- Enable affiliate --}}
-@if($nonAffiliateMembers->isNotEmpty())
+@if($availableAdmins->isNotEmpty())
 <div class="bg-card rounded-xl p-5 shadow-sm border border-border mb-6">
     <h2 class="text-sm font-bold text-muted-text uppercase tracking-wider mb-3">{{ __('app.enable_affiliate') }}</h2>
-    <form x-data="{ memberId: '' }" :action="memberId ? '{{ url('admin/referrals') }}/' + memberId + '/enable' : '#'" method="POST" class="flex flex-col sm:flex-row items-stretch sm:items-end gap-3">
+    <form x-data="{ userId: '' }" :action="userId ? '{{ url('admin/referrals') }}/' + userId + '/enable' : '#'" method="POST" class="flex flex-col sm:flex-row items-stretch sm:items-end gap-3">
         @csrf
         <div class="flex-1">
-            <select x-model="memberId"
+            <select x-model="userId"
                     class="w-full px-3 py-2.5 rounded-lg bg-surface border border-border text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition">
                 <option value="">{{ __('app.select_member') }}</option>
-                @foreach($nonAffiliateMembers as $m)
-                    <option value="{{ $m->id }}">{{ $m->baptism_name }}</option>
+                @foreach($availableAdmins as $admin)
+                    <option value="{{ $admin->id }}">{{ $admin->name }} ({{ $admin->role }})</option>
                 @endforeach
             </select>
         </div>
         <button type="submit"
-                :disabled="!memberId"
+                :disabled="!userId"
                 class="px-5 py-2.5 rounded-lg bg-accent text-on-accent text-sm font-semibold hover:bg-accent/90 transition disabled:opacity-40 disabled:cursor-not-allowed">
             {{ __('app.enable') }}
         </button>
@@ -128,7 +128,12 @@
                                 {{ $index + 1 }}
                             @endif
                         </td>
-                        <td class="px-4 py-3 font-semibold text-primary">{{ $affiliate->baptism_name }}</td>
+                        <td class="px-4 py-3">
+                            <div>
+                                <p class="font-semibold text-primary">{{ $affiliate->name }}</p>
+                                <p class="text-xs text-muted-text capitalize">{{ $affiliate->role }}</p>
+                            </div>
+                        </td>
                         <td class="px-4 py-3">
                             <div class="flex items-center gap-1.5">
                                 <input id="ref-link-{{ $affiliate->id }}"

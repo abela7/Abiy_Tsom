@@ -91,11 +91,11 @@ class OnboardingController extends Controller
 
         $member = Member::create($memberPayload);
 
-        // Attribute referral if cookie exists
+        // Attribute referral if cookie exists (referral codes belong to admin users)
         $refCode = $request->cookie('ref');
         if (is_string($refCode) && preg_match('/^[a-z0-9]{8}$/', $refCode)) {
-            $referrer = Member::where('referral_code', $refCode)->first();
-            if ($referrer && $referrer->id !== $member->id) {
+            $referrer = \App\Models\User::where('referral_code', $refCode)->first();
+            if ($referrer) {
                 $member->update(['referred_by' => $referrer->id]);
             }
         }

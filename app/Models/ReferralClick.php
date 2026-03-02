@@ -12,7 +12,7 @@ class ReferralClick extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'member_id',
+        'user_id',
         'visitor_hash',
         'ip_address',
         'user_agent',
@@ -31,6 +31,6 @@ class ReferralClick extends Model
 
     public function affiliate(): BelongsTo
     {
-        return $this->belongsTo(Member::class, 'member_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

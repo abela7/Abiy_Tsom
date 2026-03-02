@@ -10,15 +10,20 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('members', function (Blueprint $table): void {
+        // Referral codes belong to admin users (writers, editors, admins)
+        Schema::table('users', function (Blueprint $table): void {
             $table->string('referral_code', 8)
                 ->nullable()
                 ->unique()
-                ->after('token');
+                ->after('role');
+        });
+
+        // Track which admin user referred each member
+        Schema::table('members', function (Blueprint $table): void {
             $table->foreignId('referred_by')
                 ->nullable()
-                ->after('referral_code')
-                ->constrained('members')
+                ->after('token')
+                ->constrained('users')
                 ->nullOnDelete();
         });
     }
@@ -27,7 +32,11 @@ return new class extends Migration
     {
         Schema::table('members', function (Blueprint $table): void {
             $table->dropForeign(['referred_by']);
-            $table->dropColumn(['referral_code', 'referred_by']);
+            $table->dropColumn('referred_by');
+        });
+
+        Schema::table('users', function (Blueprint $table): void {
+            $table->dropColumn('referral_code');
         });
     }
 };

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
-use App\Models\Member;
 use App\Models\ReferralClick;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -20,7 +20,7 @@ class ReferralController extends Controller
      */
     public function track(Request $request, string $code): RedirectResponse
     {
-        $affiliate = Member::where('referral_code', $code)->first();
+        $affiliate = User::where('referral_code', $code)->first();
 
         if (! $affiliate) {
             return redirect('/');
@@ -28,12 +28,12 @@ class ReferralController extends Controller
 
         $visitorHash = hash('sha256', ($request->ip() ?? '') . '|' . ($request->userAgent() ?? ''));
 
-        $isUnique = ! ReferralClick::where('member_id', $affiliate->id)
+        $isUnique = ! ReferralClick::where('user_id', $affiliate->id)
             ->where('visitor_hash', $visitorHash)
             ->exists();
 
         ReferralClick::create([
-            'member_id'    => $affiliate->id,
+            'user_id'      => $affiliate->id,
             'visitor_hash' => $visitorHash,
             'ip_address'   => $request->ip(),
             'user_agent'   => $request->userAgent() ? mb_substr($request->userAgent(), 0, 512) : null,

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -26,6 +27,7 @@ class User extends Authenticatable
         'password',
         'role',
         'is_super_admin',
+        'referral_code',
     ];
 
     /** @var list<string> */
@@ -66,5 +68,15 @@ class User extends Authenticatable
     public function isSuperAdmin(): bool
     {
         return (bool) $this->is_super_admin;
+    }
+
+    public function referrals(): HasMany
+    {
+        return $this->hasMany(Member::class, 'referred_by');
+    }
+
+    public function referralClicks(): HasMany
+    {
+        return $this->hasMany(ReferralClick::class);
     }
 }

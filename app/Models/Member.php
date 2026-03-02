@@ -20,7 +20,6 @@ class Member extends Model
     protected $fillable = [
         'baptism_name',
         'token',
-        'referral_code',
         'referred_by',
         'telegram_chat_id',
         'trusted_device_hash',
@@ -89,16 +88,6 @@ class Member extends Model
 
     public function referrer(): BelongsTo
     {
-        return $this->belongsTo(Member::class, 'referred_by');
-    }
-
-    public function referrals(): HasMany
-    {
-        return $this->hasMany(Member::class, 'referred_by');
-    }
-
-    public function referralClicks(): HasMany
-    {
-        return $this->hasMany(ReferralClick::class);
+        return $this->belongsTo(User::class, 'referred_by');
     }
 }

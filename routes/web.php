@@ -198,9 +198,9 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
 
         // Referrals
         Route::get('/referrals', [Admin\ReferralController::class, 'index'])->name('referrals.index');
-        Route::post('/referrals/{member}/enable', [Admin\ReferralController::class, 'enable'])->name('referrals.enable');
-        Route::post('/referrals/{member}/disable', [Admin\ReferralController::class, 'disable'])->name('referrals.disable');
-        Route::post('/referrals/{member}/regenerate', [Admin\ReferralController::class, 'regenerate'])->name('referrals.regenerate');
+        Route::post('/referrals/{user}/enable', [Admin\ReferralController::class, 'enable'])->name('referrals.enable');
+        Route::post('/referrals/{user}/disable', [Admin\ReferralController::class, 'disable'])->name('referrals.disable');
+        Route::post('/referrals/{user}/regenerate', [Admin\ReferralController::class, 'regenerate'])->name('referrals.regenerate');
 
         Route::get('/tour', [Admin\TourController::class, 'index'])->name('tour.index');
         Route::delete('/tour/clear-all', [Admin\TourController::class, 'clearAll'])->name('tour.clear-all');
