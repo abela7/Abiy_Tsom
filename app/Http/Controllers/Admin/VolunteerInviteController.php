@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class VolunteerInviteController extends Controller
 {
@@ -176,10 +177,11 @@ class VolunteerInviteController extends Controller
 
         $recentSubmissions = $campaign->submissions()
             ->orderByDesc('created_at')
-            ->limit(50)
+            ->limit(300)
             ->get([
                 'id',
                 'visitor_token',
+                'ip_address',
                 'decision',
                 'contact_name',
                 'phone',
@@ -187,9 +189,28 @@ class VolunteerInviteController extends Controller
                 'decision_at',
                 'contact_submitted_at',
                 'opened_at',
+                'open_count',
                 'video_completed_at',
                 'created_at',
             ]);
+
+        $recentSubmissions = $recentSubmissions
+            ->groupBy(function (VolunteerInvitationSubmission $submission): string {
+                return $submission->ip_address ?: 'token:' . $submission->visitor_token;
+            })
+            ->map(function ($rows) {
+                /** @var \Illuminate\Support\Collection<int, VolunteerInvitationSubmission> $rows */
+                $latest = $rows->first();
+
+                $latest->setAttribute('open_count', (int) $rows->sum('open_count'));
+                $latest->setAttribute('group_size', $rows->count());
+
+                return $latest;
+            })
+            ->values()
+            ->sortByDesc(fn (VolunteerInvitationSubmission $submission) => optional($submission->created_at)->timestamp)
+            ->take(50)
+            ->values();
 
         if ($request->wantsJson() || $request->expectsJson()) {
             return response()->json([
@@ -203,6 +224,106 @@ class VolunteerInviteController extends Controller
             'campaign' => $campaign,
             'summary' => $summary,
             'submissions' => $recentSubmissions,
+        ]);
+    }
+
+    public function exportSubmissions(Request $request, VolunteerInvitationCampaign $campaign): StreamedResponse|RedirectResponse
+    {
+        $validated = $request->validate([
+            'submission_ids' => ['required', 'array', 'min:1'],
+            'submission_ids.*' => ['integer', 'min:1'],
+        ]);
+
+        $submissionIds = array_values(array_unique(array_map('intval', $validated['submission_ids'])));
+
+        $submissions = VolunteerInvitationSubmission::query()
+            ->where('volunteer_invitation_campaign_id', $campaign->id)
+            ->whereIn('id', $submissionIds)
+            ->orderByDesc('created_at')
+            ->get([
+                'ip_address',
+                'visitor_token',
+                'decision',
+                'contact_name',
+                'phone',
+                'preferred_contact_method',
+                'open_count',
+                'opened_at',
+                'video_started_at',
+                'video_completed_at',
+                'decision_at',
+                'contact_submitted_at',
+                'created_at',
+            ]);
+
+        if ($submissions->isEmpty()) {
+            return redirect()
+                ->route('admin.volunteer-invitations.stats', $campaign)
+                ->with('error', 'No submissions selected or no valid rows found.');
+        }
+
+        $fileName = 'volunteer-invitation-submissions-'
+            . $campaign->slug . '-'
+            . now()->format('YmdHis') . '.csv';
+
+        return response()->streamDownload(function () use ($submissions): void {
+            $handle = fopen('php://output', 'w');
+            if ($handle === false) {
+                return;
+            }
+
+            fputcsv($handle, [
+                'IP',
+                'Visitor Token',
+                'Decision',
+                'Name',
+                'Phone',
+                'Contact Method',
+                'Open Count',
+                'Opened At',
+                'Video Started At',
+                'Video Completed At',
+                'Decision At',
+                'Contact Submitted At',
+                'Created At',
+            ]);
+
+            foreach ($submissions as $submission) {
+                $decisionLabel = match ($submission->decision) {
+                    VolunteerInvitationSubmission::DECISION_INTERESTED => 'Willing',
+                    VolunteerInvitationSubmission::DECISION_NO_TIME => 'No time',
+                    VolunteerInvitationSubmission::DECISION_NOT_INTERESTED => 'Not interested',
+                    default => 'No decision',
+                };
+
+                $methodLabel = match ($submission->preferred_contact_method) {
+                    VolunteerInvitationSubmission::CONTACT_METHOD_PHONE => 'Phone',
+                    VolunteerInvitationSubmission::CONTACT_METHOD_TELEGRAM => 'Telegram',
+                    VolunteerInvitationSubmission::CONTACT_METHOD_WHATSAPP => 'WhatsApp',
+                    default => 'Not provided',
+                ];
+
+                fputcsv($handle, [
+                    $submission->ip_address,
+                    $submission->visitor_token,
+                    $decisionLabel,
+                    $submission->contact_name,
+                    $submission->phone,
+                    $methodLabel,
+                    (int) $submission->open_count,
+                    optional($submission->opened_at)->toIso8601String(),
+                    optional($submission->video_started_at)->toIso8601String(),
+                    optional($submission->video_completed_at)->toIso8601String(),
+                    optional($submission->decision_at)->toIso8601String(),
+                    optional($submission->contact_submitted_at)->toIso8601String(),
+                    optional($submission->created_at)->toIso8601String(),
+                ]);
+            }
+
+            fclose($handle);
+        }, $fileName, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
         ]);
     }
 

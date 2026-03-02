@@ -164,6 +164,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/volunteer-invitations', [Admin\VolunteerInviteController::class, 'index'])->name('volunteer-invitations.index');
         Route::post('/volunteer-invitations', [Admin\VolunteerInviteController::class, 'store'])->name('volunteer-invitations.store');
         Route::get('/volunteer-invitations/{campaign}', [Admin\VolunteerInviteController::class, 'stats'])->name('volunteer-invitations.stats');
+        Route::post('/volunteer-invitations/{campaign}/submissions/export', [Admin\VolunteerInviteController::class, 'exportSubmissions'])->name('volunteer-invitations.submissions.export');
         Route::put('/volunteer-invitations/{campaign}', [Admin\VolunteerInviteController::class, 'update'])->name('volunteer-invitations.update');
         Route::delete('/volunteer-invitations/{campaign}', [Admin\VolunteerInviteController::class, 'destroy'])->name('volunteer-invitations.destroy');
         Route::post('/volunteer-invitations/{campaign}/activate', [Admin\VolunteerInviteController::class, 'activate'])->name('volunteer-invitations.activate');

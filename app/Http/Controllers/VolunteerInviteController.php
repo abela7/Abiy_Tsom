@@ -178,18 +178,30 @@ class VolunteerInviteController extends Controller
     private function resolveSubmission(Request $request, VolunteerInvitationCampaign $campaign): VolunteerInvitationSubmission
     {
         $token = $this->resolveVisitorToken($request);
+        $ipAddress = $request->ip();
+        $userAgent = $this->safeSlice($request->userAgent());
+        $referer = $this->safeSlice($request->header('referer'), 1024);
+
         $submission = VolunteerInvitationSubmission::query()
             ->where('volunteer_invitation_campaign_id', $campaign->id)
             ->where('visitor_token', $token)
             ->first();
 
         if (! $submission) {
-            $userAgent = $this->safeSlice($request->userAgent());
-            $referer = $this->safeSlice($request->header('referer'), 1024);
+            if ($ipAddress !== null) {
+                $submission = VolunteerInvitationSubmission::query()
+                    ->where('volunteer_invitation_campaign_id', $campaign->id)
+                    ->where('ip_address', $ipAddress)
+                    ->orderByDesc('created_at')
+                    ->first();
+            }
+        }
+
+        if (! $submission) {
             return VolunteerInvitationSubmission::create([
                 'volunteer_invitation_campaign_id' => $campaign->id,
                 'visitor_token'                   => $token,
-                'ip_address'                      => $request->ip(),
+                'ip_address'                      => $ipAddress,
                 'user_agent'                      => $userAgent,
                 'referer'                         => $referer,
                 'opened_at'                       => now(),
@@ -198,8 +210,9 @@ class VolunteerInviteController extends Controller
         }
 
         $submission->update([
-            'ip_address' => $request->ip(),
-            'user_agent' => $this->safeSlice($request->userAgent()),
+            'visitor_token' => $token,
+            'ip_address' => $ipAddress,
+            'user_agent' => $userAgent,
             'referer'    => $this->safeSlice($request->header('referer'), 1024),
             'open_count' => ((int) $submission->open_count) + 1,
         ]);
