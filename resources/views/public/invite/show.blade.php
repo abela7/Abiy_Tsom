@@ -55,9 +55,6 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12l7-5v10m7 0l-7-5"/>
                                 </svg>
                             </button>
-                            <p x-show="playerReady && !hasStarted" class="text-xs text-muted-text text-center">
-                                We only count people who watch the full intro.
-                            </p>
                             <p x-show="playerReady && hasStarted && !hasCompleted" class="text-xs text-accent text-center">
                                 Great. Keep watching to continue.
                             </p>
@@ -433,4 +430,4 @@ document.addEventListener('alpine:init', () => {
     });
 });
 </script>
-@end_push
+@endpush
