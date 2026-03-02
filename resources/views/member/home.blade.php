@@ -368,24 +368,15 @@
                 $contentGroups[] = ['label' => __('app.psalm') . ' & ' . __('app.gospel'), 'icon' => 'bi-book-half', 'items' => $pgItems];
             }
 
-            // Group: Epistles & Liturgy
-            $elItems = [];
-            $epistlesRef = $isAm
-                ? ($weekTheme->epistles_reference_am ?? $weekTheme->epistles_reference)
-                : ($weekTheme->epistles_reference ?? $weekTheme->epistles_reference_am);
-            $epistlesText = $isAm
-                ? ($weekTheme->epistles_text_am ?? $weekTheme->epistles_text_en)
-                : ($weekTheme->epistles_text_en ?? $weekTheme->epistles_text_am);
-            if ($epistlesRef || $epistlesText) {
-                $elItems[] = ['key' => 'epistles', 'label' => __('app.epistles'), 'ref' => $epistlesRef, 'text' => $epistlesText, 'icon' => 'bi-envelope-open'];
-            }
+            // Group: Liturgy (Anaphora)
+            $liturgyItems = [];
             $liturgyName = $isAm ? ($weekTheme->liturgy_am ?? $weekTheme->liturgy) : ($weekTheme->liturgy ?? $weekTheme->liturgy_am);
             $liturgyText = $isAm ? ($weekTheme->liturgy_text_am ?? $weekTheme->liturgy_text_en) : ($weekTheme->liturgy_text_en ?? $weekTheme->liturgy_text_am);
             if ($liturgyName || $liturgyText) {
-                $elItems[] = ['key' => 'liturgy', 'label' => __('app.liturgy'), 'ref' => $liturgyName, 'text' => $liturgyText, 'icon' => 'bi-brightness-high'];
+                $liturgyItems[] = ['key' => 'liturgy', 'label' => __('app.liturgy'), 'ref' => $liturgyName, 'text' => $liturgyText, 'icon' => 'bi-brightness-high'];
             }
-            if (!empty($elItems)) {
-                $contentGroups[] = ['label' => __('app.epistles') . ' & ' . __('app.liturgy'), 'icon' => 'bi-brightness-high', 'items' => $elItems];
+            if (!empty($liturgyItems)) {
+                $contentGroups[] = ['label' => __('app.liturgy'), 'icon' => 'bi-brightness-high', 'items' => $liturgyItems];
             }
 
             $hasContent = $hasOverview || !empty($contentGroups);

@@ -214,4 +214,14 @@ class HomeController extends Controller
 
         return view('member.day', compact('member', 'daily', 'activities', 'checklist', 'customActivities', 'customChecklist'));
     }
+
+    /**
+     * Show a weekly theme's full details.
+     */
+    public function week(Request $request, WeeklyTheme $weeklyTheme): View
+    {
+        $member = $request->attributes->get('member');
+
+        return view('member.week', compact('member', 'weeklyTheme'));
+    }
 }
