@@ -54,6 +54,8 @@ class FundraisingController extends Controller
             ? $member->locale
             : 'en';
 
+        $viewCount = $response ? $response->view_count : 1;
+
         return response()->json([
             'show'        => true,
             'campaign_id' => $campaign->id,
@@ -62,6 +64,7 @@ class FundraisingController extends Controller
             'embed_url'   => $campaign->youtubeEmbedUrl(),
             'is_short'    => $campaign->isYoutubeShort(),
             'donate_url'  => $campaign->donate_url,
+            'view_count'  => $viewCount,
         ]);
     }
 
