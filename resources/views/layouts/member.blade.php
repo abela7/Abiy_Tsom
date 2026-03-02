@@ -98,8 +98,8 @@
                          x-transition:leave-start="opacity-100 scale-100"
                          x-transition:leave-end="opacity-0 scale-95"
                          @click.away="open = false"
-                         class="fixed right-2 mt-2 w-44 bg-card border border-border rounded-xl shadow-2xl overflow-hidden"
-                         style="display: none; z-index: 9999; top: 52px;">
+                         class="absolute right-0 mt-2 w-44 bg-card border border-border rounded-xl shadow-2xl overflow-hidden"
+                         style="display: none; z-index: 9999;">
                         <button @click="setLocale('en'); open = false"
                                 class="w-full px-4 py-3 text-left text-sm hover:bg-muted transition flex items-center justify-between touch-manipulation"
                                 :class="locale === 'en' ? 'bg-accent/10 text-accent font-medium' : 'text-primary'">

@@ -31,16 +31,17 @@
 
             {{-- Text content --}}
             <div class="flex-1 min-w-0">
-                <p class="text-xs sm:text-sm font-semibold text-white mb-0.5">
+                <p class="text-[11px] sm:text-xs font-semibold text-white/80 mb-0.5">
                     {{ now()->locale('en')->translatedFormat('l, j F Y') }}
                 </p>
-                <h2 class="text-xl sm:text-2xl font-black text-on-accent dark:text-white leading-tight drop-shadow-sm">
+                <h2 class="text-base sm:text-xl font-black text-on-accent dark:text-white leading-tight drop-shadow-sm whitespace-nowrap">
                     {{ $today ? __('app.view_today') : __('app.view_recommended_day') }}
                 </h2>
                 @if($today && $today->weeklyTheme)
-                <p class="text-sm sm:text-base font-medium text-white mt-0.5 truncate">
+                <span class="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full bg-white/15 backdrop-blur-sm border border-white/10 text-[11px] sm:text-xs font-semibold text-white truncate max-w-full">
+                    <i class="bi bi-journal-bookmark-fill text-[10px] text-white/70"></i>
                     {{ localized($today->weeklyTheme, 'name') ?? $today->weeklyTheme->name_en ?? '' }}
-                </p>
+                </span>
                 @endif
             </div>
 

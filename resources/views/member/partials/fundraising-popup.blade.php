@@ -307,7 +307,7 @@ function fundraisingPopup() {
                 const url = new URL(this.campaign.embed_url);
                 url.searchParams.set('autoplay', '1');
                 url.searchParams.set('rel', '0');
-                if (this.campaign.view_count > 1) {
+                if (this.campaign.view_count > 2) {
                     url.searchParams.set('start', '64');
                 }
                 return url.toString();
