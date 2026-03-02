@@ -47,6 +47,8 @@ class VolunteerInviteController extends Controller
         $validated = $request->validate([
             'name'       => ['required', 'string', 'max:150'],
             'slug'       => ['required', 'string', 'max:120', 'regex:/^[a-z0-9-]+$/', Rule::unique('volunteer_invitation_campaigns', 'slug')],
+            'seo_title'  => ['nullable', 'string', 'max:160'],
+            'seo_description' => ['nullable', 'string', 'max:500'],
             'youtube_url'=> ['nullable', 'url', 'max:500'],
             'is_active'  => ['nullable', 'boolean'],
         ]);
@@ -56,10 +58,12 @@ class VolunteerInviteController extends Controller
         }
 
         $campaign = VolunteerInvitationCampaign::create([
-            'name'        => $validated['name'],
-            'slug'        => $validated['slug'],
-            'youtube_url' => $validated['youtube_url'],
-            'is_active'   => (bool) ($validated['is_active'] ?? false),
+            'name'           => $validated['name'],
+            'slug'           => $validated['slug'],
+            'seo_title'      => trim((string) ($validated['seo_title'] ?? '')) ?: null,
+            'seo_description'=> trim((string) ($validated['seo_description'] ?? '')) ?: null,
+            'youtube_url'    => $validated['youtube_url'],
+            'is_active'      => (bool) ($validated['is_active'] ?? false),
         ]);
 
         if ($request->wantsJson() || $request->expectsJson()) {
@@ -76,8 +80,10 @@ class VolunteerInviteController extends Controller
     public function update(Request $request, VolunteerInvitationCampaign $campaign): JsonResponse|RedirectResponse
     {
         $validated = $request->validate([
-            'name'        => ['nullable', 'string', 'max:150'],
-            'slug'        => ['nullable', 'string', 'max:120', 'regex:/^[a-z0-9-]+$/', Rule::unique('volunteer_invitation_campaigns', 'slug')->ignore($campaign->id)],
+            'name'            => ['nullable', 'string', 'max:150'],
+            'slug'            => ['nullable', 'string', 'max:120', 'regex:/^[a-z0-9-]+$/', Rule::unique('volunteer_invitation_campaigns', 'slug')->ignore($campaign->id)],
+            'seo_title'       => ['nullable', 'string', 'max:160'],
+            'seo_description' => ['nullable', 'string', 'max:500'],
             'youtube_url' => ['nullable', 'url', 'max:500'],
             'is_active'   => ['nullable', 'boolean'],
         ]);
@@ -85,6 +91,12 @@ class VolunteerInviteController extends Controller
         $data = array_filter($validated, fn ($value) => $value !== null);
         if (array_key_exists('is_active', $data) && $data['is_active']) {
             VolunteerInvitationCampaign::query()->update(['is_active' => false]);
+        }
+        if (array_key_exists('seo_title', $data)) {
+            $data['seo_title'] = trim((string) $data['seo_title']) ?: null;
+        }
+        if (array_key_exists('seo_description', $data)) {
+            $data['seo_description'] = trim((string) $data['seo_description']) ?: null;
         }
 
         if (! empty($data)) {

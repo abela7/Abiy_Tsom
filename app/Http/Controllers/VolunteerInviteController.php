@@ -40,10 +40,12 @@ class VolunteerInviteController extends Controller
         if ($request->wantsJson()) {
             return $this->withInviteCookie($submission, response()->json([
                 'campaign' => [
-                    'id'          => $campaign->id,
-                    'name'        => $campaign->name,
-                    'slug'        => $campaign->slug,
-                    'youtube_url' => $campaign->youtube_url,
+                    'id'              => $campaign->id,
+                    'name'            => $campaign->name,
+                    'slug'            => $campaign->slug,
+                    'seo_title'       => $campaign->seo_title,
+                    'seo_description' => $campaign->seo_description,
+                    'youtube_url'     => $campaign->youtube_url,
                 ],
                 'submission' => [
                     'id'       => $submission->id,

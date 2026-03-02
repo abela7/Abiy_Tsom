@@ -3,13 +3,20 @@
 @php
     $videoId = null;
     $youtubeUrl = $campaign->youtube_url;
+    $defaultMetaDescription = __('app.meta_description');
+    $campaignSeoTitle = trim((string) ($campaign->seo_title ?? '')) ?: $campaign->name;
+    $campaignSeoDescription = trim((string) ($campaign->seo_description ?? '')) ?: $defaultMetaDescription;
+    $inviteUrl = route('volunteer.invite.show', $campaign->slug);
     if ($youtubeUrl && preg_match('/(?:youtube\\.com\\/watch\\?v=|youtu\\.be\\/|youtube\\.com\\/embed\\/)([a-zA-Z0-9_-]{11})/', $youtubeUrl, $m)) {
         $videoId = $m[1];
     }
     $hasVideo = $videoId !== null;
+    $ogTitle = $campaignSeoTitle;
+    $ogDescription = $campaignSeoDescription;
+    $ogUrl = $inviteUrl;
 @endphp
 
-@section('title', $campaign->name)
+@section('title', $campaignSeoTitle)
 
 @section('content')
 <div class="relative isolate">
@@ -18,7 +25,7 @@
     </div>
 
     <div class="relative mx-auto w-full max-w-2xl"
-         x-data="volunteerInviteFlow(@js($hasVideo), @js($campaign->slug), @js(route('volunteer.invite.track', $campaign->slug)), @js(route('volunteer.invite.decision', $campaign->slug)), @js(route('volunteer.invite.contact', $campaign->slug)), @js(route('volunteer.invite.show', $campaign->slug)))">
+         x-data="volunteerInviteFlow(@js($hasVideo), @js($campaign->slug), @js(route('volunteer.invite.track', $campaign->slug)), @js(route('volunteer.invite.decision', $campaign->slug)), @js(route('volunteer.invite.contact', $campaign->slug)), @js($inviteUrl), @js($campaignSeoTitle), @js($campaignSeoDescription))">
         <div class="rounded-[28px] border border-border bg-card/95 backdrop-blur-sm shadow-2xl overflow-hidden">
             <div class="px-4 py-5 sm:p-8">
                 <div class="text-center">
@@ -201,7 +208,7 @@
 @push('scripts')
 <script>
 document.addEventListener('alpine:init', () => {
-    Alpine.data('volunteerInviteFlow', function (hasVideo, slug, trackUrl, decisionUrl, contactUrl, inviteUrl) {
+    Alpine.data('volunteerInviteFlow', function (hasVideo, slug, trackUrl, decisionUrl, contactUrl, inviteUrl, shareTitle, shareText) {
         let player = null;
         let hasTrackedStarted = false;
         let hasTrackedCompleted = false;
@@ -213,6 +220,8 @@ document.addEventListener('alpine:init', () => {
             decisionUrl,
             contactUrl,
             inviteUrl,
+            shareTitle,
+            shareText,
             step: hasVideo ? 'video' : 'decision',
             playerReady: false,
             formSubmitting: false,
@@ -396,8 +405,8 @@ document.addEventListener('alpine:init', () => {
             },
             async shareInvite() {
                 const payload = {
-                    title: 'Volunteer invitation',
-                    text: 'Watch this short invitation and choose how you can support the campaign.',
+                    title: this.shareTitle,
+                    text: this.shareText,
                     url: this.inviteUrl,
                 };
                 if (navigator.share) {

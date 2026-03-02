@@ -88,6 +88,24 @@
                            class="mt-2 w-full h-11 px-3 rounded-xl border border-border bg-surface text-primary focus:outline-none focus:ring-2 focus:ring-accent/40"
                            placeholder="https://www.youtube.com/watch?v=...">
                 </div>
+                <div>
+                    <label for="campaign-seo-title" class="block text-xs font-bold text-muted-text uppercase tracking-wider">SEO title</label>
+                    <input id="campaign-seo-title"
+                           name="seo_title"
+                           value="{{ old('seo_title') }}"
+                           maxlength="160"
+                           class="mt-2 w-full h-11 px-3 rounded-xl border border-border bg-surface text-primary focus:outline-none focus:ring-2 focus:ring-accent/40"
+                           placeholder="Volunteer invitation | Abiy Tsom">
+                </div>
+                <div>
+                    <label for="campaign-seo-description" class="block text-xs font-bold text-muted-text uppercase tracking-wider">SEO description</label>
+                    <textarea id="campaign-seo-description"
+                              name="seo_description"
+                              maxlength="500"
+                              rows="3"
+                              class="mt-2 w-full rounded-xl border border-border bg-surface text-primary px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent/40 resize-none"
+                              placeholder="Share this short invitation and choose how you can support the campaign.">{{ old('seo_description') }}</textarea>
+                </div>
                 <label class="flex items-center gap-2 text-sm text-secondary mt-1">
                     <input type="checkbox" name="is_active" value="1" class="rounded border-border text-accent">
                     <span>Set as active campaign</span>
@@ -118,6 +136,14 @@
                                 @endif
                             </div>
                             <p class="text-xs text-muted-text mt-1">Slug: /invite/{{ $campaign->slug }}</p>
+                            <p class="text-xs text-muted-text mt-0.5">
+                                <span class="font-medium text-secondary">SEO title:</span>
+                                {{ $campaign->seo_title ?: 'Not set' }}
+                            </p>
+                            <p class="text-xs text-muted-text mt-0.5">
+                                <span class="font-medium text-secondary">SEO description:</span>
+                                {{ $campaign->seo_description ?: 'Not set' }}
+                            </p>
                             <p class="text-xs text-muted-text mt-0.5">
                                 <span class="font-medium text-secondary">YouTube:</span>
                                 @if($campaign->youtube_url)
@@ -223,6 +249,23 @@
                                        inputmode="url"
                                        value="{{ old('youtube_url', $campaign->youtube_url) }}"
                                        class="mt-1.5 w-full h-11 px-3 rounded-lg border border-border bg-surface text-primary focus:outline-none focus:ring-2 focus:ring-accent/40">
+                            </div>
+                            <div class="mt-3 grid sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="text-xs text-muted-text font-bold uppercase tracking-wider">SEO title</label>
+                                    <input name="seo_title"
+                                           maxlength="160"
+                                           value="{{ old('seo_title', $campaign->seo_title) }}"
+                                           class="mt-1.5 w-full h-11 px-3 rounded-lg border border-border bg-surface text-primary focus:outline-none focus:ring-2 focus:ring-accent/40">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-muted-text font-bold uppercase tracking-wider">SEO description</label>
+                                    <textarea name="seo_description"
+                                              rows="3"
+                                              maxlength="500"
+                                              class="mt-1.5 w-full rounded-lg border border-border bg-surface text-primary px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent/40 resize-none"
+                                              placeholder="Short description for social previews">{{ old('seo_description', $campaign->seo_description) }}</textarea>
+                                </div>
                             </div>
                             <div class="mt-3">
                                 <label class="flex items-center gap-2 text-sm text-secondary">

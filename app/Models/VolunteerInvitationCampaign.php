@@ -13,6 +13,8 @@ class VolunteerInvitationCampaign extends Model
     protected $fillable = [
         'name',
         'slug',
+        'seo_title',
+        'seo_description',
         'youtube_url',
         'is_active',
     ];
