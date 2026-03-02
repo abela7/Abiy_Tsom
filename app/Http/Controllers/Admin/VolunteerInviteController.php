@@ -336,10 +336,56 @@ class VolunteerInviteController extends Controller
 
         $submissionIds = array_values(array_unique(array_map('intval', $validated['submission_ids'])));
 
-        $deletedCount = VolunteerInvitationSubmission::query()
+        $selectedSubmissions = VolunteerInvitationSubmission::query()
             ->where('volunteer_invitation_campaign_id', $campaign->id)
             ->whereIn('id', $submissionIds)
-            ->delete();
+            ->get(['id', 'ip_address', 'visitor_token']);
+
+        if ($selectedSubmissions->isEmpty()) {
+            if ($request->wantsJson() || $request->expectsJson()) {
+                return response()->json([
+                    'message' => 'No submissions selected or no valid rows found.',
+                    'deleted' => 0,
+                ], 422);
+            }
+
+            return redirect()
+                ->route('admin.volunteer-invitations.stats', $campaign)
+                ->with('error', 'No submissions selected or no valid rows found.');
+        }
+
+        $ipBasedDeleted = $selectedSubmissions
+            ->pluck('ip_address')
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        $tokenBasedDeleted = $selectedSubmissions
+            ->pluck('visitor_token')
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        $deleteQuery = VolunteerInvitationSubmission::query()
+            ->where('volunteer_invitation_campaign_id', $campaign->id);
+
+        $deleteQuery->where(function ($query) use ($ipBasedDeleted, $tokenBasedDeleted): void {
+            if (! empty($ipBasedDeleted)) {
+                $query->whereIn('ip_address', $ipBasedDeleted);
+                if (! empty($tokenBasedDeleted)) {
+                    $query->orWhereIn('visitor_token', $tokenBasedDeleted);
+                }
+                return;
+            }
+
+            if (! empty($tokenBasedDeleted)) {
+                $query->whereIn('visitor_token', $tokenBasedDeleted);
+            }
+        });
+
+        $deletedCount = $deleteQuery->delete();
 
         if ($request->wantsJson() || $request->expectsJson()) {
             return response()->json([
@@ -350,7 +396,7 @@ class VolunteerInviteController extends Controller
 
         return redirect()
             ->route('admin.volunteer-invitations.stats', $campaign)
-            ->with('success', $deletedCount . ' submission(s) deleted.');
+            ->with('success', $deletedCount . ' submission record(s) deleted.');
     }
 
     private function buildCampaignQuery()

@@ -79,6 +79,7 @@
             <div>
                 <h2 class="text-sm uppercase tracking-wider text-muted-text font-bold">Latest submissions</h2>
                 <p class="text-xs text-muted-text">Grouped by IP to avoid duplicate clicks from the same address.</p>
+                <p class="text-xs text-muted-text">Deleting a row removes all records for that visitor group.</p>
             </div>
             <p class="text-xs text-muted-text">{{ $submissions->count() }} grouped rows shown</p>
         </div>
