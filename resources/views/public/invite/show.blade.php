@@ -20,15 +20,23 @@
     <div class="relative mx-auto w-full max-w-2xl"
          x-data="volunteerInviteFlow(@js($hasVideo), @js($campaign->slug), @js(route('volunteer.invite.track', $campaign->slug)), @js(route('volunteer.invite.decision', $campaign->slug)), @js(route('volunteer.invite.contact', $campaign->slug)), @js(route('volunteer.invite.show', $campaign->slug)))">
         <div class="rounded-[28px] border border-border bg-card/95 backdrop-blur-sm shadow-2xl overflow-hidden">
-            <div class="px-5 py-6 sm:p-8">
+            <div class="px-4 py-5 sm:p-8">
                 <div class="text-center">
-                    <p class="inline-flex items-center gap-2 rounded-full bg-accent/10 text-accent px-3 py-1 text-[10px] tracking-[0.26em] font-bold uppercase">Volunteer invitation</p>
+                    <p class="inline-flex items-center gap-2 rounded-full bg-accent/10 text-accent px-3 py-1 text-[9px] sm:text-[10px] tracking-[0.22em] sm:tracking-[0.26em] font-bold uppercase">Volunteer invitation</p>
                     <h1 class="text-2xl sm:text-3xl mt-4 font-black text-primary leading-tight">
                         {{ $campaign->name }}
                     </h1>
-                    <p class="text-sm text-muted-text mt-2 max-w-xl mx-auto" x-show="step === 'video'">
-                        Watch the intro, then answer one quick question.
-                    </p>
+                    <p class="text-sm text-muted-text mt-2 max-w-xl mx-auto min-h-[1.25rem] px-1" x-text="stepHint"></p>
+                    <div class="mt-4 flex items-center justify-center gap-2 sm:gap-3 text-[10px] sm:text-[11px] tracking-[0.18em] uppercase font-semibold">
+                        <span :class="step === 'video' ? 'text-primary' : 'text-muted-text'">Step 1</span>
+                        <span class="text-muted-text" aria-hidden="true">&middot;</span>
+                        <span :class="step === 'decision' ? 'text-primary' : 'text-muted-text'">Step 2</span>
+                        <span class="text-muted-text" aria-hidden="true">&middot;</span>
+                        <span :class="step === 'contact' || step === 'thanks' || step === 'contact-thank' ? 'text-primary' : 'text-muted-text'">Step 3</span>
+                    </div>
+                    <div class="mt-2 h-1.5 max-w-sm mx-auto w-full rounded-full bg-muted overflow-hidden">
+                        <div class="h-full rounded-full bg-accent transition-all duration-300" :style="{ width: progressWidth }"></div>
+                    </div>
                 </div>
 
                 {{-- STEP 1: Video --}}
@@ -83,19 +91,20 @@
 
                 {{-- STEP 2: decision --}}
                 <div x-show="step === 'decision'" x-transition.opacity class="mt-8 space-y-4">
-                    <p class="text-lg sm:text-xl font-black text-primary text-center">Are you willing to help and understand the concept?</p>
+                    <p class="text-lg sm:text-xl font-black text-primary text-center">Do you understand the concept and are you willing to help?</p>
+                    <p class="text-sm text-muted-text text-center">Choose the option that best matches you.</p>
                     <div class="grid gap-3">
                         <button type="button" @click="submitDecision('interested')"
-                                class="w-full text-left rounded-2xl border border-accent/35 bg-accent/10 hover:bg-accent/20 px-5 py-4 text-sm font-semibold text-primary transition active:scale-[0.985]">
-                            I understand the concept and I am willing to help
+                                class="w-full text-left rounded-2xl border border-accent/35 bg-accent/10 hover:bg-accent/20 px-5 py-4 text-sm font-semibold text-primary leading-relaxed transition active:scale-[0.985]">
+                            I understand and am willing to help
                         </button>
                         <button type="button" @click="submitDecision('no_time')"
-                                class="w-full text-left rounded-2xl border border-border bg-muted hover:bg-muted/80 px-5 py-4 text-sm font-semibold text-primary transition active:scale-[0.985]">
-                            I understand the concept, but I do not have time right now
+                                class="w-full text-left rounded-2xl border border-border bg-muted hover:bg-muted/80 px-5 py-4 text-sm font-semibold text-primary leading-relaxed transition active:scale-[0.985]">
+                            I understand, but I don't have time to help
                         </button>
                         <button type="button" @click="submitDecision('not_interested')"
-                                class="w-full text-left rounded-2xl border border-border bg-muted hover:bg-muted/80 px-5 py-4 text-sm font-semibold text-primary transition active:scale-[0.985]">
-                            I understand the concept, but I do not want to be part of this
+                                class="w-full text-left rounded-2xl border border-border bg-muted hover:bg-muted/80 px-5 py-4 text-sm font-semibold text-primary leading-relaxed transition active:scale-[0.985]">
+                            I understand, but I do not want to be part of this
                         </button>
                     </div>
                 </div>
@@ -109,7 +118,7 @@
                     </div>
                     <h2 class="text-2xl font-black text-primary">Thank you!</h2>
                     <p class="text-sm text-muted-text">Thank you for your honesty. Your answer helps us improve this campaign.</p>
-                    <div class="grid gap-2.5">
+                    <div class="grid gap-2.5 sm:grid-cols-2">
                         <button type="button" @click="shareInvite()"
                                 class="h-12 rounded-xl border border-accent/30 bg-accent/10 text-accent font-bold hover:bg-accent/20 transition">
                             Share this invitation with someone else
@@ -134,6 +143,7 @@
                             <label class="text-xs font-bold uppercase tracking-wider text-muted-text">Full name</label>
                             <input x-model="contactName"
                                    type="text"
+                                   autocomplete="name"
                                    maxlength="150"
                                    required
                                    class="mt-1 w-full h-12 px-4 rounded-xl border border-border bg-surface text-primary focus:outline-none focus:ring-2 focus:ring-accent/40">
@@ -142,13 +152,15 @@
                             <label class="text-xs font-bold uppercase tracking-wider text-muted-text">Phone number</label>
                             <input x-model="phone"
                                    type="text"
+                                   inputmode="tel"
                                    maxlength="40"
+                                   autocomplete="tel"
                                    required
                                    class="mt-1 w-full h-12 px-4 rounded-xl border border-border bg-surface text-primary focus:outline-none focus:ring-2 focus:ring-accent/40">
                         </div>
                         <div>
                             <p class="text-xs font-bold uppercase tracking-wider text-muted-text">Preferred contact method</p>
-                            <div class="mt-2 grid grid-cols-1 gap-2">
+                            <div class="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2">
                                 <label class="flex items-center gap-3 p-3 rounded-xl border border-border bg-surface cursor-pointer">
                                     <input type="radio" value="whatsapp" x-model="contactMethod" class="text-accent">
                                     <span class="text-sm text-primary">WhatsApp</span>
@@ -214,6 +226,39 @@ document.addEventListener('alpine:init', () => {
             hasCompleted: false,
             copyNotice: '',
             formError: '',
+            get stepIndex() {
+                if (this.step === 'video') {
+                    return 1;
+                }
+                if (this.step === 'decision') {
+                    return this.hasVideo ? 2 : 1;
+                }
+                return 2;
+            },
+            get progressWidth() {
+                if (this.stepIndex === 1) {
+                    return this.hasVideo ? '33%' : '50%';
+                }
+                if (this.stepIndex === 2) {
+                    return this.hasVideo ? '66%' : '100%';
+                }
+                return '100%';
+            },
+            get stepHint() {
+                if (this.step === 'video') {
+                    return 'Watch the short intro, then answer one quick question.';
+                }
+                if (this.step === 'decision') {
+                    return 'Choose one response and continue.';
+                }
+                if (this.step === 'contact') {
+                    return 'Share your preferred contact details below.';
+                }
+                if (this.step === 'thanks') {
+                    return 'Thank you for your time. Invite one more person if you wish.';
+                }
+                return 'Your details are saved. Thank you for helping.';
+            },
             async postEvent(eventName) {
                 try {
                     await window.fetch(this.trackUrl, {

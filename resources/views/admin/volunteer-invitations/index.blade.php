@@ -12,32 +12,32 @@
     <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div class="min-w-0">
             <h1 class="text-2xl sm:text-3xl font-black text-primary tracking-tight">Volunteer Invitations</h1>
-            <p class="text-sm text-muted-text mt-2">Create invitation campaigns, set a YouTube URL for step one, and track responses.</p>
+            <p class="text-sm text-muted-text mt-2">Create invitation campaigns, add a YouTube intro, and track responses.</p>
         </div>
-        <div class="flex flex-wrap sm:flex-nowrap gap-2">
+        <div class="flex flex-col sm:flex-row flex-wrap sm:flex-nowrap gap-2 w-full sm:w-auto">
             @if($activeCampaignUrl)
                 <a href="{{ $activeCampaignUrl }}"
                    target="_blank"
                    rel="noopener"
-                   class="inline-flex items-center justify-center rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold text-primary hover:bg-muted transition touch-manipulation">
+                   class="inline-flex items-center justify-center rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold text-primary hover:bg-muted transition touch-manipulation w-full sm:w-auto">
                     Open active invitation
                     <svg class="ml-2 w-4 h-4 animate-nudge-right" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5-5 5m6-5H6"/>
                     </svg>
                 </a>
             @endif
-            <a href="{{ route('admin.suggestions.index') }}"
+                <a href="{{ route('admin.suggestions.index') }}"
                class="inline-flex items-center justify-center rounded-xl bg-accent text-on-accent px-4 py-2.5 text-sm font-semibold hover:bg-accent-hover transition touch-manipulation">
                 Back to content suggestions
             </a>
         </div>
     </div>
 
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="bg-card rounded-xl p-4 border border-border shadow-sm">
-            <p class="text-xs uppercase tracking-wider text-muted-text">Campaigns</p>
-            <p class="text-2xl font-black text-primary mt-2">{{ $summary['total_campaigns'] }}</p>
-        </div>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div class="bg-card rounded-xl p-4 border border-border shadow-sm">
+                <p class="text-xs uppercase tracking-wider text-muted-text">Campaigns</p>
+                <p class="text-2xl font-black text-primary mt-2">{{ $summary['total_campaigns'] }}</p>
+            </div>
         <div class="bg-card rounded-xl p-4 border border-border shadow-sm">
             <p class="text-xs uppercase tracking-wider text-muted-text">Total Views</p>
             <p class="text-2xl font-black text-accent mt-2">{{ $summary['total_invitations'] }}</p>
@@ -52,10 +52,10 @@
         </div>
     </div>
 
-    <div class="grid lg:grid-cols-3 gap-6">
+    <div class="grid lg:grid-cols-3 gap-5 sm:gap-6">
         <section class="bg-card rounded-2xl border border-border shadow-sm p-4 sm:p-5 lg:col-span-1">
             <h2 class="text-sm uppercase tracking-wider text-muted-text font-bold">Create campaign</h2>
-            <p class="text-xs text-muted-text mt-1.5">Create one invitation at a time; set it as active to make it the live link.</p>
+            <p class="text-xs text-muted-text mt-1.5">Create one invitation at a time and set one as active for the live link.</p>
 
             <form method="POST" action="{{ route('admin.volunteer-invitations.store') }}" class="mt-4 space-y-3">
                 @csrf
@@ -83,6 +83,8 @@
                     <input id="campaign-youtube"
                            name="youtube_url"
                            value="{{ old('youtube_url') }}"
+                           type="url"
+                           inputmode="url"
                            class="mt-2 w-full h-11 px-3 rounded-xl border border-border bg-surface text-primary focus:outline-none focus:ring-2 focus:ring-accent/40"
                            placeholder="https://www.youtube.com/watch?v=...">
                 </div>
@@ -98,16 +100,16 @@
         </section>
 
         <section class="lg:col-span-2 space-y-3">
-            <div class="flex items-center justify-between">
+            <div class="flex flex-wrap items-center justify-between gap-2">
                 <h2 class="text-sm uppercase tracking-wider text-muted-text font-bold">Campaign list</h2>
                 <span class="text-xs text-muted-text">Total: {{ $campaigns->count() }}</span>
             </div>
 
             @forelse($campaigns as $campaign)
                 <article class="bg-card rounded-2xl border border-border shadow-sm p-4 sm:p-5">
-                    <div class="flex items-start justify-between gap-3">
+                    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                         <div class="min-w-0">
-                            <div class="flex items-center gap-2">
+                            <div class="flex flex-wrap items-center gap-2">
                                 <h3 class="text-lg font-bold text-primary truncate">{{ $campaign->name }}</h3>
                                 @if($campaign->is_active)
                                     <span class="shrink-0 text-[10px] font-bold uppercase px-2 py-1 rounded-full bg-accent/15 text-accent">Active</span>
@@ -119,7 +121,7 @@
                             <p class="text-xs text-muted-text mt-0.5">
                                 <span class="font-medium text-secondary">YouTube:</span>
                                 @if($campaign->youtube_url)
-                                    <a href="{{ $campaign->youtube_url }}" target="_blank" rel="noopener" class="text-accent underline hover:text-accent-hover">
+                                    <a href="{{ $campaign->youtube_url }}" target="_blank" rel="noopener" class="text-accent underline hover:text-accent-hover break-all">
                                         {{ $campaign->youtube_url }}
                                     </a>
                                 @else
@@ -127,7 +129,7 @@
                                 @endif
                             </p>
                         </div>
-                        <div class="text-right">
+                        <div class="shrink-0 text-left sm:text-right">
                             <a href="{{ route('admin.volunteer-invitations.stats', $campaign) }}"
                                class="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-semibold text-primary hover:bg-muted transition">
                                 View Stats
@@ -157,14 +159,14 @@
                         </div>
                     </div>
 
-                    <div class="mt-4 flex flex-wrap gap-2" x-data="{ copied: false }">
+                    <div class="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-[1fr_auto_auto_auto] sm:items-center" x-data="{ copied: false }">
                         <input id="invite-link-{{ $campaign->id }}"
                                class="flex-1 min-w-0 h-11 px-3 rounded-lg border border-border bg-muted text-xs text-secondary tabular-nums"
                                value="{{ route('volunteer.invite.show', $campaign->slug) }}"
                                readonly>
                         <button type="button"
                                 @click="navigator.clipboard.writeText($el.previousElementSibling.value); copied = true; setTimeout(() => copied = false, 1800)"
-                                class="px-3 h-11 rounded-lg border border-border text-xs font-semibold text-secondary hover:bg-muted transition">
+                                class="px-3 h-11 rounded-lg border border-border text-xs font-semibold text-secondary hover:bg-muted transition touch-manipulation">
                             <span x-show="!copied">Copy link</span>
                             <span x-show="copied" x-cloak>Copied</span>
                         </button>
@@ -172,13 +174,13 @@
                         @if(!$campaign->is_active)
                             <form method="POST" action="{{ route('admin.volunteer-invitations.activate', $campaign) }}">
                                 @csrf
-                                <button type="submit"
-                                        class="px-3 h-11 rounded-lg border border-accent/40 text-xs font-semibold text-accent hover:bg-accent/10 transition">
+                                    <button type="submit"
+                                            class="w-full sm:w-auto px-3 h-11 rounded-lg border border-accent/40 text-xs font-semibold text-accent hover:bg-accent/10 transition touch-manipulation">
                                     Set active
                                 </button>
                             </form>
                         @else
-                            <span class="inline-flex h-11 items-center px-3 rounded-lg border border-green-500/30 bg-green-500/10 text-green-700 text-xs font-semibold">
+                            <span class="inline-flex h-11 min-h-[44px] items-center justify-center px-3 rounded-lg border border-green-500/30 bg-green-500/10 text-green-700 text-xs font-semibold">
                                 Live
                             </span>
                         @endif
@@ -188,7 +190,7 @@
                             @csrf
                             @method('DELETE')
                             <button type="submit"
-                                    class="px-3 h-11 rounded-lg border border-red-500/40 text-xs font-semibold text-red-600 hover:bg-red-500/10 transition">
+                                    class="w-full sm:w-auto px-3 h-11 rounded-lg border border-red-500/40 text-xs font-semibold text-red-600 hover:bg-red-500/10 transition touch-manipulation">
                                 Delete
                             </button>
                         </form>
@@ -217,6 +219,8 @@
                             <div class="mt-3">
                                 <label class="text-xs text-muted-text font-bold uppercase tracking-wider">YouTube link</label>
                                 <input name="youtube_url"
+                                       type="url"
+                                       inputmode="url"
                                        value="{{ old('youtube_url', $campaign->youtube_url) }}"
                                        class="mt-1.5 w-full h-11 px-3 rounded-lg border border-border bg-surface text-primary focus:outline-none focus:ring-2 focus:ring-accent/40">
                             </div>

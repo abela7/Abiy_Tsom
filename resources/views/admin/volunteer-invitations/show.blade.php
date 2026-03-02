@@ -8,7 +8,7 @@
 @endphp
 
 <div class="space-y-6">
-    <div class="flex flex-col gap-3 sm:items-center sm:justify-between sm:flex-row">
+    <div class="flex flex-col gap-3 sm:items-start sm:justify-between sm:flex-row">
         <div class="min-w-0">
             <div class="flex flex-wrap items-center gap-2">
                 <h1 class="text-2xl sm:text-3xl font-black text-primary tracking-tight truncate">{{ $campaign->name }}</h1>
@@ -17,9 +17,9 @@
                 @endif
             </div>
             <p class="text-sm text-muted-text mt-1.5">Slug: {{ $campaign->slug }}</p>
-            <p class="text-xs text-muted-text">Campaign URL: {{ $campaignUrl }}</p>
+            <p class="text-xs text-muted-text break-all">Campaign URL: {{ $campaignUrl }}</p>
         </div>
-        <div class="flex flex-wrap gap-2">
+        <div class="flex flex-col sm:flex-row flex-wrap gap-2">
             <a href="{{ route('admin.volunteer-invitations.index') }}"
                class="inline-flex items-center justify-center rounded-lg border border-border px-4 py-2.5 text-sm font-semibold text-secondary hover:bg-muted transition">
                 &larr; Back
@@ -36,7 +36,7 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <div class="bg-card rounded-xl p-4 border border-border">
             <p class="text-xs uppercase tracking-wider text-muted-text">Invitations opened</p>
             <p class="text-2xl font-black text-primary mt-2">{{ $summary['total_invitations'] }}</p>
@@ -55,13 +55,13 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         <div class="bg-card rounded-xl p-4 border border-border">
             <p class="text-xs uppercase tracking-wider text-muted-text">Willing</p>
             <p class="text-xl font-black text-green-600 dark:text-green-400 mt-2">{{ $summary['interested_count'] }}</p>
         </div>
         <div class="bg-card rounded-xl p-4 border border-border">
-            <p class="text-xs uppercase tracking-wider text-muted-text">No Time</p>
+            <p class="text-xs uppercase tracking-wider text-muted-text">No time</p>
             <p class="text-xl font-black text-amber-600 dark:text-amber-400 mt-2">{{ $summary['no_time_count'] }}</p>
         </div>
         <div class="bg-card rounded-xl p-4 border border-border">
@@ -75,7 +75,7 @@
     </div>
 
     <div class="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
-        <div class="px-4 py-3 border-b border-border flex items-center justify-between flex-wrap gap-3">
+        <div class="px-4 py-3 border-b border-border flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <h2 class="text-sm uppercase tracking-wider text-muted-text font-bold">Latest submissions</h2>
             <p class="text-xs text-muted-text">{{ $submissions->count() }} latest rows shown</p>
         </div>
@@ -140,9 +140,9 @@
                 </table>
             </div>
 
-            <div class="md:hidden divide-y divide-border">
-                @foreach($submissions as $submission)
-                    @php
+                <div class="md:hidden divide-y divide-border">
+                    @foreach($submissions as $submission)
+                        @php
                         $decisionLabel = match($submission->decision) {
                             \App\Models\VolunteerInvitationSubmission::DECISION_INTERESTED => 'Willing',
                             \App\Models\VolunteerInvitationSubmission::DECISION_NO_TIME => 'No time',
@@ -156,17 +156,25 @@
                             default => 'Not provided',
                         };
                     @endphp
-                    <div class="p-4">
-                        <div class="flex items-center justify-between gap-3">
+                    <article class="p-4 space-y-2">
+                        <div class="flex flex-wrap items-start justify-between gap-2">
                             <p class="text-sm font-semibold text-primary truncate">{{ $decisionLabel }}</p>
                             <p class="text-xs text-muted-text">{{ $submission->created_at->format('M d H:i') }}</p>
                         </div>
-                        <p class="text-xs text-muted-text mt-1">Visitor {{ Str::limit($submission->visitor_token, 18, '...') }}</p>
-                        <div class="mt-2 text-sm text-secondary">
-                            {{ $submission->contact_name ?: 'Name not provided' }} - {{ $submission->phone ?: 'Phone not provided' }}
+                        <p class="text-xs text-muted-text">Visitor {{ Str::limit($submission->visitor_token, 20, '...') }}</p>
+                        <p class="text-sm text-secondary">
+                            {{ $submission->contact_name ?: 'Name not provided' }} · {{ $submission->phone ?: 'Phone not provided' }}
+                        </p>
+                        <div class="flex flex-wrap items-center gap-2 text-xs">
+                            <span class="inline-flex px-2 py-1 rounded-full bg-muted text-muted-text">Method: {{ $methodLabel }}</span>
+                            <span class="inline-flex px-2 py-1 rounded-full bg-muted text-muted-text">
+                                Decision time: {{ $submission->decision_at ? $submission->decision_at->format('M d H:i') : 'N/A' }}
+                            </span>
                         </div>
-                        <p class="text-xs text-muted-text mt-1">Method: {{ $methodLabel }}</p>
-                    </div>
+                        @if($submission->contact_submitted_at)
+                            <p class="text-xs text-muted-text">Contact provided at {{ $submission->contact_submitted_at->format('M d, H:i') }}</p>
+                        @endif
+                    </article>
                 @endforeach
             </div>
         @endif
