@@ -81,10 +81,15 @@
 
     {{-- Weekly theme link --}}
     @if($daily->weeklyTheme)
-    <a href="{{ route('member.week', $daily->weeklyTheme) }}" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-accent/10 text-xs font-semibold text-accent hover:bg-accent/20 active:bg-accent/25 transition-colors">
-        <i class="bi bi-journal-bookmark-fill text-[11px]"></i>
-        {{ __('app.week', ['number' => $daily->weeklyTheme->week_number]) }} &mdash; {{ localized($daily->weeklyTheme, 'name') ?? $daily->weeklyTheme->name_en ?? $daily->weeklyTheme->name_geez ?? '-' }}
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+    <a href="{{ route('member.week', $daily->weeklyTheme) }}" class="flex items-center gap-3 px-4 py-3 rounded-2xl bg-card border border-border shadow-sm hover:shadow-md hover:border-accent/30 active:scale-[0.98] transition-all group">
+        <div class="shrink-0 w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center">
+            <i class="bi bi-calendar-week text-accent text-sm"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+            <span class="block text-sm font-bold text-primary group-hover:text-accent transition-colors">{{ __('app.week', ['number' => $daily->weeklyTheme->week_number]) }} &mdash; {{ localized($daily->weeklyTheme, 'name') ?? $daily->weeklyTheme->name_en ?? $daily->weeklyTheme->name_geez ?? '-' }}</span>
+            <span class="block text-[11px] text-muted-text mt-0.5">{{ __('app.week_tap_to_read') }}</span>
+        </div>
+        <svg class="w-4 h-4 text-muted-text group-hover:text-accent group-hover:translate-x-0.5 transition-all shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
     </a>
     @endif
 
