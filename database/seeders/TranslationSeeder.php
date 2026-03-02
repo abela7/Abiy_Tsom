@@ -83,6 +83,11 @@ class TranslationSeeder extends Seeder
                 'psalm', 'gospel', 'theme_summary',
                 'video_player',
             ],
+            'week_detail' => [
+                'week', 'back', 'bible_reading', 'reading_number',
+                'psalm', 'gospel', 'liturgy', 'theme_summary',
+                'weekly_readings', 'read_more', 'show_less',
+            ],
             'calendar' => [
                 'calendar_title', 'no_calendar_content', 'completed', 'not_started',
                 'in_progress', 'past', 'future',
@@ -361,7 +366,7 @@ class TranslationSeeder extends Seeder
                 'section_user', 'section_admin',
                 'pages_label', 'admin_pages_label',
                 'group_onboarding', 'group_wizard', 'group_whatsapp_member', 'group_navigation', 'group_home', 'group_day_content',
-                'group_calendar', 'group_progress', 'group_tour', 'group_settings', 'group_telegram_bot', 'group_fundraising_popup', 'group_general',
+                'group_week_detail', 'group_calendar', 'group_progress', 'group_tour', 'group_settings', 'group_telegram_bot', 'group_fundraising_popup', 'group_general',
                 'group_admin_login', 'group_admin_dashboard', 'group_admin_daily',
                 'group_admin_fundraising', 'group_admin_banners', 'group_admin_other', 'group_admin_translations',
             ],

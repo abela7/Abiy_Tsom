@@ -803,6 +803,7 @@ return [
     'group_navigation' => 'Navigation',
     'group_home' => 'Home',
     'group_day_content' => 'Day Content (Bible, Mezmur, etc.)',
+    'group_week_detail' => 'Week Detail Page',
     'group_calendar' => 'Calendar',
     'group_progress' => 'Progress',
     'group_tour' => 'App Tour',

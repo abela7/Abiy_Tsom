@@ -33,6 +33,7 @@ class TranslationController extends Controller
                 'navigation' => __('app.group_navigation'),
                 'home' => __('app.group_home'),
                 'content_sections' => __('app.group_day_content'),
+                'week_detail' => __('app.group_week_detail'),
                 'calendar' => __('app.group_calendar'),
                 'progress' => __('app.group_progress'),
                 'tour' => __('app.group_tour'),

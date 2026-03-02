@@ -783,6 +783,7 @@ return [
     'group_navigation' => 'መርካቶ',
     'group_home' => 'መነሻ',
     'group_day_content' => 'የቀን ይዘት (መጽሐፍ ቅዱስ፣ መዝሙር፣ ወዘተ)',
+    'group_week_detail' => 'የሳምንት ዝርዝር ገጽ',
     'group_calendar' => 'ቀጠሮ',
     'group_progress' => 'ሂደት',
     'group_tour' => 'የመተግበሪያ ጉብኝት',
