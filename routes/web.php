@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\ContentSuggestionController;
 use App\Http\Controllers\Member;
+use App\Http\Controllers\VolunteerInviteController;
 use App\Http\Controllers\Webhook;
 use App\Http\Controllers\TelegramAuthController;
 use Illuminate\Support\Facades\Route;
@@ -49,6 +50,16 @@ Route::post('/telegram/mini/connect', [TelegramAuthController::class, 'miniConne
 // Public content suggestion form (no auth required)
 Route::get('/suggest', [ContentSuggestionController::class, 'show'])->name('suggest');
 Route::post('/suggest', [ContentSuggestionController::class, 'store'])->name('suggest.store');
+Route::get('/invite/{slug}', [VolunteerInviteController::class, 'show'])->name('volunteer.invite.show');
+Route::post('/invite/{slug}/track', [VolunteerInviteController::class, 'track'])
+    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
+    ->name('volunteer.invite.track');
+Route::post('/invite/{slug}/decision', [VolunteerInviteController::class, 'decision'])
+    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
+    ->name('volunteer.invite.decision');
+Route::post('/invite/{slug}/contact', [VolunteerInviteController::class, 'contact'])
+    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
+    ->name('volunteer.invite.contact');
 
 // Passcode routes (member-identified but before passcode check)
 Route::middleware('member')->group(function () {
@@ -150,6 +161,12 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::post('/fundraising', [Admin\FundraisingController::class, 'store'])->name('fundraising.store');
         Route::delete('/fundraising/response/{id}', [Admin\FundraisingController::class, 'deleteResponse'])->name('fundraising.delete-response');
         Route::post('/fundraising/reset', [Admin\FundraisingController::class, 'resetResponses'])->name('fundraising.reset');
+        Route::get('/volunteer-invitations', [Admin\VolunteerInviteController::class, 'index'])->name('volunteer-invitations.index');
+        Route::post('/volunteer-invitations', [Admin\VolunteerInviteController::class, 'store'])->name('volunteer-invitations.store');
+        Route::get('/volunteer-invitations/{campaign}', [Admin\VolunteerInviteController::class, 'stats'])->name('volunteer-invitations.stats');
+        Route::put('/volunteer-invitations/{campaign}', [Admin\VolunteerInviteController::class, 'update'])->name('volunteer-invitations.update');
+        Route::delete('/volunteer-invitations/{campaign}', [Admin\VolunteerInviteController::class, 'destroy'])->name('volunteer-invitations.destroy');
+        Route::post('/volunteer-invitations/{campaign}/activate', [Admin\VolunteerInviteController::class, 'activate'])->name('volunteer-invitations.activate');
 
         // Banners
         Route::get('/banners', [Admin\BannerController::class, 'index'])->name('banners.index');
