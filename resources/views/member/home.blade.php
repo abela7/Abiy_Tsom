@@ -20,36 +20,38 @@
        data-tour="view-today"
        class="group relative block overflow-hidden rounded-3xl bg-gradient-to-br from-accent via-accent to-accent-hover dark:from-accent-hover dark:via-accent-hover dark:to-[#7a5a08] transition-all duration-300 active:scale-[0.98]">
 
-        <div class="relative flex items-center gap-4 p-5 sm:p-6">
-            {{-- Day number badge --}}
-            @if($season && $today)
-            <div class="shrink-0 w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem] rounded-2xl bg-white/20 dark:bg-white/25 backdrop-blur-md border border-white/30 flex flex-col items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_4px_12px_rgba(0,0,0,0.15)]">
-                <span class="text-3xl sm:text-4xl font-black text-on-accent dark:text-white leading-none drop-shadow-sm">{{ $today->day_number }}</span>
-                <span class="text-[9px] sm:text-[10px] font-bold text-white uppercase tracking-wider">{{ __('app.of_total', ['total' => $season->total_days]) }}</span>
-            </div>
-            @endif
-
-            {{-- Text content --}}
-            <div class="flex-1 min-w-0 text-center">
-                <p class="text-[11px] sm:text-xs font-semibold text-white/80 mb-0.5">
+        <div class="relative p-4 sm:p-5 space-y-3">
+            {{-- Top row: date + week badge --}}
+            <div class="flex items-center justify-between gap-2">
+                <p class="text-xs sm:text-sm font-semibold text-white/80">
                     {{ now()->locale('en')->translatedFormat('l, j F Y') }}
                 </p>
-                <h2 class="text-base sm:text-xl font-black text-on-accent dark:text-white leading-snug drop-shadow-sm">
-                    {{ $today ? __('app.view_today') : __('app.view_recommended_day') }}
-                </h2>
                 @if($today && $today->weeklyTheme)
-                <span class="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full bg-white/15 backdrop-blur-sm border border-white/10 text-[11px] sm:text-xs font-semibold text-white">
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/15 backdrop-blur-sm border border-white/10 text-[11px] sm:text-xs font-bold text-white shrink-0">
                     <i class="bi bi-calendar-week text-[10px] text-white/70"></i>
                     {{ localized($today->weeklyTheme, 'name') ?? $today->weeklyTheme->name_en ?? '' }}
                 </span>
                 @endif
             </div>
 
-            {{-- Arrow indicator with nudge animation --}}
-            <div class="shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/15 backdrop-blur-sm border border-white/20 shadow-inner flex items-center justify-center group-hover:bg-white/25 group-hover:scale-105 transition-all duration-200">
-                <svg class="w-6 h-6 sm:w-7 sm:h-7 text-white animate-nudge-right" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-                </svg>
+            {{-- Main row: day badge + title + arrow --}}
+            <div class="flex items-center gap-3 sm:gap-4">
+                @if($season && $today)
+                <div class="shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/20 dark:bg-white/25 backdrop-blur-md border border-white/30 flex flex-col items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_4px_12px_rgba(0,0,0,0.15)]">
+                    <span class="text-2xl sm:text-3xl font-black text-on-accent dark:text-white leading-none drop-shadow-sm">{{ $today->day_number }}</span>
+                    <span class="text-[8px] sm:text-[9px] font-bold text-white uppercase tracking-wider">{{ __('app.of_total', ['total' => $season->total_days]) }}</span>
+                </div>
+                @endif
+
+                <h2 class="flex-1 min-w-0 text-lg sm:text-2xl font-black text-on-accent dark:text-white leading-tight drop-shadow-sm">
+                    {{ $today ? __('app.view_today') : __('app.view_recommended_day') }}
+                </h2>
+
+                <div class="shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/15 backdrop-blur-sm border border-white/20 flex items-center justify-center group-hover:bg-white/25 group-hover:scale-105 transition-all duration-200">
+                    <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white animate-nudge-right" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                    </svg>
+                </div>
             </div>
         </div>
     </a>
