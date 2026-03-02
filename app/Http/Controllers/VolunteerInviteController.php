@@ -8,6 +8,7 @@ use App\Models\VolunteerInvitationCampaign;
 use App\Models\VolunteerInvitationSubmission;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
@@ -19,7 +20,7 @@ class VolunteerInviteController extends Controller
     /**
      * Public landing endpoint for one invite campaign.
      */
-    public function show(string $slug, Request $request): JsonResponse
+    public function show(string $slug, Request $request)
     {
         $campaign = VolunteerInvitationCampaign::query()
             ->where('slug', $slug)
@@ -27,24 +28,40 @@ class VolunteerInviteController extends Controller
             ->first();
 
         if (! $campaign) {
-            return response()->json(['message' => 'Campaign not found or inactive'], 404);
+            if ($request->wantsJson()) {
+                return response()->json(['message' => 'Campaign not found or inactive'], 404);
+            }
+
+            abort(404);
         }
 
         $submission = $this->resolveSubmission($request, $campaign);
 
-        return $this->withInviteCookie($submission, response()->json([
-            'campaign' => [
-                'id'         => $campaign->id,
-                'name'       => $campaign->name,
-                'slug'       => $campaign->slug,
-                'youtube_url'=> $campaign->youtube_url,
-            ],
-            'submission' => [
-                'id'       => $submission->id,
-                'visitor'  => $submission->visitor_token,
-                'decision' => $submission->decision,
-            ],
-        ]));
+        if ($request->wantsJson()) {
+            return $this->withInviteCookie($submission, response()->json([
+                'campaign' => [
+                    'id'          => $campaign->id,
+                    'name'        => $campaign->name,
+                    'slug'        => $campaign->slug,
+                    'youtube_url' => $campaign->youtube_url,
+                ],
+                'submission' => [
+                    'id'       => $submission->id,
+                    'visitor'  => $submission->visitor_token,
+                    'decision' => $submission->decision,
+                ],
+            ]));
+        }
+
+        return $this->withInviteCookie(
+            $submission,
+            response()->view('public.invite.show', [
+                'campaign'    => $campaign,
+                'submission'  => $submission,
+                'slug'        => $campaign->slug,
+                'campaignUrl' => route('volunteer.invite.show', $campaign->slug),
+            ])
+        );
     }
 
     /**
@@ -102,7 +119,7 @@ class VolunteerInviteController extends Controller
         ]);
 
         return $this->withInviteCookie($submission, response()->json([
-            'message' => 'decision_saved',
+            'message'  => 'decision_saved',
             'decision' => $submission->decision,
         ]));
     }
@@ -136,14 +153,14 @@ class VolunteerInviteController extends Controller
         ]);
 
         $submission->update([
-            'contact_name'            => $validated['contact_name'],
-            'phone'                   => $validated['phone'],
+            'contact_name'             => $validated['contact_name'],
+            'phone'                    => $validated['phone'],
             'preferred_contact_method' => $validated['contact_method'],
-            'contact_submitted_at'    => $submission->contact_submitted_at ?? now(),
+            'contact_submitted_at'     => $submission->contact_submitted_at ?? now(),
         ]);
 
         return $this->withInviteCookie($submission, response()->json([
-            'message' => 'contact_saved',
+            'message'   => 'contact_saved',
             'submitted' => true,
         ]));
     }
@@ -167,7 +184,7 @@ class VolunteerInviteController extends Controller
         if (! $submission) {
             $userAgent = $this->safeSlice($request->userAgent());
             $referer = $this->safeSlice($request->header('referer'), 1024);
-            $submission = VolunteerInvitationSubmission::create([
+            return VolunteerInvitationSubmission::create([
                 'volunteer_invitation_campaign_id' => $campaign->id,
                 'visitor_token'                   => $token,
                 'ip_address'                      => $request->ip(),
@@ -176,8 +193,6 @@ class VolunteerInviteController extends Controller
                 'opened_at'                       => now(),
                 'open_count'                      => 1,
             ]);
-
-            return $submission;
         }
 
         $submission->update([
@@ -186,6 +201,7 @@ class VolunteerInviteController extends Controller
             'referer'    => $this->safeSlice($request->header('referer'), 1024),
             'open_count' => ((int) $submission->open_count) + 1,
         ]);
+
         if (! $submission->opened_at) {
             $submission->opened_at = now();
             $submission->save();
@@ -204,7 +220,7 @@ class VolunteerInviteController extends Controller
         return bin2hex(random_bytes(32));
     }
 
-    private function withInviteCookie(VolunteerInvitationSubmission $submission, JsonResponse $response): JsonResponse
+    private function withInviteCookie(VolunteerInvitationSubmission $submission, Response|JsonResponse $response): Response|JsonResponse
     {
         try {
             $token = $submission->visitor_token;
