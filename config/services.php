@@ -51,4 +51,8 @@ return [
         'webhook_secret' => env('TELEGRAM_WEBHOOK_SECRET'),
     ],
 
+    'google' => [
+        'analytics_id' => env('GOOGLE_ANALYTICS_ID'),
+    ],
+
 ];

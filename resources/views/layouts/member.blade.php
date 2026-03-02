@@ -48,6 +48,11 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    @if(config('services.google.analytics_id'))
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ config('services.google.analytics_id') }}"></script>
+    <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','{{ config('services.google.analytics_id') }}',{anonymize_ip:true,allow_google_signals:false,allow_ad_personalization_signals:false});</script>
+    @endif
 </head>
 <body class="min-h-screen bg-surface text-primary font-sans">
 
