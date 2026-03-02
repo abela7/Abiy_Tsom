@@ -102,11 +102,13 @@ class ReferralController extends Controller
             ->orderByDesc('created_at')
             ->get(['id', 'baptism_name', 'created_at']);
 
-        // Recent clicks (last 50)
-        $recentClicks = $user->referralClicks()
-            ->orderByDesc('created_at')
+        // Visitors grouped by IP/visitor_hash
+        $visitors = $user->referralClicks()
+            ->selectRaw('visitor_hash, ip_address, MIN(created_at) as first_click, MAX(created_at) as last_click, COUNT(*) as click_count')
+            ->groupBy('visitor_hash', 'ip_address')
+            ->orderByDesc('last_click')
             ->limit(50)
-            ->get(['visitor_hash', 'ip_address', 'referer', 'is_unique', 'created_at']);
+            ->get();
 
         // Top referrer sources
         $topSources = $user->referralClicks()
@@ -127,7 +129,7 @@ class ReferralController extends Controller
             'bounces',
             'trendData',
             'referredMembers',
-            'recentClicks',
+            'visitors',
             'topSources',
         ));
     }

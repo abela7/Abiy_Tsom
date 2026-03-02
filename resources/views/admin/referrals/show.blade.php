@@ -163,13 +163,13 @@
     </div>
 </div>
 
-{{-- Recent Click Log --}}
+{{-- Visitors (grouped by IP) --}}
 <div class="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
     <div class="px-4 py-3 border-b border-border flex items-center justify-between">
-        <h2 class="text-sm font-bold text-primary">Recent Clicks</h2>
-        <span class="text-xs text-muted-text">Last 50</span>
+        <h2 class="text-sm font-bold text-primary">Visitors</h2>
+        <span class="text-xs text-muted-text font-medium bg-muted px-2 py-0.5 rounded-full">{{ $visitors->count() }} unique</span>
     </div>
-    @if($recentClicks->isEmpty())
+    @if($visitors->isEmpty())
         <div class="px-4 py-8 text-center text-muted-text">
             <svg class="w-8 h-8 mx-auto mb-2 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"/>
@@ -181,36 +181,37 @@
             <table class="w-full text-sm">
                 <thead class="bg-muted">
                     <tr>
-                        <th class="text-left px-4 py-2.5 font-semibold text-secondary">Date & Time</th>
-                        <th class="text-left px-4 py-2.5 font-semibold text-secondary">Visitor</th>
-                        <th class="text-left px-4 py-2.5 font-semibold text-secondary">Source</th>
-                        <th class="text-center px-4 py-2.5 font-semibold text-secondary">Unique</th>
+                        <th class="text-left px-4 py-2.5 font-semibold text-secondary">Visitor (IP)</th>
+                        <th class="text-right px-4 py-2.5 font-semibold text-secondary">Clicks</th>
+                        <th class="text-left px-4 py-2.5 font-semibold text-secondary">First Visit</th>
+                        <th class="text-left px-4 py-2.5 font-semibold text-secondary">Last Visit</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
-                    @foreach($recentClicks as $click)
+                    @foreach($visitors as $visitor)
                     <tr class="hover:bg-muted/40 transition">
-                        <td class="px-4 py-2.5 text-muted-text tabular-nums whitespace-nowrap">
-                            {{ $click->created_at->format('M d, Y H:i') }}
-                        </td>
                         <td class="px-4 py-2.5">
-                            <span class="text-xs font-mono text-secondary bg-muted px-2 py-0.5 rounded" title="{{ $click->ip_address }}">
-                                {{ $click->ip_address ? Str::mask($click->ip_address, '*', 0, (int) (strlen($click->ip_address) * 0.5)) : '—' }}
+                            <span class="text-xs font-mono text-secondary bg-muted px-2 py-0.5 rounded" title="{{ $visitor->ip_address }}">
+                                {{ $visitor->ip_address ? Str::mask($visitor->ip_address, '*', 0, (int) (strlen($visitor->ip_address) * 0.5)) : '—' }}
                             </span>
                         </td>
-                        <td class="px-4 py-2.5 text-secondary max-w-xs truncate" title="{{ $click->referer }}">
-                            {{ $click->referer ? Str::limit($click->referer, 40) : '—' }}
-                        </td>
-                        <td class="px-4 py-2.5 text-center">
-                            @if($click->is_unique)
-                                <span class="inline-flex items-center gap-1 text-xs font-semibold text-green-600">
-                                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                    </svg>
-                                    Yes
+                        <td class="px-4 py-2.5 text-right">
+                            @if($visitor->click_count > 1)
+                                <span class="inline-flex items-center gap-1 text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full">
+                                    {{ $visitor->click_count }}x
                                 </span>
                             @else
-                                <span class="text-xs text-muted-text">No</span>
+                                <span class="text-xs text-muted-text font-medium">1</span>
+                            @endif
+                        </td>
+                        <td class="px-4 py-2.5 text-muted-text tabular-nums whitespace-nowrap text-xs">
+                            {{ \Carbon\Carbon::parse($visitor->first_click)->format('M d, Y H:i') }}
+                        </td>
+                        <td class="px-4 py-2.5 text-muted-text tabular-nums whitespace-nowrap text-xs">
+                            @if($visitor->click_count > 1)
+                                {{ \Carbon\Carbon::parse($visitor->last_click)->format('M d, Y H:i') }}
+                            @else
+                                <span class="text-muted-text/50">—</span>
                             @endif
                         </td>
                     </tr>
