@@ -34,7 +34,7 @@
                 <p class="text-[11px] sm:text-xs font-semibold text-white/80 mb-0.5">
                     {{ now()->locale('en')->translatedFormat('l, j F Y') }}
                 </p>
-                <h2 class="text-base sm:text-xl font-black text-on-accent dark:text-white leading-tight drop-shadow-sm whitespace-nowrap">
+                <h2 class="text-base sm:text-xl font-black text-on-accent dark:text-white leading-tight drop-shadow-sm truncate">
                     {{ $today ? __('app.view_today') : __('app.view_recommended_day') }}
                 </h2>
                 @if($today && $today->weeklyTheme)
