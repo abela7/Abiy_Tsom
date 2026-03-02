@@ -26,8 +26,8 @@
                     <h1 class="text-2xl sm:text-3xl mt-4 font-black text-primary leading-tight">
                         {{ $campaign->name }}
                     </h1>
-                    <p class="text-sm text-muted-text mt-2 max-w-xl mx-auto">
-                        Watch the intro then choose how you want to help.
+                    <p class="text-sm text-muted-text mt-2 max-w-xl mx-auto" x-show="step === 'video'">
+                        Watch the intro, then answer one quick question.
                     </p>
                 </div>
 
@@ -83,19 +83,19 @@
 
                 {{-- STEP 2: decision --}}
                 <div x-show="step === 'decision'" x-transition.opacity class="mt-8 space-y-4">
-                    <p class="text-lg sm:text-xl font-black text-primary text-center">Choose one</p>
+                    <p class="text-lg sm:text-xl font-black text-primary text-center">Are you willing to help and understand the concept?</p>
                     <div class="grid gap-3">
                         <button type="button" @click="submitDecision('interested')"
                                 class="w-full text-left rounded-2xl border border-accent/35 bg-accent/10 hover:bg-accent/20 px-5 py-4 text-sm font-semibold text-primary transition active:scale-[0.985]">
-                            I understand and am willing to help
+                            I understand the concept and I am willing to help
                         </button>
                         <button type="button" @click="submitDecision('no_time')"
                                 class="w-full text-left rounded-2xl border border-border bg-muted hover:bg-muted/80 px-5 py-4 text-sm font-semibold text-primary transition active:scale-[0.985]">
-                            I understand but have no time, even to suggest
+                            I understand the concept, but I do not have time right now
                         </button>
                         <button type="button" @click="submitDecision('not_interested')"
                                 class="w-full text-left rounded-2xl border border-border bg-muted hover:bg-muted/80 px-5 py-4 text-sm font-semibold text-primary transition active:scale-[0.985]">
-                            I understand but don't want to be part of this
+                            I understand the concept, but I do not want to be part of this
                         </button>
                     </div>
                 </div>
