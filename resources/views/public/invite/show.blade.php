@@ -177,7 +177,7 @@
                             </svg>
                         </div>
                         <h2 class="text-2xl font-black text-primary">Thank you!</h2>
-                        <p class="text-sm text-muted-text max-w-sm mx-auto">We appreciate your honesty. Your response helps us plan better.</p>
+                        <p class="text-sm text-muted-text max-w-sm mx-auto">We appreciate your honesty.</p>
                     </div>
 
                     {{-- Share card --}}
