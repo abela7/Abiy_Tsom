@@ -13,8 +13,7 @@
       x-effect="document.documentElement.classList.toggle('dark', darkMode)"
       :class="{ 'dark': darkMode }"
       x-init="
-        var forceInviteDark = {{ request()->routeIs('volunteer.invite.*') ? 'true' : 'false' }};
-        if (forceInviteDark) { darkMode = true; }
+        if ({{ request()->routeIs('volunteer.invite.*') ? 'true' : 'false' }}) { darkMode = true; }
         else if (!localStorage.getItem('theme')) { localStorage.setItem('theme', 'dark'); darkMode = true; }
       ">
 <head>
