@@ -75,15 +75,17 @@
                             <p x-show="playerReady && hasStarted && !hasCompleted" class="text-xs text-accent text-center">
                                 Great. Keep watching to learn more.
                             </p>
-                            <button type="button"
-                                    x-show="playerReady"
-                                    @click="step = 'decision'"
-                                    class="w-full h-11 sm:h-12 px-4 rounded-xl border border-accent/30 bg-accent/10 text-accent font-semibold text-sm sm:text-base hover:bg-accent/20 active:scale-[0.985] transition flex items-center justify-center gap-2.5 whitespace-nowrap">
-                                <span>Next Step</span>
-                                <svg class="w-4 h-4 sm:w-4.5 sm:h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                                </svg>
-                            </button>
+                            <div class="flex justify-center">
+                                <button type="button"
+                                        x-show="playerReady"
+                                        @click="step = 'decision'"
+                                        class="inline-flex w-full sm:w-auto max-w-sm h-12 px-7 sm:px-8 rounded-full border border-accent/30 bg-accent text-on-accent hover:bg-accent-hover active:scale-[0.985] transition font-semibold tracking-wide text-sm sm:text-base items-center justify-center gap-2.5 whitespace-nowrap shadow-sm shadow-accent/15">
+                                    <span>Next Step</span>
+                                    <svg class="w-4 h-4 sm:w-4.5 sm:h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     @else
                         <div class="rounded-2xl border border-dashed border-border bg-muted/40 p-6 text-center">
