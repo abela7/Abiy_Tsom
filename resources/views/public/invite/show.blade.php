@@ -78,7 +78,7 @@
                             <div class="flex justify-center">
                                 <button type="button"
                                         x-show="playerReady"
-                                        @click="step = 'decision'"
+                                        @click="if (!hasCompleted) { postEvent('video_skipped'); } step = 'decision'"
                                         class="inline-flex w-full sm:w-auto max-w-sm h-12 px-7 sm:px-8 rounded-full border border-accent/30 bg-accent text-on-accent hover:bg-accent-hover active:scale-[0.985] transition font-semibold tracking-wide text-sm sm:text-base items-center justify-center gap-2.5 whitespace-nowrap shadow-sm shadow-accent/15">
                                     <span>Next Step</span>
                                     <svg class="w-4 h-4 sm:w-4.5 sm:h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -400,6 +400,8 @@ document.addEventListener('alpine:init', () => {
                 }
             },
             init() {
+                this.startHeartbeat();
+
                 if (!this.hasVideo) {
                     this.step = 'decision';
                     return;
@@ -415,6 +417,23 @@ document.addEventListener('alpine:init', () => {
                 window.onYouTubeIframeAPIReady = () => {
                     this.setupPlayer();
                 };
+            },
+            startHeartbeat() {
+                this.postEvent('heartbeat');
+
+                this._heartbeatInterval = setInterval(() => {
+                    this.postEvent('heartbeat');
+                }, 30000);
+
+                document.addEventListener('visibilitychange', () => {
+                    if (document.visibilityState === 'hidden') {
+                        try {
+                            const url = this.trackUrl;
+                            const body = JSON.stringify({ event: 'heartbeat' });
+                            navigator.sendBeacon(url, new Blob([body], { type: 'application/json' }));
+                        } catch (e) { /* best-effort */ }
+                    }
+                });
             },
             setupPlayer() {
                 if (this.playerReady || !window.YT || !window.YT.Player) {
@@ -523,6 +542,7 @@ document.addEventListener('alpine:init', () => {
                 }
             },
             async shareInvite() {
+                this.postEvent('shared');
                 const payload = {
                     title: this.shareTitle,
                     text: this.shareText,
@@ -540,6 +560,7 @@ document.addEventListener('alpine:init', () => {
                 await this.copyInvite();
             },
             async copyInvite() {
+                this.postEvent('shared');
                 try {
                     await navigator.clipboard.writeText(this.inviteUrl);
                     this.copyNotice = 'Link copied to clipboard.';

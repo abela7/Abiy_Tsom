@@ -72,7 +72,13 @@ class VolunteerInviteController extends Controller
     public function track(string $slug, Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'event' => ['required', Rule::in(['video_started', 'video_completed'])],
+            'event' => ['required', Rule::in([
+                'video_started',
+                'video_completed',
+                'video_skipped',
+                'shared',
+                'heartbeat',
+            ])],
         ]);
 
         $campaign = $this->resolveCampaign($slug);
@@ -80,19 +86,33 @@ class VolunteerInviteController extends Controller
             return response()->json(['message' => 'Campaign not found or inactive'], 404);
         }
 
-        $submission = $this->resolveSubmission($request, $campaign);
+        $submission = $this->resolveSubmission($request, $campaign, false);
+        $event = $validated['event'];
+        $now = now();
 
-        if ($validated['event'] === 'video_started' && ! $submission->video_started_at) {
-            $submission->update(['video_started_at' => now()]);
+        $updates = ['last_activity_at' => $now];
+
+        if ($event === 'video_started' && ! $submission->video_started_at) {
+            $updates['video_started_at'] = $now;
         }
 
-        if ($validated['event'] === 'video_completed' && ! $submission->video_completed_at) {
-            $submission->update(['video_completed_at' => now()]);
+        if ($event === 'video_completed' && ! $submission->video_completed_at) {
+            $updates['video_completed_at'] = $now;
         }
+
+        if ($event === 'video_skipped' && ! $submission->video_skipped_at) {
+            $updates['video_skipped_at'] = $now;
+        }
+
+        if ($event === 'shared' && ! $submission->shared_at) {
+            $updates['shared_at'] = $now;
+        }
+
+        $submission->update($updates);
 
         return $this->withInviteCookie($submission, response()->json([
             'message' => 'tracked',
-            'event'   => $validated['event'],
+            'event'   => $event,
         ]));
     }
 
@@ -114,10 +134,11 @@ class VolunteerInviteController extends Controller
             return response()->json(['message' => 'Campaign not found or inactive'], 404);
         }
 
-        $submission = $this->resolveSubmission($request, $campaign);
+        $submission = $this->resolveSubmission($request, $campaign, false);
         $submission->update([
-            'decision'    => $validated['decision'],
-            'decision_at' => $submission->decision_at ?? now(),
+            'decision'         => $validated['decision'],
+            'decision_at'      => $submission->decision_at ?? now(),
+            'last_activity_at' => now(),
         ]);
 
         return $this->withInviteCookie($submission, response()->json([
@@ -136,7 +157,7 @@ class VolunteerInviteController extends Controller
             return response()->json(['message' => 'Campaign not found or inactive'], 404);
         }
 
-        $submission = $this->resolveSubmission($request, $campaign);
+        $submission = $this->resolveSubmission($request, $campaign, false);
         if ($submission->decision !== VolunteerInvitationSubmission::DECISION_INTERESTED) {
             return response()->json(['message' => 'Contact data can only be submitted for interested users'], 422);
         }
@@ -159,6 +180,7 @@ class VolunteerInviteController extends Controller
             'phone'                    => $validated['phone'],
             'preferred_contact_method' => $validated['contact_method'],
             'contact_submitted_at'     => $submission->contact_submitted_at ?? now(),
+            'last_activity_at'         => now(),
         ]);
 
         return $this->withInviteCookie($submission, response()->json([
@@ -175,7 +197,7 @@ class VolunteerInviteController extends Controller
             ->first();
     }
 
-    private function resolveSubmission(Request $request, VolunteerInvitationCampaign $campaign): VolunteerInvitationSubmission
+    private function resolveSubmission(Request $request, VolunteerInvitationCampaign $campaign, bool $trackOpen = true): VolunteerInvitationSubmission
     {
         $token = $this->resolveVisitorToken($request);
         $ipAddress = $request->ip();
@@ -214,8 +236,8 @@ class VolunteerInviteController extends Controller
             'ip_address' => $ipAddress,
             'user_agent' => $userAgent,
             'referer'    => $this->safeSlice($request->header('referer'), 1024),
-            'open_count' => ((int) $submission->open_count) + 1,
-        ]);
+                'open_count' => (int) $submission->open_count + ($trackOpen ? 1 : 0),
+            ]);
 
         if (! $submission->opened_at) {
             $submission->opened_at = now();

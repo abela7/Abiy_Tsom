@@ -157,22 +157,28 @@ class VolunteerInviteController extends Controller
             'submissions',
             'submissions as video_started_count' => fn ($query) => $query->whereNotNull('video_started_at'),
             'submissions as video_completed_count' => fn ($query) => $query->whereNotNull('video_completed_at'),
+            'submissions as video_skipped_count' => fn ($query) => $query->whereNotNull('video_skipped_at'),
             'submissions as decision_count' => fn ($query) => $query->whereNotNull('decision'),
             'submissions as interested_count' => fn ($query) => $query->where('decision', VolunteerInvitationSubmission::DECISION_INTERESTED),
             'submissions as no_time_count' => fn ($query) => $query->where('decision', VolunteerInvitationSubmission::DECISION_NO_TIME),
             'submissions as not_interested_count' => fn ($query) => $query->where('decision', VolunteerInvitationSubmission::DECISION_NOT_INTERESTED),
             'submissions as contact_submitted_count' => fn ($query) => $query->whereNotNull('contact_submitted_at'),
+            'submissions as shared_count' => fn ($query) => $query->whereNotNull('shared_at'),
+            'submissions as bounced_count' => fn ($query) => $query->whereNull('last_activity_at'),
         ]);
 
         $summary = [
-            'total_invitations'      => $campaign->submissions_count,
-            'video_started_count'    => $campaign->video_started_count,
-            'video_completed_count'  => $campaign->video_completed_count,
-            'decision_count'         => $campaign->decision_count,
-            'interested_count'       => $campaign->interested_count,
-            'no_time_count'          => $campaign->no_time_count,
-            'not_interested_count'   => $campaign->not_interested_count,
+            'total_invitations'       => $campaign->submissions_count,
+            'video_started_count'     => $campaign->video_started_count,
+            'video_completed_count'   => $campaign->video_completed_count,
+            'video_skipped_count'     => $campaign->video_skipped_count,
+            'decision_count'          => $campaign->decision_count,
+            'interested_count'        => $campaign->interested_count,
+            'no_time_count'           => $campaign->no_time_count,
+            'not_interested_count'    => $campaign->not_interested_count,
             'contact_submitted_count' => $campaign->contact_submitted_count,
+            'shared_count'            => $campaign->shared_count,
+            'bounced_count'           => $campaign->bounced_count,
         ];
 
         $recentSubmissions = $campaign->submissions()
@@ -190,7 +196,11 @@ class VolunteerInviteController extends Controller
                 'contact_submitted_at',
                 'opened_at',
                 'open_count',
+                'video_started_at',
                 'video_completed_at',
+                'video_skipped_at',
+                'shared_at',
+                'last_activity_at',
                 'created_at',
             ]);
 
@@ -251,8 +261,11 @@ class VolunteerInviteController extends Controller
                 'opened_at',
                 'video_started_at',
                 'video_completed_at',
+                'video_skipped_at',
                 'decision_at',
                 'contact_submitted_at',
+                'shared_at',
+                'last_activity_at',
                 'created_at',
             ]);
 
@@ -283,8 +296,11 @@ class VolunteerInviteController extends Controller
                 'Opened At',
                 'Video Started At',
                 'Video Completed At',
+                'Video Skipped At',
                 'Decision At',
                 'Contact Submitted At',
+                'Shared At',
+                'Last Activity At',
                 'Created At',
             ]);
 
@@ -314,8 +330,11 @@ class VolunteerInviteController extends Controller
                     optional($submission->opened_at)->toIso8601String(),
                     optional($submission->video_started_at)->toIso8601String(),
                     optional($submission->video_completed_at)->toIso8601String(),
+                    optional($submission->video_skipped_at)->toIso8601String(),
                     optional($submission->decision_at)->toIso8601String(),
                     optional($submission->contact_submitted_at)->toIso8601String(),
+                    optional($submission->shared_at)->toIso8601String(),
+                    optional($submission->last_activity_at)->toIso8601String(),
                     optional($submission->created_at)->toIso8601String(),
                 ]);
             }
@@ -405,11 +424,14 @@ class VolunteerInviteController extends Controller
             'submissions',
             'submissions as video_started_count' => fn ($query) => $query->whereNotNull('video_started_at'),
             'submissions as video_completed_count' => fn ($query) => $query->whereNotNull('video_completed_at'),
+            'submissions as video_skipped_count' => fn ($query) => $query->whereNotNull('video_skipped_at'),
             'submissions as decision_count' => fn ($query) => $query->whereNotNull('decision'),
             'submissions as interested_count' => fn ($query) => $query->where('decision', VolunteerInvitationSubmission::DECISION_INTERESTED),
             'submissions as no_time_count' => fn ($query) => $query->where('decision', VolunteerInvitationSubmission::DECISION_NO_TIME),
             'submissions as not_interested_count' => fn ($query) => $query->where('decision', VolunteerInvitationSubmission::DECISION_NOT_INTERESTED),
             'submissions as contact_submitted_count' => fn ($query) => $query->whereNotNull('contact_submitted_at'),
+            'submissions as shared_count' => fn ($query) => $query->whereNotNull('shared_at'),
+            'submissions as bounced_count' => fn ($query) => $query->whereNull('last_activity_at'),
         ]);
     }
 
@@ -420,11 +442,14 @@ class VolunteerInviteController extends Controller
             'total_invitations'     => $campaigns->sum('submissions_count'),
             'video_started'         => $campaigns->sum('video_started_count'),
             'video_completed'       => $campaigns->sum('video_completed_count'),
+            'video_skipped'         => $campaigns->sum('video_skipped_count'),
             'decisions_made'        => $campaigns->sum('decision_count'),
             'willing'               => $campaigns->sum('interested_count'),
             'no_time'               => $campaigns->sum('no_time_count'),
             'not_interested'        => $campaigns->sum('not_interested_count'),
             'contacts_collected'    => $campaigns->sum('contact_submitted_count'),
+            'shared'                => $campaigns->sum('shared_count'),
+            'bounced'               => $campaigns->sum('bounced_count'),
         ];
     }
 }
