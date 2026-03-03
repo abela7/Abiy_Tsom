@@ -9,6 +9,8 @@ use App\Models\Member;
 use App\Models\MemberChecklist;
 use App\Models\MemberCustomActivity;
 use App\Models\MemberCustomChecklist;
+use App\Models\MemberSession;
+use App\Models\TelegramAccessToken;
 use App\Services\TelegramAuthService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -88,6 +90,10 @@ class MembersController extends Controller
      */
     public function destroy(Member $member): RedirectResponse
     {
+        TelegramAccessToken::where('actor_type', Member::class)
+            ->where('actor_id', $member->id)
+            ->delete();
+
         $member->checklists()->delete();
         $member->customChecklists()->delete();
         $member->customActivities()->delete();
@@ -127,6 +133,8 @@ class MembersController extends Controller
      */
     public function wipeAll(): RedirectResponse
     {
+        TelegramAccessToken::where('actor_type', Member::class)->delete();
+        MemberSession::query()->delete();
         MemberChecklist::query()->delete();
         MemberCustomChecklist::query()->delete();
         MemberCustomActivity::query()->delete();

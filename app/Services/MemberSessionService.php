@@ -55,14 +55,30 @@ class MemberSessionService
         return $session->member;
     }
 
-    public function establishSession(Member $member, Request $request): bool
+    /**
+     * @param  bool  $trustNewDevice  When true (e.g. token-based auth from WhatsApp),
+     *                                allow establishing a session even if the browser's
+     *                                device cookie doesn't match the stored trusted hash.
+     *                                The old trusted device is released and replaced.
+     */
+    public function establishSession(Member $member, Request $request, bool $trustNewDevice = false): bool
     {
         $deviceId = $this->normalizeCookieValue($request->cookie(self::DEVICE_COOKIE), 20) ?? Str::random(80);
         $deviceHash = hash('sha256', $deviceId);
 
-        if ($member->trusted_device_hash
-            && ! hash_equals((string) $member->trusted_device_hash, $deviceHash)) {
+        $deviceMismatch = $member->trusted_device_hash
+            && ! hash_equals((string) $member->trusted_device_hash, $deviceHash);
+
+        if ($deviceMismatch && ! $trustNewDevice) {
             return false;
+        }
+
+        if ($deviceMismatch && $trustNewDevice) {
+            MemberSession::where('member_id', $member->id)
+                ->whereNull('revoked_at')
+                ->update(['revoked_at' => now()]);
+
+            $member->forceFill(['trusted_device_hash' => $deviceHash])->save();
         }
 
         if (! $member->trusted_device_hash) {

@@ -187,7 +187,7 @@ class TelegramAuthController extends Controller
                     route('member.day', ['daily' => $daily]),
                     30
                 );
-                $todayUrl = url(route('telegram.access', [
+                $todayUrl = url(route('auth.access', [
                     'code' => $todayCode,
                     'purpose' => TelegramAuthService::PURPOSE_MEMBER_ACCESS,
                 ]));
@@ -215,7 +215,7 @@ class TelegramAuthController extends Controller
         return view('telegram.mini-connect', [
             'prefilledCode' => $code,
             'purposeHint' => $purpose,
-            'telegramAccessUrl' => route('telegram.access'),
+            'telegramAccessUrl' => route('auth.access'),
         ]);
     }
 
@@ -317,7 +317,7 @@ class TelegramAuthController extends Controller
 
         return response()->json([
             'status' => 'linked',
-            'access_url' => route('telegram.access', [
+            'access_url' => route('auth.access', [
                 'code' => $code,
                 'purpose' => $purpose,
             ]),
@@ -356,7 +356,7 @@ class TelegramAuthController extends Controller
 
                 return redirect()
                     ->back()
-                    ->with('telegram_access_url', route('telegram.access', [
+                    ->with('telegram_access_url', route('auth.access', [
                         'code' => $code,
                         'purpose' => TelegramAuthService::PURPOSE_ADMIN_ACCESS,
                     ]))
@@ -374,7 +374,7 @@ class TelegramAuthController extends Controller
 
         return redirect()
             ->back()
-            ->with('telegram_access_url', route('telegram.access', [
+            ->with('telegram_access_url', route('auth.access', [
                 'code' => $code,
                 'purpose' => TelegramAuthService::PURPOSE_ADMIN_ACCESS,
             ]))
@@ -492,7 +492,10 @@ class TelegramAuthController extends Controller
             return redirect()->route('home');
         }
 
-        if (! $memberSessionService->establishSession($member, $request)) {
+        // Token-based auth is server-verified, so trust the new device even if
+        // it doesn't match the previously stored trusted_device_hash (handles
+        // WhatsApp in-app browser resets, iOS webview cache clears, etc.).
+        if (! $memberSessionService->establishSession($member, $request, trustNewDevice: true)) {
             return redirect()->route('home');
         }
 

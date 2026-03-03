@@ -146,7 +146,7 @@ final class WhatsAppReminderConfirmationService
             '/member/home'
         );
 
-        $url = route('telegram.access', ['code' => $code]);
+        $url = route('auth.access', ['code' => $code]);
 
         if (! app()->environment('local')) {
             $url = preg_replace('/^http:\/\//i', 'https://', $url) ?? $url;

@@ -35,9 +35,9 @@ Route::post('/webhooks/ultramsg', [Webhook\UltraMsgWebhookController::class, 'ha
 // Public share page — serves OG meta for social crawlers, then redirects
 Route::get('/share/day/{daily}', [Member\ShareController::class, 'day'])->name('share.day');
 Route::get('/share/day/{daily}/public', [Member\ShareController::class, 'publicDay'])->name('share.day.public');
-Route::get('/telegram/access', [TelegramAuthController::class, 'access'])
+Route::get('/auth/access', [TelegramAuthController::class, 'access'])
     ->middleware('throttle:60,1')
-    ->name('telegram.access');
+    ->name('auth.access');
 Route::get('/telegram/mini/connect', [TelegramAuthController::class, 'miniConnect'])->name('telegram.mini.connect');
 Route::get('/telegram/embed', [TelegramAuthController::class, 'embed'])->name('telegram.embed');
 Route::get('/telegram/webapp/home', [TelegramAuthController::class, 'webappHome'])

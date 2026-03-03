@@ -1606,7 +1606,7 @@ class TelegramWebhookController extends Controller
             30
         );
 
-        return url(route('telegram.access', [
+        return url(route('auth.access', [
             'code' => $code,
             'purpose' => TelegramAuthService::PURPOSE_MEMBER_ACCESS,
         ]));
@@ -1636,7 +1636,7 @@ class TelegramWebhookController extends Controller
             30
         );
 
-        return url(route('telegram.access', [
+        return url(route('auth.access', [
             'code' => $adminCode,
             'purpose' => TelegramAuthService::PURPOSE_ADMIN_ACCESS,
         ]));

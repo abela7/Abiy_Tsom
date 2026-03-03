@@ -26,7 +26,6 @@ class IdentifyMember
             $request->attributes->set('member', $member);
             view()->share('currentMember', $member);
 
-            // Apply member locale: explicit URL lang wins, else stored preference.
             $urlLang = $request->query('lang');
             $locale = in_array($urlLang, ['en', 'am'], true)
                 ? $urlLang
@@ -39,7 +38,15 @@ class IdentifyMember
             return $next($request);
         }
 
-        // No valid member - redirect to onboarding.
+        // Clear stale cookies so the browser stops sending dead session tokens
+        // on every subsequent request (avoids repeated wasted DB lookups).
+        $hasSessionCookie = is_string($request->cookie(MemberSessionService::SESSION_COOKIE))
+            && trim((string) $request->cookie(MemberSessionService::SESSION_COOKIE)) !== '';
+
+        if ($hasSessionCookie) {
+            $this->sessions->forgetCookies();
+        }
+
         if (! $request->is('/', 'member/register', 'member/identify', 'api/*')) {
             return redirect('/');
         }
