@@ -73,13 +73,13 @@
                                 </svg>
                             </button>
                             <p x-show="playerReady && hasStarted && !hasCompleted" class="text-xs text-accent text-center">
-                                Great. Keep watching to continue.
+                                Great. Keep watching to learn more.
                             </p>
                             <button type="button"
-                                    x-show="playerReady && hasCompleted"
+                                    x-show="playerReady"
                                     @click="step = 'decision'"
                                     class="w-full h-12 rounded-xl border border-accent/30 bg-accent/10 text-accent font-semibold text-sm hover:bg-accent/20 active:scale-[0.985] transition flex items-center justify-center gap-2">
-                                Continue to question
+                                Next Step
                                 <svg class="w-4 h-4 animate-nudge-right" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 6h6v6H9l4 4-1 1.5L11 12H7v4H5V9.5l4-3.5z"/>
                                 </svg>
@@ -105,6 +105,15 @@
 
                 {{-- STEP 2: decision --}}
                 <div x-show="step === 'decision'" x-transition.opacity class="mt-8 space-y-4">
+                    <button type="button"
+                            x-show="hasVideo"
+                            @click="step = 'video'"
+                            class="w-full mb-4 h-11 rounded-xl border border-border bg-card text-sm font-semibold text-muted-text hover:text-primary hover:bg-muted transition touch-manipulation flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                        Back to Intro
+                    </button>
                     <p class="text-lg sm:text-xl font-black text-primary text-center">Do you understand the concept and are you willing to help?</p>
                     <p class="text-sm text-muted-text text-center">Choose the option that best matches you.</p>
                     <div class="grid gap-3">
