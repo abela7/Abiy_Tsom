@@ -187,175 +187,175 @@
                     </div>
                 </div>
 
-                <div class="hidden md:block overflow-x-auto">
-                    <table class="w-full text-sm">
-                        <thead class="bg-muted">
-                            <tr>
-                                <th class="px-4 py-3 text-left">
-                                    <input id="select-all-submissions" type="checkbox" class="rounded border-border text-accent">
-                                </th>
-                                <th class="text-left px-4 py-3 font-semibold text-secondary">Visitor</th>
-                                <th class="text-left px-4 py-3 font-semibold text-secondary">Decision</th>
-                                <th class="text-left px-4 py-3 font-semibold text-secondary">Name</th>
-                                <th class="text-left px-4 py-3 font-semibold text-secondary">Phone</th>
-                                <th class="text-left px-4 py-3 font-semibold text-secondary">Contact method</th>
-                                <th class="text-left px-4 py-3 font-semibold text-secondary">Views</th>
-                                <th class="text-left px-4 py-3 font-semibold text-secondary">Touched</th>
-                                <th class="text-left px-4 py-3 font-semibold text-secondary">Created</th>
-                                <th class="px-4 py-3"></th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-border">
-                            @foreach($submissions as $submission)
-                                @php
-                                    $visitorIp = $submission->ip_address ?: 'No IP';
-                                    $decisionLabel = match($submission->decision) {
-                                        \App\Models\VolunteerInvitationSubmission::DECISION_INTERESTED => 'Willing',
-                                        \App\Models\VolunteerInvitationSubmission::DECISION_NO_TIME => 'No time',
-                                        \App\Models\VolunteerInvitationSubmission::DECISION_NOT_INTERESTED => 'Not interested',
-                                        default => 'No decision',
-                                    };
-                                    $methodLabel = match($submission->preferred_contact_method) {
-                                        \App\Models\VolunteerInvitationSubmission::CONTACT_METHOD_PHONE => 'Phone',
-                                        \App\Models\VolunteerInvitationSubmission::CONTACT_METHOD_TELEGRAM => 'Telegram',
-                                        \App\Models\VolunteerInvitationSubmission::CONTACT_METHOD_WHATSAPP => 'WhatsApp',
-                                        default => 'Not provided',
-                                    };
-                                    $timeline = collect([
-                                        ['ts' => $submission->opened_at, 'label' => 'Opened page', 'icon' => 'eye', 'color' => 'text-blue-500'],
-                                        ['ts' => $submission->video_started_at, 'label' => 'Started video', 'icon' => 'play', 'color' => 'text-primary'],
-                                        ['ts' => $submission->video_completed_at, 'label' => 'Completed video', 'icon' => 'check', 'color' => 'text-accent'],
-                                        ['ts' => $submission->video_skipped_at, 'label' => 'Skipped video', 'icon' => 'skip', 'color' => 'text-amber-500'],
-                                        ['ts' => $submission->decision_at, 'label' => 'Made decision: ' . $decisionLabel, 'icon' => 'decision', 'color' => match($submission->decision) {
-                                            \App\Models\VolunteerInvitationSubmission::DECISION_INTERESTED => 'text-green-500',
-                                            \App\Models\VolunteerInvitationSubmission::DECISION_NO_TIME => 'text-amber-500',
-                                            \App\Models\VolunteerInvitationSubmission::DECISION_NOT_INTERESTED => 'text-red-500',
-                                            default => 'text-muted-text',
-                                        }],
-                                        ['ts' => $submission->contact_submitted_at, 'label' => 'Submitted contact details', 'icon' => 'contact', 'color' => 'text-green-500'],
-                                        ['ts' => $submission->shared_at, 'label' => 'Shared invitation', 'icon' => 'share', 'color' => 'text-accent'],
-                                        ['ts' => $submission->last_activity_at, 'label' => 'Last activity', 'icon' => 'pulse', 'color' => 'text-muted-text'],
-                                    ])->filter(fn ($e) => $e['ts'] !== null)->sortBy('ts')->values();
-                                @endphp
-                                <tr class="hover:bg-muted/40 transition" x-data="{ open: false }">
-                                    <td class="px-4 py-3">
-                                        <input type="checkbox" name="submission_ids[]" value="{{ $submission->id }}" class="submission-checkbox rounded border-border text-accent">
-                                    </td>
-                                    <td class="px-4 py-3 text-secondary">
-                                        <p class="font-medium">{{ $visitorIp }}</p>
-                                        @if(($submission->group_size ?? 0) > 1)
-                                            <p class="text-xs text-muted-text">Combined {{ $submission->group_size }} records</p>
-                                        @endif
-                                        <p class="text-xs text-muted-text">Token {{ Str::limit($submission->visitor_token, 14, '...') }}</p>
-                                    </td>
-                                    <td class="px-4 py-3">
-                                        @if($submission->decision === \App\Models\VolunteerInvitationSubmission::DECISION_INTERESTED)
-                                            <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-success-bg text-success">Willing</span>
-                                        @elseif($submission->decision === \App\Models\VolunteerInvitationSubmission::DECISION_NO_TIME)
-                                            <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">No time</span>
-                                        @elseif($submission->decision === \App\Models\VolunteerInvitationSubmission::DECISION_NOT_INTERESTED)
-                                            <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300">Not interested</span>
-                                        @else
-                                            <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-text">Pending</span>
-                                        @endif
-                                    </td>
-                                    <td class="px-4 py-3 text-secondary">{{ $submission->contact_name ?: 'N/A' }}</td>
-                                    <td class="px-4 py-3 text-secondary">{{ $submission->phone ?: 'N/A' }}</td>
-                                    <td class="px-4 py-3 text-secondary">{{ $methodLabel }}</td>
-                                    <td class="px-4 py-3 text-secondary">{{ $submission->open_count ?: 0 }}</td>
-                                    <td class="px-4 py-3 text-xs text-muted-text">
-                                        {{ $submission->decision_at ? $submission->decision_at->format('M d H:i') : 'N/A' }}
-                                    </td>
-                                    <td class="px-4 py-3 text-xs text-muted-text">{{ $submission->created_at->format('M d H:i') }}</td>
-                                    <td class="px-4 py-3">
-                                        <button type="button" @click.stop="open = !open" class="p-1.5 rounded-lg hover:bg-muted transition" title="View activity report">
-                                            <svg class="w-4 h-4 text-muted-text transition-transform" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                                            </svg>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr x-show="open" x-collapse x-cloak>
-                                    <td colspan="10" class="p-0">
-                                        <div class="bg-muted/30 border-t border-border px-6 py-4">
-                                            <h3 class="text-xs font-bold uppercase tracking-wider text-muted-text mb-3">Visitor activity timeline</h3>
-                                            @if($timeline->isEmpty())
-                                                <p class="text-xs text-muted-text">No tracked activity (bounced immediately).</p>
-                                            @else
-                                                <div class="relative pl-5">
-                                                    <div class="absolute left-[7px] top-1 bottom-1 w-px bg-border"></div>
-                                                    @foreach($timeline as $event)
-                                                        <div class="relative flex items-start gap-3 pb-3 last:pb-0">
-                                                            <div class="absolute left-[-13px] top-0.5 w-2.5 h-2.5 rounded-full border-2 border-card {{ str_replace('text-', 'bg-', $event['color']) }}"></div>
-                                                            <div class="flex-1 min-w-0">
-                                                                <div class="flex items-baseline gap-2 flex-wrap">
-                                                                    <span class="text-xs font-semibold {{ $event['color'] }}">{{ $event['label'] }}</span>
-                                                                    <span class="text-[10px] text-muted-text">{{ $event['ts']->format('M d, Y \a\t H:i:s') }}</span>
-                                                                </div>
-                                                                @if(!$loop->first && $timeline[$loop->index - 1]['ts'])
-                                                                    @php
-                                                                        $diff = $event['ts']->diffInSeconds($timeline[$loop->index - 1]['ts']);
-                                                                        if ($diff < 60) {
-                                                                            $elapsed = $diff . 's later';
-                                                                        } elseif ($diff < 3600) {
-                                                                            $elapsed = round($diff / 60) . 'min later';
-                                                                        } else {
-                                                                            $elapsed = round($diff / 3600, 1) . 'h later';
-                                                                        }
-                                                                    @endphp
-                                                                    <p class="text-[10px] text-muted-text">{{ $elapsed }}</p>
-                                                                @endif
-                                                            </div>
-                                                        </div>
-                                                    @endforeach
-                                                </div>
-                                            @endif
-                                            <div class="mt-3 pt-3 border-t border-border grid grid-cols-2 sm:grid-cols-4 gap-3 text-[11px]">
-                                                <div>
-                                                    <p class="text-muted-text">Page opens</p>
-                                                    <p class="font-semibold text-secondary">{{ $submission->open_count ?: 0 }}</p>
-                                                </div>
-                                                <div>
-                                                    <p class="text-muted-text">Video</p>
-                                                    <p class="font-semibold text-secondary">
-                                                        @if($submission->video_completed_at)
-                                                            Watched
-                                                        @elseif($submission->video_skipped_at)
-                                                            Skipped
-                                                        @elseif($submission->video_started_at)
-                                                            Started only
-                                                        @else
-                                                            Not played
+                {{-- Desktop submissions list --}}
+                <div class="hidden md:block divide-y divide-border">
+                    {{-- Header --}}
+                    <div class="grid grid-cols-[auto_1fr_auto_1fr_1fr_auto_auto_auto_auto_auto] items-center bg-muted text-xs font-semibold text-secondary">
+                        <div class="px-4 py-3"><input id="select-all-submissions" type="checkbox" class="rounded border-border text-accent"></div>
+                        <div class="px-4 py-3">Visitor</div>
+                        <div class="px-4 py-3">Decision</div>
+                        <div class="px-4 py-3">Name</div>
+                        <div class="px-4 py-3">Phone</div>
+                        <div class="px-4 py-3">Method</div>
+                        <div class="px-4 py-3">Views</div>
+                        <div class="px-4 py-3">Touched</div>
+                        <div class="px-4 py-3">Created</div>
+                        <div class="px-4 py-3 w-10"></div>
+                    </div>
+
+                    @foreach($submissions as $submission)
+                        @php
+                            $visitorIp = $submission->ip_address ?: 'No IP';
+                            $decisionLabel = match($submission->decision) {
+                                \App\Models\VolunteerInvitationSubmission::DECISION_INTERESTED => 'Willing',
+                                \App\Models\VolunteerInvitationSubmission::DECISION_NO_TIME => 'No time',
+                                \App\Models\VolunteerInvitationSubmission::DECISION_NOT_INTERESTED => 'Not interested',
+                                default => 'No decision',
+                            };
+                            $methodLabel = match($submission->preferred_contact_method) {
+                                \App\Models\VolunteerInvitationSubmission::CONTACT_METHOD_PHONE => 'Phone',
+                                \App\Models\VolunteerInvitationSubmission::CONTACT_METHOD_TELEGRAM => 'Telegram',
+                                \App\Models\VolunteerInvitationSubmission::CONTACT_METHOD_WHATSAPP => 'WhatsApp',
+                                default => '—',
+                            };
+                            $timeline = collect([
+                                ['ts' => $submission->opened_at, 'label' => 'Opened page', 'color' => 'bg-blue-500'],
+                                ['ts' => $submission->video_started_at, 'label' => 'Started video', 'color' => 'bg-primary'],
+                                ['ts' => $submission->video_completed_at, 'label' => 'Completed video', 'color' => 'bg-accent'],
+                                ['ts' => $submission->video_skipped_at, 'label' => 'Skipped video', 'color' => 'bg-amber-500'],
+                                ['ts' => $submission->decision_at, 'label' => 'Decision: ' . $decisionLabel, 'color' => match($submission->decision) {
+                                    \App\Models\VolunteerInvitationSubmission::DECISION_INTERESTED => 'bg-green-500',
+                                    \App\Models\VolunteerInvitationSubmission::DECISION_NO_TIME => 'bg-amber-500',
+                                    \App\Models\VolunteerInvitationSubmission::DECISION_NOT_INTERESTED => 'bg-red-500',
+                                    default => 'bg-gray-400',
+                                }],
+                                ['ts' => $submission->contact_submitted_at, 'label' => 'Submitted contact', 'color' => 'bg-green-500'],
+                                ['ts' => $submission->shared_at, 'label' => 'Shared invitation', 'color' => 'bg-accent'],
+                                ['ts' => $submission->last_activity_at, 'label' => 'Last activity', 'color' => 'bg-gray-400'],
+                            ])->filter(fn ($e) => $e['ts'] !== null)->sortBy('ts')->values();
+                        @endphp
+                        <div x-data="{ open: false }">
+                            {{-- Row --}}
+                            <div class="grid grid-cols-[auto_1fr_auto_1fr_1fr_auto_auto_auto_auto_auto] items-center text-sm hover:bg-muted/40 transition cursor-pointer" @click="open = !open">
+                                <div class="px-4 py-3" @click.stop>
+                                    <input type="checkbox" name="submission_ids[]" value="{{ $submission->id }}" class="submission-checkbox rounded border-border text-accent">
+                                </div>
+                                <div class="px-4 py-3 text-secondary min-w-0">
+                                    <p class="font-medium truncate">{{ $visitorIp }}</p>
+                                    @if(($submission->group_size ?? 0) > 1)
+                                        <p class="text-xs text-muted-text">{{ $submission->group_size }} records</p>
+                                    @endif
+                                </div>
+                                <div class="px-4 py-3">
+                                    @if($submission->decision === \App\Models\VolunteerInvitationSubmission::DECISION_INTERESTED)
+                                        <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-success-bg text-success whitespace-nowrap">Willing</span>
+                                    @elseif($submission->decision === \App\Models\VolunteerInvitationSubmission::DECISION_NO_TIME)
+                                        <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 whitespace-nowrap">No time</span>
+                                    @elseif($submission->decision === \App\Models\VolunteerInvitationSubmission::DECISION_NOT_INTERESTED)
+                                        <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300 whitespace-nowrap">Not interested</span>
+                                    @else
+                                        <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-text whitespace-nowrap">Pending</span>
+                                    @endif
+                                </div>
+                                <div class="px-4 py-3 text-secondary truncate">{{ $submission->contact_name ?: '—' }}</div>
+                                <div class="px-4 py-3 text-secondary truncate">{{ $submission->phone ?: '—' }}</div>
+                                <div class="px-4 py-3 text-secondary text-xs">{{ $methodLabel }}</div>
+                                <div class="px-4 py-3 text-secondary text-center">{{ $submission->open_count ?: 0 }}</div>
+                                <div class="px-4 py-3 text-xs text-muted-text whitespace-nowrap">{{ $submission->decision_at ? $submission->decision_at->format('M d H:i') : '—' }}</div>
+                                <div class="px-4 py-3 text-xs text-muted-text whitespace-nowrap">{{ $submission->created_at->format('M d H:i') }}</div>
+                                <div class="px-4 py-3 flex justify-center">
+                                    <svg class="w-4 h-4 text-muted-text transition-transform duration-200" :class="open && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            {{-- Expandable detail panel --}}
+                            <div x-show="open" x-cloak
+                                 x-transition:enter="transition ease-out duration-200"
+                                 x-transition:enter-start="opacity-0 -translate-y-1"
+                                 x-transition:enter-end="opacity-100 translate-y-0"
+                                 x-transition:leave="transition ease-in duration-150"
+                                 x-transition:leave-start="opacity-100 translate-y-0"
+                                 x-transition:leave-end="opacity-0 -translate-y-1"
+                                 class="bg-muted/20 border-t border-dashed border-border">
+                                <div class="px-6 py-5 max-w-3xl">
+                                    <p class="text-xs font-bold uppercase tracking-wider text-muted-text mb-4">Activity timeline</p>
+                                    @if($timeline->isEmpty())
+                                        <p class="text-sm text-muted-text">No tracked activity — visitor bounced immediately.</p>
+                                    @else
+                                        <div class="space-y-0">
+                                            @foreach($timeline as $event)
+                                                <div class="flex items-start gap-3 relative">
+                                                    {{-- Vertical line --}}
+                                                    @if(!$loop->last)
+                                                        <div class="absolute left-[9px] top-5 bottom-0 w-px bg-border"></div>
+                                                    @endif
+                                                    {{-- Dot --}}
+                                                    <div class="relative z-10 mt-1 w-[18px] h-[18px] rounded-full {{ $event['color'] }}/20 flex items-center justify-center shrink-0">
+                                                        <div class="w-2 h-2 rounded-full {{ $event['color'] }}"></div>
+                                                    </div>
+                                                    {{-- Content --}}
+                                                    <div class="pb-4 min-w-0">
+                                                        <p class="text-sm font-semibold text-secondary">{{ $event['label'] }}</p>
+                                                        <p class="text-xs text-muted-text">{{ $event['ts']->format('M d, Y \a\t H:i:s') }}</p>
+                                                        @if(!$loop->first && $timeline[$loop->index - 1]['ts'])
+                                                            @php
+                                                                $diff = $event['ts']->diffInSeconds($timeline[$loop->index - 1]['ts']);
+                                                                if ($diff < 60) {
+                                                                    $elapsed = $diff . ' seconds after previous';
+                                                                } elseif ($diff < 3600) {
+                                                                    $elapsed = round($diff / 60) . ' minutes after previous';
+                                                                } else {
+                                                                    $elapsed = round($diff / 3600, 1) . ' hours after previous';
+                                                                }
+                                                            @endphp
+                                                            <p class="text-[11px] text-muted-text mt-0.5">{{ $elapsed }}</p>
                                                         @endif
-                                                    </p>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <p class="text-muted-text">Shared</p>
-                                                    <p class="font-semibold text-secondary">{{ $submission->shared_at ? 'Yes' : 'No' }}</p>
-                                                </div>
-                                                <div>
-                                                    <p class="text-muted-text">Status</p>
-                                                    <p class="font-semibold text-secondary">
-                                                        @if(!$submission->last_activity_at)
-                                                            Bounced
-                                                        @elseif($submission->contact_submitted_at)
-                                                            Converted
-                                                        @elseif($submission->decision)
-                                                            Decided
-                                                        @else
-                                                            Engaged
-                                                        @endif
-                                                    </p>
-                                                </div>
-                                            </div>
+                                            @endforeach
                                         </div>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                                    @endif
+
+                                    {{-- Summary chips --}}
+                                    <div class="mt-4 pt-4 border-t border-border flex flex-wrap gap-2">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-card border border-border text-xs text-secondary">
+                                            <span class="text-muted-text">Views:</span>
+                                            <span class="font-semibold">{{ $submission->open_count ?: 0 }}</span>
+                                        </span>
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-card border border-border text-xs text-secondary">
+                                            <span class="text-muted-text">Video:</span>
+                                            <span class="font-semibold">
+                                                @if($submission->video_completed_at) Watched
+                                                @elseif($submission->video_skipped_at) Skipped
+                                                @elseif($submission->video_started_at) Started
+                                                @else Not played
+                                                @endif
+                                            </span>
+                                        </span>
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-card border border-border text-xs text-secondary">
+                                            <span class="text-muted-text">Shared:</span>
+                                            <span class="font-semibold">{{ $submission->shared_at ? 'Yes' : 'No' }}</span>
+                                        </span>
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-card border border-border text-xs text-secondary">
+                                            <span class="text-muted-text">Status:</span>
+                                            <span class="font-semibold">
+                                                @if(!$submission->last_activity_at) Bounced
+                                                @elseif($submission->contact_submitted_at) Converted
+                                                @elseif($submission->decision) Decided
+                                                @else Engaged
+                                                @endif
+                                            </span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
                 </div>
 
+                {{-- Mobile submissions list --}}
                 <div class="md:hidden divide-y divide-border">
                     @foreach($submissions as $submission)
                         @php
@@ -370,22 +370,22 @@
                                 \App\Models\VolunteerInvitationSubmission::CONTACT_METHOD_PHONE => 'Phone',
                                 \App\Models\VolunteerInvitationSubmission::CONTACT_METHOD_TELEGRAM => 'Telegram',
                                 \App\Models\VolunteerInvitationSubmission::CONTACT_METHOD_WHATSAPP => 'WhatsApp',
-                                default => 'Not provided',
+                                default => '—',
                             };
                             $timeline = collect([
-                                ['ts' => $submission->opened_at, 'label' => 'Opened page', 'color' => 'text-blue-500'],
-                                ['ts' => $submission->video_started_at, 'label' => 'Started video', 'color' => 'text-primary'],
-                                ['ts' => $submission->video_completed_at, 'label' => 'Completed video', 'color' => 'text-accent'],
-                                ['ts' => $submission->video_skipped_at, 'label' => 'Skipped video', 'color' => 'text-amber-500'],
-                                ['ts' => $submission->decision_at, 'label' => 'Made decision: ' . $decisionLabel, 'color' => match($submission->decision) {
-                                    \App\Models\VolunteerInvitationSubmission::DECISION_INTERESTED => 'text-green-500',
-                                    \App\Models\VolunteerInvitationSubmission::DECISION_NO_TIME => 'text-amber-500',
-                                    \App\Models\VolunteerInvitationSubmission::DECISION_NOT_INTERESTED => 'text-red-500',
-                                    default => 'text-muted-text',
+                                ['ts' => $submission->opened_at, 'label' => 'Opened page', 'color' => 'bg-blue-500'],
+                                ['ts' => $submission->video_started_at, 'label' => 'Started video', 'color' => 'bg-primary'],
+                                ['ts' => $submission->video_completed_at, 'label' => 'Completed video', 'color' => 'bg-accent'],
+                                ['ts' => $submission->video_skipped_at, 'label' => 'Skipped video', 'color' => 'bg-amber-500'],
+                                ['ts' => $submission->decision_at, 'label' => 'Decision: ' . $decisionLabel, 'color' => match($submission->decision) {
+                                    \App\Models\VolunteerInvitationSubmission::DECISION_INTERESTED => 'bg-green-500',
+                                    \App\Models\VolunteerInvitationSubmission::DECISION_NO_TIME => 'bg-amber-500',
+                                    \App\Models\VolunteerInvitationSubmission::DECISION_NOT_INTERESTED => 'bg-red-500',
+                                    default => 'bg-gray-400',
                                 }],
-                                ['ts' => $submission->contact_submitted_at, 'label' => 'Submitted contact details', 'color' => 'text-green-500'],
-                                ['ts' => $submission->shared_at, 'label' => 'Shared invitation', 'color' => 'text-accent'],
-                                ['ts' => $submission->last_activity_at, 'label' => 'Last activity', 'color' => 'text-muted-text'],
+                                ['ts' => $submission->contact_submitted_at, 'label' => 'Submitted contact', 'color' => 'bg-green-500'],
+                                ['ts' => $submission->shared_at, 'label' => 'Shared invitation', 'color' => 'bg-accent'],
+                                ['ts' => $submission->last_activity_at, 'label' => 'Last activity', 'color' => 'bg-gray-400'],
                             ])->filter(fn ($e) => $e['ts'] !== null)->sortBy('ts')->values();
                         @endphp
                         <article class="p-4 space-y-2" x-data="{ open: false }">
@@ -396,61 +396,68 @@
                                         <div>
                                             <p class="text-sm font-semibold text-primary truncate">{{ $visitorIp }}</p>
                                             @if(($submission->group_size ?? 0) > 1)
-                                                <p class="text-xs text-muted-text">Combined {{ $submission->group_size }} records</p>
+                                                <p class="text-xs text-muted-text">{{ $submission->group_size }} records</p>
                                             @endif
-                                            <p class="text-xs text-muted-text">Token {{ Str::limit($submission->visitor_token, 20, '...') }}</p>
                                         </div>
                                         <p class="text-xs text-muted-text">{{ $submission->created_at->format('M d H:i') }}</p>
                                     </div>
-                                    <div class="flex items-start justify-between gap-2">
-                                        <p class="text-sm font-semibold text-secondary">{{ $decisionLabel }}</p>
-                                        <p class="text-xs text-muted-text">Opened {{ $submission->open_count ?: 0 }}</p>
+                                    <div class="flex items-center justify-between gap-2">
+                                        <div>
+                                            @if($submission->decision === \App\Models\VolunteerInvitationSubmission::DECISION_INTERESTED)
+                                                <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-success-bg text-success">Willing</span>
+                                            @elseif($submission->decision === \App\Models\VolunteerInvitationSubmission::DECISION_NO_TIME)
+                                                <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">No time</span>
+                                            @elseif($submission->decision === \App\Models\VolunteerInvitationSubmission::DECISION_NOT_INTERESTED)
+                                                <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300">Not interested</span>
+                                            @else
+                                                <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-text">Pending</span>
+                                            @endif
+                                        </div>
+                                        <p class="text-xs text-muted-text">{{ $submission->open_count ?: 0 }} views</p>
                                     </div>
-                                    <p class="text-sm text-secondary">
-                                        {{ $submission->contact_name ?: 'Name not provided' }} - {{ $submission->phone ?: 'Phone not provided' }}
-                                    </p>
-                                    <div class="flex flex-wrap items-center gap-2 text-xs">
-                                        <span class="inline-flex px-2 py-1 rounded-full bg-muted text-muted-text">Method: {{ $methodLabel }}</span>
-                                        <span class="inline-flex px-2 py-1 rounded-full bg-muted text-muted-text">
-                                            Decision time: {{ $submission->decision_at ? $submission->decision_at->format('M d H:i') : 'N/A' }}
-                                        </span>
-                                    </div>
-                                    @if($submission->contact_submitted_at)
-                                        <p class="text-xs text-muted-text">Contact provided at {{ $submission->contact_submitted_at->format('M d, H:i') }}</p>
+                                    @if($submission->contact_name || $submission->phone)
+                                        <p class="text-sm text-secondary">
+                                            {{ $submission->contact_name ?: '—' }} &middot; {{ $submission->phone ?: '—' }}
+                                        </p>
                                     @endif
 
-                                    <button type="button" @click.stop="open = !open" class="flex items-center gap-1.5 text-xs font-semibold text-accent hover:text-accent-hover transition mt-1">
+                                    <button type="button" @click.stop="open = !open"
+                                            class="flex items-center gap-1.5 text-xs font-semibold text-accent hover:text-accent-hover transition">
                                         <span x-text="open ? 'Hide activity' : 'View activity'"></span>
-                                        <svg class="w-3.5 h-3.5 transition-transform" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-3.5 h-3.5 transition-transform duration-200" :class="open && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                                         </svg>
                                     </button>
 
-                                    <div x-show="open" x-collapse x-cloak class="mt-2 rounded-xl bg-muted/30 border border-border p-3">
-                                        <h4 class="text-[10px] font-bold uppercase tracking-wider text-muted-text mb-2">Activity timeline</h4>
+                                    <div x-show="open" x-cloak
+                                         x-transition:enter="transition ease-out duration-200"
+                                         x-transition:enter-start="opacity-0"
+                                         x-transition:enter-end="opacity-100"
+                                         x-transition:leave="transition ease-in duration-150"
+                                         x-transition:leave-start="opacity-100"
+                                         x-transition:leave-end="opacity-0"
+                                         class="mt-2 rounded-xl bg-muted/20 border border-border p-3">
                                         @if($timeline->isEmpty())
-                                            <p class="text-xs text-muted-text">No tracked activity (bounced immediately).</p>
+                                            <p class="text-xs text-muted-text">No tracked activity — bounced immediately.</p>
                                         @else
-                                            <div class="relative pl-4">
-                                                <div class="absolute left-[5px] top-1 bottom-1 w-px bg-border"></div>
+                                            <div class="space-y-0">
                                                 @foreach($timeline as $event)
-                                                    <div class="relative flex items-start gap-2 pb-2.5 last:pb-0">
-                                                        <div class="absolute left-[-11px] top-0.5 w-2 h-2 rounded-full border-2 border-card {{ str_replace('text-', 'bg-', $event['color']) }}"></div>
-                                                        <div class="flex-1 min-w-0">
-                                                            <div class="flex items-baseline gap-1.5 flex-wrap">
-                                                                <span class="text-[11px] font-semibold {{ $event['color'] }}">{{ $event['label'] }}</span>
-                                                                <span class="text-[10px] text-muted-text">{{ $event['ts']->format('H:i:s') }}</span>
-                                                            </div>
+                                                    <div class="flex items-start gap-2.5 relative">
+                                                        @if(!$loop->last)
+                                                            <div class="absolute left-[7px] top-4 bottom-0 w-px bg-border"></div>
+                                                        @endif
+                                                        <div class="relative z-10 mt-0.5 w-[14px] h-[14px] rounded-full {{ $event['color'] }}/20 flex items-center justify-center shrink-0">
+                                                            <div class="w-1.5 h-1.5 rounded-full {{ $event['color'] }}"></div>
+                                                        </div>
+                                                        <div class="pb-3 min-w-0">
+                                                            <p class="text-xs font-semibold text-secondary">{{ $event['label'] }}</p>
+                                                            <p class="text-[10px] text-muted-text">{{ $event['ts']->format('H:i:s') }}</p>
                                                             @if(!$loop->first && $timeline[$loop->index - 1]['ts'])
                                                                 @php
                                                                     $diff = $event['ts']->diffInSeconds($timeline[$loop->index - 1]['ts']);
-                                                                    if ($diff < 60) {
-                                                                        $elapsed = $diff . 's later';
-                                                                    } elseif ($diff < 3600) {
-                                                                        $elapsed = round($diff / 60) . 'min later';
-                                                                    } else {
-                                                                        $elapsed = round($diff / 3600, 1) . 'h later';
-                                                                    }
+                                                                    if ($diff < 60) { $elapsed = $diff . 's later'; }
+                                                                    elseif ($diff < 3600) { $elapsed = round($diff / 60) . 'min later'; }
+                                                                    else { $elapsed = round($diff / 3600, 1) . 'h later'; }
                                                                 @endphp
                                                                 <p class="text-[10px] text-muted-text">{{ $elapsed }}</p>
                                                             @endif
@@ -459,35 +466,20 @@
                                                 @endforeach
                                             </div>
                                         @endif
-                                        <div class="mt-2 pt-2 border-t border-border grid grid-cols-2 gap-2 text-[10px]">
-                                            <div>
-                                                <p class="text-muted-text">Video</p>
-                                                <p class="font-semibold text-secondary">
-                                                    @if($submission->video_completed_at) Watched
-                                                    @elseif($submission->video_skipped_at) Skipped
-                                                    @elseif($submission->video_started_at) Started only
-                                                    @else Not played
-                                                    @endif
-                                                </p>
-                                            </div>
-                                            <div>
-                                                <p class="text-muted-text">Shared</p>
-                                                <p class="font-semibold text-secondary">{{ $submission->shared_at ? 'Yes' : 'No' }}</p>
-                                            </div>
-                                            <div>
-                                                <p class="text-muted-text">Status</p>
-                                                <p class="font-semibold text-secondary">
-                                                    @if(!$submission->last_activity_at) Bounced
-                                                    @elseif($submission->contact_submitted_at) Converted
-                                                    @elseif($submission->decision) Decided
-                                                    @else Engaged
-                                                    @endif
-                                                </p>
-                                            </div>
-                                            <div>
-                                                <p class="text-muted-text">Page opens</p>
-                                                <p class="font-semibold text-secondary">{{ $submission->open_count ?: 0 }}</p>
-                                            </div>
+                                        <div class="mt-2 pt-2 border-t border-border flex flex-wrap gap-1.5">
+                                            <span class="px-2 py-0.5 rounded-md bg-card border border-border text-[10px] text-secondary">
+                                                Video: @if($submission->video_completed_at) Watched @elseif($submission->video_skipped_at) Skipped @elseif($submission->video_started_at) Started @else — @endif
+                                            </span>
+                                            <span class="px-2 py-0.5 rounded-md bg-card border border-border text-[10px] text-secondary">
+                                                Shared: {{ $submission->shared_at ? 'Yes' : 'No' }}
+                                            </span>
+                                            <span class="px-2 py-0.5 rounded-md bg-card border border-border text-[10px] text-secondary">
+                                                @if(!$submission->last_activity_at) Bounced
+                                                @elseif($submission->contact_submitted_at) Converted
+                                                @elseif($submission->decision) Decided
+                                                @else Engaged
+                                                @endif
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
