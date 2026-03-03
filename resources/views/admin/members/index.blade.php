@@ -148,19 +148,24 @@
                 {{ __('app.wipe_all_members') }}
             </button>
         </div>
-        <div x-show="confirmWipeAll" x-cloak class="flex items-center gap-2">
-            <span class="text-xs font-semibold text-red-600">{{ __('app.confirm_wipe_all') }}</span>
-            <form method="POST" action="{{ route('admin.members.wipe-all') }}">
-                @csrf @method('DELETE')
-                <button type="submit"
-                        class="px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-bold hover:bg-red-700 transition">
-                    {{ __('app.yes_wipe_all') }}
+        <div x-show="confirmWipeAll" x-cloak class="flex flex-col items-end gap-2">
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-red-600">{{ __('app.confirm_wipe_all') }}</span>
+                <form method="POST" action="{{ route('admin.members.wipe-all') }}">
+                    @csrf @method('DELETE')
+                    <button type="submit"
+                            class="px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-bold hover:bg-red-700 transition">
+                        {{ __('app.yes_wipe_all') }}
+                    </button>
+                </form>
+                <button type="button" @click="confirmWipeAll = false"
+                        class="px-3 py-1.5 rounded-lg bg-muted text-secondary text-xs font-semibold hover:bg-border transition">
+                    {{ __('app.cancel') }}
                 </button>
-            </form>
-            <button type="button" @click="confirmWipeAll = false"
-                    class="px-3 py-1.5 rounded-lg bg-muted text-secondary text-xs font-semibold hover:bg-border transition">
-                {{ __('app.cancel') }}
-            </button>
+            </div>
+            <span class="text-[10px] text-amber-600 font-medium bg-amber-500/10 px-2 py-1 rounded-md border border-amber-500/20">
+                ⚠️ All WhatsApp reminders will be stopped for all members
+            </span>
         </div>
     </div>
 
@@ -187,7 +192,12 @@
             </thead>
             <tbody class="divide-y divide-border">
                 @forelse($members as $member)
-                <tr class="hover:bg-muted/40 transition" x-data="{ confirmDelete: false, confirmWipe: false }">
+                <tr class="hover:bg-muted/40 transition" x-data="{
+                    confirmDelete: false,
+                    confirmWipe: false,
+                    hasWhatsApp: {{ $member->whatsapp_reminder_enabled && $member->whatsapp_confirmation_status === 'confirmed' ? 'true' : 'false' }},
+                    whatsappPhone: '{{ $member->whatsapp_phone ?? '' }}'
+                }">
                     <td class="px-4 py-3 text-muted-text tabular-nums">{{ $member->id }}</td>
                     <td class="px-4 py-3 font-semibold text-primary">{{ $member->baptism_name }}</td>
                     <td class="px-4 py-3">
@@ -266,19 +276,26 @@
                                 </button>
                             </template>
                             <template x-if="confirmDelete">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="text-xs text-red-600 font-semibold">{{ __('app.sure') }}?</span>
-                                    <form method="POST" action="{{ route('admin.members.destroy', $member) }}">
-                                        @csrf @method('DELETE')
-                                        <button type="submit"
-                                                class="px-2.5 py-1 rounded-md bg-red-600 text-white text-xs font-bold hover:bg-red-700 transition">
-                                            {{ __('app.yes') }}
+                                <div class="flex flex-col items-end gap-1.5">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-xs text-red-600 font-semibold">{{ __('app.sure') }}?</span>
+                                        <form method="POST" action="{{ route('admin.members.destroy', $member) }}">
+                                            @csrf @method('DELETE')
+                                            <button type="submit"
+                                                    class="px-2.5 py-1 rounded-md bg-red-600 text-white text-xs font-bold hover:bg-red-700 transition">
+                                                {{ __('app.yes') }}
+                                            </button>
+                                        </form>
+                                        <button type="button" @click="confirmDelete = false"
+                                                class="px-2.5 py-1 rounded-md bg-muted text-secondary text-xs font-semibold hover:bg-border transition">
+                                            {{ __('app.no') }}
                                         </button>
-                                    </form>
-                                    <button type="button" @click="confirmDelete = false"
-                                            class="px-2.5 py-1 rounded-md bg-muted text-secondary text-xs font-semibold hover:bg-border transition">
-                                        {{ __('app.no') }}
-                                    </button>
+                                    </div>
+                                    <template x-if="hasWhatsApp">
+                                        <span class="text-[10px] text-amber-600 font-medium bg-amber-500/10 px-2 py-1 rounded-md border border-amber-500/20">
+                                            ⚠️ WhatsApp reminders (<span x-text="whatsappPhone"></span>) will be stopped
+                                        </span>
+                                    </template>
                                 </div>
                             </template>
                             @php
