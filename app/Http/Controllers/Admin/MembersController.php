@@ -90,10 +90,18 @@ class MembersController extends Controller
      */
     public function destroy(Member $member): RedirectResponse
     {
+        // Disable WhatsApp reminders first so the cron job cannot send a
+        // message in the brief window between this call and the actual delete.
+        $member->forceFill([
+            'whatsapp_reminder_enabled' => false,
+            'whatsapp_confirmation_status' => 'none',
+        ])->save();
+
         TelegramAccessToken::where('actor_type', Member::class)
             ->where('actor_id', $member->id)
             ->delete();
 
+        $member->sessions()->delete();
         $member->checklists()->delete();
         $member->customChecklists()->delete();
         $member->customActivities()->delete();
@@ -133,6 +141,13 @@ class MembersController extends Controller
      */
     public function wipeAll(): RedirectResponse
     {
+        // Kill all WhatsApp reminders first so the cron job cannot pick up
+        // any member during the brief window while rows are being deleted.
+        Member::query()->update([
+            'whatsapp_reminder_enabled' => false,
+            'whatsapp_confirmation_status' => 'none',
+        ]);
+
         TelegramAccessToken::where('actor_type', Member::class)->delete();
         MemberSession::query()->delete();
         MemberChecklist::query()->delete();
