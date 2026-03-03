@@ -78,10 +78,10 @@
                             <button type="button"
                                     x-show="playerReady"
                                     @click="step = 'decision'"
-                                    class="w-full h-12 rounded-xl border border-accent/30 bg-accent/10 text-accent font-semibold text-sm hover:bg-accent/20 active:scale-[0.985] transition flex items-center justify-center gap-2">
-                                Next Step
-                                <svg class="w-4 h-4 animate-nudge-right" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 6h6v6H9l4 4-1 1.5L11 12H7v4H5V9.5l4-3.5z"/>
+                                    class="w-full h-11 sm:h-12 px-4 rounded-xl border border-accent/30 bg-accent/10 text-accent font-semibold text-sm sm:text-base hover:bg-accent/20 active:scale-[0.985] transition flex items-center justify-center gap-2.5 whitespace-nowrap">
+                                <span>Next Step</span>
+                                <svg class="w-4 h-4 sm:w-4.5 sm:h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                                 </svg>
                             </button>
                         </div>
