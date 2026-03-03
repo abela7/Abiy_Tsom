@@ -14,6 +14,16 @@
     $ogTitle = $campaignSeoTitle;
     $ogDescription = $campaignSeoDescription;
     $ogUrl = $inviteUrl;
+    $inviteFlowConfig = [
+        'hasVideo' => $hasVideo,
+        'slug' => $campaign->slug,
+        'trackUrl' => route('volunteer.invite.track', $campaign->slug),
+        'decisionUrl' => route('volunteer.invite.decision', $campaign->slug),
+        'contactUrl' => route('volunteer.invite.contact', $campaign->slug),
+        'inviteUrl' => $inviteUrl,
+        'shareTitle' => $campaignSeoTitle,
+        'shareText' => $campaignSeoDescription,
+    ];
 @endphp
 
 @section('title', $campaignSeoTitle)
@@ -25,7 +35,7 @@
     </div>
 
     <div class="relative mx-auto w-full max-w-2xl"
-         x-data="volunteerInviteFlow(@js($hasVideo), @js($campaign->slug), @js(route('volunteer.invite.track', $campaign->slug)), @js(route('volunteer.invite.decision', $campaign->slug)), @js(route('volunteer.invite.contact', $campaign->slug)), @js($inviteUrl), @js($campaignSeoTitle), @js($campaignSeoDescription))">
+         x-data="volunteerInviteFlow(@js($inviteFlowConfig))">
         <div class="rounded-[28px] border border-border bg-card/95 backdrop-blur-sm shadow-2xl overflow-hidden">
             <div class="px-4 py-5 sm:p-8">
                 <div class="text-center">
@@ -258,7 +268,18 @@
 @push('scripts')
 <script>
 document.addEventListener('alpine:init', () => {
-    Alpine.data('volunteerInviteFlow', function (hasVideo, slug, trackUrl, decisionUrl, contactUrl, inviteUrl, shareTitle, shareText) {
+    Alpine.data('volunteerInviteFlow', function (config = {}) {
+        const {
+            hasVideo = false,
+            slug,
+            trackUrl,
+            decisionUrl,
+            contactUrl,
+            inviteUrl,
+            shareTitle,
+            shareText
+        } = config;
+
         let player = null;
         let hasTrackedStarted = false;
         let hasTrackedCompleted = false;
