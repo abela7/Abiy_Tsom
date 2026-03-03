@@ -93,14 +93,20 @@ class ProgressController extends Controller
             ->where('completed', true)
             ->get();
 
-        // Period-scoped checks
-        $periodDayIds = $periodDays->pluck('id');
-        $checks = $allChecks->whereIn('daily_content_id', $periodDayIds);
-        $customChecks = $allCustomChecks->whereIn('daily_content_id', $periodDayIds);
+        // Only count days that have already occurred — future days must not inflate
+        // the denominator and make the member's scores look artificially low.
+        // e.g. "This Week" has 7 days but only 2 have elapsed; divide by 2, not 7.
+        $elapsedPeriodDays = $periodDays->filter(
+            fn (DailyContent $d) => $d->date && $d->date->lte($today)
+        )->values();
 
-        // Daily completion rates for the period
+        $elapsedPeriodDayIds = $elapsedPeriodDays->pluck('id');
+        $checks = $allChecks->whereIn('daily_content_id', $elapsedPeriodDayIds);
+        $customChecks = $allCustomChecks->whereIn('daily_content_id', $elapsedPeriodDayIds);
+
+        // Daily completion rates — only for elapsed days (future days as 0 would mislead)
         $dailyRates = [];
-        foreach ($periodDays as $day) {
+        foreach ($elapsedPeriodDays as $day) {
             $doneCount = $checks->where('daily_content_id', $day->id)->count()
                 + $customChecks->where('daily_content_id', $day->id)->count();
             $rate = $totalActivities > 0
@@ -113,8 +119,8 @@ class ProgressController extends Controller
             ];
         }
 
-        // Per-activity rates for the period
-        $periodDayCount = $periodDays->count();
+        // Per-activity rates — denominator is elapsed days only
+        $periodDayCount = $elapsedPeriodDays->count();
         $activityRates = [];
 
         $memberLocale = in_array($member->locale, ['en', 'am'], true)
@@ -195,8 +201,8 @@ class ProgressController extends Controller
 
         // Optional: link to day content when viewing a single day
         $viewDayContentId = null;
-        if ($period === 'daily' && $periodDays->count() === 1) {
-            $viewDayContentId = $periodDays->first()?->id;
+        if ($period === 'daily' && $elapsedPeriodDays->count() === 1) {
+            $viewDayContentId = $elapsedPeriodDays->first()?->id;
         }
 
         // Day picker options from available published days
@@ -389,8 +395,12 @@ class ProgressController extends Controller
     }
 
     /**
-     * Count consecutive days with >= 1 completed activity,
-     * walking backwards from today.
+     * Count consecutive days with >= 1 completed activity, walking backwards
+     * from today.
+     *
+     * Today is treated as "in progress": if the member hasn't completed
+     * anything yet today we skip it rather than breaking the streak, so a
+     * multi-day run built up yesterday is not wiped out before the day is over.
      */
     private function computeStreak(
         Collection $allDays,
@@ -398,13 +408,13 @@ class ProgressController extends Controller
         Collection $customChecks,
         Carbon $today
     ): int {
-        // Sort days by date descending, only up to today
         $pastDays = $allDays
             ->filter(fn (DailyContent $d) => $d->date && $d->date->lte($today))
             ->sortByDesc('day_number')
             ->values();
 
         $streak = 0;
+        $todaySkipped = false;
 
         foreach ($pastDays as $day) {
             $done = $checks->where('daily_content_id', $day->id)->count()
@@ -412,6 +422,9 @@ class ProgressController extends Controller
 
             if ($done > 0) {
                 $streak++;
+            } elseif (! $todaySkipped && $day->date && $day->date->isSameDay($today)) {
+                // Today has no completions yet — skip it; the day is still in progress.
+                $todaySkipped = true;
             } else {
                 break;
             }
