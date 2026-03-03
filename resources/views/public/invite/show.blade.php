@@ -121,7 +121,7 @@
                     <div class="grid gap-3">
                         <button type="button" @click="submitDecision('interested')"
                                 class="w-full text-left rounded-2xl border border-accent/35 bg-accent/10 hover:bg-accent/20 px-5 py-4 text-sm font-semibold text-primary leading-relaxed transition active:scale-[0.985]">
-                            I understand and am willing to help
+                            I understand and I am willing to help
                         </button>
                         <button type="button" @click="submitDecision('no_time')"
                                 class="w-full text-left rounded-2xl border border-border bg-muted hover:bg-muted/80 px-5 py-4 text-sm font-semibold text-primary leading-relaxed transition active:scale-[0.985]">
