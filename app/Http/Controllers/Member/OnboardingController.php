@@ -170,6 +170,29 @@ class OnboardingController extends Controller
     }
 
     /**
+     * Reset the current session and delete the member account if their
+     * WhatsApp confirmation is still pending (i.e. they haven't confirmed yet
+     * and want to start over with different details).
+     */
+    public function reset(Request $request): JsonResponse
+    {
+        /** @var \App\Models\Member|null $member */
+        $member = $request->attributes->get('member');
+
+        $this->sessions->revokeCurrentSession($request);
+        $this->sessions->forgetCookies();
+
+        if ($member && $member->whatsapp_confirmation_status === 'pending') {
+            $member->checklists()->delete();
+            $member->customChecklists()->delete();
+            $member->customActivities()->delete();
+            $member->delete();
+        }
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
      * Authenticate from member access token and attach secure device session.
      */
     public function access(Request $request, string $token): RedirectResponse

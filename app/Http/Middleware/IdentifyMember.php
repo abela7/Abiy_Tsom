@@ -47,7 +47,7 @@ class IdentifyMember
             $this->sessions->forgetCookies();
         }
 
-        if (! $request->is('/', 'member/register', 'member/identify', 'api/*')) {
+        if (! $request->is('/', 'member/register', 'member/identify', 'member/reset', 'api/*')) {
             return redirect('/');
         }
 

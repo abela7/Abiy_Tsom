@@ -25,6 +25,9 @@ Route::get('/r/{code}', [Member\ReferralController::class, 'track'])
 Route::post('/member/identify', [Member\OnboardingController::class, 'identify'])
     ->middleware('member')
     ->name('member.identify');
+Route::post('/member/reset', [Member\OnboardingController::class, 'reset'])
+    ->middleware('member')
+    ->name('member.reset');
 Route::post('/webhooks/telegram', [Webhook\TelegramWebhookController::class, 'handle'])
     ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class])
     ->name('webhooks.telegram');

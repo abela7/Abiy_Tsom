@@ -373,16 +373,25 @@ function onboarding() {
         },
 
         checkExisting() {
+            // If the user was mid-wizard when they switched language, restore their state.
             if (sessionStorage.getItem('onboarding_state')) {
                 this.restoreState();
                 return;
             }
+
+            // Only hit the server if we have reason to believe a session exists.
+            // This prevents a loading flicker for every first-time visitor.
+            if (!localStorage.getItem('abiy_has_session')) {
+                return;
+            }
+
+            // We think a session may exist — show loading and verify.
             this.hasToken = true;
             AbiyTsom.api('/member/identify', {})
                 .then(data => {
                     if (data.success) {
-                        // If this member opted in but hasn't confirmed yet,
-                        // show the modal again regardless of refresh.
+                        // Member opted in but hasn't confirmed via WhatsApp yet —
+                        // show the modal so they can pick up where they left off.
                         if (data.member.whatsapp_confirmation_status === 'pending') {
                             this.hasToken = false;
                             this.pendingRedirect = AbiyTsom.baseUrl + '/member/home';
@@ -399,12 +408,13 @@ function onboarding() {
                             window.location.href = AbiyTsom.baseUrl + '/member/home';
                         }
                     } else {
-                        localStorage.removeItem('member_token');
+                        // Session expired or was wiped — clear the flag and show the form.
+                        localStorage.removeItem('abiy_has_session');
                         this.hasToken = false;
                     }
                 })
                 .catch(() => {
-                    localStorage.removeItem('member_token');
+                    localStorage.removeItem('abiy_has_session');
                     this.hasToken = false;
                 });
         },
@@ -428,7 +438,13 @@ function onboarding() {
             AbiyTsom.api('/member/register', payload)
                 .then(data => {
                     if (data.success) {
-                        localStorage.setItem('member_name', data.member.baptism_name);
+                        // Mark that this browser now has a valid session so that
+                        // future visits skip the unnecessary server check.
+                        try {
+                            localStorage.setItem('abiy_has_session', '1');
+                            localStorage.setItem('member_name', data.member.baptism_name);
+                        } catch {}
+
                         const redirect = data.redirect_url || (AbiyTsom.baseUrl + '/member/home');
                         if (data.whatsapp_confirmation_pending && data.message) {
                             this.pendingRedirect = redirect;
@@ -496,11 +512,17 @@ function onboarding() {
 
         startOver() {
             this.stopConfirmationPolling();
-            // Remove stored token so the user can re-register from scratch.
+
+            // Tell the server to revoke the session and delete the pending
+            // member account so there are no orphan records left behind.
+            AbiyTsom.api('/member/reset', {}).catch(() => {});
+
+            // Clear local session flag so the next visit shows the form directly.
             try {
-                localStorage.removeItem('member_token');
+                localStorage.removeItem('abiy_has_session');
                 localStorage.removeItem('member_name');
             } catch {}
+
             // Reset all form state back to step 1.
             this.showWhatsAppModal = false;
             this.step            = 1;
