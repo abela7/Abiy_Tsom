@@ -96,10 +96,19 @@ class UltraMsgWebhookController extends Controller
                 'whatsapp_confirmation_responded_at' => now(),
             ])->save();
 
-            $confirmation->sendConfirmedNotice($member);
-            $confirmation->sendGoBackMessage($member);
+            $noticeSent = $confirmation->sendConfirmedNotice($member);
 
-            Log::info('[Webhook] Member confirmed', ['member_id' => $member->id]);
+            // UltraMsg rate-limits rapid-fire messages from the same instance.
+            // A 1-second pause ensures the go-back link is not silently dropped.
+            sleep(1);
+
+            $goBackSent = $confirmation->sendGoBackMessage($member);
+
+            Log::info('[Webhook] Member confirmed', [
+                'member_id'     => $member->id,
+                'notice_sent'   => $noticeSent,
+                'go_back_sent'  => $goBackSent,
+            ]);
 
             return response()->json(['success' => true, 'action' => 'confirmed']);
         }
