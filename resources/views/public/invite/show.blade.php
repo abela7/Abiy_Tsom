@@ -548,11 +548,7 @@ document.addEventListener('alpine:init', () => {
                 }
             },
             closePage() {
-                if (window.history.length > 1) {
-                    window.close();
-                    return;
-                }
-                window.location.href = '/';
+                window.location.href = 'https://donate.abuneteklehaymanot.org/';
             }
         };
     });
