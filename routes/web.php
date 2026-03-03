@@ -38,6 +38,10 @@ Route::post('/webhooks/ultramsg', [Webhook\UltraMsgWebhookController::class, 'ha
 // Public share page — serves OG meta for social crawlers, then redirects
 Route::get('/share/day/{daily}', [Member\ShareController::class, 'day'])->name('share.day');
 Route::get('/share/day/{daily}/public', [Member\ShareController::class, 'publicDay'])->name('share.day.public');
+// Landing page for WhatsApp go-back links — serves OG tags; JS then redirects to /auth/access
+Route::get('/auth/go', [TelegramAuthController::class, 'go'])
+    ->middleware('throttle:60,1')
+    ->name('auth.go');
 Route::get('/auth/access', [TelegramAuthController::class, 'access'])
     ->middleware('throttle:60,1')
     ->name('auth.access');

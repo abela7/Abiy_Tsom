@@ -21,6 +21,19 @@ use Illuminate\View\View;
 
 class TelegramAuthController extends Controller
 {
+    /**
+     * Landing page for WhatsApp go-back links.
+     *
+     * The WhatsApp preview bot fetches this URL to generate a rich preview.
+     * The HTML is returned with OG tags so WhatsApp shows a proper card.
+     * JavaScript then immediately redirects to /auth/access?code=XXX — which
+     * actually consumes the token — so the preview bot never consumes it.
+     */
+    public function go(Request $request): View
+    {
+        return view('auth.go');
+    }
+
     public function access(
         Request $request,
         TelegramAuthService $telegramAuthService,

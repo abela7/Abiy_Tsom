@@ -146,7 +146,13 @@ final class WhatsAppReminderConfirmationService
             '/member/home'
         );
 
-        $url = route('auth.access', ['code' => $code]);
+        // Use the /auth/go landing page instead of /auth/access directly.
+        // WhatsApp's preview bot fetches any URL in a message to generate a link
+        // card — if we sent /auth/access?code=XXX directly it would consume the
+        // one-time token before the user even taps the link. The landing page
+        // returns HTML with OG tags (safe for bots) and uses JavaScript to
+        // redirect to /auth/access, which bots never execute.
+        $url = route('auth.go', ['code' => $code]);
 
         if (! app()->environment('local')) {
             $url = preg_replace('/^http:\/\//i', 'https://', $url) ?? $url;
