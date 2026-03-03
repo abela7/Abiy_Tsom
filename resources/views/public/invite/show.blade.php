@@ -189,7 +189,7 @@
                                 </svg>
                             </div>
                             <p class="text-sm font-bold text-primary">Know someone who can help?</p>
-                            <p class="text-xs text-muted-text leading-relaxed">Share this invitation and help us find content creators.</p>
+                            <p class="text-xs text-muted-text leading-relaxed">Share this invitation and help us find someone who can help.</p>
                         </div>
 
                         <button type="button" @click="shareInvite()"
