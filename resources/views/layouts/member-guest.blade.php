@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
       x-data="{ 
-        darkMode: localStorage.getItem('theme') !== 'light',
+        darkMode: localStorage.getItem('theme') === 'dark',
         locale: '{{ app()->getLocale() }}',
         setLocale(lang) {
           this.locale = lang;
+          document.dispatchEvent(new CustomEvent('locale-switching', { detail: { lang } }));
           const url = new URL(window.location.href);
           url.searchParams.set('lang', lang);
           window.location.href = url.toString();
@@ -14,7 +15,7 @@
       :class="{ 'dark': darkMode }"
       x-init="
         if ({{ request()->routeIs('volunteer.invite.*') ? 'true' : 'false' }}) { darkMode = true; }
-        else if (!localStorage.getItem('theme')) { localStorage.setItem('theme', 'dark'); darkMode = true; }
+        else if (!localStorage.getItem('theme')) { localStorage.setItem('theme', 'light'); darkMode = false; }
       ">
 <head>
     <meta charset="UTF-8">
@@ -28,7 +29,7 @@
         (function(){
             var forceInviteDark = @json(request()->routeIs('volunteer.invite.*'));
             var t = localStorage.getItem('theme');
-            if (forceInviteDark || t !== 'light') document.documentElement.classList.add('dark');
+            if (forceInviteDark || t === 'dark') document.documentElement.classList.add('dark');
         })();
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">

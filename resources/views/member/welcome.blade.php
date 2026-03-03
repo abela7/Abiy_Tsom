@@ -4,7 +4,8 @@
 
 @section('content')
 <div x-data="onboarding()"
-     x-init="checkExisting()">
+     x-init="checkExisting()"
+     @locale-switching.document="saveState()">
 
     {{-- Redirect message (shown briefly when existing token found) --}}
     <div x-show="hasToken" x-transition class="text-center py-12">
@@ -299,8 +300,8 @@
     {{-- Language switcher --}}
     <div class="mt-6 flex items-center justify-center gap-2 text-sm">
         <span class="text-muted-text">{{ __('app.language') }}:</span>
-        <a href="{{ request()->fullUrlWithQuery(['lang' => 'en']) }}" class="px-3 py-1.5 rounded-lg transition {{ app()->getLocale() === 'en' ? 'bg-accent text-on-accent font-semibold' : 'bg-muted text-muted-text hover:bg-muted/80' }}">{{ __('app.lang_en') }}</a>
-        <a href="{{ request()->fullUrlWithQuery(['lang' => 'am']) }}" class="px-3 py-1.5 rounded-lg transition {{ app()->getLocale() === 'am' ? 'bg-accent text-on-accent font-semibold' : 'bg-muted text-muted-text hover:bg-muted/80' }}">{{ __('app.lang_am') }}</a>
+        <button @click="saveState(); window.location.href = '{{ request()->fullUrlWithQuery(['lang' => 'en']) }}'" class="px-3 py-1.5 rounded-lg transition {{ app()->getLocale() === 'en' ? 'bg-accent text-on-accent font-semibold' : 'bg-muted text-muted-text hover:bg-muted/80' }}">{{ __('app.lang_en') }}</button>
+        <button @click="saveState(); window.location.href = '{{ request()->fullUrlWithQuery(['lang' => 'am']) }}'" class="px-3 py-1.5 rounded-lg transition {{ app()->getLocale() === 'am' ? 'bg-accent text-on-accent font-semibold' : 'bg-muted text-muted-text hover:bg-muted/80' }}">{{ __('app.lang_am') }}</button>
     </div>
 
     <p class="text-center text-xs text-muted-text mt-6">{{ __('app.footer_branding', ['name' => __('app.app_name')]) }}</p>
@@ -342,7 +343,40 @@ function onboarding() {
             return this.normalizeUkPhone(this.phone) !== null;
         },
 
+        saveState() {
+            try {
+                sessionStorage.setItem('onboarding_state', JSON.stringify({
+                    step: this.step,
+                    baptismName: this.baptismName,
+                    wantsWhatsApp: this.wantsWhatsApp,
+                    phone: this.phone,
+                    whatsappLang: this.whatsappLang,
+                    reminderTime: this.reminderTime,
+                }));
+            } catch {}
+        },
+
+        restoreState() {
+            try {
+                const raw = sessionStorage.getItem('onboarding_state');
+                if (!raw) return;
+                sessionStorage.removeItem('onboarding_state');
+                const s = JSON.parse(raw);
+                if (s.step) this.step = s.step;
+                if (s.baptismName) this.baptismName = s.baptismName;
+                if (s.wantsWhatsApp !== undefined) this.wantsWhatsApp = s.wantsWhatsApp;
+                if (s.phone) this.phone = s.phone;
+                if (s.whatsappLang) this.whatsappLang = s.whatsappLang;
+                if (s.reminderTime) this.reminderTime = s.reminderTime;
+                this.hasToken = false;
+            } catch {}
+        },
+
         checkExisting() {
+            if (sessionStorage.getItem('onboarding_state')) {
+                this.restoreState();
+                return;
+            }
             this.hasToken = true;
             AbiyTsom.api('/member/identify', {})
                 .then(data => {
