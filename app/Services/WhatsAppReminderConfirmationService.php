@@ -140,10 +140,14 @@ final class WhatsAppReminderConfirmationService
     {
         $telegramAuth = app(TelegramAuthService::class);
 
+        // 2-hour window: long enough if the user comes back to the message
+        // shortly after confirming, short enough to limit exposure if someone
+        // else sees the WhatsApp message before the real user taps it.
         $code = $telegramAuth->createCode(
             $member,
             TelegramAuthService::PURPOSE_MEMBER_ACCESS,
-            '/member/home'
+            '/member/home',
+            120
         );
 
         // Use the /auth/go landing page instead of /auth/access directly.
