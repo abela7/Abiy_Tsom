@@ -181,21 +181,21 @@
                     </div>
 
                     {{-- Share card --}}
-                    <div class="rounded-2xl border border-accent/20 bg-gradient-to-b from-accent/5 to-transparent p-5 space-y-4">
-                        <div class="text-center space-y-1">
-                            <div class="inline-flex items-center gap-2 text-accent">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="rounded-2xl border border-border bg-surface/60 p-5 space-y-4">
+                        <div class="text-center space-y-2">
+                            <div class="mx-auto w-10 h-10 rounded-full bg-accent/15 flex items-center justify-center">
+                                <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
                                 </svg>
-                                <p class="text-sm font-bold">Know someone who can help?</p>
                             </div>
-                            <p class="text-xs text-muted-text">Share this invitation and help us find content creators.</p>
+                            <p class="text-sm font-bold text-primary">Know someone who can help?</p>
+                            <p class="text-xs text-muted-text leading-relaxed">Share this invitation and help us find content creators.</p>
                         </div>
 
                         <button type="button" @click="shareInvite()"
-                                class="w-full h-12 rounded-xl bg-accent text-on-accent font-bold text-sm hover:bg-accent-hover active:scale-[0.985] transition flex items-center justify-center gap-2.5 shadow-lg shadow-accent/20">
-                            <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                                class="w-full h-11 rounded-xl border border-accent/30 bg-accent/10 text-accent font-semibold text-sm hover:bg-accent/20 active:scale-[0.985] transition flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
                             </svg>
                             Share this invitation
                         </button>
@@ -277,21 +277,21 @@
                     </div>
 
                     {{-- Share card --}}
-                    <div class="rounded-2xl border border-accent/20 bg-gradient-to-b from-accent/5 to-transparent p-5 space-y-4">
-                        <div class="text-center space-y-1">
-                            <div class="inline-flex items-center gap-2 text-accent">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="rounded-2xl border border-border bg-surface/60 p-5 space-y-4">
+                        <div class="text-center space-y-2">
+                            <div class="mx-auto w-10 h-10 rounded-full bg-accent/15 flex items-center justify-center">
+                                <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                                 </svg>
-                                <p class="text-sm font-bold">Invite a friend to join too!</p>
                             </div>
-                            <p class="text-xs text-muted-text">The more people help, the better the content will be.</p>
+                            <p class="text-sm font-bold text-primary">Invite a friend to join too!</p>
+                            <p class="text-xs text-muted-text leading-relaxed">The more people help, the better the content will be.</p>
                         </div>
 
                         <button type="button" @click="shareInvite()"
-                                class="w-full h-12 rounded-xl bg-accent text-on-accent font-bold text-sm hover:bg-accent-hover active:scale-[0.985] transition flex items-center justify-center gap-2.5 shadow-lg shadow-accent/20">
-                            <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                                class="w-full h-11 rounded-xl border border-accent/30 bg-accent/10 text-accent font-semibold text-sm hover:bg-accent/20 active:scale-[0.985] transition flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
                             </svg>
                             Share this invitation
                         </button>
