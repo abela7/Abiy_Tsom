@@ -302,7 +302,7 @@ document.addEventListener('alpine:init', () => {
             },
             get stepHint() {
                 if (this.step === 'video') {
-                    return 'Watch the short intro, then answer one quick question.';
+                    return 'Take your time and watch the 8min brief video, then answer one quick question.';
                 }
                 if (this.step === 'decision') {
                     return 'Choose one response and continue.';
