@@ -64,8 +64,10 @@ final class WhatsAppReminderConfirmationService
         $telegramUsername = trim((string) config('services.telegram.bot_username', ''));
         $telegramUrl = $telegramUsername !== '' ? 'https://t.me/' . $telegramUsername : 'https://t.me/AbiyTsomBot';
 
+        $accessUrl = $this->buildMemberAccessUrl($member);
+
         $message = Lang::get('app.whatsapp_confirmation_go_back_message', [
-            'url' => url('/'),
+            'url' => $accessUrl,
             'telegram_url' => $telegramUrl,
         ], $locale);
 
@@ -127,6 +129,30 @@ final class WhatsAppReminderConfirmationService
         }
 
         return null;
+    }
+
+    /**
+     * Build an authenticated one-tap access URL for the member.
+     * Uses TelegramAuthService to create a time-limited code that
+     * establishes a session in any browser (including WhatsApp in-app).
+     */
+    private function buildMemberAccessUrl(Member $member): string
+    {
+        $telegramAuth = app(TelegramAuthService::class);
+
+        $code = $telegramAuth->createCode(
+            $member,
+            TelegramAuthService::PURPOSE_MEMBER_ACCESS,
+            '/member/home'
+        );
+
+        $url = route('telegram.access', ['code' => $code]);
+
+        if (! app()->environment('local')) {
+            $url = preg_replace('/^http:\/\//i', 'https://', $url) ?? $url;
+        }
+
+        return $url;
     }
 
     /**
