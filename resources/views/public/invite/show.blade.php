@@ -47,7 +47,7 @@
                     <div class="mt-4 flex items-center justify-center gap-2 sm:gap-3 text-[10px] sm:text-[11px] tracking-[0.18em] uppercase font-semibold">
                         <span :class="step === 'video' ? 'text-primary' : 'text-muted-text'">Step 1</span>
                         <span class="text-muted-text" aria-hidden="true">&middot;</span>
-                        <span :class="step === 'decision' ? 'text-primary' : 'text-muted-text'">Step 2</span>
+                        <span :class="step === 'decision' || step === 'no-time-confirm' ? 'text-primary' : 'text-muted-text'">Step 2</span>
                         <span class="text-muted-text" aria-hidden="true">&middot;</span>
                         <span :class="step === 'contact' || step === 'thanks' || step === 'contact-thank' ? 'text-primary' : 'text-muted-text'">Step 3</span>
                     </div>
@@ -123,7 +123,7 @@
                                 class="w-full text-left rounded-2xl border border-accent/35 bg-accent/10 hover:bg-accent/20 px-5 py-4 text-sm font-semibold text-primary leading-relaxed transition active:scale-[0.985]">
                             I understand and I am willing to help
                         </button>
-                        <button type="button" @click="showNoTimeConfirm = true"
+                        <button type="button" @click="step = 'no-time-confirm'"
                                 class="w-full text-left rounded-2xl border border-border bg-muted hover:bg-muted/80 px-5 py-4 text-sm font-semibold text-primary leading-relaxed transition active:scale-[0.985]">
                             I understand, but I don't have time to help
                         </button>
@@ -134,30 +134,38 @@
                     </div>
                 </div>
 
-                <div x-show="showNoTimeConfirm"
-                     x-transition.opacity
-                     @keydown.escape.window.prevent="showNoTimeConfirm = false"
-                     class="fixed inset-0 z-40 flex items-center justify-center p-4"
-                     x-cloak>
-                    <div class="absolute inset-0 bg-black/55" @click="showNoTimeConfirm = false"></div>
-                    <div class="relative z-10 w-full max-w-lg rounded-2xl border border-border bg-card p-5 shadow-2xl">
-                        <h3 class="text-lg font-bold text-primary">Are you sure?</h3>
-                        <p class="text-sm text-muted-text mt-2 leading-relaxed">
+                {{-- STEP 2B: "Are you sure?" (no-time nudge) --}}
+                <div x-show="step === 'no-time-confirm'" x-transition.opacity class="mt-8 space-y-6">
+                    <div class="text-center space-y-3">
+                        <div class="mx-auto w-14 h-14 rounded-full bg-accent/15 flex items-center justify-center">
+                            <svg class="w-7 h-7 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <h2 class="text-xl sm:text-2xl font-black text-primary">Are you sure?</h2>
+                        <p class="text-sm text-muted-text max-w-sm mx-auto leading-relaxed">
                             Creating one suggestion takes at most 2 minutes. You can do it only when you have time, and you don't need to do it every day.
                         </p>
-                        <div class="mt-5 grid sm:grid-cols-2 gap-2">
-                            <button type="button"
-                                    @click="showNoTimeConfirm = false; submitDecision('interested')"
-                                    class="h-11 rounded-xl bg-accent text-on-accent font-semibold hover:bg-accent-hover active:scale-[0.985] transition">
-                                Okay, let me try it
-                            </button>
-                            <button type="button"
-                                    @click="showNoTimeConfirm = false; submitDecision('no_time')"
-                                    class="h-11 rounded-xl border border-border bg-surface text-sm font-semibold text-primary hover:bg-muted/70 transition">
-                                Not now, thanks
-                            </button>
-                        </div>
                     </div>
+                    <div class="grid gap-3">
+                        <button type="button"
+                                @click="submitDecision('interested')"
+                                class="w-full h-12 rounded-xl bg-accent text-on-accent font-bold text-sm hover:bg-accent-hover active:scale-[0.985] transition">
+                            Okay, let me try it
+                        </button>
+                        <button type="button"
+                                @click="submitDecision('no_time')"
+                                class="w-full h-12 rounded-xl border border-border bg-surface text-sm font-semibold text-primary hover:bg-muted/70 active:scale-[0.985] transition">
+                            Not now, thanks
+                        </button>
+                    </div>
+                    <button type="button" @click="step = 'decision'"
+                            class="w-full h-10 rounded-xl text-xs font-semibold text-muted-text hover:text-secondary hover:bg-muted/60 transition flex items-center justify-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                        Go back
+                    </button>
                 </div>
 
                 {{-- STEP 3A: Thanks + share --}}
@@ -333,7 +341,6 @@ document.addEventListener('alpine:init', () => {
                 step: hasVideo ? 'video' : 'decision',
                 playerReady: false,
                 formSubmitting: false,
-                showNoTimeConfirm: false,
                 contactName: '',
                 phone: '',
                 contactMethod: 'whatsapp',
@@ -345,7 +352,7 @@ document.addEventListener('alpine:init', () => {
                 if (this.step === 'video') {
                     return 1;
                 }
-                if (this.step === 'decision') {
+                if (this.step === 'decision' || this.step === 'no-time-confirm') {
                     return this.hasVideo ? 2 : 1;
                 }
                 return 2;
@@ -365,6 +372,9 @@ document.addEventListener('alpine:init', () => {
                 }
                 if (this.step === 'decision') {
                     return 'Choose one response and continue.';
+                }
+                if (this.step === 'no-time-confirm') {
+                    return 'We understand — but it really is quick!';
                 }
                 if (this.step === 'contact') {
                     return 'Share your preferred contact details below.';
