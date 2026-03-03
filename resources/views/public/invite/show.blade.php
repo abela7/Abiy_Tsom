@@ -123,7 +123,7 @@
                                 class="w-full text-left rounded-2xl border border-accent/35 bg-accent/10 hover:bg-accent/20 px-5 py-4 text-sm font-semibold text-primary leading-relaxed transition active:scale-[0.985]">
                             I understand and I am willing to help
                         </button>
-                        <button type="button" @click="submitDecision('no_time')"
+                        <button type="button" @click="showNoTimeConfirm = true"
                                 class="w-full text-left rounded-2xl border border-border bg-muted hover:bg-muted/80 px-5 py-4 text-sm font-semibold text-primary leading-relaxed transition active:scale-[0.985]">
                             I understand, but I don't have time to help
                         </button>
@@ -131,6 +131,32 @@
                                 class="w-full text-left rounded-2xl border border-border bg-muted hover:bg-muted/80 px-5 py-4 text-sm font-semibold text-primary leading-relaxed transition active:scale-[0.985]">
                             I understand, but I do not want to be part of this
                         </button>
+                    </div>
+                </div>
+
+                <div x-show="showNoTimeConfirm"
+                     x-transition.opacity
+                     @keydown.escape.window.prevent="showNoTimeConfirm = false"
+                     class="fixed inset-0 z-40 flex items-center justify-center p-4"
+                     x-cloak>
+                    <div class="absolute inset-0 bg-black/55" @click="showNoTimeConfirm = false"></div>
+                    <div class="relative z-10 w-full max-w-lg rounded-2xl border border-border bg-card p-5 shadow-2xl">
+                        <h3 class="text-lg font-bold text-primary">Are you sure?</h3>
+                        <p class="text-sm text-muted-text mt-2 leading-relaxed">
+                            Creating one suggestion takes at most 2 minutes. You can do it only when you have time, and you don't need to do it every day.
+                        </p>
+                        <div class="mt-5 grid sm:grid-cols-2 gap-2">
+                            <button type="button"
+                                    @click="showNoTimeConfirm = false; submitDecision('interested')"
+                                    class="h-11 rounded-xl bg-accent text-on-accent font-semibold hover:bg-accent-hover active:scale-[0.985] transition">
+                                Okay, let me try it
+                            </button>
+                            <button type="button"
+                                    @click="showNoTimeConfirm = false; submitDecision('no_time')"
+                                    class="h-11 rounded-xl border border-border bg-surface text-sm font-semibold text-primary hover:bg-muted/70 transition">
+                                Not now, thanks
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -295,21 +321,22 @@ document.addEventListener('alpine:init', () => {
         let hasTrackedStarted = false;
         let hasTrackedCompleted = false;
 
-        return {
-            hasVideo,
-            slug,
-            trackUrl,
-            decisionUrl,
-            contactUrl,
-            inviteUrl,
-            shareTitle,
-            shareText,
-            step: hasVideo ? 'video' : 'decision',
-            playerReady: false,
-            formSubmitting: false,
-            contactName: '',
-            phone: '',
-            contactMethod: 'whatsapp',
+            return {
+                hasVideo,
+                slug,
+                trackUrl,
+                decisionUrl,
+                contactUrl,
+                inviteUrl,
+                shareTitle,
+                shareText,
+                step: hasVideo ? 'video' : 'decision',
+                playerReady: false,
+                formSubmitting: false,
+                showNoTimeConfirm: false,
+                contactName: '',
+                phone: '',
+                contactMethod: 'whatsapp',
             hasStarted: false,
             hasCompleted: false,
             copyNotice: '',
