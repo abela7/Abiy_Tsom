@@ -448,7 +448,7 @@
                         </button>
 
                         {{-- Theme picker --}}
-                        <div class="relative" @click.away="themeMenuOpen = false">
+                        <div @click.away="themeMenuOpen = false">
                             <button type="button" @click="themeMenuOpen = !themeMenuOpen"
                                     class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition touch-manipulation"
                                     :class="{
@@ -461,46 +461,48 @@
                                 </svg>
                                 <span class="text-[9px] font-semibold uppercase tracking-wider">{{ __('app.reader_theme') }}</span>
                             </button>
-                            {{-- Theme popup --}}
-                            <div x-show="themeMenuOpen"
-                                 x-transition:enter="transition ease-out duration-100"
-                                 x-transition:enter-start="opacity-0 scale-95 translate-y-2"
-                                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                                 x-transition:leave="transition ease-in duration-75"
-                                 x-transition:leave-start="opacity-100 scale-100"
-                                 x-transition:leave-end="opacity-0 scale-95"
-                                 x-cloak
-                                 class="absolute bottom-full right-0 mb-2 w-40 rounded-xl shadow-2xl border overflow-hidden"
-                                 :class="{
-                                    'bg-card border-border': readerTheme === 'default',
-                                    'border-[#d4c5a9]': readerTheme === 'sepia',
-                                    'bg-[#1e1e3a] border-[#2a2a4a]': readerTheme === 'dark'
-                                 }"
-                                 :style="readerTheme === 'sepia' ? 'background-color: #f4ecd8' : ''">
-                                {{-- Default --}}
-                                <button type="button" @click="setReaderTheme('default')"
-                                        class="w-full flex items-center gap-3 px-4 py-3 text-sm text-left transition"
-                                        :class="readerTheme === 'default' ? 'bg-accent/10 font-semibold' : 'hover:bg-muted/50'">
-                                    <span class="w-5 h-5 rounded-full border-2 border-gray-300 bg-white shrink-0"></span>
-                                    <span>{{ __('app.reader_theme_default') }}</span>
-                                </button>
-                                {{-- Sepia --}}
-                                <button type="button" @click="setReaderTheme('sepia')"
-                                        class="w-full flex items-center gap-3 px-4 py-3 text-sm text-left transition"
-                                        :class="readerTheme === 'sepia' ? 'font-semibold' : 'hover:bg-muted/50'"
-                                        :style="readerTheme === 'sepia' && 'background-color: #e8dcc6'">
-                                    <span class="w-5 h-5 rounded-full border-2 border-[#c4a87c] shrink-0" style="background-color: #f4ecd8"></span>
-                                    <span>{{ __('app.reader_theme_sepia') }}</span>
-                                </button>
-                                {{-- Dark --}}
-                                <button type="button" @click="setReaderTheme('dark')"
-                                        class="w-full flex items-center gap-3 px-4 py-3 text-sm text-left transition"
-                                        :class="readerTheme === 'dark' ? 'bg-[#2a2a4a] font-semibold' : 'hover:bg-muted/50'">
-                                    <span class="w-5 h-5 rounded-full border-2 border-[#4a4a6a] bg-[#1a1a2e] shrink-0"></span>
-                                    <span>{{ __('app.reader_theme_dark') }}</span>
-                                </button>
-                            </div>
                         </div>
+
+                {{-- Theme popup — fixed above toolbar so it never gets clipped --}}
+                <div x-show="themeMenuOpen"
+                     x-transition:enter="transition ease-out duration-100"
+                     x-transition:enter-start="opacity-0 translate-y-2"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-75"
+                     x-transition:leave-start="opacity-100"
+                     x-transition:leave-end="opacity-0 translate-y-2"
+                     @click.away="themeMenuOpen = false"
+                     x-cloak
+                     class="fixed bottom-20 right-4 z-[10000] w-44 rounded-xl shadow-2xl border overflow-hidden"
+                     :class="{
+                        'bg-card border-border': readerTheme === 'default',
+                        'border-[#d4c5a9]': readerTheme === 'sepia',
+                        'bg-[#1e1e3a] border-[#2a2a4a]': readerTheme === 'dark'
+                     }"
+                     :style="readerTheme === 'sepia' ? 'background-color: #f4ecd8' : ''">
+                    {{-- Default --}}
+                    <button type="button" @click="setReaderTheme('default')"
+                            class="w-full flex items-center gap-3 px-4 py-3 text-sm text-left transition"
+                            :class="readerTheme === 'default' ? 'bg-accent/10 font-semibold' : 'hover:bg-muted/50'">
+                        <span class="w-5 h-5 rounded-full border-2 border-gray-300 bg-white shrink-0"></span>
+                        <span>{{ __('app.reader_theme_default') }}</span>
+                    </button>
+                    {{-- Sepia --}}
+                    <button type="button" @click="setReaderTheme('sepia')"
+                            class="w-full flex items-center gap-3 px-4 py-3 text-sm text-left transition"
+                            :class="readerTheme === 'sepia' ? 'font-semibold' : 'hover:bg-muted/50'"
+                            :style="readerTheme === 'sepia' && 'background-color: #e8dcc6'">
+                        <span class="w-5 h-5 rounded-full border-2 border-[#c4a87c] shrink-0" style="background-color: #f4ecd8"></span>
+                        <span>{{ __('app.reader_theme_sepia') }}</span>
+                    </button>
+                    {{-- Dark --}}
+                    <button type="button" @click="setReaderTheme('dark')"
+                            class="w-full flex items-center gap-3 px-4 py-3 text-sm text-left transition"
+                            :class="readerTheme === 'dark' ? 'bg-[#2a2a4a] font-semibold' : 'hover:bg-muted/50'">
+                        <span class="w-5 h-5 rounded-full border-2 border-[#4a4a6a] bg-[#1a1a2e] shrink-0"></span>
+                        <span>{{ __('app.reader_theme_dark') }}</span>
+                    </button>
+                </div>
                     </div>
                 </div>
             </div>
