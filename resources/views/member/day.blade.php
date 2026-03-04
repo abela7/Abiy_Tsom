@@ -352,9 +352,20 @@
                 </div>
 
                 {{-- Fullscreen content --}}
-                <div class="flex-1 overflow-y-auto overscroll-contain px-5 py-6 sm:px-8 sm:py-8"
+                <div class="flex-1 overflow-y-auto overscroll-contain px-5 py-6 pb-24 sm:px-8 sm:py-8 sm:pb-28"
                      :style="{ fontSize: fontSize + 'px', lineHeight: (fontSize < 20 ? '1.85' : '1.75') }">
                     <div class="max-w-2xl mx-auto text-secondary whitespace-pre-line break-words">{{ $sinksarText }}</div>
+                </div>
+
+                {{-- Floating exit button --}}
+                <div class="absolute bottom-0 inset-x-0 p-4 pb-6 bg-gradient-to-t from-surface via-surface/95 to-transparent safe-area-bottom">
+                    <button type="button" @click="closeFullscreen()"
+                            class="w-full max-w-sm mx-auto h-12 rounded-xl bg-card border border-border shadow-lg text-sm font-bold text-primary hover:bg-muted transition flex items-center justify-center gap-2 touch-manipulation">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25"/>
+                        </svg>
+                        {{ __('app.exit_fullscreen') }}
+                    </button>
                 </div>
             </div>
         </template>
