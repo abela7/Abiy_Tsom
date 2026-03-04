@@ -197,6 +197,21 @@
             themeMenuOpen: false,
             fontMenuOpen: false,
             inlineFontOpen: false,
+            _shelfLock: false,
+            toggleThemeMenu() {
+                if (this._shelfLock) return;
+                this._shelfLock = true;
+                this.themeMenuOpen = !this.themeMenuOpen;
+                this.fontMenuOpen = false;
+                setTimeout(() => { this._shelfLock = false; }, 350);
+            },
+            toggleFontMenu() {
+                if (this._shelfLock) return;
+                this._shelfLock = true;
+                this.fontMenuOpen = !this.fontMenuOpen;
+                this.themeMenuOpen = false;
+                setTimeout(() => { this._shelfLock = false; }, 350);
+            },
             fontFamily() {
                 if (this.readerFont === 'benaiah') return 'Benaiah,sans-serif';
                 if (this.readerFont === 'kiros') return 'Kiros,sans-serif';
@@ -572,7 +587,7 @@
                         </button>
 
                         {{-- Theme toggle --}}
-                        <button type="button" @click="themeMenuOpen = !themeMenuOpen; fontMenuOpen = false"
+                        <button type="button" @click="toggleThemeMenu()"
                                 class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition touch-manipulation"
                                 :class="{
                                     'text-secondary hover:bg-muted': readerTheme === 'default' && !themeMenuOpen,
@@ -586,7 +601,7 @@
                         </button>
 
                         {{-- Font toggle --}}
-                        <button type="button" @click="fontMenuOpen = !fontMenuOpen; themeMenuOpen = false"
+                        <button type="button" @click="toggleFontMenu()"
                                 class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition touch-manipulation"
                                 :class="{
                                     'text-secondary hover:bg-muted': readerTheme === 'default' && !fontMenuOpen,

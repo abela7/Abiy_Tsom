@@ -61,7 +61,7 @@ return [
     'cookie_consent_description' => 'For your privacy, all app data used to keep your session and preference is stored on your local device only. We need browser cookies to keep this working.',
     'cookie_consent_session_cookie' => 'Session cookie: keeps you signed in on this device.',
     'cookie_consent_device_cookie' => 'Device cookie: remembers your selected language and app settings.',
-    'cookie_consent_privacy_note' => 'No other user profile data is stored locally for this step.',
+    'cookie_consent_privacy_note' => 'Daily activities data (checklists and reminders preferences) are also stored locally to keep your progress consistent on this device.',
     'cookie_consent_checkbox_label' => 'I understand and accept local cookie use.',
     'cookie_consent_required_error' => 'Please accept the cookie consent to continue.',
 
