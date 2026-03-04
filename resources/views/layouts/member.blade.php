@@ -1,13 +1,19 @@
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}"
       x-data="{
-        darkMode: localStorage.getItem('theme') !== 'light',
+        theme: (function(){var t=localStorage.getItem('theme');return (t==='light'||t==='sepia'||t==='dark')?t:'dark';})(),
         locale: '{{ app()->getLocale() }}',
+        applyThemeClasses() {
+          document.documentElement.classList.toggle('dark', this.theme === 'dark');
+          document.documentElement.classList.toggle('sepia', this.theme === 'sepia');
+        },
         toggleTheme() {
-          this.darkMode = !this.darkMode;
-          const theme = this.darkMode ? 'dark' : 'light';
-          localStorage.setItem('theme', theme);
-          if (window.AbiyTsom?.api) { AbiyTsom.api('/api/member/settings', { theme }); }
+          const order = ['light', 'sepia', 'dark'];
+          const i = order.indexOf(this.theme);
+          this.theme = order[(i + 1) % 3];
+          localStorage.setItem('theme', this.theme);
+          this.applyThemeClasses();
+          if (window.AbiyTsom?.api) { AbiyTsom.api('/api/member/settings', { theme: this.theme }); }
         },
         setLocale(lang) {
           this.locale = lang;
@@ -20,15 +26,19 @@
           }
         }
       }"
-      :class="{ 'dark': darkMode }"
-      x-init="if (!localStorage.getItem('theme')) { localStorage.setItem('theme', 'dark'); darkMode = true; }">
+      :class="{ 'dark': theme === 'dark', 'sepia': theme === 'sepia' }"
+      x-init="
+        if (!localStorage.getItem('theme')) { localStorage.setItem('theme', 'dark'); theme = 'dark'; }
+        this.applyThemeClasses();
+        window.addEventListener('theme-changed', (e) => { if (e.detail && e.detail.theme) { theme = e.detail.theme; this.applyThemeClasses(); } });
+      ">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="theme-color" content="#0a6286">
     <script>
-        (function(){var t=localStorage.getItem('theme');if(t!=='light')document.documentElement.classList.add('dark');})();
+        (function(){var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.classList.add('dark');else if(t==='sepia')document.documentElement.classList.add('sepia');})();
     </script>
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -127,14 +137,18 @@
                 <button type="button"
                         @click="toggleTheme()"
                         class="p-2 rounded-xl hover:bg-muted transition active:scale-95"
-                        :aria-label="darkMode ? '{{ __('app.theme_light') }}' : '{{ __('app.theme_dark') }}'"
+                        :aria-label="theme === 'light' ? '{{ __('app.theme_light') }}' : (theme === 'sepia' ? '{{ __('app.theme_sepia') }}' : '{{ __('app.theme_dark') }}')"
                         data-tour="theme">
-                    {{-- Sun: show when dark (click to switch to light) --}}
-                    <svg x-show="darkMode" x-cloak class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    {{-- Sun: light theme --}}
+                    <svg x-show="theme === 'light'" x-cloak class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
                     </svg>
-                    {{-- Moon: show when light (click to switch to dark) --}}
-                    <svg x-show="!darkMode" class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    {{-- Sepia: warm book-like icon --}}
+                    <svg x-show="theme === 'sepia'" x-cloak class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+                    </svg>
+                    {{-- Moon: dark theme --}}
+                    <svg x-show="theme === 'dark'" x-cloak class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
                     </svg>
                 </button>

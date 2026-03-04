@@ -99,6 +99,11 @@
                             :class="theme === 'light' ? 'bg-accent-secondary text-primary' : 'bg-muted text-secondary'">
                         {{ __('app.theme_light') }}
                     </button>
+                    <button @click="setTheme('sepia')"
+                            class="flex-1 py-2.5 rounded-xl text-sm font-medium transition"
+                            :class="theme === 'sepia' ? 'bg-accent-secondary text-primary' : 'bg-muted text-secondary'">
+                        {{ __('app.theme_sepia') }}
+                    </button>
                     <button @click="setTheme('dark')"
                             class="flex-1 py-2.5 rounded-xl text-sm font-medium transition"
                             :class="theme === 'dark' ? 'bg-accent-secondary text-primary' : 'bg-muted text-secondary'">
@@ -714,7 +719,7 @@ function settingsPage() {
         telegramLoading: false,
         telegramMsg: '',
         telegramError: '',
-        theme: (typeof localStorage !== 'undefined' ? localStorage.getItem('theme') : null) || '{{ $member?->theme ?? 'light' }}',
+        theme: (function(){var t=(typeof localStorage!=='undefined'?localStorage.getItem('theme'):null)||'{{ $member?->theme ?? 'light' }}';return ['light','sepia','dark'].includes(t)?t:'light';})(),
         baptismName: '{{ addslashes($member?->baptism_name ?? '') }}',
         savedBaptismName: '{{ addslashes($member?->baptism_name ?? '') }}',
         profileSaving: false,
@@ -982,13 +987,17 @@ function settingsPage() {
             const stored = localStorage.getItem('theme');
             if (!stored && this.theme) {
                 localStorage.setItem('theme', this.theme);
-                document.documentElement.classList.toggle('dark', this.theme === 'dark');
+                window.dispatchEvent(new CustomEvent('theme-changed', { detail: { theme: this.theme } }));
             }
+            document.documentElement.classList.toggle('dark', this.theme === 'dark');
+            document.documentElement.classList.toggle('sepia', this.theme === 'sepia');
         },
         async setTheme(t) {
             this.theme = t;
             localStorage.setItem('theme', t);
             document.documentElement.classList.toggle('dark', t === 'dark');
+            document.documentElement.classList.toggle('sepia', t === 'sepia');
+            window.dispatchEvent(new CustomEvent('theme-changed', { detail: { theme: t } }));
             await AbiyTsom.api('/api/member/settings', { theme: t });
         },
         async enablePasscode() {

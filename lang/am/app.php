@@ -240,6 +240,7 @@ return [
     'language' => 'ቋንቋ',
     'theme' => 'ገጽታ',
     'theme_light' => 'ብርሃን',
+    'theme_sepia' => 'ሴፒያ',
     'theme_dark' => 'ጨለማ',
 
     // Tour / First-time guide

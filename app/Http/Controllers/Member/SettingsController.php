@@ -44,7 +44,7 @@ class SettingsController extends Controller
 
         $request->validate([
             'locale' => ['nullable', 'string', 'in:en,am'],
-            'theme' => ['nullable', 'string', 'in:light,dark'],
+            'theme' => ['nullable', 'string', 'in:light,dark,sepia'],
             'baptism_name' => ['nullable', 'string', 'min:1', 'max:255'],
             'whatsapp_reminder_enabled' => ['nullable', 'boolean'],
             'whatsapp_phone' => ['nullable', 'string', 'regex:/^\+447\d{9}$/'],

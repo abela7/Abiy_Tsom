@@ -237,6 +237,7 @@ return [
     'language' => 'Language',
     'theme' => 'Theme',
     'theme_light' => 'Light',
+    'theme_sepia' => 'Sepia',
     'theme_dark' => 'Dark',
 
     // Tour / First-time guide

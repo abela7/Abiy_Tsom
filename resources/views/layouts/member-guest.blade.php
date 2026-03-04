@@ -1,8 +1,19 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
       x-data="{ 
-        darkMode: localStorage.getItem('theme') === 'dark',
+        theme: (function(){var t=localStorage.getItem('theme');return (t==='light'||t==='sepia'||t==='dark')?t:'light';})(),
         locale: '{{ app()->getLocale() }}',
+        applyThemeClasses() {
+          document.documentElement.classList.toggle('dark', this.theme === 'dark');
+          document.documentElement.classList.toggle('sepia', this.theme === 'sepia');
+        },
+        toggleTheme() {
+          const order = ['light', 'sepia', 'dark'];
+          const i = order.indexOf(this.theme);
+          this.theme = order[(i + 1) % 3];
+          localStorage.setItem('theme', this.theme);
+          this.applyThemeClasses();
+        },
         setLocale(lang) {
           this.locale = lang;
           document.dispatchEvent(new CustomEvent('locale-switching', { detail: { lang } }));
@@ -11,11 +22,11 @@
           window.location.href = url.toString();
         }
       }"
-      x-effect="document.documentElement.classList.toggle('dark', darkMode)"
-      :class="{ 'dark': darkMode }"
+      :class="{ 'dark': theme === 'dark', 'sepia': theme === 'sepia' }"
       x-init="
-        if ({{ request()->routeIs('volunteer.invite.*') ? 'true' : 'false' }}) { darkMode = true; }
-        else if (!localStorage.getItem('theme')) { localStorage.setItem('theme', 'light'); darkMode = false; }
+        if ({{ request()->routeIs('volunteer.invite.*') ? 'true' : 'false' }}) { theme = 'dark'; localStorage.setItem('theme', 'dark'); }
+        else if (!localStorage.getItem('theme')) { localStorage.setItem('theme', 'light'); theme = 'light'; }
+        this.applyThemeClasses();
       ">
 <head>
     <meta charset="UTF-8">
@@ -29,7 +40,9 @@
         (function(){
             var forceInviteDark = @json(request()->routeIs('volunteer.invite.*'));
             var t = localStorage.getItem('theme');
-            if (forceInviteDark || t === 'dark') document.documentElement.classList.add('dark');
+            if (forceInviteDark) document.documentElement.classList.add('dark');
+            else if (t === 'dark') document.documentElement.classList.add('dark');
+            else if (t === 'sepia') document.documentElement.classList.add('sepia');
         })();
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -96,14 +109,17 @@
                         </div>
                     @endif
                     <button type="button"
-                            @click="darkMode = !darkMode; localStorage.setItem('theme', darkMode ? 'dark' : 'light')"
+                            @click="toggleTheme()"
                             class="p-2 rounded-xl bg-card/80 dark:bg-card/80 border border-border shadow-sm hover:bg-muted transition"
-                            aria-label="{{ __('app.theme') }}">
-                        <svg x-show="!darkMode" class="w-5 h-5 text-muted-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
-                        </svg>
-                        <svg x-show="darkMode" class="w-5 h-5 text-accent-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24" x-cloak>
+                            :aria-label="theme === 'light' ? '{{ __('app.theme_light') }}' : (theme === 'sepia' ? '{{ __('app.theme_sepia') }}' : '{{ __('app.theme_dark') }}')">
+                        <svg x-show="theme === 'light'" x-cloak class="w-5 h-5 text-muted-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                        </svg>
+                        <svg x-show="theme === 'sepia'" x-cloak class="w-5 h-5 text-muted-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+                        </svg>
+                        <svg x-show="theme === 'dark'" x-cloak class="w-5 h-5 text-accent-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
                         </svg>
                     </button>
                 </div>
