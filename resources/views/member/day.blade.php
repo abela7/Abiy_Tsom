@@ -425,7 +425,7 @@
                      :style="readerTheme === 'sepia' ? 'background-color:#e8dcc6;border-color:#d4c5a9' : readerTheme === 'dark' ? 'background-color:#12122a;border-color:#2a2a4a' : ''">
                     <div class="flex items-center justify-center gap-4 max-w-xs mx-auto">
                         {{-- Default font --}}
-                        <button type="button" @click="setReaderFont('default')"
+                        <button type="button" @click="fontMenuOpen = false; setReaderFont('default')"
                                 class="flex flex-col items-center gap-1.5 touch-manipulation">
                             <span class="w-12 h-12 rounded-xl flex items-center justify-center text-xl font-bold transition-all"
                                   :style="'font-family:inherit;' + (readerFont === 'default' ? 'border:3px solid var(--color-accent);transform:scale(1.1);box-shadow:0 0 0 4px rgba(10,98,134,0.2)' : 'border:2px solid ' + (readerTheme === 'dark' ? '#4a4a6a' : readerTheme === 'sepia' ? '#c4a87c' : '#d1d5db')) + ';background:' + (readerTheme === 'dark' ? '#1a1a2e' : readerTheme === 'sepia' ? '#f4ecd8' : '#fff')">
@@ -435,7 +435,7 @@
                                   :style="readerFont === 'default' ? 'color:var(--color-accent)' : readerTheme === 'sepia' ? 'color:#5b4636' : readerTheme === 'dark' ? 'color:#8888aa' : 'color:#6b7280'">Default</span>
                         </button>
                         {{-- Benaiah --}}
-                        <button type="button" @click="setReaderFont('benaiah')"
+                        <button type="button" @click="fontMenuOpen = false; setReaderFont('benaiah')"
                                 class="flex flex-col items-center gap-1.5 touch-manipulation">
                             <span class="w-12 h-12 rounded-xl flex items-center justify-center text-xl font-bold transition-all"
                                   style="font-family:'Benaiah',sans-serif"
@@ -446,7 +446,7 @@
                                   :style="readerFont === 'benaiah' ? 'color:var(--color-accent)' : readerTheme === 'sepia' ? 'color:#5b4636' : readerTheme === 'dark' ? 'color:#8888aa' : 'color:#6b7280'">Benaiah</span>
                         </button>
                         {{-- Kiros --}}
-                        <button type="button" @click="setReaderFont('kiros')"
+                        <button type="button" @click="fontMenuOpen = false; setReaderFont('kiros')"
                                 class="flex flex-col items-center gap-1.5 touch-manipulation">
                             <span class="w-12 h-12 rounded-xl flex items-center justify-center text-xl font-bold transition-all"
                                   style="font-family:'Kiros',sans-serif"
@@ -457,7 +457,7 @@
                                   :style="readerFont === 'kiros' ? 'color:var(--color-accent)' : readerTheme === 'sepia' ? 'color:#5b4636' : readerTheme === 'dark' ? 'color:#8888aa' : 'color:#6b7280'">Kiros</span>
                         </button>
                         {{-- Handwriting --}}
-                        <button type="button" @click="setReaderFont('handwriting')"
+                        <button type="button" @click="fontMenuOpen = false; setReaderFont('handwriting')"
                                 class="flex flex-col items-center gap-1.5 touch-manipulation">
                             <span class="w-12 h-12 rounded-xl flex items-center justify-center text-xl font-bold transition-all"
                                   style="font-family:'Handwriting',sans-serif"
