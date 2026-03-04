@@ -12,16 +12,23 @@ const TOUR_DAY_URL_KEY  = 'member_tour_day_url';
 
 // ─── localStorage / server completion ─────────────────────────────────────
 
-export function isTourCompleted() {
-    if (window.AbiyTsomTourCompleted === true) return true;
-    // Server explicitly says not completed — clear stale localStorage so admin
-    // resets take effect immediately.
-    if (window.AbiyTsomTourCompleted === false) {
-        try { localStorage.removeItem(TOUR_STORAGE_KEY); } catch {}
-        return false;
-    }
-    // Server value unknown — fall back to localStorage.
+function hasLocalTourCompletion() {
     try { return localStorage.getItem(TOUR_STORAGE_KEY) === '1'; } catch { return false; }
+}
+
+export function isTourCompleted() {
+    const localCompletion = hasLocalTourCompletion();
+
+    if (window.AbiyTsomTourCompleted === true) return true;
+
+    // If server says not completed but the user already completed locally (for
+    // example by closing from the X button), keep the local completion state so a
+    // refresh does not reopen the tour before sync completes.
+    if (window.AbiyTsomTourCompleted === false) {
+        return localCompletion;
+    }
+
+    return localCompletion;
 }
 
 function setTourCompletedLocal() {
@@ -49,7 +56,7 @@ export async function resetTour() {
 export function syncTourCompletion() {
     if (window.AbiyTsomTourCompleted === true) return;
     try {
-        if (localStorage.getItem(TOUR_STORAGE_KEY) === '1') {
+        if (hasLocalTourCompletion()) {
             setTourCompleted();
         }
     } catch {}
@@ -569,4 +576,5 @@ export async function continuePageTour(pageName) {
 
     await runPhaseTour(pageName, steps);
 }
+
 
