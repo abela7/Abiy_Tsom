@@ -305,8 +305,8 @@
                 </div>
 
                 {{-- Inline reader --}}
-                <div class="rounded-xl border border-border bg-surface/50 p-4 max-h-[60vh] overflow-y-auto overscroll-contain"
-                     :style="{ fontSize: fontSize + 'px', lineHeight: (fontSize < 20 ? '1.8' : '1.7'), webkitOverflowScrolling: 'touch', touchAction: 'pan-y' }">
+                <div class="rounded-xl border border-border bg-surface/50 p-4"
+                     :style="'font-size:' + fontSize + 'px;line-height:' + (fontSize < 20 ? '1.8' : '1.7') + ';max-height:60vh;overflow-y:scroll;-webkit-overflow-scrolling:touch'">
                     <div class="text-secondary whitespace-pre-line break-words">{{ $sinksarText }}</div>
                 </div>
             </div>
