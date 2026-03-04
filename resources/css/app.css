@@ -276,3 +276,20 @@
 [x-cloak] {
     display: none !important;
 }
+
+/* ─── Synaxarium reader custom fonts ─────────────────────────────────────── */
+@font-face {
+    font-family: 'Benaiah';
+    src: url('/fonts/Benaiah_536454528f.ttf') format('truetype');
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Kiros';
+    src: url('/fonts/kiros_61f90ce99a.ttf') format('truetype');
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Handwriting';
+    src: url('/fonts/Geez_Handwriting_ea6b90e5a8.ttf') format('truetype');
+    font-display: swap;
+}
