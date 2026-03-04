@@ -386,20 +386,25 @@ async function runPhaseTour(phase, steps) {
 
         // Attach onNextClick to the last step so we know the user clicked Done.
         let driverObj;
-        const stepsWithCompletion = steps.map((step, i) =>
-            i === steps.length - 1
-                ? {
-                    ...step,
-                    popover: {
-                        ...step.popover,
+        const stepsWithCompletion = steps.map((step, i) => ({
+            ...step,
+            popover: {
+                ...step.popover,
+                onCloseClick: () => {
+                    userAbortedTour = true;
+                    driverObj?.destroy?.();
+                },
+                ...(i === steps.length - 1
+                    ? {
                         onNextClick: () => {
                             phaseCompleted = true;
-                            driverObj?.destroy();
+                            driverObj?.destroy?.();
                         },
-                    },
-                  }
-                : step
-        );
+                      }
+                    : {}
+                ),
+            },
+        }));
 
         driverObj = driver({
             showProgress:            true,
@@ -564,3 +569,4 @@ export async function continuePageTour(pageName) {
 
     await runPhaseTour(pageName, steps);
 }
+

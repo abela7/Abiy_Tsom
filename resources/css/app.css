@@ -267,6 +267,41 @@
     display: none;
 }
 
+.driver-popover-close-btn {
+    all: unset;
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 30px;
+    height: 30px;
+    border-radius: 9999px;
+    border: 1px solid var(--app-border);
+    background-color: var(--app-muted);
+    color: var(--app-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 2;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    touch-action: manipulation;
+    transition: all 0.2s ease;
+}
+
+.driver-popover-close-btn:hover,
+.driver-popover-close-btn:focus-visible {
+    background-color: var(--app-accent);
+    border-color: var(--app-accent);
+    color: var(--app-on-accent);
+}
+
+.driver-popover-close-btn:active {
+    transform: scale(0.94);
+}
+
 /* Safe area for sticky top bars on iOS */
 .safe-top {
     padding-top: env(safe-area-inset-top, 0px);

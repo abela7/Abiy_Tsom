@@ -38,7 +38,7 @@ class TelegramAuthController extends Controller
         Request $request,
         TelegramAuthService $telegramAuthService,
         MemberSessionService $memberSessionService
-    ): RedirectResponse {
+    ): RedirectResponse|\Illuminate\Http\Response {
         $code = (string) $request->query('code', '');
         $fallback = $this->resolveFallbackUrl($request);
 
@@ -494,12 +494,23 @@ class TelegramAuthController extends Controller
         return get_class($first) === get_class($second) && (string) $first->getKey() === (string) $second->getKey();
     }
 
+    /**
+     * Authenticate a member via a one-time token and redirect to their target page.
+     *
+     * Returns a 200 HTML page (not a 302 redirect) so that session cookies are
+     * fully stored by the browser before it navigates to the cookie-protected
+     * member area.  Some mobile WebViews (notably the WhatsApp in-app browser)
+     * do not reliably process Set-Cookie headers from 302 responses on first
+     * visit, which caused authenticated users to land back on the home page.
+     *
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\Response
+     */
     private function authenticateMember(
         Request $request,
         TelegramAccessToken $token,
         MemberSessionService $memberSessionService,
         TelegramAuthService $telegramAuthService
-    ): RedirectResponse {
+    ): RedirectResponse|\Illuminate\Http\Response {
         $member = $token->actor;
         if (! $member instanceof Member) {
             return redirect()->route('home');
@@ -517,7 +528,11 @@ class TelegramAuthController extends Controller
 
         $next = $telegramAuthService->sanitizeRedirectPath($token->redirect_to, '/member/home');
 
-        return redirect($next);
+        // Return a 200 HTML page instead of a 302 redirect.  The queued session
+        // cookies are attached to this response by AddQueuedCookiesToResponse
+        // middleware.  A short JS delay ensures the browser stores the cookies
+        // before navigating to the cookie-protected target page.
+        return response()->view('auth.authenticated', ['redirectUrl' => $next]);
     }
 
     private function authenticateAdmin(
