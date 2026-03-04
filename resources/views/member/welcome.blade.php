@@ -58,10 +58,21 @@
                         <p class="text-xs text-muted-text mt-1.5 leading-relaxed">{{ __('app.cookie_consent_summary') }}</p>
 
                         <button type="button"
+                                :aria-expanded="cookieConsentExpanded ? 'true' : 'false'"
                                 @click="cookieConsentExpanded = !cookieConsentExpanded"
-                                class="mt-2 text-xs font-medium text-accent hover:underline">
-                            <span x-show="!cookieConsentExpanded">{{ __('app.read_more') }}</span>
-                            <span x-show="cookieConsentExpanded">{{ __('app.show_less') }}</span>
+                                class="mt-2 text-xs font-medium text-accent hover:text-primary flex items-center gap-1.5 transition-colors">
+                            <span x-show="!cookieConsentExpanded" class="inline-flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16M4 12h16"/>
+                                </svg>
+                                {{ __('app.read_more') }}
+                            </span>
+                            <span x-show="cookieConsentExpanded" class="inline-flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4"/>
+                                </svg>
+                                {{ __('app.show_less') }}
+                            </span>
                         </button>
 
                         <div x-show="cookieConsentExpanded" x-transition class="mt-2 text-xs text-muted-text space-y-2">
