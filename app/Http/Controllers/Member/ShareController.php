@@ -66,7 +66,7 @@ class ShareController extends Controller
         $member = null;
         $publicPreview = true;
 
-        $daily->load(['weeklyTheme', 'mezmurs', 'references', 'books']);
+        $daily->load(['weeklyTheme', 'mezmurs', 'references', 'books', 'sinksarImages']);
         $activities = collect();
         $checklist = collect();
         $customActivities = collect();

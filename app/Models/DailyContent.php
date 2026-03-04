@@ -103,6 +103,14 @@ class DailyContent extends Model
     }
 
     /**
+     * Saint images for the Sinksar section (carousel gallery).
+     */
+    public function sinksarImages(): HasMany
+    {
+        return $this->hasMany(DailyContentSinksarImage::class)->orderBy('sort_order');
+    }
+
+    /**
      * Admin user who created this day entry.
      */
     public function createdBy(): BelongsTo

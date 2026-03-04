@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Activity;
 use App\Models\DailyContent;
 use App\Models\DailyContentBook;
+use App\Models\DailyContentSinksarImage;
 use App\Models\LentSeason;
 use App\Services\AbiyTsomStructure;
 use Illuminate\Http\JsonResponse;
@@ -72,7 +73,7 @@ class DailyContentController extends Controller
      */
     public function preview(DailyContent $daily): View
     {
-        $daily->load(['weeklyTheme', 'mezmurs', 'references', 'books']);
+        $daily->load(['weeklyTheme', 'mezmurs', 'references', 'books', 'sinksarImages']);
         $activities = Activity::where('lent_season_id', $daily->lent_season_id)
             ->where('is_active', true)
             ->orderBy('sort_order')
@@ -163,7 +164,7 @@ class DailyContentController extends Controller
 
         $source = DailyContent::where('lent_season_id', $season->id)
             ->where('day_number', $day_number)
-            ->with(['mezmurs', 'books', 'references'])
+            ->with(['mezmurs', 'books', 'references', 'sinksarImages'])
             ->first();
 
         if (! $source) {
@@ -194,6 +195,13 @@ class DailyContentController extends Controller
             'url_am' => $b->url_am ?? $b->url ?? '',
             'description_en' => $b->description_en ?? '',
             'description_am' => $b->description_am ?? '',
+        ])->values()->toArray();
+
+        $sinksarImages = $source->sinksarImages->map(fn ($img) => [
+            'path' => $img->image_path,
+            'url' => $img->imageUrl(),
+            'caption_en' => $img->caption_en ?? '',
+            'caption_am' => $img->caption_am ?? '',
         ])->values()->toArray();
 
         if (empty($mezmurs)) {
@@ -227,13 +235,14 @@ class DailyContentController extends Controller
                 'mezmurs' => $mezmurs,
                 'references' => $references,
                 'books' => $books,
+                'sinksar_images' => $sinksarImages,
             ],
         ]);
     }
 
     public function edit(DailyContent $daily): View
     {
-        $daily->load('books');
+        $daily->load(['books', 'sinksarImages']);
         $season = LentSeason::active();
         $themes = $season ? $season->weeklyThemes()->orderBy('week_number')->get() : collect();
         $dayRangesByWeek = $this->getDayRangesByWeek();
@@ -253,12 +262,14 @@ class DailyContentController extends Controller
         $mezmurs = $this->parseMezmurs($request);
         $references = $this->parseReferences($request);
         $books = $this->parseBooks($request);
-        unset($validated['mezmurs'], $validated['references'], $validated['books']);
+        $sinksarImages = $this->parseSinksarImages($request->input('sinksar_images', []));
+        unset($validated['mezmurs'], $validated['references'], $validated['books'], $validated['sinksar_images']);
 
         $daily->update($validated);
         $this->syncMezmurs($daily, $mezmurs);
         $this->syncReferences($daily, $references);
         $this->syncBooks($daily, $books);
+        $this->syncSinksarImages($daily, $sinksarImages);
 
         return redirect('/admin/daily')->with('success', 'Daily content updated.');
     }
@@ -278,6 +289,41 @@ class DailyContentController extends Controller
             'url_en' => $url,
             'url_am' => $url,
         ]);
+    }
+
+    /**
+     * Upload a single Sinksar saint image (AJAX).
+     */
+    public function uploadSinksarImage(Request $request): JsonResponse
+    {
+        $request->validate([
+            'sinksar_image' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+        ]);
+
+        $path = $request->file('sinksar_image')->store('sinksar-images', 'public');
+
+        return response()->json([
+            'success' => true,
+            'path' => $path,
+            'url' => url(Storage::disk('public')->url($path)),
+        ]);
+    }
+
+    /**
+     * Delete a single uploaded Sinksar image file (AJAX).
+     */
+    public function deleteSinksarImage(Request $request): JsonResponse
+    {
+        $request->validate([
+            'path' => ['required', 'string', 'max:500'],
+        ]);
+
+        $path = $request->input('path');
+        if (str_starts_with($path, 'sinksar-images/') && Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->delete($path);
+        }
+
+        return response()->json(['success' => true]);
     }
 
     /**
@@ -340,7 +386,13 @@ class DailyContentController extends Controller
                     'sinksar_text_am' => ['nullable', 'string'],
                     'sinksar_description_en' => ['nullable', 'string'],
                     'sinksar_description_am' => ['nullable', 'string'],
+                    'sinksar_images' => ['nullable', 'array', 'max:5'],
+                    'sinksar_images.*.path' => ['required', 'string', 'max:500'],
+                    'sinksar_images.*.caption_en' => ['nullable', 'string', 'max:255'],
+                    'sinksar_images.*.caption_am' => ['nullable', 'string', 'max:255'],
                 ]);
+                $this->syncSinksarImages($daily, $this->parseSinksarImages($request->input('sinksar_images', [])));
+                unset($updates['sinksar_images']);
                 break;
 
             case 5:
@@ -578,6 +630,10 @@ class DailyContentController extends Controller
             'sinksar_text_am' => ['nullable', 'string'],
             'sinksar_description_en' => ['nullable', 'string'],
             'sinksar_description_am' => ['nullable', 'string'],
+            'sinksar_images' => ['nullable', 'array', 'max:5'],
+            'sinksar_images.*.path' => ['required', 'string', 'max:500'],
+            'sinksar_images.*.caption_en' => ['nullable', 'string', 'max:255'],
+            'sinksar_images.*.caption_am' => ['nullable', 'string', 'max:255'],
             'books' => ['nullable', 'array'],
             'books.*.title_en' => ['nullable', 'string', 'max:255'],
             'books.*.title_am' => ['nullable', 'string', 'max:255'],
@@ -692,6 +748,57 @@ class DailyContentController extends Controller
                 'url_am' => $ref['url_am'],
                 'url' => $ref['url'] ?? ($ref['url_en'] ?? $ref['url_am'] ?? null),
                 'type' => $ref['type'] ?? 'website',
+                'sort_order' => $i,
+            ]);
+        }
+    }
+
+    /**
+     * Parse sinksar images from request input (keep only valid paths).
+     *
+     * @return array<int, array{path: string, caption_en: string|null, caption_am: string|null}>
+     */
+    private function parseSinksarImages(array $raw): array
+    {
+        $parsed = [];
+        foreach ($raw as $img) {
+            $path = trim((string) ($img['path'] ?? ''));
+            if ($path === '' || ! str_starts_with($path, 'sinksar-images/')) {
+                continue;
+            }
+            $parsed[] = [
+                'path' => $path,
+                'caption_en' => trim((string) ($img['caption_en'] ?? '')) ?: null,
+                'caption_am' => trim((string) ($img['caption_am'] ?? '')) ?: null,
+            ];
+        }
+
+        return array_slice($parsed, 0, 5);
+    }
+
+    /**
+     * Sync sinksar images: delete removed files, recreate records in order.
+     *
+     * @param  array<int, array{path: string, caption_en: string|null, caption_am: string|null}>  $images
+     */
+    private function syncSinksarImages(DailyContent $daily, array $images): void
+    {
+        $newPaths = array_column($images, 'path');
+
+        // Delete orphaned image files from disk
+        foreach ($daily->sinksarImages as $old) {
+            if (! in_array($old->image_path, $newPaths, true)) {
+                Storage::disk('public')->delete($old->image_path);
+            }
+        }
+
+        // Recreate all records to maintain sort order
+        $daily->sinksarImages()->delete();
+        foreach ($images as $i => $img) {
+            $daily->sinksarImages()->create([
+                'image_path' => $img['path'],
+                'caption_en' => $img['caption_en'],
+                'caption_am' => $img['caption_am'],
                 'sort_order' => $i,
             ]);
         }

@@ -109,6 +109,14 @@
         'is_published' => (bool) old('is_published', $daily->is_published ?? false),
         'mezmurs' => $initialMezmurs,
         'references' => $initialReferences,
+        'sinksar_images' => $isEdit
+            ? ($daily->sinksarImages ?? collect())->map(fn ($img) => [
+                'path' => $img->image_path,
+                'url' => $img->imageUrl(),
+                'caption_en' => $img->caption_en ?? '',
+                'caption_am' => $img->caption_am ?? '',
+            ])->values()->toArray()
+            : [],
     ];
 
     $stepLabels = [
@@ -155,7 +163,9 @@
                     editTemplate: @js(route('admin.daily.edit', ['daily' => '__DAILY_ID__'])),
                     index: @js(route('admin.daily.index')),
                     copyFromTemplate: @js(route('admin.daily.copy_from', ['day_number' => '__DAY__'])),
-                    uploadBookPdf: @js(route('admin.daily.upload_book_pdf'))
+                    uploadBookPdf: @js(route('admin.daily.upload_book_pdf')),
+                    uploadSinksarImage: @js(route('admin.daily.upload_sinksar_image')),
+                    deleteSinksarImage: @js(route('admin.daily.delete_sinksar_image'))
                 },
                 daysWithContent: @js($daysWithContent ?? []),
                 messages: {
@@ -405,6 +415,55 @@
                         <label class="block text-sm font-medium text-secondary mt-3 mb-1.5">{{ __('app.sinksar_description_label') }}</label>
                         <textarea x-model="form.sinksar_description_en" rows="3" placeholder="{{ __('app.sinksar_description_label') }} ({{ __('app.english') }})" class="w-full min-h-[5rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
                     </div>
+
+                    {{-- Saint Images Upload --}}
+                    <div class="space-y-4 rounded-xl border border-sinksar/30 bg-sinksar/5 p-3">
+                        <div class="flex items-center justify-between">
+                            <p class="text-xs font-semibold text-sinksar">{{ __('app.sinksar_images_label') }}</p>
+                            <span class="text-[10px] text-muted-text" x-text="(form.sinksar_images || []).length + '/5'"></span>
+                        </div>
+                        <p class="text-xs text-muted-text">{{ __('app.sinksar_images_hint') }}</p>
+
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            <template x-for="(img, idx) in (form.sinksar_images || [])" :key="idx">
+                                <div class="relative group rounded-xl overflow-hidden border border-border bg-muted/30">
+                                    <div class="aspect-[4/3]">
+                                        <img :src="img.url" class="w-full h-full object-cover" alt="">
+                                    </div>
+                                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition flex items-center justify-center aspect-[4/3]">
+                                        <button type="button"
+                                                @click="removeSinksarImage(idx)"
+                                                class="opacity-0 group-hover:opacity-100 p-2 rounded-full bg-red-600 text-white transition touch-manipulation">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div class="p-2 bg-card border-t border-border">
+                                        <input type="text" x-model="img.caption_am" placeholder="{{ __('app.sinksar_image_caption') }} ({{ __('app.amharic') }})"
+                                               class="w-full text-xs px-2 py-1.5 border border-border rounded-lg bg-muted/30 mb-1">
+                                        <input type="text" x-model="img.caption_en" placeholder="{{ __('app.sinksar_image_caption') }} ({{ __('app.english') }})"
+                                               class="w-full text-xs px-2 py-1.5 border border-border rounded-lg bg-muted/30">
+                                    </div>
+                                </div>
+                            </template>
+
+                            <div x-show="(form.sinksar_images || []).length < 5"
+                                 class="rounded-xl border-2 border-dashed border-sinksar/30 hover:border-sinksar/60 bg-sinksar/5 flex items-center justify-center cursor-pointer transition group touch-manipulation">
+                                <label class="flex flex-col items-center gap-2 cursor-pointer p-4 aspect-[4/3] justify-center w-full">
+                                    <svg class="w-8 h-8 text-sinksar/50 group-hover:text-sinksar transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4"/>
+                                    </svg>
+                                    <span class="text-xs font-semibold text-sinksar/70 text-center" x-text="sinksarImageUploading ? '{{ __('app.loading') }}...' : '{{ __('app.sinksar_upload_image') }}'"></span>
+                                    <input type="file"
+                                           accept="image/jpeg,image/png,image/webp"
+                                           class="hidden"
+                                           :disabled="sinksarImageUploading"
+                                           @change="uploadSinksarImage($event)">
+                                </label>
+                            </div>
+                        </div>
+                    </div>
                 </section>
 
                 {{-- Step 5: Spiritual book (multiple, re-use from previous days) --}}
@@ -635,6 +694,7 @@
                     copySourceDay: '',
                     isCopying: false,
                     copyNotice: '',
+                    sinksarImageUploading: false,
 
                     init() {
                         if (!Array.isArray(this.form.mezmurs) || this.form.mezmurs.length === 0) {
@@ -645,6 +705,9 @@
                         }
                         if (!Array.isArray(this.form.books)) {
                             this.form.books = [];
+                        }
+                        if (!Array.isArray(this.form.sinksar_images)) {
+                            this.form.sinksar_images = [];
                         }
                         this.form.books = (this.form.books || []).map((book) => ({
                             title_en: book.title_en || '',
@@ -801,6 +864,63 @@
                         }
                     },
 
+                    async uploadSinksarImage(event) {
+                        const input = event?.target;
+                        const file = input?.files?.[0];
+                        if (!input || !file) return;
+                        if ((this.form.sinksar_images || []).length >= 5) return;
+
+                        this.sinksarImageUploading = true;
+                        this.errorMessage = '';
+
+                        const formData = new FormData();
+                        formData.append('sinksar_image', file);
+                        formData.append('_token', document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '');
+
+                        try {
+                            const response = await fetch(this.urls.uploadSinksarImage, {
+                                method: 'POST',
+                                credentials: 'same-origin',
+                                headers: { 'Accept': 'application/json' },
+                                body: formData,
+                            });
+                            let data = {};
+                            try { data = await response.json(); } catch (_) { data = {}; }
+                            if (!response.ok || !data?.success) {
+                                throw new Error(data?.message || this.messages.failed || 'Failed');
+                            }
+                            if (!this.form.sinksar_images) this.form.sinksar_images = [];
+                            this.form.sinksar_images.push({
+                                path: data.path,
+                                url: data.url,
+                                caption_en: '',
+                                caption_am: '',
+                            });
+                            input.value = '';
+                        } catch (error) {
+                            this.errorMessage = error.message || this.messages.failed || 'Failed';
+                        } finally {
+                            this.sinksarImageUploading = false;
+                        }
+                    },
+
+                    removeSinksarImage(index) {
+                        if (!this.form.sinksar_images) return;
+                        const removed = this.form.sinksar_images.splice(index, 1);
+                        if (removed[0]?.path) {
+                            fetch(this.urls.deleteSinksarImage, {
+                                method: 'POST',
+                                credentials: 'same-origin',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                },
+                                body: JSON.stringify({ path: removed[0].path }),
+                            }).catch(() => {});
+                        }
+                    },
+
                     async copyFromDay() {
                         const day = Number(this.copySourceDay || 0);
                         if (!day || day < 1 || day > 55 || this.isCopying) {
@@ -866,6 +986,12 @@
                                 description_en: b.description_en ?? '',
                                 description_am: b.description_am ?? '',
                                 uploadingPdf: false,
+                            })) : [];
+                            this.form.sinksar_images = Array.isArray(data.sinksar_images) ? data.sinksar_images.map((img) => ({
+                                path: img.path || '',
+                                url: img.url || '',
+                                caption_en: img.caption_en || '',
+                                caption_am: img.caption_am || '',
                             })) : [];
                             this.copyNotice = this.messages.copySuccess || 'Day copied.';
                             this.maxUnlockedStep = this.totalSteps;
@@ -1011,6 +1137,11 @@
                             payload.sinksar_text_en = this.form.sinksar_text_en;
                             payload.sinksar_description_am = this.form.sinksar_description_am;
                             payload.sinksar_description_en = this.form.sinksar_description_en;
+                            payload.sinksar_images = (this.form.sinksar_images || []).map((img) => ({
+                                path: img.path || '',
+                                caption_en: img.caption_en || '',
+                                caption_am: img.caption_am || '',
+                            }));
                         } else if (step === 5) {
                             payload.books = (this.form.books || []).map((item) => ({
                                 title_en: item.title_en || '',
