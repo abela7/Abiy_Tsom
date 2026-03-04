@@ -142,6 +142,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::post('/daily/scaffold', [Admin\DailyContentController::class, 'scaffold'])->name('daily.scaffold');
         Route::get('/daily/create', [Admin\DailyContentController::class, 'create'])->name('daily.create');
         Route::get('/daily/copy-from/{day_number}', [Admin\DailyContentController::class, 'copyFrom'])->name('daily.copy_from');
+        Route::post('/daily/upload-book-pdf', [Admin\DailyContentController::class, 'uploadBookPdf'])->name('daily.upload_book_pdf');
         Route::post('/daily', [Admin\DailyContentController::class, 'store'])->name('daily.store');
         Route::get('/daily/{daily}/preview', [Admin\DailyContentController::class, 'preview'])->name('daily.preview');
         Route::get('/daily/{daily}/edit', [Admin\DailyContentController::class, 'edit'])->name('daily.edit');

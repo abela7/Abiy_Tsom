@@ -382,6 +382,69 @@
                     <div class="max-w-2xl mx-auto whitespace-pre-line break-words">{{ $sinksarText }}</div>
                 </div>
 
+                {{-- Theme shelf — slides up when theme picker is tapped --}}
+                <div x-show="themeMenuOpen"
+                     x-transition:enter="transition ease-out duration-150"
+                     x-transition:enter-start="opacity-0 translate-y-4"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-100"
+                     x-transition:leave-start="opacity-100"
+                     x-transition:leave-end="opacity-0 translate-y-4"
+                     x-cloak
+                     class="shrink-0 border-t px-4 py-3"
+                     :class="{
+                        'bg-muted/50 border-border': readerTheme === 'default',
+                        'border-[#d4c5a9]': readerTheme === 'sepia',
+                        'bg-[#12122a] border-[#2a2a4a]': readerTheme === 'dark'
+                     }"
+                     :style="readerTheme === 'sepia' ? 'background-color: #e8dcc6' : ''">
+                    <div class="flex items-center justify-center gap-5 max-w-xs mx-auto">
+                        {{-- Default --}}
+                        <button type="button" @click="setReaderTheme('default')"
+                                class="flex flex-col items-center gap-1.5 transition touch-manipulation">
+                            <span class="w-10 h-10 rounded-full border-[3px] bg-white flex items-center justify-center transition-all"
+                                  :class="readerTheme === 'default' ? 'border-accent ring-2 ring-accent/30 scale-110' : 'border-gray-300'">
+                                <span class="text-xs font-bold text-gray-700">A</span>
+                            </span>
+                            <span class="text-[10px] font-semibold"
+                                  :class="{
+                                      'text-accent': readerTheme === 'default',
+                                      'text-[#5b4636]': readerTheme === 'sepia' && readerTheme !== 'default',
+                                      'text-[#8888aa]': readerTheme === 'dark' && readerTheme !== 'default'
+                                  }">{{ __('app.reader_theme_default') }}</span>
+                        </button>
+                        {{-- Sepia --}}
+                        <button type="button" @click="setReaderTheme('sepia')"
+                                class="flex flex-col items-center gap-1.5 transition touch-manipulation">
+                            <span class="w-10 h-10 rounded-full border-[3px] flex items-center justify-center transition-all"
+                                  style="background-color: #f4ecd8"
+                                  :class="readerTheme === 'sepia' ? 'border-[#8b5e3c] ring-2 ring-[#8b5e3c]/30 scale-110' : 'border-[#c4a87c]'">
+                                <span class="text-xs font-bold text-[#5b4636]">A</span>
+                            </span>
+                            <span class="text-[10px] font-semibold"
+                                  :class="{
+                                      'text-[#8b5e3c]': readerTheme === 'sepia',
+                                      'text-muted-text': readerTheme === 'default' && readerTheme !== 'sepia',
+                                      'text-[#8888aa]': readerTheme === 'dark' && readerTheme !== 'sepia'
+                                  }">{{ __('app.reader_theme_sepia') }}</span>
+                        </button>
+                        {{-- Dark --}}
+                        <button type="button" @click="setReaderTheme('dark')"
+                                class="flex flex-col items-center gap-1.5 transition touch-manipulation">
+                            <span class="w-10 h-10 rounded-full border-[3px] bg-[#1a1a2e] flex items-center justify-center transition-all"
+                                  :class="readerTheme === 'dark' ? 'border-[#7b9fff] ring-2 ring-[#7b9fff]/30 scale-110' : 'border-[#4a4a6a]'">
+                                <span class="text-xs font-bold text-[#e0e0e0]">A</span>
+                            </span>
+                            <span class="text-[10px] font-semibold"
+                                  :class="{
+                                      'text-[#7b9fff]': readerTheme === 'dark',
+                                      'text-muted-text': readerTheme === 'default' && readerTheme !== 'dark',
+                                      'text-[#8b7355]': readerTheme === 'sepia' && readerTheme !== 'dark'
+                                  }">{{ __('app.reader_theme_dark') }}</span>
+                        </button>
+                    </div>
+                </div>
+
                 {{-- Bottom toolbar — replaces main navigation --}}
                 <div class="shrink-0 border-t safe-area-bottom"
                      :class="{
@@ -447,62 +510,22 @@
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2.5" d="M12 5v14m-7-7h14"/></svg>
                         </button>
 
-                        {{-- Theme picker --}}
-                        <div @click.away="themeMenuOpen = false">
-                            <button type="button" @click="themeMenuOpen = !themeMenuOpen"
-                                    class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition touch-manipulation"
-                                    :class="{
-                                        'text-secondary hover:bg-muted': readerTheme === 'default',
-                                        'text-[#5b4636] hover:bg-[#d4c5a9]': readerTheme === 'sepia',
-                                        'text-[#c0c0d0] hover:bg-[#2a2a4a]': readerTheme === 'dark'
-                                    }">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
-                                </svg>
-                                <span class="text-[9px] font-semibold uppercase tracking-wider">{{ __('app.reader_theme') }}</span>
-                            </button>
-                        </div>
-
-                {{-- Theme popup — fixed above toolbar so it never gets clipped --}}
-                <div x-show="themeMenuOpen"
-                     x-transition:enter="transition ease-out duration-100"
-                     x-transition:enter-start="opacity-0 translate-y-2"
-                     x-transition:enter-end="opacity-100 translate-y-0"
-                     x-transition:leave="transition ease-in duration-75"
-                     x-transition:leave-start="opacity-100"
-                     x-transition:leave-end="opacity-0 translate-y-2"
-                     @click.away="themeMenuOpen = false"
-                     x-cloak
-                     class="fixed bottom-20 right-4 z-[10000] w-44 rounded-xl shadow-2xl border overflow-hidden"
-                     :class="{
-                        'bg-card border-border': readerTheme === 'default',
-                        'border-[#d4c5a9]': readerTheme === 'sepia',
-                        'bg-[#1e1e3a] border-[#2a2a4a]': readerTheme === 'dark'
-                     }"
-                     :style="readerTheme === 'sepia' ? 'background-color: #f4ecd8' : ''">
-                    {{-- Default --}}
-                    <button type="button" @click="setReaderTheme('default')"
-                            class="w-full flex items-center gap-3 px-4 py-3 text-sm text-left transition"
-                            :class="readerTheme === 'default' ? 'bg-accent/10 font-semibold' : 'hover:bg-muted/50'">
-                        <span class="w-5 h-5 rounded-full border-2 border-gray-300 bg-white shrink-0"></span>
-                        <span>{{ __('app.reader_theme_default') }}</span>
-                    </button>
-                    {{-- Sepia --}}
-                    <button type="button" @click="setReaderTheme('sepia')"
-                            class="w-full flex items-center gap-3 px-4 py-3 text-sm text-left transition"
-                            :class="readerTheme === 'sepia' ? 'font-semibold' : 'hover:bg-muted/50'"
-                            :style="readerTheme === 'sepia' && 'background-color: #e8dcc6'">
-                        <span class="w-5 h-5 rounded-full border-2 border-[#c4a87c] shrink-0" style="background-color: #f4ecd8"></span>
-                        <span>{{ __('app.reader_theme_sepia') }}</span>
-                    </button>
-                    {{-- Dark --}}
-                    <button type="button" @click="setReaderTheme('dark')"
-                            class="w-full flex items-center gap-3 px-4 py-3 text-sm text-left transition"
-                            :class="readerTheme === 'dark' ? 'bg-[#2a2a4a] font-semibold' : 'hover:bg-muted/50'">
-                        <span class="w-5 h-5 rounded-full border-2 border-[#4a4a6a] bg-[#1a1a2e] shrink-0"></span>
-                        <span>{{ __('app.reader_theme_dark') }}</span>
-                    </button>
-                </div>
+                        {{-- Theme toggle --}}
+                        <button type="button" @click="themeMenuOpen = !themeMenuOpen"
+                                class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition touch-manipulation"
+                                :class="{
+                                    'text-secondary hover:bg-muted': readerTheme === 'default' && !themeMenuOpen,
+                                    'text-accent bg-accent/10': readerTheme === 'default' && themeMenuOpen,
+                                    'text-[#5b4636]': readerTheme === 'sepia' && !themeMenuOpen,
+                                    'text-[#8b5e3c] bg-[#d4c5a9]': readerTheme === 'sepia' && themeMenuOpen,
+                                    'text-[#c0c0d0]': readerTheme === 'dark' && !themeMenuOpen,
+                                    'text-[#7b9fff] bg-[#2a2a4a]': readerTheme === 'dark' && themeMenuOpen
+                                }">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+                            </svg>
+                            <span class="text-[9px] font-semibold uppercase tracking-wider">{{ __('app.reader_theme') }}</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -518,20 +541,66 @@
     <div data-tour="day-book" class="space-y-3">
         <h3 class="font-semibold text-sm text-book">{{ __('app.spiritual_book') }}</h3>
         @foreach($daily->books as $book)
-                @php
-                    $bookUrl = $book->mediaUrl($locale);
-                @endphp
-                @if(localized($book, 'title'))
-            <div class="bg-card rounded-2xl p-4 shadow-sm border border-border">
-                <p class="font-medium text-primary">{{ localized($book, 'title') }}</p>
-                @if(localized($book, 'description'))
-                    <p class="text-sm text-muted-text mt-1 leading-relaxed">{{ localized($book, 'description') }}</p>
-                @endif
-                @if($bookUrl)
-                    <a href="{{ $bookUrl }}" target="_blank" rel="noopener" class="text-sm text-accent font-medium mt-2 inline-block">{{ __('app.read_more') }} &rarr;</a>
-                @endif
-            </div>
-                @endif
+            @php
+                $bookUrl = $book->mediaUrl($locale);
+                $bookIsPdf = $bookUrl ? $book->isPdf($locale) : false;
+                $bookTitle = (string) localized($book, 'title');
+            @endphp
+            @if(localized($book, 'title'))
+                <div class="bg-card rounded-2xl p-4 shadow-sm border border-border">
+                    <p class="font-medium text-primary">{{ $bookTitle }}</p>
+                    @if(localized($book, 'description'))
+                        <p class="text-sm text-muted-text mt-1 leading-relaxed">{{ localized($book, 'description') }}</p>
+                    @endif
+                    @if($bookUrl)
+                        @if($bookIsPdf)
+                            <div x-data="{ readerOpen: false }" class="mt-2 space-y-2">
+                                <div class="flex flex-wrap gap-2">
+                                    <button
+                                        type="button"
+                                        @click="readerOpen = !readerOpen"
+                                        class="inline-flex min-h-10 items-center justify-center rounded-lg bg-book/10 hover:bg-book/20 text-book px-3 py-2 text-sm font-medium transition touch-manipulation"
+                                    >
+                                        <span x-text="readerOpen ? '{{ __('app.close') }}' : '{{ __('app.read_now') }}'"></span>
+                                    </button>
+                                    <a
+                                        href="{{ $bookUrl }}"
+                                        download
+                                        target="_blank"
+                                        rel="noopener"
+                                        class="inline-flex min-h-10 items-center justify-center rounded-lg bg-muted hover:bg-border text-secondary px-3 py-2 text-sm font-medium transition touch-manipulation"
+                                    >
+                                        {{ __('app.download') }} &rarr;
+                                    </a>
+                                </div>
+                                <div
+                                    x-show="readerOpen"
+                                    x-cloak
+                                    x-transition:enter="transition ease-out duration-200"
+                                    x-transition:enter-start="opacity-0"
+                                    x-transition:enter-end="opacity-100"
+                                    x-transition:leave="transition ease-in duration-150"
+                                    x-transition:leave-start="opacity-100"
+                                    x-transition:leave-end="opacity-0"
+                                >
+                                    <div class="mt-2 rounded-xl border border-border overflow-hidden bg-surface/20">
+                                        <iframe
+                                            src="{{ $bookUrl }}#toolbar=1"
+                                            title="{{ $bookTitle }}"
+                                            class="w-full h-[60vh] min-h-[260px]"
+                                            loading="lazy"
+                                        ></iframe>
+                                    </div>
+                                </div>
+                            </div>
+                        @else
+                            <a href="{{ $bookUrl }}" target="_blank" rel="noopener" class="text-sm text-accent font-medium mt-2 inline-block">
+                                {{ __('app.open_externally') }} &rarr;
+                            </a>
+                        @endif
+                    @endif
+                </div>
+            @endif
         @endforeach
     </div>
     @endif

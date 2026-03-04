@@ -13,6 +13,7 @@ use App\Services\AbiyTsomStructure;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 /**
@@ -260,6 +261,23 @@ class DailyContentController extends Controller
         $this->syncBooks($daily, $books);
 
         return redirect('/admin/daily')->with('success', 'Daily content updated.');
+    }
+
+    public function uploadBookPdf(Request $request): JsonResponse
+    {
+        $request->validate([
+            'book_pdf' => ['required', 'file', 'mimes:pdf', 'max:20480'],
+        ]);
+
+        $path = $request->file('book_pdf')->store('daily-books', 'public');
+        $url = url(Storage::disk('public')->url($path));
+
+        return response()->json([
+            'success' => true,
+            'url' => $url,
+            'url_en' => $url,
+            'url_am' => $url,
+        ]);
     }
 
     /**

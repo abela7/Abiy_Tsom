@@ -64,6 +64,7 @@
                     'url_am' => $b->url_am ?? $b->url ?? '',
                     'description_en' => $b->description_en ?? '',
                     'description_am' => $b->description_am ?? '',
+                    'uploadingPdf' => false,
                 ])
                 ->values()
                 ->toArray()
@@ -153,7 +154,8 @@
                     patchTemplate: @js(route('admin.daily.patch', ['daily' => '__DAILY_ID__'])),
                     editTemplate: @js(route('admin.daily.edit', ['daily' => '__DAILY_ID__'])),
                     index: @js(route('admin.daily.index')),
-                    copyFromTemplate: @js(route('admin.daily.copy_from', ['day_number' => '__DAY__']))
+                    copyFromTemplate: @js(route('admin.daily.copy_from', ['day_number' => '__DAY__'])),
+                    uploadBookPdf: @js(route('admin.daily.upload_book_pdf'))
                 },
                 daysWithContent: @js($daysWithContent ?? []),
                 messages: {
@@ -451,15 +453,31 @@
                                     <input type="url" x-model="book.url_am" placeholder="{{ __('app.url_placeholder') }} ({{ __('app.amharic') }})" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
                                 </div>
 
-                                <div class="space-y-2 rounded-lg bg-white/40 border border-book/20 p-3">
+                                 <div class="space-y-2 rounded-lg bg-white/40 border border-book/20 p-3">
                                     <p class="text-xs font-semibold text-book">{{ __('app.english') }}</p>
                                     <input type="text" x-model="book.title_en" placeholder="{{ __('app.name_english_label') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
                                     <textarea x-model="book.description_en" rows="2" placeholder="{{ __('app.description_label') }} ({{ __('app.english') }})" class="w-full min-h-[4rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
                                     <input type="url" x-model="book.url_en" placeholder="{{ __('app.url_placeholder') }} ({{ __('app.english') }})" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                                    <div class="space-y-2">
+                                        <label class="text-xs font-semibold text-book">{{ __('app.upload_book_pdf') }}</label>
+                                        <div class="flex flex-col sm:flex-row gap-2 sm:items-center">
+                                            <label class="inline-flex items-center justify-center px-3 py-2 text-xs sm:text-sm min-h-10 rounded-lg border border-book/40 bg-white hover:bg-book/10 transition cursor-pointer touch-manipulation">
+                                                <span x-text="book.uploadingPdf ? '{{ __('app.loading') }}...' : '{{ __('app.upload_book_pdf') }}'"></span>
+                                                <input
+                                                    type="file"
+                                                    accept="application/pdf"
+                                                    class="hidden"
+                                                    :disabled="book.uploadingPdf"
+                                                    @change="uploadBookPdf(index, $event)"
+                                                >
+                                            </label>
+                                                <span class="text-xs text-muted-text" x-text="isBookPdfUrl(book.url_en || book.url_am || '') ? '{{ __('app.pdf_uploaded') }}' : '{{ __('app.pdf_not_uploaded') }}'"></span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </template>
-                        <button type="button" @click="addBook()" class="w-full min-h-12 py-3 border-2 border-dashed border-book/40 rounded-xl text-sm font-medium text-book hover:bg-book/10 transition touch-manipulation">
+                            </template>
+                            <button type="button" @click="addBook()" class="w-full min-h-12 py-3 border-2 border-dashed border-book/40 rounded-xl text-sm font-medium text-book hover:bg-book/10 transition touch-manipulation">
                             + {{ __('app.add_spiritual_book') }}
                         </button>
                     </div>
@@ -628,7 +646,21 @@
                         if (!Array.isArray(this.form.books)) {
                             this.form.books = [];
                         }
+                        this.form.books = (this.form.books || []).map((book) => ({
+                            title_en: book.title_en || '',
+                            title_am: book.title_am || '',
+                            url_en: book.url_en || '',
+                            url_am: book.url_am || '',
+                            description_en: book.description_en || '',
+                            description_am: book.description_am || '',
+                            uploadingPdf: Boolean(book.uploadingPdf),
+                        }));
                         this.syncFromDayNumber();
+                    },
+
+                    isBookPdfUrl(url) {
+                        const clean = String(url || '').split('?')[0].split('#')[0].toLowerCase();
+                        return clean.endsWith('.pdf');
                     },
 
                     stepText() {
@@ -705,6 +737,7 @@
                             url_am: '',
                             description_en: '',
                             description_am: '',
+                            uploadingPdf: false,
                         });
                     },
 
@@ -720,7 +753,52 @@
                             url_am: bookData.url_am || bookData.url || '',
                             description_en: bookData.description_en || '',
                             description_am: bookData.description_am || '',
+                            uploadingPdf: false,
                         });
+                    },
+
+                    async uploadBookPdf(index, event) {
+                        const input = event?.target;
+                        const file = input?.files?.[0];
+                        if (!input || !file) {
+                            return;
+                        }
+
+                        this.form.books[index].uploadingPdf = true;
+                        this.errorMessage = '';
+
+                        const formData = new FormData();
+                        formData.append('book_pdf', file);
+                        formData.append('_token', document.querySelector('meta[name=\"csrf-token\"]')?.getAttribute('content') || '');
+
+                        try {
+                            const response = await fetch(this.urls.uploadBookPdf, {
+                                method: 'POST',
+                                credentials: 'same-origin',
+                                headers: { 'Accept': 'application/json' },
+                                body: formData,
+                            });
+
+                            let data = {};
+                            try {
+                                data = await response.json();
+                            } catch (_error) {
+                                data = {};
+                            }
+
+                            if (!response.ok || !data?.success) {
+                                throw new Error(data?.message || this.messages.failed || 'Failed');
+                            }
+
+                            const pdfUrl = data.url_en || data.url_am || data.url || '';
+                            this.form.books[index].url_en = pdfUrl;
+                            this.form.books[index].url_am = pdfUrl;
+                            input.value = '';
+                        } catch (error) {
+                            this.errorMessage = error.message || this.messages.failed || 'Failed';
+                        } finally {
+                            this.form.books[index].uploadingPdf = false;
+                        }
                     },
 
                     async copyFromDay() {
@@ -787,6 +865,7 @@
                                 url_am: b.url_am ?? b.url ?? '',
                                 description_en: b.description_en ?? '',
                                 description_am: b.description_am ?? '',
+                                uploadingPdf: false,
                             })) : [];
                             this.copyNotice = this.messages.copySuccess || 'Day copied.';
                             this.maxUnlockedStep = this.totalSteps;

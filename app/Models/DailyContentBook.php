@@ -44,4 +44,19 @@ class DailyContentBook extends Model
             ? (($enUrl !== '' ? $enUrl : null) ?: ($amUrl !== '' ? $amUrl : null) ?: ($fallbackUrl !== '' ? $fallbackUrl : null))
             : (($amUrl !== '' ? $amUrl : null) ?: ($enUrl !== '' ? $enUrl : null) ?: ($fallbackUrl !== '' ? $fallbackUrl : null));
     }
+
+    public function isPdf(?string $locale = null): bool
+    {
+        $url = (string) $this->mediaUrl($locale);
+        if ($url === '') {
+            return false;
+        }
+
+        $path = parse_url($url, PHP_URL_PATH);
+        if (! is_string($path)) {
+            return false;
+        }
+
+        return str_ends_with(strtolower($path), '.pdf');
+    }
 }
