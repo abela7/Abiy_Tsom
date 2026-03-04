@@ -109,7 +109,7 @@ return [
     'bible_reading' => 'የመጽሐፍ ቅዱስ ማንበብ',
     'read' => 'አንብብ',
     'read_now' => 'አሁን አንብብ',
-    'mezmur' => 'መዝሙር (መንፈሳዊ ሙዚቃ)',
+    'mezmur' => 'መዝሙር',
     'sinksar' => 'ስንክሳር (ሲናክሳሪየም)',
     'spiritual_book' => 'መንፈሳዊ መጽሐፍ',
     'upload_book_pdf' => 'ፒዲኤፍ ስቀል',
