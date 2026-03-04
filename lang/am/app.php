@@ -753,6 +753,8 @@ return [
     'title_label' => 'ርዕስ',
     'url_label' => 'URL (ዩቲዩብ / ድምጽ አገናኝ)',
     'description_label' => 'ገለጻ',
+    'sinksar_text_label' => 'የስንክሳር ጽሑፍ (ሙሉ)',
+    'sinksar_description_label' => 'አጭር ገለጻ',
     'sinksar_label' => 'ስንክሳር (ሲናክሳሪየም)',
     'url_video_label' => 'URL (ዩቲዩብ ወይም ቪዲዮ አገናኝ)',
     'spiritual_book_label' => 'መንፈሳዊ መጽሐፍ',

@@ -755,6 +755,8 @@ return [
     'title_label' => 'Title',
     'url_label' => 'URL (YouTube / Audio link)',
     'description_label' => 'Description',
+    'sinksar_text_label' => 'Synaxarium text (full)',
+    'sinksar_description_label' => 'Short description',
     'sinksar_label' => 'Sinksar (Synaxarium)',
     'url_video_label' => 'URL (YouTube or video link)',
     'spiritual_book_label' => 'Spiritual Book',
