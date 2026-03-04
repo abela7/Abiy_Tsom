@@ -85,21 +85,17 @@
     </div>
 
     @if(!empty($ethDateInfo['ethiopian_date_formatted'] ?? null))
-    <div class="rounded-2xl border border-[#0a6286]/25 bg-gradient-to-r from-[#0a6286]/10 via-white/5 to-[#e2ca18]/10 p-4 shadow-sm">
-        <div class="flex items-center gap-3">
-            <div class="shrink-0 w-10 h-10 rounded-xl bg-[#0a6286]/12 text-[#0a6286] flex items-center justify-center border border-[#0a6286]/25">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                </svg>
-            </div>
-            <div class="min-w-0 flex-1">
-                <p class="text-xs uppercase tracking-wide text-[#0a6286]/80 font-semibold">{{ __('app.ethiopian_date_label') }}</p>
-                <p class="mt-1 text-sm sm:text-base font-bold text-[#0a6286] leading-tight">
-                    {{ $ethDateInfo['ethiopian_date_formatted'] }}
-                </p>
-            </div>
-            <span class="shrink-0 text-xs font-bold text-[#e2ca18] bg-[#e2ca18]/10 border border-[#e2ca18]/40 rounded-lg px-2 py-1">E.C.</span>
+    <div class="flex items-center gap-3 px-4 py-3 rounded-2xl bg-card border border-border shadow-sm">
+        <div class="shrink-0 w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center">
+            <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
         </div>
+        <div class="min-w-0 flex-1">
+            <span class="block text-[11px] text-muted-text">{{ __('app.ethiopian_date_label') }}</span>
+            <span class="block text-sm font-bold text-primary mt-0.5">{{ $ethDateInfo['ethiopian_date_formatted'] }}</span>
+        </div>
+        <span class="shrink-0 text-[11px] font-bold text-accent bg-accent/10 rounded-lg px-2 py-1">E.C.</span>
     </div>
     @endif
 
