@@ -447,6 +447,7 @@ async function runPhaseTour(phase, steps) {
             },
             onCloseClick: () => {
                 userAbortedTour = true;
+                driverObj?.destroy();
             },
         });
 
