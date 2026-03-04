@@ -116,6 +116,7 @@ return [
     'pdf_uploaded' => 'ፒዲኤፍ ተያይዟል',
     'pdf_not_uploaded' => 'ፒዲኤፍ ገና አልተያያዘም',
     'download' => 'አውርድ',
+    'get_book' => 'መጽሐፉን ያግኙ',
     'reflection' => 'ዕለታዊ ነጸብራቅ',
     'listen' => 'አዳምጥ',
     'watch' => 'ይመልከቱ',
