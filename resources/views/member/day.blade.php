@@ -332,46 +332,29 @@
                  x-transition:leave-end="opacity-0"
                  x-cloak
                  class="fixed inset-0 z-[9999] flex flex-col"
-                 :class="{
-                    'bg-surface text-secondary': readerTheme === 'default',
-                    'text-[#5b4636]': readerTheme === 'sepia',
-                    'bg-[#1a1a2e] text-[#e0e0e0]': readerTheme === 'dark'
-                 }"
-                 :style="readerTheme === 'sepia' ? 'background-color: #f4ecd8' : ''">
+                 :class="{ 'bg-surface text-secondary': readerTheme === 'default' }"
+                 :style="readerTheme === 'sepia' ? 'background-color:#f4ecd8;color:#5b4636' : readerTheme === 'dark' ? 'background-color:#1a1a2e;color:#e0e0e0' : ''">
 
                 {{-- Fullscreen top bar --}}
                 <div class="flex items-center justify-between gap-3 px-4 py-3 border-b shrink-0"
-                     :class="{
-                        'bg-card border-border': readerTheme === 'default',
-                        'border-[#d4c5a9]': readerTheme === 'sepia',
-                        'bg-[#16162a] border-[#2a2a4a]': readerTheme === 'dark'
-                     }"
-                     :style="readerTheme === 'sepia' ? 'background-color: #ede3cc' : ''">
+                     :class="{ 'bg-card border-border': readerTheme === 'default' }"
+                     :style="readerTheme === 'sepia' ? 'background-color:#ede3cc;border-color:#d4c5a9' : readerTheme === 'dark' ? 'background-color:#16162a;border-color:#2a2a4a' : ''">
                     <div class="flex items-center gap-2.5 min-w-0">
                         <button type="button" @click="closeFullscreen()"
                                 class="p-2 rounded-lg transition touch-manipulation shrink-0"
-                                :class="{
-                                    'bg-muted hover:bg-border text-primary': readerTheme === 'default',
-                                    'bg-[#e8dcc6] hover:bg-[#d4c5a9] text-[#5b4636]': readerTheme === 'sepia',
-                                    'bg-[#2a2a4a] hover:bg-[#3a3a5a] text-[#e0e0e0]': readerTheme === 'dark'
-                                }">
+                                :class="{ 'bg-muted hover:bg-border text-primary': readerTheme === 'default' }"
+                                :style="readerTheme === 'sepia' ? 'background-color:#e8dcc6;color:#5b4636' : readerTheme === 'dark' ? 'background-color:#2a2a4a;color:#e0e0e0' : ''">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                             </svg>
                         </button>
                         <div class="min-w-0">
                             <p class="text-sm font-bold truncate"
-                               :class="{
-                                  'text-primary': readerTheme === 'default',
-                                  'text-[#3e2c1c]': readerTheme === 'sepia',
-                                  'text-[#f0f0f0]': readerTheme === 'dark'
-                               }">{{ localized($daily, 'sinksar_title') }}</p>
+                               :class="{ 'text-primary': readerTheme === 'default' }"
+                               :style="readerTheme === 'sepia' ? 'color:#3e2c1c' : readerTheme === 'dark' ? 'color:#f0f0f0' : ''">{{ localized($daily, 'sinksar_title') }}</p>
                             <p class="text-[10px] font-medium uppercase tracking-wider"
-                               :class="{
-                                  'text-muted-text': readerTheme === 'default',
-                                  'text-[#8b7355]': readerTheme === 'sepia',
-                                  'text-[#8888aa]': readerTheme === 'dark'
-                               }">{{ __('app.sinksar') }}</p>
+                               :class="{ 'text-muted-text': readerTheme === 'default' }"
+                               :style="readerTheme === 'sepia' ? 'color:#8b7355' : readerTheme === 'dark' ? 'color:#8888aa' : ''">{{ __('app.sinksar') }}</p>
                         </div>
                     </div>
                 </div>
@@ -392,76 +375,52 @@
                      x-transition:leave-end="opacity-0 translate-y-4"
                      x-cloak
                      class="shrink-0 border-t px-4 py-3"
-                     :class="{
-                        'bg-muted/50 border-border': readerTheme === 'default',
-                        'border-[#d4c5a9]': readerTheme === 'sepia',
-                        'bg-[#12122a] border-[#2a2a4a]': readerTheme === 'dark'
-                     }"
-                     :style="readerTheme === 'sepia' ? 'background-color: #e8dcc6' : ''">
+                     :class="{ 'bg-muted/50 border-border': readerTheme === 'default' }"
+                     :style="readerTheme === 'sepia' ? 'background-color:#e8dcc6;border-color:#d4c5a9' : readerTheme === 'dark' ? 'background-color:#12122a;border-color:#2a2a4a' : ''">
                     <div class="flex items-center justify-center gap-5 max-w-xs mx-auto">
                         {{-- Default --}}
                         <button type="button" @click="setReaderTheme('default')"
                                 class="flex flex-col items-center gap-1.5 transition touch-manipulation">
-                            <span class="w-10 h-10 rounded-full border-[3px] bg-white flex items-center justify-center transition-all"
-                                  :class="readerTheme === 'default' ? 'border-accent ring-2 ring-accent/30 scale-110' : 'border-gray-300'">
+                            <span class="w-10 h-10 rounded-full bg-white flex items-center justify-center transition-all"
+                                  :style="'border:3px solid ' + (readerTheme === 'default' ? 'var(--color-accent)' : '#d1d5db') + (readerTheme === 'default' ? ';box-shadow:0 0 0 4px rgba(var(--color-accent-rgb,99,102,241),0.3);transform:scale(1.1)' : '')">
                                 <span class="text-xs font-bold text-gray-700">A</span>
                             </span>
                             <span class="text-[10px] font-semibold"
-                                  :class="{
-                                      'text-accent': readerTheme === 'default',
-                                      'text-[#5b4636]': readerTheme === 'sepia' && readerTheme !== 'default',
-                                      'text-[#8888aa]': readerTheme === 'dark' && readerTheme !== 'default'
-                                  }">{{ __('app.reader_theme_default') }}</span>
+                                  :style="readerTheme === 'default' ? 'color:var(--color-accent)' : readerTheme === 'sepia' ? 'color:#5b4636' : 'color:#8888aa'">{{ __('app.reader_theme_default') }}</span>
                         </button>
                         {{-- Sepia --}}
                         <button type="button" @click="setReaderTheme('sepia')"
                                 class="flex flex-col items-center gap-1.5 transition touch-manipulation">
-                            <span class="w-10 h-10 rounded-full border-[3px] flex items-center justify-center transition-all"
-                                  style="background-color: #f4ecd8"
-                                  :class="readerTheme === 'sepia' ? 'border-[#8b5e3c] ring-2 ring-[#8b5e3c]/30 scale-110' : 'border-[#c4a87c]'">
-                                <span class="text-xs font-bold text-[#5b4636]">A</span>
+                            <span class="w-10 h-10 rounded-full flex items-center justify-center transition-all"
+                                  :style="'background-color:#f4ecd8;border:3px solid ' + (readerTheme === 'sepia' ? '#8b5e3c' : '#c4a87c') + (readerTheme === 'sepia' ? ';box-shadow:0 0 0 4px rgba(139,94,60,0.3);transform:scale(1.1)' : '')">
+                                <span class="text-xs font-bold" style="color:#5b4636">A</span>
                             </span>
                             <span class="text-[10px] font-semibold"
-                                  :class="{
-                                      'text-[#8b5e3c]': readerTheme === 'sepia',
-                                      'text-muted-text': readerTheme === 'default' && readerTheme !== 'sepia',
-                                      'text-[#8888aa]': readerTheme === 'dark' && readerTheme !== 'sepia'
-                                  }">{{ __('app.reader_theme_sepia') }}</span>
+                                  :style="readerTheme === 'sepia' ? 'color:#8b5e3c' : readerTheme === 'dark' ? 'color:#8888aa' : ''">{{ __('app.reader_theme_sepia') }}</span>
                         </button>
                         {{-- Dark --}}
                         <button type="button" @click="setReaderTheme('dark')"
                                 class="flex flex-col items-center gap-1.5 transition touch-manipulation">
-                            <span class="w-10 h-10 rounded-full border-[3px] bg-[#1a1a2e] flex items-center justify-center transition-all"
-                                  :class="readerTheme === 'dark' ? 'border-[#7b9fff] ring-2 ring-[#7b9fff]/30 scale-110' : 'border-[#4a4a6a]'">
-                                <span class="text-xs font-bold text-[#e0e0e0]">A</span>
+                            <span class="w-10 h-10 rounded-full flex items-center justify-center transition-all"
+                                  :style="'background-color:#1a1a2e;border:3px solid ' + (readerTheme === 'dark' ? '#7b9fff' : '#4a4a6a') + (readerTheme === 'dark' ? ';box-shadow:0 0 0 4px rgba(123,159,255,0.3);transform:scale(1.1)' : '')">
+                                <span class="text-xs font-bold" style="color:#e0e0e0">A</span>
                             </span>
                             <span class="text-[10px] font-semibold"
-                                  :class="{
-                                      'text-[#7b9fff]': readerTheme === 'dark',
-                                      'text-muted-text': readerTheme === 'default' && readerTheme !== 'dark',
-                                      'text-[#8b7355]': readerTheme === 'sepia' && readerTheme !== 'dark'
-                                  }">{{ __('app.reader_theme_dark') }}</span>
+                                  :style="readerTheme === 'dark' ? 'color:#7b9fff' : readerTheme === 'sepia' ? 'color:#8b7355' : ''">{{ __('app.reader_theme_dark') }}</span>
                         </button>
                     </div>
                 </div>
 
                 {{-- Bottom toolbar — replaces main navigation --}}
                 <div class="shrink-0 border-t safe-area-bottom"
-                     :class="{
-                        'bg-card border-border': readerTheme === 'default',
-                        'border-[#d4c5a9]': readerTheme === 'sepia',
-                        'bg-[#16162a] border-[#2a2a4a]': readerTheme === 'dark'
-                     }"
-                     :style="readerTheme === 'sepia' ? 'background-color: #ede3cc' : ''">
+                     :class="{ 'bg-card border-border': readerTheme === 'default' }"
+                     :style="readerTheme === 'sepia' ? 'background-color:#ede3cc;border-color:#d4c5a9' : readerTheme === 'dark' ? 'background-color:#16162a;border-color:#2a2a4a' : ''">
                     <div class="flex items-center justify-around h-16 max-w-lg mx-auto px-2">
                         {{-- Close --}}
                         <button type="button" @click="closeFullscreen()"
                                 class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition touch-manipulation"
-                                :class="{
-                                    'text-accent hover:bg-accent/10': readerTheme === 'default',
-                                    'text-[#8b5e3c] hover:bg-[#d4c5a9]': readerTheme === 'sepia',
-                                    'text-[#7b9fff] hover:bg-[#2a2a4a]': readerTheme === 'dark'
-                                }">
+                                :class="{ 'text-accent hover:bg-accent/10': readerTheme === 'default' }"
+                                :style="readerTheme === 'sepia' ? 'color:#8b5e3c' : readerTheme === 'dark' ? 'color:#7b9fff' : ''">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                             </svg>
@@ -472,11 +431,8 @@
                         <button type="button" @click="setFontSize(fontSize - 2)"
                                 class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition touch-manipulation"
                                 :disabled="fontSize <= 12"
-                                :class="fontSize <= 12 ? 'opacity-30 cursor-not-allowed' : {
-                                    'text-secondary hover:bg-muted': readerTheme === 'default',
-                                    'text-[#5b4636] hover:bg-[#d4c5a9]': readerTheme === 'sepia',
-                                    'text-[#c0c0d0] hover:bg-[#2a2a4a]': readerTheme === 'dark'
-                                }">
+                                :class="fontSize <= 12 ? 'opacity-30 cursor-not-allowed' : { 'text-secondary hover:bg-muted': readerTheme === 'default' }"
+                                :style="fontSize > 12 ? (readerTheme === 'sepia' ? 'color:#5b4636' : readerTheme === 'dark' ? 'color:#c0c0d0' : '') : ''">
                             <span class="text-base font-bold leading-none">A</span>
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2.5" d="M5 12h14"/></svg>
                         </button>
@@ -484,28 +440,19 @@
                         {{-- Font size indicator --}}
                         <div class="flex flex-col items-center gap-0.5 px-1">
                             <span class="text-sm font-bold tabular-nums" x-text="fontSize"
-                                  :class="{
-                                      'text-primary': readerTheme === 'default',
-                                      'text-[#3e2c1c]': readerTheme === 'sepia',
-                                      'text-[#f0f0f0]': readerTheme === 'dark'
-                                  }"></span>
+                                  :class="{ 'text-primary': readerTheme === 'default' }"
+                                  :style="readerTheme === 'sepia' ? 'color:#3e2c1c' : readerTheme === 'dark' ? 'color:#f0f0f0' : ''"></span>
                             <span class="text-[8px] font-semibold uppercase tracking-wider"
-                                  :class="{
-                                      'text-muted-text': readerTheme === 'default',
-                                      'text-[#8b7355]': readerTheme === 'sepia',
-                                      'text-[#8888aa]': readerTheme === 'dark'
-                                  }">{{ __('app.font_size') }}</span>
+                                  :class="{ 'text-muted-text': readerTheme === 'default' }"
+                                  :style="readerTheme === 'sepia' ? 'color:#8b7355' : readerTheme === 'dark' ? 'color:#8888aa' : ''">{{ __('app.font_size') }}</span>
                         </div>
 
                         {{-- Font increase --}}
                         <button type="button" @click="setFontSize(fontSize + 2)"
                                 class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition touch-manipulation"
                                 :disabled="fontSize >= 28"
-                                :class="fontSize >= 28 ? 'opacity-30 cursor-not-allowed' : {
-                                    'text-secondary hover:bg-muted': readerTheme === 'default',
-                                    'text-[#5b4636] hover:bg-[#d4c5a9]': readerTheme === 'sepia',
-                                    'text-[#c0c0d0] hover:bg-[#2a2a4a]': readerTheme === 'dark'
-                                }">
+                                :class="fontSize >= 28 ? 'opacity-30 cursor-not-allowed' : { 'text-secondary hover:bg-muted': readerTheme === 'default' }"
+                                :style="fontSize < 28 ? (readerTheme === 'sepia' ? 'color:#5b4636' : readerTheme === 'dark' ? 'color:#c0c0d0' : '') : ''">
                             <span class="text-xl font-bold leading-none">A</span>
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2.5" d="M12 5v14m-7-7h14"/></svg>
                         </button>
@@ -515,12 +462,9 @@
                                 class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition touch-manipulation"
                                 :class="{
                                     'text-secondary hover:bg-muted': readerTheme === 'default' && !themeMenuOpen,
-                                    'text-accent bg-accent/10': readerTheme === 'default' && themeMenuOpen,
-                                    'text-[#5b4636]': readerTheme === 'sepia' && !themeMenuOpen,
-                                    'text-[#8b5e3c] bg-[#d4c5a9]': readerTheme === 'sepia' && themeMenuOpen,
-                                    'text-[#c0c0d0]': readerTheme === 'dark' && !themeMenuOpen,
-                                    'text-[#7b9fff] bg-[#2a2a4a]': readerTheme === 'dark' && themeMenuOpen
-                                }">
+                                    'text-accent bg-accent/10': readerTheme === 'default' && themeMenuOpen
+                                }"
+                                :style="readerTheme === 'sepia' ? (themeMenuOpen ? 'color:#8b5e3c;background-color:#d4c5a9' : 'color:#5b4636') : readerTheme === 'dark' ? (themeMenuOpen ? 'color:#7b9fff;background-color:#2a2a4a' : 'color:#c0c0d0') : ''">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
                             </svg>
