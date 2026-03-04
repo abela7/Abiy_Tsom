@@ -272,7 +272,7 @@
             <h3 class="font-semibold text-sm text-sinksar mb-1">{{ __('app.sinksar') }}</h3>
             <p class="font-medium text-primary">{{ localized($daily, 'sinksar_title') }}</p>
             @if(localized($daily, 'sinksar_description'))
-                <p class="text-sm text-muted-text mt-1.5 leading-relaxed">{{ localized($daily, 'sinksar_description') }}</p>
+                <p class="text-sm text-muted-text mt-1.5 leading-relaxed whitespace-pre-line">{{ localized($daily, 'sinksar_description') }}</p>
             @endif
         </div>
 
