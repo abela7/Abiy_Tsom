@@ -208,6 +208,15 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::post('/themes', [Admin\WeeklyThemeController::class, 'store'])->name('themes.store');
         Route::get('/themes/{theme}/edit', [Admin\WeeklyThemeController::class, 'edit'])->name('themes.edit');
         Route::put('/themes/{theme}', [Admin\WeeklyThemeController::class, 'update'])->name('themes.update');
+
+        // Ethiopian Synaxarium (calendar celebrations)
+        Route::get('/synaxarium', [Admin\SynaxariumController::class, 'index'])->name('synaxarium.index');
+        Route::post('/synaxarium/monthly', [Admin\SynaxariumController::class, 'storeMonthly'])->name('synaxarium.monthly.store');
+        Route::put('/synaxarium/monthly/{monthly}', [Admin\SynaxariumController::class, 'updateMonthly'])->name('synaxarium.monthly.update');
+        Route::delete('/synaxarium/monthly/{monthly}', [Admin\SynaxariumController::class, 'destroyMonthly'])->name('synaxarium.monthly.destroy');
+        Route::post('/synaxarium/annual', [Admin\SynaxariumController::class, 'storeAnnual'])->name('synaxarium.annual.store');
+        Route::put('/synaxarium/annual/{annual}', [Admin\SynaxariumController::class, 'updateAnnual'])->name('synaxarium.annual.update');
+        Route::delete('/synaxarium/annual/{annual}', [Admin\SynaxariumController::class, 'destroyAnnual'])->name('synaxarium.annual.destroy');
     });
 
     // Available to all authenticated admin roles (writer, editor, admin, super admin)

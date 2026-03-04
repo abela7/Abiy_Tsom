@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
 use App\Models\DailyContent;
+use App\Services\EthiopianCalendarService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -57,7 +58,7 @@ class ShareController extends Controller
     /**
      * Public, read-only day view for users without an authenticated member session.
      */
-    public function publicDay(Request $request, DailyContent $daily): View
+    public function publicDay(Request $request, DailyContent $daily, EthiopianCalendarService $ethCalendar): View
     {
         if (! $daily->is_published) {
             abort(404);
@@ -67,6 +68,7 @@ class ShareController extends Controller
         $publicPreview = true;
 
         $daily->load(['weeklyTheme', 'mezmurs', 'references', 'books', 'sinksarImages']);
+        $ethDateInfo = $ethCalendar->getDateInfo($daily->date, app()->getLocale());
         $activities = collect();
         $checklist = collect();
         $customActivities = collect();
@@ -80,6 +82,7 @@ class ShareController extends Controller
             'customActivities',
             'customChecklist',
             'publicPreview',
+            'ethDateInfo',
         ));
     }
 }

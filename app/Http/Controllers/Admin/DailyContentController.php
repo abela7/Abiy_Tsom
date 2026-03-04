@@ -11,6 +11,7 @@ use App\Models\DailyContentBook;
 use App\Models\DailyContentSinksarImage;
 use App\Models\LentSeason;
 use App\Services\AbiyTsomStructure;
+use App\Services\EthiopianCalendarService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -71,9 +72,10 @@ class DailyContentController extends Controller
     /**
      * Preview a day as members would see it (works for drafts too).
      */
-    public function preview(DailyContent $daily): View
+    public function preview(DailyContent $daily, EthiopianCalendarService $ethCalendar): View
     {
         $daily->load(['weeklyTheme', 'mezmurs', 'references', 'books', 'sinksarImages']);
+        $ethDateInfo = $ethCalendar->getDateInfo($daily->date, app()->getLocale());
         $activities = Activity::where('lent_season_id', $daily->lent_season_id)
             ->where('is_active', true)
             ->orderBy('sort_order')
@@ -95,6 +97,7 @@ class DailyContentController extends Controller
             'customChecklist',
             'publicPreview',
             'backUrl',
+            'ethDateInfo',
         ));
     }
 

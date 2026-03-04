@@ -13,6 +13,7 @@ use App\Models\LentSeason;
 use App\Models\MemberChecklist;
 use App\Models\MemberCustomChecklist;
 use App\Models\WeeklyTheme;
+use App\Services\EthiopianCalendarService;
 use App\Services\AbiyTsomStructure;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -181,7 +182,7 @@ class HomeController extends Controller
     /**
      * Show a specific day's content.
      */
-    public function day(Request $request, DailyContent $daily): View
+    public function day(Request $request, DailyContent $daily, EthiopianCalendarService $ethCalendar): View
     {
         if (! $daily->is_published) {
             abort(404);
@@ -190,6 +191,9 @@ class HomeController extends Controller
         $member = $request->attributes->get('member');
         // Load books relation for multiple spiritual books per day
         $daily->load(['weeklyTheme', 'mezmurs', 'references', 'books', 'sinksarImages']);
+
+        // Ethiopian calendar date + celebration
+        $ethDateInfo = $ethCalendar->getDateInfo($daily->date, app()->getLocale());
 
         $activities = Activity::where('lent_season_id', $daily->lent_season_id)
             ->where('is_active', true)
@@ -214,7 +218,7 @@ class HomeController extends Controller
                 ->keyBy('member_custom_activity_id');
         }
 
-        return view('member.day', compact('member', 'daily', 'activities', 'checklist', 'customActivities', 'customChecklist'));
+        return view('member.day', compact('member', 'daily', 'activities', 'checklist', 'customActivities', 'customChecklist', 'ethDateInfo'));
     }
 
     /**

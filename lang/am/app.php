@@ -794,6 +794,28 @@ return [
     'publish_label' => 'ለአባላት ታትሞ ይታያል',
     'passcode_enabled' => 'ይለፍ ቃል አስብቆ ተቀምጧል።',
 
+    // Ethiopian Calendar & Synaxarium
+    'synaxarium_admin_title' => 'የስንክሳር በዓላት',
+    'synaxarium_monthly_tab' => 'ወርሃዊ (ተደጋጋሚ)',
+    'synaxarium_annual_tab' => 'ዓመታዊ (ልዩ)',
+    'synaxarium_add_monthly' => 'ወርሃዊ በዓል ጨምር',
+    'synaxarium_edit_monthly' => 'ወርሃዊ በዓል አርትዕ',
+    'synaxarium_add_annual' => 'ዓመታዊ በዓል ጨምር',
+    'synaxarium_edit_annual' => 'ዓመታዊ በዓል አርትዕ',
+    'synaxarium_day_number' => 'የወሩ ቀን (1-30)',
+    'synaxarium_day_number_short' => 'ቀን :day',
+    'synaxarium_month_number' => 'የኢትዮጵያ ወር (1-13)',
+    'synaxarium_celebration' => 'በዓል / የቅዱስ ስም',
+    'synaxarium_image' => 'የቅዱስ ምስል',
+    'synaxarium_saved' => 'የስንክሳር በዓል ተቀምጧል።',
+    'synaxarium_deleted' => 'የስንክሳር በዓል ተሰርዟል።',
+    'synaxarium_annual_exists' => 'ለዚህ ወር እና ቀን በዓል ቀድሞ ተመዝግቧል።',
+    'synaxarium_daily_saint' => 'የዕለቱ ቅዱስ',
+    'synaxarium_annual_feast' => 'ዓመታዊ የበዓል ቀን',
+    'synaxarium_delete_confirm' => 'እርግጠኛ ነዎት ይህን በዓል ለማጥፋት ይፈልጋሉ?',
+    'synaxarium_no_monthly' => 'ገና ወርሃዊ በዓል አልተጨመረም። ከላይ የመጀመሪያውን ጨምር።',
+    'synaxarium_no_annual' => 'ገና ዓመታዊ ልዩ በዓል አልተጨመረም። ከላይ የመጀመሪያውን ጨምር።',
+
     // Admin members tracking (anonymous stats only)
     'members_tracking' => 'አባላት',
     'members_tracking_subtitle' => 'ስም የሌለው ክሊክ ስታቲስቲክስ — የግል ውሂብ የለም',

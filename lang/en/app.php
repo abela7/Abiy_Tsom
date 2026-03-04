@@ -796,6 +796,28 @@ return [
     'publish_label' => 'Publish (visible to members)',
     'passcode_enabled' => 'Passcode is enabled.',
 
+    // Ethiopian Calendar & Synaxarium
+    'synaxarium_admin_title' => 'Synaxarium Celebrations',
+    'synaxarium_monthly_tab' => 'Monthly (Recurring)',
+    'synaxarium_annual_tab' => 'Annual (Overrides)',
+    'synaxarium_add_monthly' => 'Add Monthly Celebration',
+    'synaxarium_edit_monthly' => 'Edit Monthly Celebration',
+    'synaxarium_add_annual' => 'Add Annual Celebration',
+    'synaxarium_edit_annual' => 'Edit Annual Celebration',
+    'synaxarium_day_number' => 'Day of Month (1-30)',
+    'synaxarium_day_number_short' => 'Day :day',
+    'synaxarium_month_number' => 'Ethiopian Month (1-13)',
+    'synaxarium_celebration' => 'Celebration / Saint Name',
+    'synaxarium_image' => 'Saint Image',
+    'synaxarium_saved' => 'Synaxarium celebration saved.',
+    'synaxarium_deleted' => 'Synaxarium celebration deleted.',
+    'synaxarium_annual_exists' => 'A celebration already exists for this month and day.',
+    'synaxarium_daily_saint' => 'Today\'s Saint',
+    'synaxarium_annual_feast' => 'Annual Feast Day',
+    'synaxarium_delete_confirm' => 'Are you sure you want to delete this celebration?',
+    'synaxarium_no_monthly' => 'No monthly celebrations yet. Add the first one above.',
+    'synaxarium_no_annual' => 'No annual overrides yet. Add the first one above.',
+
     // Admin members tracking & management
     'members_tracking' => 'Members',
     'members_tracking_subtitle' => 'Anonymous usage stats — no personal data',
