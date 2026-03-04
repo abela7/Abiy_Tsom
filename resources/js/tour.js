@@ -377,6 +377,12 @@ async function runPhaseTour(phase, steps) {
         // Page refresh/unload also triggers onDestroyed — this guards against
         // treating an unload as tour completion.
         let phaseCompleted = false;
+        let userAbortedTour = false;
+
+        const completeTourAsDone = async () => {
+            clearPhase();
+            await setTourCompleted();
+        };
 
         // Attach onNextClick to the last step so we know the user clicked Done.
         let driverObj;
@@ -397,8 +403,8 @@ async function runPhaseTour(phase, steps) {
 
         driverObj = driver({
             showProgress:            true,
-            allowClose:              false,          // overlay click does NOT close the tour
-            showButtons:             ['next', 'previous'], // no X button — tour must be completed
+            allowClose:              true,           // allows the X close button to finish tour
+            showButtons:             ['next', 'previous'],
             disableActiveInteraction: true,          // highlighted element is view-only, not clickable
             smoothScroll:            true,
             overlayOpacity:          0.6,
@@ -432,7 +438,15 @@ async function runPhaseTour(phase, steps) {
                 // and make the tour vanish permanently.
                 if (phaseCompleted) {
                     navigateAfterPhase(phase);
+                    return;
                 }
+
+                if (userAbortedTour) {
+                    void completeTourAsDone();
+                }
+            },
+            onCloseClick: () => {
+                userAbortedTour = true;
             },
         });
 
@@ -516,6 +530,22 @@ export async function continuePageTour(pageName) {
     // Check the active phase FIRST — if we're mid-tour the session phase is the
     // source of truth, even if the DB/localStorage completed flag is stale.
     const savedPhase = getPhase();
+    const base = window.AbiyTsom?.baseUrl ?? '';
+
+    // If the tour is not completed, force every member route back into the tour
+    // flow so users cannot skip steps by manually navigating.
+    if (!isTourCompleted()) {
+        if (!savedPhase) {
+            window.location.href = `${base}/member/home?tour=1`;
+            return;
+        }
+
+        if (savedPhase !== pageName) {
+            navigateToPhase(savedPhase);
+            return;
+        }
+    }
+
     if (savedPhase !== pageName) return;
 
     // Phase matches — we are actively mid-tour. Skip the completed check so a
