@@ -316,29 +316,14 @@
                         </button>
                     </div>
                     <div class="flex items-center gap-1.5">
-                        {{-- Font picker --}}
-                        <div class="flex items-center gap-1">
-                            <button type="button" @click="setReaderFont('default')"
-                                    class="h-7 px-2 rounded-lg border text-[10px] font-bold transition touch-manipulation"
-                                    :class="readerFont === 'default' ? 'bg-accent text-on-accent border-accent' : 'bg-card border-border text-secondary hover:bg-muted'">
-                                <span style="font-family:inherit">ሀ</span>
-                            </button>
-                            <button type="button" @click="setReaderFont('benaiah')"
-                                    class="h-7 px-2 rounded-lg border text-[10px] font-bold transition touch-manipulation"
-                                    :class="readerFont === 'benaiah' ? 'bg-accent text-on-accent border-accent' : 'bg-card border-border text-secondary hover:bg-muted'">
-                                <span style="font-family:'Benaiah',sans-serif">ሀ</span>
-                            </button>
-                            <button type="button" @click="setReaderFont('kiros')"
-                                    class="h-7 px-2 rounded-lg border text-[10px] font-bold transition touch-manipulation"
-                                    :class="readerFont === 'kiros' ? 'bg-accent text-on-accent border-accent' : 'bg-card border-border text-secondary hover:bg-muted'">
-                                <span style="font-family:'Kiros',sans-serif">ሀ</span>
-                            </button>
-                            <button type="button" @click="setReaderFont('handwriting')"
-                                    class="h-7 px-2 rounded-lg border text-[10px] font-bold transition touch-manipulation"
-                                    :class="readerFont === 'handwriting' ? 'bg-accent text-on-accent border-accent' : 'bg-card border-border text-secondary hover:bg-muted'">
-                                <span style="font-family:'Handwriting',sans-serif">ሀ</span>
-                            </button>
-                        </div>
+                        {{-- Font cycle button --}}
+                        <button type="button"
+                                @click="setReaderFont(['default','benaiah','kiros','handwriting'][(['default','benaiah','kiros','handwriting'].indexOf(readerFont) + 1) % 4])"
+                                class="h-7 px-2.5 rounded-lg border bg-card border-border text-secondary hover:bg-muted transition touch-manipulation flex items-center gap-1">
+                            <span class="text-[13px] font-bold"
+                                  :style="readerFont === 'benaiah' ? 'font-family:Benaiah,sans-serif' : readerFont === 'kiros' ? 'font-family:Kiros,sans-serif' : readerFont === 'handwriting' ? 'font-family:Handwriting,sans-serif' : ''">ሀ</span>
+                            <svg class="w-2.5 h-2.5 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                        </button>
                         <button type="button" @click="openFullscreen()"
                                 class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-card border border-border text-secondary hover:bg-muted transition touch-manipulation">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
