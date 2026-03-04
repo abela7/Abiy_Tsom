@@ -191,6 +191,7 @@
             mode: '{{ $hasSinksarRead ? 'read' : ($hasSinksarListen ? 'listen' : 'read') }}',
             fontSize: parseInt(localStorage.getItem('sinksarFontSize') || '16'),
             fullscreen: false,
+            readOpen: false,
             setFontSize(size) {
                 this.fontSize = Math.min(28, Math.max(12, size));
                 localStorage.setItem('sinksarFontSize', this.fontSize);
@@ -220,7 +221,7 @@
         @if($hasSinksarRead && $hasSinksarListen)
         <div class="px-4 pb-3">
             <div class="flex bg-muted rounded-xl p-1 gap-1">
-                <button type="button" @click="mode = 'read'"
+                <button type="button" @click="mode = 'read'; readOpen = false"
                         class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200"
                         :class="mode === 'read' ? 'bg-card text-primary shadow-sm' : 'text-muted-text hover:text-secondary'">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -228,7 +229,7 @@
                     </svg>
                     {{ __('app.reading_mode') }}
                 </button>
-                <button type="button" @click="mode = 'listen'"
+                <button type="button" @click="mode = 'listen'; readOpen = false"
                         class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200"
                         :class="mode === 'listen' ? 'bg-card text-primary shadow-sm' : 'text-muted-text hover:text-secondary'">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -243,37 +244,59 @@
         {{-- Read mode --}}
         @if($hasSinksarRead)
         <div x-show="mode === 'read'" x-transition.opacity class="px-4 pb-4">
-            {{-- Accessibility toolbar --}}
-            <div class="flex items-center justify-between gap-2 mb-3 py-2 px-3 rounded-xl bg-muted/60">
-                <div class="flex items-center gap-1.5">
-                    <span class="text-[10px] font-semibold text-muted-text uppercase tracking-wider">{{ __('app.font_size') }}</span>
-                    <button type="button" @click="setFontSize(fontSize - 2)"
-                            class="w-7 h-7 rounded-lg bg-card border border-border flex items-center justify-center text-secondary hover:bg-muted transition touch-manipulation"
-                            :disabled="fontSize <= 12"
-                            :class="fontSize <= 12 && 'opacity-30 cursor-not-allowed'">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2" d="M5 12h14"/></svg>
-                    </button>
-                    <span class="text-xs font-bold text-primary tabular-nums w-6 text-center" x-text="fontSize"></span>
-                    <button type="button" @click="setFontSize(fontSize + 2)"
-                            class="w-7 h-7 rounded-lg bg-card border border-border flex items-center justify-center text-secondary hover:bg-muted transition touch-manipulation"
-                            :disabled="fontSize >= 28"
-                            :class="fontSize >= 28 && 'opacity-30 cursor-not-allowed'">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2" d="M12 5v14m-7-7h14"/></svg>
+            <button type="button"
+                    @click="readOpen = !readOpen"
+                    class="w-full flex items-center justify-between gap-2 py-2.5 px-3 rounded-xl bg-muted/70 hover:bg-muted transition mb-3">
+                <div class="flex items-center gap-1.5 min-w-0">
+                    <svg class="w-4 h-4 shrink-0 transition-transform duration-200" :class="readOpen ? 'rotate-90' : ''" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    <span class="text-sm font-semibold text-primary">{{ __('app.read') }}</span>
+                </div>
+                <span class="text-[11px] font-semibold text-muted-text uppercase tracking-wider"
+                      x-text="readOpen ? '{{ __('app.close') }}' : '{{ __('app.read') }}'"></span>
+            </button>
+
+            <div x-show="readOpen" x-cloak
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 -translate-y-2"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 class="space-y-3">
+                {{-- Accessibility toolbar --}}
+                <div class="flex items-center justify-between gap-2 py-2 px-3 rounded-xl bg-muted/60">
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-[10px] font-semibold text-muted-text uppercase tracking-wider">{{ __('app.font_size') }}</span>
+                        <button type="button" @click="setFontSize(fontSize - 2)"
+                                class="w-7 h-7 rounded-lg bg-card border border-border flex items-center justify-center text-secondary hover:bg-muted transition touch-manipulation"
+                                :disabled="fontSize <= 12"
+                                :class="fontSize <= 12 && 'opacity-30 cursor-not-allowed'">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2" d="M5 12h14"/></svg>
+                        </button>
+                        <span class="text-xs font-bold text-primary tabular-nums w-6 text-center" x-text="fontSize"></span>
+                        <button type="button" @click="setFontSize(fontSize + 2)"
+                                class="w-7 h-7 rounded-lg bg-card border border-border flex items-center justify-center text-secondary hover:bg-muted transition touch-manipulation"
+                                :disabled="fontSize >= 28"
+                                :class="fontSize >= 28 && 'opacity-30 cursor-not-allowed'">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2" d="M12 5v14m-7-7h14"/></svg>
+                        </button>
+                    </div>
+                    <button type="button" @click="openFullscreen()"
+                            class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-card border border-border text-secondary hover:bg-muted transition touch-manipulation">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+                        </svg>
+                        <span class="text-[10px] font-semibold uppercase tracking-wider hidden sm:inline">{{ __('app.fullscreen') }}</span>
                     </button>
                 </div>
-                <button type="button" @click="openFullscreen()"
-                        class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-card border border-border text-secondary hover:bg-muted transition touch-manipulation">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
-                    </svg>
-                    <span class="text-[10px] font-semibold uppercase tracking-wider hidden sm:inline">{{ __('app.fullscreen') }}</span>
-                </button>
-            </div>
 
-            {{-- Inline reader --}}
-            <div class="rounded-xl border border-border bg-surface/50 p-4 max-h-[60vh] overflow-y-auto overscroll-contain"
-                 :style="{ fontSize: fontSize + 'px', lineHeight: (fontSize < 20 ? '1.8' : '1.7') }">
-                <div class="text-secondary whitespace-pre-line break-words">{{ $sinksarText }}</div>
+                {{-- Inline reader --}}
+                <div class="rounded-xl border border-border bg-surface/50 p-4 max-h-[60vh] overflow-y-auto overscroll-contain"
+                     :style="{ fontSize: fontSize + 'px', lineHeight: (fontSize < 20 ? '1.8' : '1.7') }">
+                    <div class="text-secondary whitespace-pre-line break-words">{{ $sinksarText }}</div>
+                </div>
             </div>
         </div>
         @endif
