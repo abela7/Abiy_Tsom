@@ -7,6 +7,9 @@
     $weekName = $daily->weeklyTheme ? (localized($daily->weeklyTheme, 'name') ?? $daily->weeklyTheme->name_en ?? '-') : '';
     $dayTitle = localized($daily, 'day_title') ?? __('app.day_x', ['day' => $daily->day_number]);
     $sinksarUrl = $daily->sinksarUrl($locale);
+    $sinksarText = $daily->sinksarText($locale);
+    $hasSinksarRead = !empty($sinksarText);
+    $hasSinksarListen = !empty($sinksarUrl);
     $shareTitle = $weekName ? ($weekName . ' - ' . $dayTitle) : $dayTitle;
     $shareDescription = __('app.share_day_description');
     // Use public share URL so social crawlers can read OG meta tags
@@ -180,18 +183,161 @@
     </div>
     @endif
 
-    {{-- Sinksar (Synaxarium) — same layout as Mezmur with YouTube/video link --}}
+    {{-- Sinksar (Synaxarium) — Read / Listen toggle with immersive reader --}}
     @if(localized($daily, 'sinksar_title'))
-    <div data-tour="day-sinksar" class="bg-card rounded-2xl p-4 shadow-sm border border-border">
-        <h3 class="font-semibold text-sm text-sinksar mb-1">📖 {{ __('app.sinksar') }}</h3>
-        <p class="font-medium text-primary">{{ localized($daily, 'sinksar_title') }}</p>
-        @if(localized($daily, 'sinksar_description'))
-            <p class="text-sm text-muted-text mt-2 leading-relaxed">{{ localized($daily, 'sinksar_description') }}</p>
+    <div data-tour="day-sinksar"
+         class="bg-card rounded-2xl shadow-sm border border-border overflow-hidden"
+         x-data="{
+            mode: '{{ $hasSinksarRead ? 'read' : ($hasSinksarListen ? 'listen' : 'read') }}',
+            fontSize: parseInt(localStorage.getItem('sinksarFontSize') || '16'),
+            fullscreen: false,
+            setFontSize(size) {
+                this.fontSize = Math.min(28, Math.max(12, size));
+                localStorage.setItem('sinksarFontSize', this.fontSize);
+            },
+            openFullscreen() {
+                this.fullscreen = true;
+                document.body.style.overflow = 'hidden';
+            },
+            closeFullscreen() {
+                this.fullscreen = false;
+                document.body.style.overflow = '';
+            }
+         }"
+         @keydown.escape.window="if(fullscreen) closeFullscreen()">
+
+        {{-- Header --}}
+        <div class="px-4 pt-4 pb-3">
+            <h3 class="font-semibold text-sm text-sinksar mb-1">{{ __('app.sinksar') }}</h3>
+            <p class="font-medium text-primary">{{ localized($daily, 'sinksar_title') }}</p>
+            @if(localized($daily, 'sinksar_description'))
+                <p class="text-sm text-muted-text mt-1.5 leading-relaxed">{{ localized($daily, 'sinksar_description') }}</p>
+            @endif
+        </div>
+
+        @if($hasSinksarRead || $hasSinksarListen)
+        {{-- Mode toggle --}}
+        @if($hasSinksarRead && $hasSinksarListen)
+        <div class="px-4 pb-3">
+            <div class="flex bg-muted rounded-xl p-1 gap-1">
+                <button type="button" @click="mode = 'read'"
+                        class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200"
+                        :class="mode === 'read' ? 'bg-card text-primary shadow-sm' : 'text-muted-text hover:text-secondary'">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                    </svg>
+                    {{ __('app.reading_mode') }}
+                </button>
+                <button type="button" @click="mode = 'listen'"
+                        class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200"
+                        :class="mode === 'listen' ? 'bg-card text-primary shadow-sm' : 'text-muted-text hover:text-secondary'">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                    </svg>
+                    {{ __('app.listening_mode') }}
+                </button>
+            </div>
+        </div>
         @endif
-        @if($sinksarUrl)
-            <x-embedded-media :url="$sinksarUrl" play-label="{{ __('app.listen') }}" :open-label="__('app.open_in_youtube')" />
+
+        {{-- Read mode --}}
+        @if($hasSinksarRead)
+        <div x-show="mode === 'read'" x-transition.opacity class="px-4 pb-4">
+            {{-- Accessibility toolbar --}}
+            <div class="flex items-center justify-between gap-2 mb-3 py-2 px-3 rounded-xl bg-muted/60">
+                <div class="flex items-center gap-1.5">
+                    <span class="text-[10px] font-semibold text-muted-text uppercase tracking-wider">{{ __('app.font_size') }}</span>
+                    <button type="button" @click="setFontSize(fontSize - 2)"
+                            class="w-7 h-7 rounded-lg bg-card border border-border flex items-center justify-center text-secondary hover:bg-muted transition touch-manipulation"
+                            :disabled="fontSize <= 12"
+                            :class="fontSize <= 12 && 'opacity-30 cursor-not-allowed'">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2" d="M5 12h14"/></svg>
+                    </button>
+                    <span class="text-xs font-bold text-primary tabular-nums w-6 text-center" x-text="fontSize"></span>
+                    <button type="button" @click="setFontSize(fontSize + 2)"
+                            class="w-7 h-7 rounded-lg bg-card border border-border flex items-center justify-center text-secondary hover:bg-muted transition touch-manipulation"
+                            :disabled="fontSize >= 28"
+                            :class="fontSize >= 28 && 'opacity-30 cursor-not-allowed'">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2" d="M12 5v14m-7-7h14"/></svg>
+                    </button>
+                </div>
+                <button type="button" @click="openFullscreen()"
+                        class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-card border border-border text-secondary hover:bg-muted transition touch-manipulation">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+                    </svg>
+                    <span class="text-[10px] font-semibold uppercase tracking-wider hidden sm:inline">{{ __('app.fullscreen') }}</span>
+                </button>
+            </div>
+
+            {{-- Inline reader --}}
+            <div class="rounded-xl border border-border bg-surface/50 p-4 max-h-[60vh] overflow-y-auto overscroll-contain"
+                 :style="{ fontSize: fontSize + 'px', lineHeight: (fontSize < 20 ? '1.8' : '1.7') }">
+                <div class="text-secondary whitespace-pre-line break-words">{{ $sinksarText }}</div>
+            </div>
+        </div>
+        @endif
+
+        {{-- Listen mode --}}
+        @if($hasSinksarListen)
+        <div x-show="mode === 'listen'" x-transition.opacity class="px-4 pb-4">
+            <x-embedded-media :url="$sinksarUrl" play-label="{{ __('app.listen_synaxarium') }}" :open-label="__('app.open_in_youtube')" />
+        </div>
+        @endif
         @endif
     </div>
+
+    {{-- Fullscreen reader overlay --}}
+    @if($hasSinksarRead)
+    <template x-teleport="body">
+        <div x-show="fullscreen"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             x-cloak
+             class="fixed inset-0 z-[200] bg-surface flex flex-col">
+
+            {{-- Fullscreen top bar --}}
+            <div class="flex items-center justify-between gap-3 px-4 py-3 border-b border-border bg-card shrink-0">
+                <div class="flex items-center gap-2.5 min-w-0">
+                    <button type="button" @click="closeFullscreen()"
+                            class="p-2 rounded-lg bg-muted hover:bg-border transition touch-manipulation shrink-0">
+                        <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                    <div class="min-w-0">
+                        <p class="text-sm font-bold text-primary truncate">{{ localized($daily, 'sinksar_title') }}</p>
+                        <p class="text-[10px] text-muted-text font-medium uppercase tracking-wider">{{ __('app.sinksar') }}</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                    <button type="button" @click="setFontSize(fontSize - 2)"
+                            class="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-secondary hover:bg-border transition touch-manipulation"
+                            :disabled="fontSize <= 12"
+                            :class="fontSize <= 12 && 'opacity-30'">
+                        <span class="text-lg font-bold leading-none">A</span>
+                    </button>
+                    <button type="button" @click="setFontSize(fontSize + 2)"
+                            class="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-secondary hover:bg-border transition touch-manipulation"
+                            :disabled="fontSize >= 28"
+                            :class="fontSize >= 28 && 'opacity-30'">
+                        <span class="text-xl font-bold leading-none">A</span>
+                    </button>
+                </div>
+            </div>
+
+            {{-- Fullscreen content --}}
+            <div class="flex-1 overflow-y-auto overscroll-contain px-5 py-6 sm:px-8 sm:py-8"
+                 :style="{ fontSize: fontSize + 'px', lineHeight: (fontSize < 20 ? '1.85' : '1.75') }">
+                <div class="max-w-2xl mx-auto text-secondary whitespace-pre-line break-words">{{ $sinksarText }}</div>
+            </div>
+        </div>
+    </template>
+    @endif
     @endif
 
     {{-- Spiritual books (multiple per day) --}}
