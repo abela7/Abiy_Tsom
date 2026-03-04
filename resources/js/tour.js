@@ -404,7 +404,7 @@ async function runPhaseTour(phase, steps) {
         driverObj = driver({
             showProgress:            true,
             allowClose:              true,           // allows the X close button to finish tour
-            showButtons:             ['next', 'previous'],
+            showButtons:             ['close', 'previous', 'next'],
             disableActiveInteraction: true,          // highlighted element is view-only, not clickable
             smoothScroll:            true,
             overlayOpacity:          0.6,
