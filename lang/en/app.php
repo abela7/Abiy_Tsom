@@ -822,6 +822,7 @@ return [
     'synaxarium_main_badge' => 'Main',
     'synaxarium_add_saint' => 'Add Saint',
     'synaxarium_description' => 'Description',
+    'synaxarium_no_saints_for_day' => 'No saints added for this day yet.',
 
     // Admin members tracking & management
     'members_tracking' => 'Members',

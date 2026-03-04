@@ -75,7 +75,7 @@ class SynaxariumController extends Controller
         unset($data['image']);
         EthiopianSynaxariumMonthly::create($data);
 
-        return redirect('/admin/synaxarium')->with('success', __('app.synaxarium_saved'));
+        return redirect('/admin/synaxarium?day=' . $data['day'])->with('success', __('app.synaxarium_saved'));
     }
 
     public function updateMonthly(Request $request, EthiopianSynaxariumMonthly $monthly): RedirectResponse
@@ -113,7 +113,7 @@ class SynaxariumController extends Controller
         unset($data['image']);
         $monthly->update($data);
 
-        return redirect('/admin/synaxarium')->with('success', __('app.synaxarium_saved'));
+        return redirect('/admin/synaxarium?day=' . $monthly->day)->with('success', __('app.synaxarium_saved'));
     }
 
     public function destroyMonthly(EthiopianSynaxariumMonthly $monthly): RedirectResponse
@@ -121,9 +121,10 @@ class SynaxariumController extends Controller
         if ($monthly->image_path) {
             Storage::disk('public')->delete($monthly->image_path);
         }
+        $day = $monthly->day;
         $monthly->delete();
 
-        return redirect('/admin/synaxarium')->with('success', __('app.synaxarium_deleted'));
+        return redirect('/admin/synaxarium?day=' . $day)->with('success', __('app.synaxarium_deleted'));
     }
 
     public function storeAnnual(Request $request): RedirectResponse

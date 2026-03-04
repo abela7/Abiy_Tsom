@@ -820,6 +820,7 @@ return [
     'synaxarium_main_badge' => 'ዋና',
     'synaxarium_add_saint' => 'ቅዱስ ጨምር',
     'synaxarium_description' => 'መግለጫ',
+    'synaxarium_no_saints_for_day' => 'ለዚህ ቀን ገና ቅዱሳን አልተጨመሩም።',
 
     // Admin members tracking (anonymous stats only)
     'members_tracking' => 'አባላት',
