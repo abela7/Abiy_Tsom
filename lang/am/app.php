@@ -61,6 +61,13 @@ return [
     'wizard_lang_subtitle' => 'Choose the language for your daily WhatsApp reminders.',
     'wizard_lang_english' => 'English',
     'wizard_lang_amharic' => 'አማርኛ (Amharic)',
+    'cookie_consent_title' => 'Privacy and Cookies',
+    'cookie_consent_description' => 'For your privacy, all app data used to keep your session and preference is stored on your local device only. We need browser cookies to keep this working.',
+    'cookie_consent_session_cookie' => 'Session cookie: keeps you signed in on this device.',
+    'cookie_consent_device_cookie' => 'Device cookie: remembers your selected language and app settings.',
+    'cookie_consent_privacy_note' => 'No other user profile data is stored locally for this step.',
+    'cookie_consent_checkbox_label' => 'I understand and accept local cookie use.',
+    'cookie_consent_required_error' => 'Please accept the cookie consent to continue.',
 
     // WhatsApp welcome confirmation messages (sent after registration)
     'whatsapp_welcome_message_en' => "Respected :name, may the peace of God be with you.\nWe thank you for being a user of this platform. From now on, based on the time you have chosen, we will send you our daily reminders each day.\n\nLiverpool Mekane Kidusan Abune Teklehaimanot Church.\nBlessed Great Lent!",

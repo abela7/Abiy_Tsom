@@ -4,7 +4,7 @@
 
 @section('content')
 <div x-data="onboarding()"
-     x-init="checkExisting()"
+     x-init="initConsentState(); checkExisting()"
      @locale-switching.document="saveState()">
 
     {{-- Redirect message (shown briefly when existing token found) --}}
@@ -48,13 +48,47 @@
                         <input type="text"
                                id="baptism_name"
                                x-model="baptismName"
-                               @keydown.enter="if (baptismName.trim()) step = 2"
+                               @keydown.enter="if (baptismName.trim() && cookieConsentAccepted) step = 2"
                                :placeholder="'{{ __('app.baptism_name_placeholder') }}'"
                                class="w-full px-4 py-3.5 border border-border rounded-xl bg-surface text-primary placeholder:text-muted-text/60 focus:ring-2 focus:ring-accent/40 focus:border-accent outline-none transition text-base">
                     </div>
 
+                    <div class="mb-6 p-4 rounded-xl border border-border bg-muted/40">
+                        <h3 class="font-semibold text-primary text-sm">{{ __('app.cookie_consent_title') }}</h3>
+                        <p class="text-xs text-muted-text mt-1.5 leading-relaxed">{{ __('app.cookie_consent_description') }}</p>
+
+                        <ul class="mt-3 text-xs text-muted-text space-y-2">
+                            <li class="flex gap-2">
+                                <span>•</span>
+                                <span>{{ __('app.cookie_consent_session_cookie') }}</span>
+                            </li>
+                            <li class="flex gap-2">
+                                <span>•</span>
+                                <span>{{ __('app.cookie_consent_device_cookie') }}</span>
+                            </li>
+                            <li class="flex gap-2">
+                                <span>•</span>
+                                <span>{{ __('app.cookie_consent_privacy_note') }}</span>
+                            </li>
+                        </ul>
+
+                        <label class="mt-4 flex items-start gap-2 text-sm">
+                            <input type="checkbox"
+                                   x-model="cookieConsentAccepted"
+                                   @change="saveCookieConsent()"
+                                   class="mt-0.5 h-4 w-4 rounded border-border text-accent focus:ring-accent">
+                            <span class="text-primary leading-6">{{ __('app.cookie_consent_checkbox_label') }}</span>
+                        </label>
+
+                        <p x-show="!cookieConsentAccepted"
+                           x-transition
+                           class="text-xs text-red-600 dark:text-red-400 mt-2">
+                            {{ __('app.cookie_consent_required_error') }}
+                        </p>
+                    </div>
+
                     <button @click="step = 2"
-                            :disabled="!baptismName.trim()"
+                            :disabled="!baptismName.trim() || !cookieConsentAccepted"
                             class="group w-full py-3.5 bg-accent text-on-accent rounded-xl font-bold text-base hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition-all duration-150 shadow-lg shadow-accent/25 flex items-center justify-center gap-2">
                         {{ __('app.wizard_next') }}
                         <svg class="w-4 h-4 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
@@ -314,6 +348,8 @@ function onboarding() {
     return {
         step: 1,
         baptismName: '',
+        cookieConsentAccepted: false,
+        cookieConsentStorageKey: 'abiy_cookie_consent',
         wantsWhatsApp: false,
         phone: '',
         whatsappLang: '{{ in_array(app()->getLocale(), ['en', 'am']) ? app()->getLocale() : 'en' }}',
@@ -348,6 +384,7 @@ function onboarding() {
                 sessionStorage.setItem('onboarding_state', JSON.stringify({
                     step: this.step,
                     baptismName: this.baptismName,
+                    cookieConsentAccepted: this.cookieConsentAccepted,
                     wantsWhatsApp: this.wantsWhatsApp,
                     phone: this.phone,
                     whatsappLang: this.whatsappLang,
@@ -364,6 +401,9 @@ function onboarding() {
                 const s = JSON.parse(raw);
                 if (s.step) this.step = s.step;
                 if (s.baptismName) this.baptismName = s.baptismName;
+                if (typeof s.cookieConsentAccepted === 'boolean') {
+                    this.cookieConsentAccepted = s.cookieConsentAccepted;
+                }
                 if (s.wantsWhatsApp !== undefined) this.wantsWhatsApp = s.wantsWhatsApp;
                 if (s.phone) this.phone = s.phone;
                 if (s.whatsappLang) this.whatsappLang = s.whatsappLang;
@@ -372,7 +412,29 @@ function onboarding() {
             } catch {}
         },
 
+        initConsentState() {
+            try {
+                this.cookieConsentAccepted = localStorage.getItem(this.cookieConsentStorageKey) === '1';
+            } catch {
+                this.cookieConsentAccepted = false;
+            }
+        },
+
+        saveCookieConsent() {
+            try {
+                localStorage.setItem(this.cookieConsentStorageKey, this.cookieConsentAccepted ? '1' : '0');
+            } catch {}
+
+            if (this.cookieConsentAccepted) {
+                this.checkExisting();
+            }
+        },
+
         checkExisting() {
+            if (!this.cookieConsentAccepted) {
+                return;
+            }
+
             // If the user was mid-wizard when they switched language, restore their state.
             if (sessionStorage.getItem('onboarding_state')) {
                 this.restoreState();
@@ -421,6 +483,10 @@ function onboarding() {
 
         register() {
             if (!this.baptismName.trim()) return;
+            if (!this.cookieConsentAccepted) {
+                this.errorMessage = '{{ __('app.cookie_consent_required_error') }}';
+                return;
+            }
             this.isLoading = true;
             this.errorMessage = '';
 
