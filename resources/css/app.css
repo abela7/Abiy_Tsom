@@ -92,7 +92,7 @@
 /* ─── Semantic theme variables (sepia) ────────────────────────────────────── */
 /* Sepia only changes surfaces & text — accent/brand/status colors stay
    identical to light mode so buttons, badges, etc. look completely normal */
-.sepia {
+.theme-sepia {
     color-scheme: light;
     /* Backgrounds — warm parchment */
     --app-surface: #f5edd8;

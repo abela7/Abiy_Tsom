@@ -5,7 +5,7 @@
         locale: '{{ app()->getLocale() }}',
         applyThemeClasses() {
           document.documentElement.classList.toggle('dark', this.theme === 'dark');
-          document.documentElement.classList.toggle('sepia', this.theme === 'sepia');
+          document.documentElement.classList.toggle('theme-sepia', this.theme === 'sepia');
         },
         toggleTheme() {
           const order = ['light', 'sepia', 'dark'];
@@ -22,12 +22,12 @@
           window.location.href = url.toString();
         }
       }"
-      :class="{ 'dark': theme === 'dark', 'sepia': theme === 'sepia' }"
+      :class="{ 'dark': theme === 'dark', 'theme-sepia': theme === 'sepia' }"
       x-init="
         if ({{ request()->routeIs('volunteer.invite.*') ? 'true' : 'false' }}) { theme = 'dark'; localStorage.setItem('theme', 'dark'); }
         else if (!localStorage.getItem('theme')) { localStorage.setItem('theme', 'light'); theme = 'light'; }
         document.documentElement.classList.toggle('dark', theme === 'dark');
-        document.documentElement.classList.toggle('sepia', theme === 'sepia');
+        document.documentElement.classList.toggle('theme-sepia', theme === 'sepia');
       ">
 <head>
     <meta charset="UTF-8">
@@ -43,7 +43,7 @@
             var t = localStorage.getItem('theme');
             if (forceInviteDark) document.documentElement.classList.add('dark');
             else if (t === 'dark') document.documentElement.classList.add('dark');
-            else if (t === 'sepia') document.documentElement.classList.add('sepia');
+            else if (t === 'sepia') document.documentElement.classList.add('theme-sepia');
         })();
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">

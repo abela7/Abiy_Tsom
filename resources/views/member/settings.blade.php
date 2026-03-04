@@ -990,13 +990,13 @@ function settingsPage() {
                 window.dispatchEvent(new CustomEvent('theme-changed', { detail: { theme: this.theme } }));
             }
             document.documentElement.classList.toggle('dark', this.theme === 'dark');
-            document.documentElement.classList.toggle('sepia', this.theme === 'sepia');
+            document.documentElement.classList.toggle('theme-sepia', this.theme === 'sepia');
         },
         async setTheme(t) {
             this.theme = t;
             localStorage.setItem('theme', t);
             document.documentElement.classList.toggle('dark', t === 'dark');
-            document.documentElement.classList.toggle('sepia', t === 'sepia');
+            document.documentElement.classList.toggle('theme-sepia', t === 'sepia');
             window.dispatchEvent(new CustomEvent('theme-changed', { detail: { theme: t } }));
             await AbiyTsom.api('/api/member/settings', { theme: t });
         },

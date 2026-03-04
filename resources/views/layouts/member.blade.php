@@ -5,7 +5,7 @@
         locale: '{{ app()->getLocale() }}',
         applyThemeClasses() {
           document.documentElement.classList.toggle('dark', this.theme === 'dark');
-          document.documentElement.classList.toggle('sepia', this.theme === 'sepia');
+          document.documentElement.classList.toggle('theme-sepia', this.theme === 'sepia');
         },
         toggleTheme() {
           const order = ['light', 'sepia', 'dark'];
@@ -26,12 +26,12 @@
           }
         }
       }"
-      :class="{ 'dark': theme === 'dark', 'sepia': theme === 'sepia' }"
+      :class="{ 'dark': theme === 'dark', 'theme-sepia': theme === 'sepia' }"
       x-init="
         if (!localStorage.getItem('theme')) { localStorage.setItem('theme', 'dark'); theme = 'dark'; }
         document.documentElement.classList.toggle('dark', theme === 'dark');
-        document.documentElement.classList.toggle('sepia', theme === 'sepia');
-        window.addEventListener('theme-changed', (e) => { if (e.detail && e.detail.theme) { theme = e.detail.theme; document.documentElement.classList.toggle('dark', theme === 'dark'); document.documentElement.classList.toggle('sepia', theme === 'sepia'); } });
+        document.documentElement.classList.toggle('theme-sepia', theme === 'sepia');
+        window.addEventListener('theme-changed', (e) => { if (e.detail && e.detail.theme) { theme = e.detail.theme; document.documentElement.classList.toggle('dark', theme === 'dark'); document.documentElement.classList.toggle('theme-sepia', theme === 'sepia'); } });
       ">
 <head>
     <meta charset="UTF-8">
@@ -39,7 +39,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="theme-color" content="#0a6286">
     <script>
-        (function(){var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.classList.add('dark');else if(t==='sepia')document.documentElement.classList.add('sepia');})();
+        (function(){var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.classList.add('dark');else if(t==='sepia')document.documentElement.classList.add('theme-sepia');})();
     </script>
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
