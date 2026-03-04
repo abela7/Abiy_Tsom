@@ -196,10 +196,10 @@
             readOpen: false,
             themeMenuOpen: false,
             fontMenuOpen: false,
-            get fontFamily() {
-                if (this.readerFont === 'benaiah') return "'Benaiah',sans-serif";
-                if (this.readerFont === 'kiros') return "'Kiros',sans-serif";
-                if (this.readerFont === 'handwriting') return "'Handwriting',sans-serif";
+            fontFamily() {
+                if (this.readerFont === 'benaiah') return 'Benaiah,sans-serif';
+                if (this.readerFont === 'kiros') return 'Kiros,sans-serif';
+                if (this.readerFont === 'handwriting') return 'Handwriting,sans-serif';
                 return 'inherit';
             },
             setFontSize(size) {
@@ -352,7 +352,7 @@
 
                 {{-- Inline reader --}}
                 <div class="rounded-xl border border-border bg-surface/50 p-4"
-                     :style="'font-size:' + fontSize + 'px;line-height:' + (fontSize < 20 ? '1.8' : '1.7') + ';max-height:60vh;overflow-y:scroll;-webkit-overflow-scrolling:touch;font-family:' + fontFamily">
+                     :style="'font-size:' + fontSize + 'px;line-height:' + (fontSize < 20 ? '1.8' : '1.7') + ';max-height:60vh;overflow-y:scroll;-webkit-overflow-scrolling:touch;font-family:' + fontFamily()">
                     <div class="text-secondary whitespace-pre-line break-words">{{ $sinksarText }}</div>
                 </div>
             </div>
@@ -407,7 +407,7 @@
 
                 {{-- Fullscreen content --}}
                 <div class="flex-1 overflow-y-auto overscroll-contain px-5 py-6 pb-6 sm:px-8 sm:py-8"
-                     :style="'font-size:' + fontSize + 'px;line-height:' + (fontSize < 20 ? '1.85' : '1.75') + ';font-family:' + fontFamily">
+                     :style="'font-size:' + fontSize + 'px;line-height:' + (fontSize < 20 ? '1.85' : '1.75') + ';font-family:' + fontFamily()">
                     <div class="max-w-2xl mx-auto whitespace-pre-line break-words">{{ $sinksarText }}</div>
                 </div>
 
