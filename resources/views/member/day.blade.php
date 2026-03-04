@@ -319,7 +319,7 @@
                  x-transition:leave-start="opacity-100"
                  x-transition:leave-end="opacity-0"
                  x-cloak
-                 class="fixed inset-0 z-[200] bg-surface flex flex-col">
+                 class="fixed inset-0 z-[9999] bg-surface flex flex-col">
 
                 {{-- Fullscreen top bar --}}
                 <div class="flex items-center justify-between gap-3 px-4 py-3 border-b border-border bg-card shrink-0">
@@ -327,7 +327,7 @@
                         <button type="button" @click="closeFullscreen()"
                                 class="p-2 rounded-lg bg-muted hover:bg-border transition touch-manipulation shrink-0">
                             <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                             </svg>
                         </button>
                         <div class="min-w-0">
@@ -335,37 +335,53 @@
                             <p class="text-[10px] text-muted-text font-medium uppercase tracking-wider">{{ __('app.sinksar') }}</p>
                         </div>
                     </div>
-                    <div class="flex items-center gap-1 shrink-0">
-                        <button type="button" @click="setFontSize(fontSize - 2)"
-                                class="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-secondary hover:bg-border transition touch-manipulation"
-                                :disabled="fontSize <= 12"
-                                :class="fontSize <= 12 && 'opacity-30'">
-                            <span class="text-lg font-bold leading-none">A</span>
-                        </button>
-                        <button type="button" @click="setFontSize(fontSize + 2)"
-                                class="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-secondary hover:bg-border transition touch-manipulation"
-                                :disabled="fontSize >= 28"
-                                :class="fontSize >= 28 && 'opacity-30'">
-                            <span class="text-xl font-bold leading-none">A</span>
-                        </button>
-                    </div>
                 </div>
 
                 {{-- Fullscreen content --}}
-                <div class="flex-1 overflow-y-auto overscroll-contain px-5 py-6 pb-24 sm:px-8 sm:py-8 sm:pb-28"
+                <div class="flex-1 overflow-y-auto overscroll-contain px-5 py-6 pb-24 sm:px-8 sm:py-8"
                      :style="{ fontSize: fontSize + 'px', lineHeight: (fontSize < 20 ? '1.85' : '1.75') }">
                     <div class="max-w-2xl mx-auto text-secondary whitespace-pre-line break-words">{{ $sinksarText }}</div>
                 </div>
 
-                {{-- Floating exit button --}}
-                <div class="absolute bottom-0 inset-x-0 p-4 pb-6 bg-gradient-to-t from-surface via-surface/95 to-transparent safe-area-bottom">
-                    <button type="button" @click="closeFullscreen()"
-                            class="w-full max-w-sm mx-auto h-12 rounded-xl bg-card border border-border shadow-lg text-sm font-bold text-primary hover:bg-muted transition flex items-center justify-center gap-2 touch-manipulation">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25"/>
-                        </svg>
-                        {{ __('app.exit_fullscreen') }}
-                    </button>
+                {{-- Bottom toolbar (replaces main nav) --}}
+                <div class="shrink-0 border-t border-border bg-card safe-area-bottom">
+                    <div class="flex items-center justify-between gap-2 px-4 h-16 max-w-lg mx-auto">
+                        {{-- Font decrease --}}
+                        <button type="button" @click="setFontSize(fontSize - 2)"
+                                class="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg hover:bg-muted transition touch-manipulation"
+                                :disabled="fontSize <= 12"
+                                :class="fontSize <= 12 ? 'opacity-30 cursor-not-allowed' : 'text-secondary'">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2" d="M5 12h14"/></svg>
+                            <span class="text-[9px] font-semibold uppercase tracking-wider">Smaller</span>
+                        </button>
+
+                        {{-- Font size indicator --}}
+                        <div class="flex flex-col items-center gap-0.5 px-2">
+                            <span class="text-base font-bold text-primary tabular-nums" x-text="fontSize"></span>
+                            <span class="text-[9px] font-semibold text-muted-text uppercase tracking-wider">{{ __('app.font_size') }}</span>
+                        </div>
+
+                        {{-- Font increase --}}
+                        <button type="button" @click="setFontSize(fontSize + 2)"
+                                class="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg hover:bg-muted transition touch-manipulation"
+                                :disabled="fontSize >= 28"
+                                :class="fontSize >= 28 ? 'opacity-30 cursor-not-allowed' : 'text-secondary'">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2" d="M12 5v14m-7-7h14"/></svg>
+                            <span class="text-[9px] font-semibold uppercase tracking-wider">Bigger</span>
+                        </button>
+
+                        {{-- Divider --}}
+                        <div class="w-px h-8 bg-border"></div>
+
+                        {{-- Exit fullscreen --}}
+                        <button type="button" @click="closeFullscreen()"
+                                class="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg text-accent hover:bg-accent/10 transition touch-manipulation">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25"/>
+                            </svg>
+                            <span class="text-[9px] font-semibold uppercase tracking-wider">{{ __('app.exit_fullscreen') }}</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </template>
