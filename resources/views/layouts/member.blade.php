@@ -29,8 +29,9 @@
       :class="{ 'dark': theme === 'dark', 'sepia': theme === 'sepia' }"
       x-init="
         if (!localStorage.getItem('theme')) { localStorage.setItem('theme', 'dark'); theme = 'dark'; }
-        this.applyThemeClasses();
-        window.addEventListener('theme-changed', (e) => { if (e.detail && e.detail.theme) { theme = e.detail.theme; this.applyThemeClasses(); } });
+        document.documentElement.classList.toggle('dark', theme === 'dark');
+        document.documentElement.classList.toggle('sepia', theme === 'sepia');
+        window.addEventListener('theme-changed', (e) => { if (e.detail && e.detail.theme) { theme = e.detail.theme; document.documentElement.classList.toggle('dark', theme === 'dark'); document.documentElement.classList.toggle('sepia', theme === 'sepia'); } });
       ">
 <head>
     <meta charset="UTF-8">

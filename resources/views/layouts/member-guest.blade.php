@@ -26,7 +26,8 @@
       x-init="
         if ({{ request()->routeIs('volunteer.invite.*') ? 'true' : 'false' }}) { theme = 'dark'; localStorage.setItem('theme', 'dark'); }
         else if (!localStorage.getItem('theme')) { localStorage.setItem('theme', 'light'); theme = 'light'; }
-        this.applyThemeClasses();
+        document.documentElement.classList.toggle('dark', theme === 'dark');
+        document.documentElement.classList.toggle('sepia', theme === 'sepia');
       ">
 <head>
     <meta charset="UTF-8">
