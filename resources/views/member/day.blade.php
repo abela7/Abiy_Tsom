@@ -306,7 +306,7 @@
 
                 {{-- Inline reader --}}
                 <div class="rounded-xl border border-border bg-surface/50 p-4 max-h-[60vh] overflow-y-auto overscroll-contain"
-                     :style="{ fontSize: fontSize + 'px', lineHeight: (fontSize < 20 ? '1.8' : '1.7') }">
+                     :style="{ fontSize: fontSize + 'px', lineHeight: (fontSize < 20 ? '1.8' : '1.7'), webkitOverflowScrolling: 'touch', touchAction: 'pan-y' }">
                     <div class="text-secondary whitespace-pre-line break-words">{{ $sinksarText }}</div>
                 </div>
             </div>
