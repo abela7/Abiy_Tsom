@@ -32,6 +32,8 @@ class DailyContent extends Model
         'sinksar_url',
         'sinksar_url_en',
         'sinksar_url_am',
+        'sinksar_text_en',
+        'sinksar_text_am',
         'sinksar_description_en',
         'sinksar_description_am',
         'reflection_en',
@@ -137,5 +139,19 @@ class DailyContent extends Model
         return $locale === 'en'
             ? (($enUrl !== '' ? $enUrl : null) ?: ($amUrl !== '' ? $amUrl : null) ?: ($fallbackUrl !== '' ? $fallbackUrl : null))
             : (($amUrl !== '' ? $amUrl : null) ?: ($enUrl !== '' ? $enUrl : null) ?: ($fallbackUrl !== '' ? $fallbackUrl : null));
+    }
+
+    /**
+     * Localized Sinksar text with language fallback.
+     */
+    public function sinksarText(?string $locale = null): ?string
+    {
+        $locale = in_array($locale ?? app()->getLocale(), ['en', 'am'], true) ? ($locale ?? app()->getLocale()) : 'en';
+        $enText = $this->sinksar_text_en ?? null;
+        $amText = $this->sinksar_text_am ?? null;
+
+        return $locale === 'en'
+            ? (($enText !== '' ? $enText : null) ?: ($amText !== '' ? $amText : null))
+            : (($amText !== '' ? $amText : null) ?: ($enText !== '' ? $enText : null));
     }
 }

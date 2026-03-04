@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @php
     $locale = app()->getLocale();
@@ -98,6 +98,8 @@
         'sinksar_title_en' => old('sinksar_title_en', $daily->sinksar_title_en ?? ''),
         'sinksar_url_en' => old('sinksar_url_en', $daily->sinksar_url_en ?? $daily->sinksar_url ?? ''),
         'sinksar_url_am' => old('sinksar_url_am', $daily->sinksar_url_am ?? $daily->sinksar_url ?? ''),
+        'sinksar_text_am' => old('sinksar_text_am', $daily->sinksar_text_am ?? ''),
+        'sinksar_text_en' => old('sinksar_text_en', $daily->sinksar_text_en ?? ''),
         'sinksar_description_am' => old('sinksar_description_am', $daily->sinksar_description_am ?? ''),
         'sinksar_description_en' => old('sinksar_description_en', $daily->sinksar_description_en ?? ''),
         'books' => $initialBooks,
@@ -385,6 +387,7 @@
                         <label class="block text-sm font-medium text-secondary mt-3 mb-1.5">{{ __('app.url_video_label') }}</label>
                         <input type="url" x-model="form.sinksar_url_am" placeholder="{{ __('app.youtube_url_placeholder') }} ({{ __('app.amharic') }})" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
                         <label class="block text-sm font-medium text-secondary mt-3 mb-1.5">{{ __('app.description_label') }}</label>
+                        <textarea x-model="form.sinksar_text_am" rows="6" placeholder="{{ __('app.description_label') }} ({{ __('app.amharic') }})" class="w-full min-h-[10rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
                         <textarea x-model="form.sinksar_description_am" rows="3" placeholder="{{ __('app.description_label') }} ({{ __('app.amharic') }})" class="w-full min-h-[5rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
                     </div>
 
@@ -395,6 +398,7 @@
                         <label class="block text-sm font-medium text-secondary mt-3 mb-1.5">{{ __('app.url_video_label') }}</label>
                         <input type="url" x-model="form.sinksar_url_en" placeholder="{{ __('app.youtube_url_placeholder') }} ({{ __('app.english') }})" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
                         <label class="block text-sm font-medium text-secondary mt-3 mb-1.5">{{ __('app.description_label') }}</label>
+                        <textarea x-model="form.sinksar_text_en" rows="6" placeholder="{{ __('app.description_label') }} ({{ __('app.english') }})" class="w-full min-h-[10rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
                         <textarea x-model="form.sinksar_description_en" rows="3" placeholder="{{ __('app.description_label') }} ({{ __('app.english') }})" class="w-full min-h-[5rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
                     </div>
                 </section>
@@ -749,6 +753,8 @@
                             this.form.sinksar_title_am = data.sinksar_title_am ?? '';
                             this.form.sinksar_url_en = data.sinksar_url_en ?? data.sinksar_url ?? '';
                             this.form.sinksar_url_am = data.sinksar_url_am ?? data.sinksar_url ?? '';
+                            this.form.sinksar_text_en = data.sinksar_text_en ?? '';
+                            this.form.sinksar_text_am = data.sinksar_text_am ?? '';
                             this.form.sinksar_description_en = data.sinksar_description_en ?? '';
                             this.form.sinksar_description_am = data.sinksar_description_am ?? '';
                             this.form.reflection_en = data.reflection_en ?? '';
@@ -920,6 +926,8 @@
                             payload.sinksar_title_en = this.form.sinksar_title_en;
                             payload.sinksar_url_en = this.form.sinksar_url_en;
                             payload.sinksar_url_am = this.form.sinksar_url_am;
+                            payload.sinksar_text_am = this.form.sinksar_text_am;
+                            payload.sinksar_text_en = this.form.sinksar_text_en;
                             payload.sinksar_description_am = this.form.sinksar_description_am;
                             payload.sinksar_description_en = this.form.sinksar_description_en;
                         } else if (step === 5) {
@@ -1029,3 +1037,4 @@
         </script>
     @endif
 @endsection
+

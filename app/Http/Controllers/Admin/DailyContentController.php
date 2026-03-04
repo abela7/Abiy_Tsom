@@ -217,6 +217,8 @@ class DailyContentController extends Controller
                 'sinksar_title_am' => $source->sinksar_title_am ?? '',
                 'sinksar_url_en' => $source->sinksar_url_en ?? $source->sinksar_url ?? '',
                 'sinksar_url_am' => $source->sinksar_url_am ?? $source->sinksar_url ?? '',
+                'sinksar_text_en' => $source->sinksar_text_en ?? '',
+                'sinksar_text_am' => $source->sinksar_text_am ?? '',
                 'sinksar_description_en' => $source->sinksar_description_en ?? '',
                 'sinksar_description_am' => $source->sinksar_description_am ?? '',
                 'reflection_en' => $source->reflection_en ?? '',
@@ -310,12 +312,14 @@ class DailyContentController extends Controller
                 $this->syncMezmurs($daily, $this->parseMezmurs($request));
                 break;
 
-            case 4:
+                case 4:
                 $updates = $request->validate([
                     'sinksar_title_en' => ['nullable', 'string', 'max:255'],
                     'sinksar_title_am' => ['nullable', 'string', 'max:255'],
                     'sinksar_url_en' => ['nullable', 'url', 'max:500'],
                     'sinksar_url_am' => ['nullable', 'url', 'max:500'],
+                    'sinksar_text_en' => ['nullable', 'string'],
+                    'sinksar_text_am' => ['nullable', 'string'],
                     'sinksar_description_en' => ['nullable', 'string'],
                     'sinksar_description_am' => ['nullable', 'string'],
                 ]);
@@ -552,6 +556,8 @@ class DailyContentController extends Controller
             'sinksar_title_am' => ['nullable', 'string', 'max:255'],
             'sinksar_url_en' => ['nullable', 'url', 'max:500'],
             'sinksar_url_am' => ['nullable', 'url', 'max:500'],
+            'sinksar_text_en' => ['nullable', 'string'],
+            'sinksar_text_am' => ['nullable', 'string'],
             'sinksar_description_en' => ['nullable', 'string'],
             'sinksar_description_am' => ['nullable', 'string'],
             'books' => ['nullable', 'array'],
