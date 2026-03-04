@@ -287,8 +287,7 @@
                         </p>
                     </div>
                 </div>
-                <span class="text-[11px] font-semibold text-muted-text uppercase tracking-wider"
-                      x-text="readOpen ? '{{ __('app.close') }}' : '{{ __('app.read') }}'"></span>
+                <span x-show="readOpen" class="text-[11px] font-semibold text-muted-text uppercase tracking-wider">{{ __('app.close') }}</span>
             </button>
 
             <div x-show="readOpen" x-cloak
