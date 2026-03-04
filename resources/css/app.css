@@ -90,51 +90,53 @@
 }
 
 /* ─── Semantic theme variables (sepia) ────────────────────────────────────── */
+/* Sepia only changes surfaces & text — accent/brand/status colors stay
+   identical to light mode so buttons, badges, etc. look completely normal */
 .sepia {
     color-scheme: light;
-    /* Backgrounds — true aged-parchment hierarchy */
-    --app-surface: #f4ecd8;
-    --app-card: #ede3cc;
-    --app-muted: #e5d9be;
-    /* Text — warm dark ink tones */
-    --app-primary: #2c1a0c;
-    --app-secondary: #5b4636;
-    --app-muted-text: #8b7355;
-    /* Borders */
-    --app-border: #cdb89a;
-    --app-border-muted: #e0d2ba;
-    /* Accent — warm leather brown (matches reader interactive elements) */
-    --app-accent: #8b5e3c;
-    --app-accent-hover: #6b4226;
-    --app-accent-secondary: #c9a430;
-    --app-on-accent: #fff8f2;
-    /* Status */
-    --app-success: #3a6b52;
-    --app-success-bg: #d5e8de;
-    --app-error: #9b1c1c;
-    --app-error-bg: #fde4e4;
+    /* Backgrounds — warm parchment */
+    --app-surface: #f5edd8;
+    --app-card: #faf6ee;
+    --app-muted: #ede4d0;
+    /* Text — warm dark ink */
+    --app-primary: #1c1008;
+    --app-secondary: #4a3728;
+    --app-muted-text: #7a6248;
+    /* Borders — subtle warm tint */
+    --app-border: #d6c9b0;
+    --app-border-muted: #e8dfc8;
+    /* Accent — SAME as light mode */
+    --app-accent: #0a6286;
+    --app-accent-hover: #075985;
+    --app-accent-secondary: #d4af37;
+    --app-on-accent: #ffffff;
+    /* Status — SAME as light mode */
+    --app-success: #16a34a;
+    --app-success-bg: #dcfce7;
+    --app-error: #dc2626;
+    --app-error-bg: #fee2e2;
     --app-on-error: #ffffff;
-    /* Section colors */
-    --app-sinksar: #8b4fcf;
-    --app-sinksar-bg: #ede8fb;
-    --app-book: #3a6b52;
-    --app-book-bg: #d5e8de;
-    --app-reflection-bg: rgba(139, 94, 60, 0.1);
-    --app-reflection-border: rgba(139, 94, 60, 0.28);
-    /* Overlays */
-    --app-overlay: rgba(30, 16, 6, 0.5);
-    --app-accent-overlay: rgba(255, 248, 242, 0.12);
-    --app-accent-overlay-hover: rgba(255, 248, 242, 0.22);
-    /* Calendar day states (sepia) */
-    --app-cal-today-bg: #f5e8a8;
-    --app-cal-today-border: #c4a028;
-    --app-cal-today-text: #5c4010;
-    --app-cal-past-bg: #d5e8de;
-    --app-cal-past-border: #3a6b52;
-    --app-cal-past-text: #1b4332;
-    --app-cal-upcoming-bg: #e0d8c4;
-    --app-cal-upcoming-border: #b8a880;
-    --app-cal-upcoming-text: #5b5040;
+    /* Section colors — SAME as light mode */
+    --app-sinksar: #9333ea;
+    --app-sinksar-bg: #faf5ff;
+    --app-book: #16a34a;
+    --app-book-bg: #dcfce7;
+    --app-reflection-bg: rgba(212, 175, 55, 0.08);
+    --app-reflection-border: rgba(212, 175, 55, 0.25);
+    /* Overlays — SAME as light mode */
+    --app-overlay: rgba(0, 0, 0, 0.5);
+    --app-accent-overlay: rgba(255, 255, 255, 0.1);
+    --app-accent-overlay-hover: rgba(255, 255, 255, 0.2);
+    /* Calendar — SAME as light mode */
+    --app-cal-today-bg: #fef9c3;
+    --app-cal-today-border: #eab308;
+    --app-cal-today-text: #a16207;
+    --app-cal-past-bg: #dcfce7;
+    --app-cal-past-border: #22c55e;
+    --app-cal-past-text: #16a34a;
+    --app-cal-upcoming-bg: #f1f5f9;
+    --app-cal-upcoming-border: #cbd5e1;
+    --app-cal-upcoming-text: #64748b;
 }
 
 /* ─── Map to Tailwind color utilities (bg-surface, text-primary, etc.) ────── */

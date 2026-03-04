@@ -525,7 +525,7 @@
                                         <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11v7m0 0l-3-3m3 3l3-3M5 19h14M9 9V4h6v5"/>
                                         </svg>
-                                        {{ __('app.download') }} &rarr;
+                                        {{ __('app.get_book') }} &rarr;
                                     </a>
                                 </div>
                                 <div

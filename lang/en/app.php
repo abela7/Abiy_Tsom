@@ -119,6 +119,7 @@ return [
     'pdf_not_uploaded' => 'PDF not linked yet',
     'read_more' => 'Read More',
     'download' => 'Download',
+    'get_book' => 'Get Book',
     'view_video' => 'View video',
     'view_file' => 'View file',
     'reference_type_label' => 'Link type',
