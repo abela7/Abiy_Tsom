@@ -301,7 +301,6 @@
                 {{-- Accessibility toolbar --}}
                 <div class="flex items-center justify-between gap-2 py-2 px-3 rounded-xl bg-muted/60">
                     <div class="flex items-center gap-1.5">
-                        <span class="text-[10px] font-semibold text-muted-text uppercase tracking-wider">{{ __('app.font_size') }}</span>
                         <button type="button" @click="setFontSize(fontSize - 2)"
                                 class="w-7 h-7 rounded-lg bg-card border border-border flex items-center justify-center text-secondary hover:bg-muted transition touch-manipulation"
                                 :disabled="fontSize <= 12"
