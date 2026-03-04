@@ -92,42 +92,49 @@
 /* ─── Semantic theme variables (sepia) ────────────────────────────────────── */
 .sepia {
     color-scheme: light;
+    /* Backgrounds — true aged-parchment hierarchy */
     --app-surface: #f4ecd8;
     --app-card: #ede3cc;
-    --app-muted: #e8dcc6;
-    --app-primary: #3e2c1c;
+    --app-muted: #e5d9be;
+    /* Text — warm dark ink tones */
+    --app-primary: #2c1a0c;
     --app-secondary: #5b4636;
     --app-muted-text: #8b7355;
-    --app-border: #d4c5a9;
-    --app-border-muted: #e8dcc6;
-    --app-accent: #0a6286;
-    --app-accent-hover: #075985;
-    --app-accent-secondary: #8b5e3c;
-    --app-on-accent: #ffffff;
-    --app-success: #2d6a4f;
-    --app-success-bg: #d8e8e0;
-    --app-error: #b91c1c;
-    --app-error-bg: #fde8e8;
+    /* Borders */
+    --app-border: #cdb89a;
+    --app-border-muted: #e0d2ba;
+    /* Accent — warm leather brown (matches reader interactive elements) */
+    --app-accent: #8b5e3c;
+    --app-accent-hover: #6b4226;
+    --app-accent-secondary: #c9a430;
+    --app-on-accent: #fff8f2;
+    /* Status */
+    --app-success: #3a6b52;
+    --app-success-bg: #d5e8de;
+    --app-error: #9b1c1c;
+    --app-error-bg: #fde4e4;
     --app-on-error: #ffffff;
-    --app-sinksar: #7c3aed;
-    --app-sinksar-bg: #ede9fe;
-    --app-book: #2d6a4f;
-    --app-book-bg: #d8e8e0;
-    --app-reflection-bg: rgba(139, 94, 60, 0.12);
-    --app-reflection-border: rgba(139, 94, 60, 0.3);
-    --app-overlay: rgba(0, 0, 0, 0.45);
-    --app-accent-overlay: rgba(255, 255, 255, 0.1);
-    --app-accent-overlay-hover: rgba(255, 255, 255, 0.2);
+    /* Section colors */
+    --app-sinksar: #8b4fcf;
+    --app-sinksar-bg: #ede8fb;
+    --app-book: #3a6b52;
+    --app-book-bg: #d5e8de;
+    --app-reflection-bg: rgba(139, 94, 60, 0.1);
+    --app-reflection-border: rgba(139, 94, 60, 0.28);
+    /* Overlays */
+    --app-overlay: rgba(30, 16, 6, 0.5);
+    --app-accent-overlay: rgba(255, 248, 242, 0.12);
+    --app-accent-overlay-hover: rgba(255, 248, 242, 0.22);
     /* Calendar day states (sepia) */
-    --app-cal-today-bg: #f5e6b3;
-    --app-cal-today-border: #c9a227;
-    --app-cal-today-text: #5c4a0f;
-    --app-cal-past-bg: #d8e8e0;
-    --app-cal-past-border: #2d6a4f;
+    --app-cal-today-bg: #f5e8a8;
+    --app-cal-today-border: #c4a028;
+    --app-cal-today-text: #5c4010;
+    --app-cal-past-bg: #d5e8de;
+    --app-cal-past-border: #3a6b52;
     --app-cal-past-text: #1b4332;
-    --app-cal-upcoming-bg: #e8e2d4;
-    --app-cal-upcoming-border: #c4b896;
-    --app-cal-upcoming-text: #5b5344;
+    --app-cal-upcoming-bg: #e0d8c4;
+    --app-cal-upcoming-border: #b8a880;
+    --app-cal-upcoming-text: #5b5040;
 }
 
 /* ─── Map to Tailwind color utilities (bg-surface, text-primary, etc.) ────── */
