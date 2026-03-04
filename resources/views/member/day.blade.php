@@ -282,8 +282,8 @@
                     </svg>
                     <div class="min-w-0">
                         <span class="text-sm font-semibold text-primary">{{ __('app.read') }}</span>
-                        <p x-show="!readOpen" class="text-[10px] text-muted-text leading-tight mt-0.5">
-                            Click here to read &nbsp;·&nbsp; ለማንበብ እዚህ ላይ ይንኩ
+                        <p x-show="!readOpen" class="text-[11px] text-muted-text mt-0.5">
+                            {{ app()->getLocale() === 'am' ? 'ለማንበብ እዚህ ላይ ይንኩ' : 'Click here to read' }}
                         </p>
                     </div>
                 </div>
