@@ -55,22 +55,32 @@
 
                     <div class="mb-6 p-4 rounded-xl border border-border bg-muted/40">
                         <h3 class="font-semibold text-primary text-sm">{{ __('app.cookie_consent_title') }}</h3>
-                        <p class="text-xs text-muted-text mt-1.5 leading-relaxed">{{ __('app.cookie_consent_description') }}</p>
+                        <p class="text-xs text-muted-text mt-1.5 leading-relaxed">{{ __('app.cookie_consent_summary') }}</p>
 
-                        <ul class="mt-3 text-xs text-muted-text space-y-2">
-                            <li class="flex gap-2">
-                                <span>•</span>
-                                <span>{{ __('app.cookie_consent_session_cookie') }}</span>
-                            </li>
-                            <li class="flex gap-2">
-                                <span>•</span>
-                                <span>{{ __('app.cookie_consent_device_cookie') }}</span>
-                            </li>
-                            <li class="flex gap-2">
-                                <span>•</span>
-                                <span>{{ __('app.cookie_consent_privacy_note') }}</span>
-                            </li>
-                        </ul>
+                        <button type="button"
+                                @click="cookieConsentExpanded = !cookieConsentExpanded"
+                                class="mt-2 text-xs font-medium text-accent hover:underline">
+                            <span x-show="!cookieConsentExpanded">{{ __('app.read_more') }}</span>
+                            <span x-show="cookieConsentExpanded">{{ __('app.show_less') }}</span>
+                        </button>
+
+                        <div x-show="cookieConsentExpanded" x-transition class="mt-2 text-xs text-muted-text space-y-2">
+                            <p>{{ __('app.cookie_consent_description') }}</p>
+                            <ul class="space-y-2">
+                                <li class="flex gap-2">
+                                    <span>•</span>
+                                    <span>{{ __('app.cookie_consent_session_cookie') }}</span>
+                                </li>
+                                <li class="flex gap-2">
+                                    <span>•</span>
+                                    <span>{{ __('app.cookie_consent_device_cookie') }}</span>
+                                </li>
+                                <li class="flex gap-2">
+                                    <span>•</span>
+                                    <span>{{ __('app.cookie_consent_privacy_note') }}</span>
+                                </li>
+                            </ul>
+                        </div>
 
                         <label class="mt-4 flex items-start gap-2 text-sm">
                             <input type="checkbox"
@@ -345,12 +355,13 @@
 @push('scripts')
 <script>
 function onboarding() {
-    return {
-        step: 1,
-        baptismName: '',
-        cookieConsentAccepted: false,
-        cookieConsentStorageKey: 'abiy_cookie_consent',
-        wantsWhatsApp: false,
+        return {
+            step: 1,
+            baptismName: '',
+            cookieConsentAccepted: false,
+            cookieConsentExpanded: false,
+            cookieConsentStorageKey: 'abiy_cookie_consent',
+            wantsWhatsApp: false,
         phone: '',
         whatsappLang: '{{ in_array(app()->getLocale(), ['en', 'am']) ? app()->getLocale() : 'en' }}',
         reminderTime: '18:00',

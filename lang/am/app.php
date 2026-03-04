@@ -61,6 +61,7 @@ return [
     'wizard_lang_subtitle' => 'Choose the language for your daily WhatsApp reminders.',
     'wizard_lang_english' => 'English',
     'wizard_lang_amharic' => 'አማርኛ (Amharic)',
+    'cookie_consent_summary' => 'For your privacy, we keep only essential data on your device.',
     'cookie_consent_title' => 'Privacy and Cookies',
     'cookie_consent_description' => 'For your privacy, all app data used to keep your session and preference is stored on your local device only. We need browser cookies to keep this working.',
     'cookie_consent_session_cookie' => 'Session cookie: keeps you signed in on this device.',
