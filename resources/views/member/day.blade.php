@@ -450,7 +450,8 @@
                      class="shrink-0 border-t px-4 py-3"
                      :class="{ 'bg-muted/50 border-border': readerTheme === 'default' }"
                      :style="readerTheme === 'sepia' ? 'background-color:#e8dcc6;border-color:#d4c5a9' : readerTheme === 'dark' ? 'background-color:#12122a;border-color:#2a2a4a' : ''">
-                    <div class="flex items-center justify-center gap-4 max-w-xs mx-auto">
+                    <div class="flex items-center justify-between gap-2 max-w-sm mx-auto">
+                        <div class="flex items-center justify-center gap-4 flex-1">
                         {{-- Default font --}}
                         <button type="button" @click="fontMenuOpen = false; setReaderFont('default')"
                                 class="flex flex-col items-center gap-1.5 touch-manipulation">
@@ -494,6 +495,13 @@
                             <span class="text-[10px] font-semibold"
                                   :style="readerFont === 'handwriting' ? 'color:var(--color-accent)' : readerTheme === 'sepia' ? 'color:#5b4636' : readerTheme === 'dark' ? 'color:#8888aa' : 'color:#6b7280'">Writing</span>
                         </button>
+                        </div>
+                        <button type="button" @click="fontMenuOpen = false"
+                                class="shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition touch-manipulation"
+                                :class="{ 'bg-border hover:bg-muted text-muted-text': readerTheme === 'default' }"
+                                :style="readerTheme === 'sepia' ? 'background:#d4c5a9;color:#5b4636' : readerTheme === 'dark' ? 'background:#2a2a4a;color:#8888aa' : ''">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
                     </div>
                 </div>
 
@@ -506,7 +514,8 @@
                      class="shrink-0 border-t px-4 py-3"
                      :class="{ 'bg-muted/50 border-border': readerTheme === 'default' }"
                      :style="readerTheme === 'sepia' ? 'background-color:#e8dcc6;border-color:#d4c5a9' : readerTheme === 'dark' ? 'background-color:#12122a;border-color:#2a2a4a' : ''">
-                    <div class="flex items-center justify-center gap-5 max-w-xs mx-auto">
+                    <div class="flex items-center justify-between gap-2 max-w-sm mx-auto">
+                        <div class="flex items-center justify-center gap-5 flex-1">
                         {{-- Default --}}
                         <button type="button" @click="setReaderTheme('default')"
                                 class="flex flex-col items-center gap-1.5 transition touch-manipulation">
@@ -536,6 +545,13 @@
                             </span>
                             <span class="text-[10px] font-semibold"
                                   :style="readerTheme === 'dark' ? 'color:#7b9fff' : readerTheme === 'sepia' ? 'color:#8b7355' : ''">{{ __('app.reader_theme_dark') }}</span>
+                        </button>
+                        </div>
+                        <button type="button" @click="themeMenuOpen = false"
+                                class="shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition touch-manipulation"
+                                :class="{ 'bg-border hover:bg-muted text-muted-text': readerTheme === 'default' }"
+                                :style="readerTheme === 'sepia' ? 'background:#d4c5a9;color:#5b4636' : readerTheme === 'dark' ? 'background:#2a2a4a;color:#8888aa' : ''">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
                         </button>
                     </div>
                 </div>
