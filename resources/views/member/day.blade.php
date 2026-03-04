@@ -196,6 +196,7 @@
             readOpen: false,
             themeMenuOpen: false,
             fontMenuOpen: false,
+            inlineFontOpen: false,
             fontFamily() {
                 if (this.readerFont === 'benaiah') return 'Benaiah,sans-serif';
                 if (this.readerFont === 'kiros') return 'Kiros,sans-serif';
@@ -316,14 +317,45 @@
                         </button>
                     </div>
                     <div class="flex items-center gap-1.5">
-                        {{-- Font cycle button --}}
-                        <button type="button"
-                                @click="setReaderFont(['default','benaiah','kiros','handwriting'][(['default','benaiah','kiros','handwriting'].indexOf(readerFont) + 1) % 4])"
-                                class="h-7 px-2.5 rounded-lg border bg-card border-border text-secondary hover:bg-muted transition touch-manipulation flex items-center gap-1">
-                            <span class="text-[13px] font-bold"
-                                  :style="readerFont === 'benaiah' ? 'font-family:Benaiah,sans-serif' : readerFont === 'kiros' ? 'font-family:Kiros,sans-serif' : readerFont === 'handwriting' ? 'font-family:Handwriting,sans-serif' : ''">ሀ</span>
-                            <svg class="w-2.5 h-2.5 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
-                        </button>
+                        {{-- Font dropdown --}}
+                        <div class="relative" @click.outside="inlineFontOpen = false">
+                            <button type="button"
+                                    @click="inlineFontOpen = !inlineFontOpen"
+                                    class="h-7 px-2.5 rounded-lg border transition touch-manipulation flex items-center gap-1"
+                                    :class="inlineFontOpen ? 'bg-accent border-accent text-on-accent' : 'bg-card border-border text-secondary hover:bg-muted'">
+                                <span class="text-[13px] font-bold"
+                                      :style="readerFont === 'benaiah' ? 'font-family:Benaiah,sans-serif' : readerFont === 'kiros' ? 'font-family:Kiros,sans-serif' : readerFont === 'handwriting' ? 'font-family:Handwriting,sans-serif' : ''">ሀ</span>
+                                <svg class="w-2.5 h-2.5 opacity-60 transition-transform" :class="inlineFontOpen && 'rotate-90'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                            </button>
+                            {{-- Dropdown panel --}}
+                            <div x-show="inlineFontOpen"
+                                 x-transition:enter="transition ease-out duration-100"
+                                 x-transition:enter-start="opacity-0 scale-95 -translate-y-1"
+                                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                                 x-transition:leave="transition ease-in duration-75"
+                                 x-transition:leave-start="opacity-100 scale-100"
+                                 x-transition:leave-end="opacity-0 scale-95"
+                                 x-cloak
+                                 class="absolute right-0 top-full mt-1.5 w-52 bg-card border border-border rounded-xl shadow-xl overflow-hidden z-50"
+                                 style="display:none">
+                                @foreach([['default','Default','inherit','ሀ'],['benaiah','Benaiah','Benaiah,sans-serif','ሀ'],['kiros','Kiros','Kiros,sans-serif','ሀ'],['handwriting','Handwriting','Handwriting,sans-serif','ሀ']] as [$val,$label,$ff,$glyph])
+                                <button type="button"
+                                        @click="inlineFontOpen = false; setReaderFont('{{ $val }}')"
+                                        class="w-full px-4 py-3 text-left transition touch-manipulation flex items-center justify-between gap-3 border-b border-border last:border-0"
+                                        :class="readerFont === '{{ $val }}' ? 'bg-accent/10' : 'hover:bg-muted'">
+                                    <div class="min-w-0">
+                                        <p class="text-[11px] font-semibold uppercase tracking-wider mb-0.5"
+                                           :class="readerFont === '{{ $val }}' ? 'text-accent' : 'text-muted-text'">{{ $label }}</p>
+                                        <p class="text-sm truncate" style="font-family:{{ $ff }}"
+                                           :class="readerFont === '{{ $val }}' ? 'text-primary' : 'text-secondary'">መልካም ንባብ</p>
+                                        <p class="text-[11px] truncate" style="font-family:{{ $ff }}"
+                                           :class="readerFont === '{{ $val }}' ? 'text-accent' : 'text-muted-text'">Happy Reading</p>
+                                    </div>
+                                    <svg x-show="readerFont === '{{ $val }}'" class="w-4 h-4 text-accent shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                </button>
+                                @endforeach
+                            </div>
+                        </div>
                         <button type="button" @click="openFullscreen()"
                                 class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-card border border-border text-secondary hover:bg-muted transition touch-manipulation">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
