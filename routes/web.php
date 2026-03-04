@@ -112,6 +112,7 @@ Route::prefix('api/member')->middleware('api.member')->name('api.member.')->grou
     Route::post('/banner/{banner}/respond', [Member\BannerController::class, 'respond'])->name('banner.respond');
     Route::post('/tour/complete', [Member\TourController::class, 'complete'])->name('tour.complete');
     Route::post('/tour/reset', [Member\TourController::class, 'reset'])->name('tour.reset');
+    Route::post('/account/delete', [Member\SettingsController::class, 'deleteAccount'])->name('account.delete');
 });
 
 /*

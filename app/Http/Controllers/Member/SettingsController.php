@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
+use App\Services\MemberSessionService;
 use App\Services\TelegramAuthService;
 use App\Services\WhatsAppReminderConfirmationService;
 use Illuminate\Http\JsonResponse;
@@ -213,6 +214,29 @@ class SettingsController extends Controller
             'success' => true,
             'message' => __('app.telegram_settings_unlinked'),
         ]);
+    }
+
+    /**
+     * Delete the member account and all associated data, then log out.
+     */
+    public function deleteAccount(Request $request, MemberSessionService $sessionService): JsonResponse
+    {
+        /** @var \App\Models\Member $member */
+        $member = $request->attributes->get('member');
+
+        // Delete all related data
+        $member->checklists()->delete();
+        $member->customChecklists()->delete();
+        $member->customActivities()->delete();
+
+        // Revoke every session for this member
+        $sessionService->revokeAllMemberSessions($member);
+        $sessionService->forgetCookies();
+
+        // Delete the member record itself
+        $member->delete();
+
+        return response()->json(['success' => true]);
     }
 
     private function normalizeReminderTime(mixed $time): ?string

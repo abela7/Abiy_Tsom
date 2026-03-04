@@ -576,6 +576,69 @@
             </div>
         </div>
     </div>
+
+    {{-- Logout / Delete Account --}}
+    <div x-data="{ showLogoutConfirm: false, logoutLoading: false }">
+        <button type="button" @click="showLogoutConfirm = true"
+                class="w-full py-3.5 bg-error/10 text-error rounded-2xl font-semibold text-sm border border-error/20 hover:bg-error/20 transition">
+            <span class="flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                </svg>
+                ውጣ / Logout
+            </span>
+        </button>
+
+        {{-- Confirmation overlay --}}
+        <div x-show="showLogoutConfirm" x-transition.opacity
+             class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-6"
+             @click.self="showLogoutConfirm = false" style="display: none;">
+            <div class="bg-card rounded-2xl shadow-xl border border-border w-full max-w-sm p-6 text-center"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 scale-95"
+                 x-transition:enter-end="opacity-100 scale-100">
+
+                <div class="w-14 h-14 mx-auto mb-4 rounded-full bg-error/10 flex items-center justify-center">
+                    <svg class="w-7 h-7 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                    </svg>
+                </div>
+
+                <p class="text-primary font-semibold text-base leading-relaxed mb-6">
+                    እርግጠኛ ነውዎት ሁሉንም መረጃ ማጥፋት እና መውጣት ይፈልጋሉ?
+                </p>
+
+                <div class="flex gap-3">
+                    <button type="button" @click="showLogoutConfirm = false"
+                            :disabled="logoutLoading"
+                            class="flex-1 py-3 bg-muted text-primary rounded-xl font-medium text-sm border border-border hover:bg-muted/80 transition disabled:opacity-50">
+                        አልፈልግም
+                    </button>
+                    <button type="button" @click="
+                        logoutLoading = true;
+                        AbiyTsom.api('/api/member/account/delete', {})
+                            .then(() => {
+                                localStorage.clear();
+                                window.location.href = '/';
+                            })
+                            .catch(() => {
+                                localStorage.clear();
+                                document.cookie.split(';').forEach(c => {
+                                    document.cookie = c.trim().split('=')[0] + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
+                                });
+                                window.location.href = '/';
+                            });
+                    "   :disabled="logoutLoading"
+                        class="flex-1 py-3 bg-error text-on-error rounded-xl font-medium text-sm hover:opacity-90 transition disabled:opacity-50">
+                        <span x-show="!logoutLoading">አዎ</span>
+                        <span x-show="logoutLoading" class="flex items-center justify-center">
+                            <span class="w-4 h-4 border-2 border-on-error/30 border-t-on-error rounded-full animate-spin"></span>
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
 
