@@ -431,9 +431,6 @@
                      x-transition:enter="transition ease-out duration-150"
                      x-transition:enter-start="opacity-0 translate-y-4"
                      x-transition:enter-end="opacity-100 translate-y-0"
-                     x-transition:leave="transition ease-in duration-100"
-                     x-transition:leave-start="opacity-100"
-                     x-transition:leave-end="opacity-0 translate-y-4"
                      x-cloak
                      class="shrink-0 border-t px-4 py-3"
                      :class="{ 'bg-muted/50 border-border': readerTheme === 'default' }"
@@ -490,9 +487,6 @@
                      x-transition:enter="transition ease-out duration-150"
                      x-transition:enter-start="opacity-0 translate-y-4"
                      x-transition:enter-end="opacity-100 translate-y-0"
-                     x-transition:leave="transition ease-in duration-100"
-                     x-transition:leave-start="opacity-100"
-                     x-transition:leave-end="opacity-0 translate-y-4"
                      x-cloak
                      class="shrink-0 border-t px-4 py-3"
                      :class="{ 'bg-muted/50 border-border': readerTheme === 'default' }"
