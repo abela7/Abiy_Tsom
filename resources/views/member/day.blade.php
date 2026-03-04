@@ -283,14 +283,18 @@
                 imgCurrent: 0,
                 imgTotal: {{ $sinksarImages->count() }},
                 _touchX: 0, _touchY: 0,
+                _autoTimer: null,
                 imgNext() { this.imgCurrent = (this.imgCurrent + 1) % this.imgTotal; },
                 imgPrev() { this.imgCurrent = (this.imgCurrent - 1 + this.imgTotal) % this.imgTotal; },
-                imgTouchStart(e) { this._touchX = e.touches[0].clientX; this._touchY = e.touches[0].clientY; },
+                startAuto() { this._autoTimer = setInterval(() => this.imgNext(), 5000); },
+                stopAuto() { if (this._autoTimer) { clearInterval(this._autoTimer); this._autoTimer = null; } },
+                imgTouchStart(e) { this.stopAuto(); this._touchX = e.touches[0].clientX; this._touchY = e.touches[0].clientY; },
                 imgTouchEnd(e) {
                     var dx = e.changedTouches[0].clientX - this._touchX;
                     var dy = e.changedTouches[0].clientY - this._touchY;
                     if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) { dx < 0 ? this.imgNext() : this.imgPrev(); }
-                }
+                },
+                init() { if (this.imgTotal > 1) this.startAuto(); }
              }">
 
             <div class="relative rounded-xl overflow-hidden"
@@ -319,18 +323,18 @@
 
             @if($sinksarImages->count() > 1)
             <div class="flex items-center justify-center gap-2 mt-2">
-                <button type="button" @click="imgPrev()" class="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-muted-text hover:text-primary transition touch-manipulation">
+                <button type="button" @click="stopAuto(); imgPrev()" class="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-muted-text hover:text-primary transition touch-manipulation">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
                 </button>
                 <div class="flex items-center gap-1">
                     @foreach($sinksarImages as $idx => $img)
-                    <button type="button" @click="imgCurrent = {{ $idx }}"
+                    <button type="button" @click="stopAuto(); imgCurrent = {{ $idx }}"
                             class="transition-all duration-300 touch-manipulation"
                             :class="imgCurrent === {{ $idx }} ? 'w-4 h-1.5 rounded-full bg-sinksar' : 'w-1.5 h-1.5 rounded-full bg-border hover:bg-muted-text'">
                     </button>
                     @endforeach
                 </div>
-                <button type="button" @click="imgNext()" class="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-muted-text hover:text-primary transition touch-manipulation">
+                <button type="button" @click="stopAuto(); imgNext()" class="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-muted-text hover:text-primary transition touch-manipulation">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
                 </button>
             </div>
@@ -521,14 +525,18 @@
                          x-data="{
                             fsCurrent: 0, fsTotal: {{ $sinksarImages->count() }},
                             _fsTX: 0, _fsTY: 0,
+                            _fsAutoTimer: null,
                             fsNext() { this.fsCurrent = (this.fsCurrent + 1) % this.fsTotal; },
                             fsPrev() { this.fsCurrent = (this.fsCurrent - 1 + this.fsTotal) % this.fsTotal; },
-                            fsTouchStart(e) { this._fsTX = e.touches[0].clientX; this._fsTY = e.touches[0].clientY; },
+                            fsStartAuto() { this._fsAutoTimer = setInterval(() => this.fsNext(), 5000); },
+                            fsStopAuto() { if (this._fsAutoTimer) { clearInterval(this._fsAutoTimer); this._fsAutoTimer = null; } },
+                            fsTouchStart(e) { this.fsStopAuto(); this._fsTX = e.touches[0].clientX; this._fsTY = e.touches[0].clientY; },
                             fsTouchEnd(e) {
                                 var dx = e.changedTouches[0].clientX - this._fsTX;
                                 var dy = e.changedTouches[0].clientY - this._fsTY;
                                 if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) { dx < 0 ? this.fsNext() : this.fsPrev(); }
-                            }
+                            },
+                            init() { if (this.fsTotal > 1) this.fsStartAuto(); }
                          }">
                         <div class="relative rounded-xl overflow-hidden"
                              style="aspect-ratio:4/3;background:#1a1a2e"
@@ -554,7 +562,7 @@
                         @if($sinksarImages->count() > 1)
                         <div class="flex items-center justify-center gap-1.5 mt-2">
                             @foreach($sinksarImages as $idx => $img)
-                            <button type="button" @click="fsCurrent = {{ $idx }}"
+                            <button type="button" @click="fsStopAuto(); fsCurrent = {{ $idx }}"
                                     class="transition-all duration-300 touch-manipulation"
                                     :class="fsCurrent === {{ $idx }} ? 'w-4 h-1.5 rounded-full bg-sinksar' : 'w-1.5 h-1.5 rounded-full bg-white/30 hover:bg-white/50'"
                                     :style="fsCurrent === {{ $idx }} && readerTheme === 'default' ? 'background-color:var(--color-sinksar,#9333ea)' : ''">
