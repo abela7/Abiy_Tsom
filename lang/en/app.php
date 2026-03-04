@@ -93,6 +93,7 @@ return [
     'of_total' => 'of :total',
     'day_page_title' => 'Day :day',
     'day_x' => 'Day :day',
+    'ethiopian_date_label' => 'Ethiopian Date',
     'share' => 'Share',
     'share_btn' => 'Share',
     'share_prompt_message' => 'Share this with your loved ones',

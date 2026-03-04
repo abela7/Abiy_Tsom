@@ -97,6 +97,7 @@ return [
     'of_total' => 'ከ :total',
     'day_page_title' => 'ቀን :day',
     'day_x' => 'ቀን :day',
+    'ethiopian_date_label' => 'ኢትዮጵያዊ ቀን',
     'share' => 'ያጋሩ',
     'share_btn' => 'ያጋሩ',
     'share_prompt_message' => 'ለወዳጅ ዘመድዎ ያጋሩ',
