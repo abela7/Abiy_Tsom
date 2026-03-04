@@ -815,6 +815,11 @@ return [
     'synaxarium_delete_confirm' => 'እርግጠኛ ነዎት ይህን በዓል ለማጥፋት ይፈልጋሉ?',
     'synaxarium_no_monthly' => 'ገና ወርሃዊ በዓል አልተጨመረም። ከላይ የመጀመሪያውን ጨምር።',
     'synaxarium_no_annual' => 'ገና ዓመታዊ ልዩ በዓል አልተጨመረም። ከላይ የመጀመሪያውን ጨምር።',
+    'synaxarium_is_main' => 'ዋና በዓል',
+    'synaxarium_sort_order' => 'ደረጃ',
+    'synaxarium_main_badge' => 'ዋና',
+    'synaxarium_add_saint' => 'ቅዱስ ጨምር',
+    'synaxarium_description' => 'መግለጫ',
 
     // Admin members tracking (anonymous stats only)
     'members_tracking' => 'አባላት',

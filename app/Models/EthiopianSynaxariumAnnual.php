@@ -15,8 +15,12 @@ class EthiopianSynaxariumAnnual extends Model
     protected $fillable = [
         'month',
         'day',
+        'is_main',
+        'sort_order',
         'celebration_en',
         'celebration_am',
+        'description_en',
+        'description_am',
         'image_path',
     ];
 
@@ -26,6 +30,8 @@ class EthiopianSynaxariumAnnual extends Model
         return [
             'month' => 'integer',
             'day' => 'integer',
+            'is_main' => 'boolean',
+            'sort_order' => 'integer',
         ];
     }
 

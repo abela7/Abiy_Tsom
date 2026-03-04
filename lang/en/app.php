@@ -817,6 +817,11 @@ return [
     'synaxarium_delete_confirm' => 'Are you sure you want to delete this celebration?',
     'synaxarium_no_monthly' => 'No monthly celebrations yet. Add the first one above.',
     'synaxarium_no_annual' => 'No annual overrides yet. Add the first one above.',
+    'synaxarium_is_main' => 'Main celebration',
+    'synaxarium_sort_order' => 'Order',
+    'synaxarium_main_badge' => 'Main',
+    'synaxarium_add_saint' => 'Add Saint',
+    'synaxarium_description' => 'Description',
 
     // Admin members tracking & management
     'members_tracking' => 'Members',

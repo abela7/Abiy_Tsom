@@ -14,6 +14,8 @@ class EthiopianSynaxariumMonthly extends Model
     /** @var list<string> */
     protected $fillable = [
         'day',
+        'is_main',
+        'sort_order',
         'celebration_en',
         'celebration_am',
         'image_path',
@@ -24,6 +26,8 @@ class EthiopianSynaxariumMonthly extends Model
     {
         return [
             'day' => 'integer',
+            'is_main' => 'boolean',
+            'sort_order' => 'integer',
         ];
     }
 

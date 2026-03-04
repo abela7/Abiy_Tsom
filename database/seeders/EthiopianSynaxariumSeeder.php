@@ -46,10 +46,11 @@ class EthiopianSynaxariumSeeder extends Seeder
 
         foreach ($celebrations as $day => $names) {
             EthiopianSynaxariumMonthly::updateOrCreate(
-                ['day' => $day],
+                ['day' => $day, 'celebration_en' => $names['en']],
                 [
-                    'celebration_en' => $names['en'],
                     'celebration_am' => $names['am'],
+                    'is_main' => true,
+                    'sort_order' => 0,
                 ]
             );
         }

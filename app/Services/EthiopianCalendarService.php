@@ -8,6 +8,7 @@ use Andegna\DateTime as EthiopianDateTime;
 use App\Models\EthiopianSynaxariumAnnual;
 use App\Models\EthiopianSynaxariumMonthly;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
 
 class EthiopianCalendarService
 {
@@ -66,38 +67,48 @@ class EthiopianCalendarService
     }
 
     /**
-     * Get the celebration for a given Gregorian date.
-     * Priority: annual override (specific month+day) > monthly default (day only).
+     * Get all celebrations for a given Gregorian date.
+     * Priority: if any annual records exist for month+day, use those; otherwise monthly.
+     *
+     * @return Collection<int, EthiopianSynaxariumAnnual|EthiopianSynaxariumMonthly>
      */
-    public function getCelebrationForDate(Carbon $date): EthiopianSynaxariumAnnual|EthiopianSynaxariumMonthly|null
+    public function getCelebrationsForDate(Carbon $date): Collection
     {
         $eth = $this->gregorianToEthiopian($date);
 
-        $annual = EthiopianSynaxariumAnnual::where('month', $eth['month'])
+        $annuals = EthiopianSynaxariumAnnual::where('month', $eth['month'])
             ->where('day', $eth['day'])
-            ->first();
+            ->orderByDesc('is_main')
+            ->orderBy('sort_order')
+            ->get();
 
-        if ($annual) {
-            return $annual;
+        if ($annuals->isNotEmpty()) {
+            return $annuals;
         }
 
-        return EthiopianSynaxariumMonthly::where('day', $eth['day'])->first();
+        return EthiopianSynaxariumMonthly::where('day', $eth['day'])
+            ->orderByDesc('is_main')
+            ->orderBy('sort_order')
+            ->get();
     }
 
     /**
-     * Get Ethiopian date info and celebration in one call.
+     * Get Ethiopian date info and celebrations in one call.
      *
-     * @return array{ethiopian_date: array, ethiopian_date_formatted: string, celebration: EthiopianSynaxariumAnnual|EthiopianSynaxariumMonthly|null, is_annual_feast: bool}
+     * @return array{ethiopian_date: array, ethiopian_date_formatted: string, celebrations: Collection, main_celebration: EthiopianSynaxariumAnnual|EthiopianSynaxariumMonthly|null, celebration: EthiopianSynaxariumAnnual|EthiopianSynaxariumMonthly|null, is_annual_feast: bool}
      */
     public function getDateInfo(Carbon $date, string $locale = 'en'): array
     {
-        $celebration = $this->getCelebrationForDate($date);
+        $celebrations = $this->getCelebrationsForDate($date);
+        $mainCelebration = $celebrations->firstWhere('is_main', true) ?? $celebrations->first();
 
         return [
             'ethiopian_date' => $this->gregorianToEthiopian($date),
             'ethiopian_date_formatted' => $this->formatEthiopianDate($date, $locale),
-            'celebration' => $celebration,
-            'is_annual_feast' => $celebration instanceof EthiopianSynaxariumAnnual,
+            'celebrations' => $celebrations,
+            'main_celebration' => $mainCelebration,
+            'celebration' => $mainCelebration,
+            'is_annual_feast' => $mainCelebration instanceof EthiopianSynaxariumAnnual,
         ];
     }
 }

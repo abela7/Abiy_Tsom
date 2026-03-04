@@ -104,23 +104,49 @@
     </a>
     @endif
 
-    {{-- Today's celebration (Ethiopian Synaxarium) --}}
-    @if(!empty($ethDateInfo['celebration'] ?? null))
-    <div class="flex items-center gap-3 px-4 py-3 rounded-2xl bg-card border border-border shadow-sm">
-        @if($ethDateInfo['celebration']->imageUrl())
-            <img src="{{ $ethDateInfo['celebration']->imageUrl() }}" alt="" class="w-10 h-10 rounded-xl object-cover shrink-0">
-        @else
-            <div class="shrink-0 w-10 h-10 rounded-xl bg-sinksar/10 flex items-center justify-center">
-                <svg class="w-5 h-5 text-sinksar" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+    {{-- Today's celebrations (Ethiopian Synaxarium) --}}
+    @if(!empty($ethDateInfo['celebrations']) && $ethDateInfo['celebrations']->isNotEmpty())
+        {{-- Main celebration card --}}
+        @php $mainCelebration = $ethDateInfo['main_celebration']; @endphp
+        @if($mainCelebration)
+        <div class="flex items-center gap-3 px-4 py-3 rounded-2xl bg-card border border-border shadow-sm">
+            @if($mainCelebration->imageUrl())
+                <img src="{{ $mainCelebration->imageUrl() }}" alt="" class="w-10 h-10 rounded-xl object-cover shrink-0">
+            @else
+                <div class="shrink-0 w-10 h-10 rounded-xl bg-sinksar/10 flex items-center justify-center">
+                    <svg class="w-5 h-5 text-sinksar" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                </div>
+            @endif
+            <div class="flex-1 min-w-0">
+                <span class="block text-sm font-bold text-primary">{{ localized($mainCelebration, 'celebration') }}</span>
+                <span class="block text-[11px] text-muted-text mt-0.5">
+                    {{ $ethDateInfo['is_annual_feast'] ? __('app.synaxarium_annual_feast') : __('app.synaxarium_daily_saint') }}
+                </span>
+                @if($ethDateInfo['is_annual_feast'] && ($mainCelebration->description_en || $mainCelebration->description_am))
+                    <p class="text-xs text-secondary mt-1 whitespace-pre-line">{{ localized($mainCelebration, 'description') }}</p>
+                @endif
             </div>
-        @endif
-        <div class="flex-1 min-w-0">
-            <span class="block text-sm font-bold text-primary">{{ localized($ethDateInfo['celebration'], 'celebration') }}</span>
-            <span class="block text-[11px] text-muted-text mt-0.5">
-                {{ $ethDateInfo['is_annual_feast'] ? __('app.synaxarium_annual_feast') : __('app.synaxarium_daily_saint') }}
-            </span>
         </div>
-    </div>
+        @endif
+
+        {{-- Secondary saints --}}
+        @php $secondarySaints = $ethDateInfo['celebrations']->where('is_main', '!=', true); @endphp
+        @if($secondarySaints->isNotEmpty())
+        <div class="flex flex-col gap-1.5">
+            @foreach($secondarySaints as $saint)
+            <div class="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-surface border border-border/50">
+                @if($saint->imageUrl())
+                    <img src="{{ $saint->imageUrl() }}" alt="" class="w-7 h-7 rounded-lg object-cover shrink-0">
+                @else
+                    <div class="shrink-0 w-7 h-7 rounded-lg bg-sinksar/5 flex items-center justify-center">
+                        <svg class="w-3.5 h-3.5 text-sinksar/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                    </div>
+                @endif
+                <span class="text-xs font-medium text-secondary truncate">{{ localized($saint, 'celebration') }}</span>
+            </div>
+            @endforeach
+        </div>
+        @endif
     @endif
 
     {{-- Day title --}}
