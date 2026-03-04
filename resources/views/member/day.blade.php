@@ -297,11 +297,12 @@
              }"
              @keydown.escape.window="if(imgLightbox) closeLightbox()">
 
-            <div class="relative rounded-xl overflow-hidden bg-muted aspect-[16/10]"
+            <div class="relative rounded-xl overflow-hidden"
+                 style="aspect-ratio:4/3;background:#1a1a2e"
                  @touchstart.passive="imgTouchStart($event)"
                  @touchend.passive="imgTouchEnd($event)">
                 @foreach($sinksarImages as $idx => $img)
-                <div class="absolute inset-0 transition-all duration-500 ease-out cursor-pointer"
+                <div class="absolute inset-0 flex items-center justify-center transition-all duration-500 ease-out cursor-pointer"
                      :style="imgCurrent === {{ $idx }}
                          ? 'opacity:1;transform:translateX(0);z-index:10;pointer-events:auto'
                          : {{ $idx }} > imgCurrent
@@ -310,7 +311,7 @@
                      @click="openLightbox()">
                     <img src="{{ $img->imageUrl() }}"
                          alt="{{ localized($img, 'caption') ?? '' }}"
-                         class="w-full h-full object-cover object-center"
+                         class="w-full h-full object-contain"
                          loading="{{ $idx === 0 ? 'eager' : 'lazy' }}">
                     @if(localized($img, 'caption'))
                     <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent px-3 py-2">
@@ -571,18 +572,19 @@
                                 if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) { dx < 0 ? this.fsNext() : this.fsPrev(); }
                             }
                          }">
-                        <div class="relative rounded-xl overflow-hidden aspect-[16/10]"
+                        <div class="relative rounded-xl overflow-hidden"
+                             style="aspect-ratio:4/3;background:#1a1a2e"
                              @touchstart.passive="fsTouchStart($event)"
                              @touchend.passive="fsTouchEnd($event)">
                             @foreach($sinksarImages as $idx => $img)
-                            <div class="absolute inset-0 transition-all duration-500 ease-out"
+                            <div class="absolute inset-0 flex items-center justify-center transition-all duration-500 ease-out"
                                  :style="fsCurrent === {{ $idx }}
                                      ? 'opacity:1;transform:translateX(0);z-index:10'
                                      : {{ $idx }} > fsCurrent
                                          ? 'opacity:0;transform:translateX(100%);z-index:1'
                                          : 'opacity:0;transform:translateX(-100%);z-index:1'">
                                 <img src="{{ $img->imageUrl() }}" alt="{{ localized($img, 'caption') ?? '' }}"
-                                     class="w-full h-full object-cover object-center" loading="lazy">
+                                     class="w-full h-full object-contain" loading="lazy">
                                 @if(localized($img, 'caption'))
                                 <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent px-3 py-2">
                                     <p class="text-white text-xs font-medium">{{ localized($img, 'caption') }}</p>
