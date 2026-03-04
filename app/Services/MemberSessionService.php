@@ -41,10 +41,9 @@ class MemberSessionService
             return null;
         }
 
-        if ($session->member->trusted_device_hash
-            && ! hash_equals((string) $session->member->trusted_device_hash, $deviceHash)) {
-            return null;
-        }
+        // Each MemberSession row is already bound to its own device_hash.
+        // No global trusted_device_hash check — members may use multiple
+        // browsers (Safari, WhatsApp in-app, Chrome) without losing access.
 
         $session->forceFill([
             'last_used_at' => now(),
@@ -56,37 +55,19 @@ class MemberSessionService
     }
 
     /**
-     * @param  bool  $trustNewDevice  When true (e.g. token-based auth from WhatsApp),
-     *                                allow establishing a session even if the browser's
-     *                                device cookie doesn't match the stored trusted hash.
-     *                                The old trusted device is released and replaced.
+     * Create a new session for the member on the current device.
+     * Only revokes existing sessions for the same device — other devices
+     * (e.g. Safari while opening a WhatsApp link) keep their sessions.
      */
-    public function establishSession(Member $member, Request $request, bool $trustNewDevice = false): bool
+    public function establishSession(Member $member, Request $request): bool
     {
         $deviceId = $this->normalizeCookieValue($request->cookie(self::DEVICE_COOKIE), 20) ?? Str::random(80);
         $deviceHash = hash('sha256', $deviceId);
 
-        $deviceMismatch = $member->trusted_device_hash
-            && ! hash_equals((string) $member->trusted_device_hash, $deviceHash);
-
-        if ($deviceMismatch && ! $trustNewDevice) {
-            return false;
-        }
-
-        if ($deviceMismatch && $trustNewDevice) {
-            MemberSession::where('member_id', $member->id)
-                ->whereNull('revoked_at')
-                ->update(['revoked_at' => now()]);
-
-            $member->forceFill(['trusted_device_hash' => $deviceHash])->save();
-        }
-
-        if (! $member->trusted_device_hash) {
-            $member->forceFill([
-                'trusted_device_hash' => $deviceHash,
-            ])->save();
-        }
-
+        // Revoke any existing session for THIS device only (not all devices).
+        // This allows the member to stay logged in on Safari while also
+        // opening a WhatsApp link in the in-app browser without losing
+        // their Safari session.
         MemberSession::where('member_id', $member->id)
             ->where('device_hash', $deviceHash)
             ->whereNull('revoked_at')

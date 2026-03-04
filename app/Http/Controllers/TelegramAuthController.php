@@ -505,10 +505,7 @@ class TelegramAuthController extends Controller
             return redirect()->route('home');
         }
 
-        // Token-based auth is server-verified, so trust the new device even if
-        // it doesn't match the previously stored trusted_device_hash (handles
-        // WhatsApp in-app browser resets, iOS webview cache clears, etc.).
-        if (! $memberSessionService->establishSession($member, $request, trustNewDevice: true)) {
+        if (! $memberSessionService->establishSession($member, $request)) {
             return redirect()->route('home');
         }
 
