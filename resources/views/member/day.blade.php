@@ -263,7 +263,12 @@
                     <svg class="w-4 h-4 shrink-0 transition-transform duration-200" :class="readOpen ? 'rotate-90' : ''" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M8 5v14l11-7z"/>
                     </svg>
-                    <span class="text-sm font-semibold text-primary">{{ __('app.read') }}</span>
+                    <div class="min-w-0">
+                        <span class="text-sm font-semibold text-primary">{{ __('app.read') }}</span>
+                        <p x-show="!readOpen" class="text-[10px] text-muted-text leading-tight mt-0.5">
+                            Click here to read &nbsp;·&nbsp; ለማንበብ እዚህ ላይ ይንኩ
+                        </p>
+                    </div>
                 </div>
                 <span class="text-[11px] font-semibold text-muted-text uppercase tracking-wider"
                       x-text="readOpen ? '{{ __('app.close') }}' : '{{ __('app.read') }}'"></span>
