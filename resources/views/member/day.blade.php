@@ -554,13 +554,21 @@
                     @endif
                     @if($bookUrl)
                         @if($bookIsPdf)
-                            <div x-data="{ readerOpen: false }" class="mt-2 space-y-2">
+                            <div x-data="{ readerOpen: window.matchMedia('(min-width: 768px)').matches }"
+                                 @resize.window="readerOpen = window.matchMedia('(min-width: 768px)').matches"
+                                 class="mt-2 space-y-2">
                                 <div class="flex flex-wrap gap-2">
                                     <button
                                         type="button"
                                         @click="readerOpen = !readerOpen"
-                                        class="inline-flex min-h-10 items-center justify-center rounded-lg bg-book/10 hover:bg-book/20 text-book px-3 py-2 text-sm font-medium transition touch-manipulation"
+                                        class="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-book/10 hover:bg-book/20 text-book px-3 py-2 text-sm font-medium transition touch-manipulation"
                                     >
+                                        <svg x-show="!readerOpen" class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 3h11l5 5v13a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2zm0 0v18M9 3v6h6M9 9l3 3m0 0l3-3m-3 3V9"/>
+                                        </svg>
+                                        <svg x-show="readerOpen" class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7v10a2 2 0 01-2 2H7m6-8V5m0 0l3 3m-3-3L7 5m10 6H7"/>
+                                        </svg>
                                         <span x-text="readerOpen ? '{{ __('app.close') }}' : '{{ __('app.read_now') }}'"></span>
                                     </button>
                                     <a
@@ -568,8 +576,11 @@
                                         download
                                         target="_blank"
                                         rel="noopener"
-                                        class="inline-flex min-h-10 items-center justify-center rounded-lg bg-muted hover:bg-border text-secondary px-3 py-2 text-sm font-medium transition touch-manipulation"
+                                        class="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-muted hover:bg-border text-secondary px-3 py-2 text-sm font-medium transition touch-manipulation"
                                     >
+                                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11v7m0 0l-3-3m3 3l3-3M5 19h14M9 9V4h6v5"/>
+                                        </svg>
                                         {{ __('app.download') }} &rarr;
                                     </a>
                                 </div>
@@ -595,7 +606,13 @@
                             </div>
                         @else
                             <a href="{{ $bookUrl }}" target="_blank" rel="noopener" class="text-sm text-accent font-medium mt-2 inline-block">
-                                {{ __('app.open_externally') }} &rarr;
+                                <span class="inline-flex items-center gap-1.5">
+                                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-width="2" d="M18 13v6H6V7h6M15 3h6v6m0-6L10 14"/>
+                                    </svg>
+                                    <span>{{ __('app.open_externally') }}</span>
+                                </span>
+                                &rarr;
                             </a>
                         @endif
                     @endif
