@@ -282,7 +282,6 @@
              x-data="{
                 imgCurrent: 0,
                 imgTotal: {{ $sinksarImages->count() }},
-                imgLightbox: false,
                 _touchX: 0, _touchY: 0,
                 imgNext() { this.imgCurrent = (this.imgCurrent + 1) % this.imgTotal; },
                 imgPrev() { this.imgCurrent = (this.imgCurrent - 1 + this.imgTotal) % this.imgTotal; },
@@ -291,24 +290,20 @@
                     var dx = e.changedTouches[0].clientX - this._touchX;
                     var dy = e.changedTouches[0].clientY - this._touchY;
                     if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) { dx < 0 ? this.imgNext() : this.imgPrev(); }
-                },
-                openLightbox() { this.imgLightbox = true; document.body.style.overflow = 'hidden'; },
-                closeLightbox() { this.imgLightbox = false; document.body.style.overflow = ''; }
-             }"
-             @keydown.escape.window="if(imgLightbox) closeLightbox()">
+                }
+             }">
 
             <div class="relative rounded-xl overflow-hidden"
                  style="aspect-ratio:4/3;background:#1a1a2e"
                  @touchstart.passive="imgTouchStart($event)"
                  @touchend.passive="imgTouchEnd($event)">
                 @foreach($sinksarImages as $idx => $img)
-                <div class="absolute inset-0 flex items-center justify-center transition-all duration-500 ease-out cursor-pointer"
+                <div class="absolute inset-0 flex items-center justify-center transition-all duration-500 ease-out"
                      :style="imgCurrent === {{ $idx }}
-                         ? 'opacity:1;transform:translateX(0);z-index:10;pointer-events:auto'
+                         ? 'opacity:1;transform:translateX(0);z-index:10'
                          : {{ $idx }} > imgCurrent
                              ? 'opacity:0;transform:translateX(100%);z-index:1;pointer-events:none'
-                             : 'opacity:0;transform:translateX(-100%);z-index:1;pointer-events:none'"
-                     @click="openLightbox()">
+                             : 'opacity:0;transform:translateX(-100%);z-index:1;pointer-events:none'">
                     <img src="{{ $img->imageUrl() }}"
                          alt="{{ localized($img, 'caption') ?? '' }}"
                          class="w-full h-full object-contain"
@@ -340,43 +335,6 @@
                 </button>
             </div>
             @endif
-
-            {{-- Lightbox overlay --}}
-            <template x-teleport="body">
-                <div x-show="imgLightbox" x-cloak
-                     x-transition:enter="transition ease-out duration-200"
-                     x-transition:enter-start="opacity-0"
-                     x-transition:enter-end="opacity-100"
-                     x-transition:leave="transition ease-in duration-150"
-                     x-transition:leave-start="opacity-100"
-                     x-transition:leave-end="opacity-0"
-                     class="fixed inset-0 z-[9999] bg-black/95 flex flex-col"
-                     @touchstart.passive="imgTouchStart($event)"
-                     @touchend.passive="imgTouchEnd($event)">
-                    <div class="flex justify-end p-4 shrink-0">
-                        <button type="button" @click="closeLightbox()" class="p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition touch-manipulation">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
-                        </button>
-                    </div>
-                    <div class="flex-1 flex items-center justify-center px-4 pb-4 min-h-0">
-                        @foreach($sinksarImages as $idx => $img)
-                        <div x-show="imgCurrent === {{ $idx }}" x-transition.opacity class="w-full h-full flex items-center justify-center">
-                            <img src="{{ $img->imageUrl() }}" alt="{{ localized($img, 'caption') ?? '' }}" class="max-w-full max-h-full object-contain rounded-lg">
-                        </div>
-                        @endforeach
-                    </div>
-                    <div class="shrink-0 px-4 pb-6 text-center">
-                        @foreach($sinksarImages as $idx => $img)
-                        @if(localized($img, 'caption'))
-                        <p x-show="imgCurrent === {{ $idx }}" class="text-white/80 text-sm font-medium mb-2">{{ localized($img, 'caption') }}</p>
-                        @endif
-                        @endforeach
-                        <p class="text-white/50 text-xs" x-text="(imgCurrent + 1) + ' / ' + imgTotal"></p>
-                    </div>
-                </div>
-            </template>
         </div>
         @endif
 
