@@ -40,19 +40,17 @@
         {{ __('app.link_copied') }}
     </div>
 
-    {{-- GROUP A: Great Lent Journey --}}
+    {{-- Hero: Great Lent Day --}}
     <div data-tour="day-header" class="rounded-2xl bg-card border border-border shadow-sm overflow-hidden">
-        {{-- Day title (centered) --}}
         <div class="px-4 pt-5 pb-4 text-center">
             <h1 class="text-2xl font-black text-primary">
                 {{ __('app.day_of', ['day' => $daily->day_number, 'total' => 55]) }}
             </h1>
             <p class="text-sm text-muted-text mt-1">{{ $daily->date->locale('en')->translatedFormat('l, F j, Y') }}</p>
         </div>
-        {{-- Weekly theme link --}}
         @if($daily->weeklyTheme)
         <a href="{{ route('member.week', $daily->weeklyTheme) }}" class="flex items-center gap-3 px-4 py-3 bg-accent/5 hover:bg-accent/10 active:scale-[0.98] transition-all group">
-            <div class="shrink-0 w-9 h-9 rounded-xl bg-accent/15 flex items-center justify-center">
+            <div class="shrink-0 w-8 h-8 rounded-lg bg-accent/15 flex items-center justify-center">
                 <i class="bi bi-calendar-week text-accent text-sm"></i>
             </div>
             <div class="flex-1 min-w-0">
@@ -64,14 +62,13 @@
         @endif
     </div>
 
-    {{-- GROUP B: Ethiopian Calendar & Commemorations --}}
+    {{-- Ethiopian Calendar & Commemorations (compact) --}}
     @php
         $hasEthDate = !empty($ethDateInfo['ethiopian_date_formatted'] ?? null);
         $annuals = $ethDateInfo['annual_celebrations'] ?? collect();
         $monthlies = $ethDateInfo['monthly_celebrations'] ?? collect();
         $hasCelebrations = $annuals->isNotEmpty() || $monthlies->isNotEmpty();
 
-        // Build carousel slides: [{type, name}]
         $slides = collect();
         foreach ($annuals as $s) {
             $slides->push(['type' => __('app.synaxarium_yearly_commemorations'), 'name' => localized($s, 'celebration')]);
@@ -82,54 +79,46 @@
     @endphp
 
     @if($hasEthDate || $hasCelebrations)
-    <div class="rounded-2xl bg-card border border-border shadow-sm overflow-hidden">
-        {{-- Ethiopian Calendar header --}}
+    <div class="flex items-stretch gap-3">
+        {{-- Ethiopian date (left) --}}
         @if($hasEthDate)
-        <div class="px-5 pt-5 pb-4 text-center">
-            <span class="text-[11px] font-semibold text-accent uppercase tracking-wider">{{ __('app.ethiopian_calendar_title') }}</span>
-            <h2 class="text-xl font-black text-primary mt-1.5">{{ $ethDateInfo['ethiopian_date_formatted'] }}</h2>
+        <div class="flex-1 rounded-xl bg-card border border-border shadow-sm px-3 py-3 flex flex-col items-center justify-center text-center">
+            <span class="text-[10px] font-semibold text-accent-secondary uppercase tracking-wider">{{ __('app.ethiopian_calendar_title') }}</span>
+            <span class="text-sm font-black text-primary mt-1">{{ $ethDateInfo['ethiopian_date_formatted'] }}</span>
         </div>
         @endif
 
-        {{-- Saints carousel --}}
+        {{-- Saints carousel (right) --}}
         @if($slides->isNotEmpty())
-        <div x-data="{ current: 0, total: {{ $slides->count() }} }"
-             x-init="setInterval(() => current = (current + 1) % total, 3000)"
-             class="px-4 pb-3">
-            <div class="relative h-16 overflow-hidden">
+        <a href="{{ route('member.commemorations', $daily) }}"
+           class="flex-1 rounded-xl bg-card border border-border shadow-sm overflow-hidden hover:bg-muted/30 active:scale-[0.98] transition-all"
+           x-data="{ current: 0, total: {{ $slides->count() }} }"
+           x-init="setInterval(() => current = (current + 1) % total, 3000)">
+            <div class="relative h-full min-h-[72px]">
                 @foreach($slides as $i => $slide)
                 <div x-show="current === {{ $i }}"
                      x-transition:enter="transition ease-out duration-300"
-                     x-transition:enter-start="opacity-0 translate-x-4"
-                     x-transition:enter-end="opacity-100 translate-x-0"
+                     x-transition:enter-start="opacity-0"
+                     x-transition:enter-end="opacity-100"
                      x-transition:leave="transition ease-in duration-200"
-                     x-transition:leave-start="opacity-100 translate-x-0"
-                     x-transition:leave-end="opacity-0 -translate-x-4"
-                     class="absolute inset-0 flex items-center justify-center"
+                     x-transition:leave-start="opacity-100"
+                     x-transition:leave-end="opacity-0"
+                     class="absolute inset-0 flex flex-col items-center justify-center px-3 py-3 text-center"
                      x-cloak>
-                    <div class="w-full rounded-xl bg-sinksar/5 border border-sinksar/10 px-4 py-2.5 text-center">
-                        <span class="block text-[10px] font-semibold text-sinksar uppercase tracking-wider">{{ $slide['type'] }}</span>
-                        <span class="block text-sm font-bold text-primary mt-0.5 truncate">{{ $slide['name'] }}</span>
-                    </div>
+                    <span class="text-[10px] font-semibold text-accent-secondary uppercase tracking-wider">{{ $slide['type'] }}</span>
+                    <span class="text-sm font-bold text-primary mt-1 line-clamp-1">{{ $slide['name'] }}</span>
                 </div>
                 @endforeach
             </div>
-            {{-- Dots --}}
-            @if($slides->count() > 1)
-            <div class="flex items-center justify-center gap-1.5 mt-2">
-                @foreach($slides as $i => $slide)
-                <button @click="current = {{ $i }}" class="w-1.5 h-1.5 rounded-full transition-all" :class="current === {{ $i }} ? 'bg-sinksar w-3' : 'bg-sinksar/20'"></button>
-                @endforeach
+            {{-- Dots + chevron --}}
+            <div class="flex items-center justify-center gap-1.5 pb-2">
+                @if($slides->count() > 1)
+                    @foreach($slides as $i => $slide)
+                    <span class="w-1 h-1 rounded-full transition-all" :class="current === {{ $i }} ? 'bg-accent-secondary w-2.5' : 'bg-accent-secondary/25'"></span>
+                    @endforeach
+                @endif
+                <svg class="w-3 h-3 text-accent-secondary ml-1 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </div>
-            @endif
-        </div>
-        @endif
-
-        {{-- Commemorations link --}}
-        @if($hasCelebrations)
-        <a href="{{ route('member.commemorations', $daily) }}" class="flex items-center justify-center gap-2 px-4 py-2.5 bg-sinksar/5 hover:bg-sinksar/10 active:scale-[0.98] transition-all group">
-            <span class="text-xs font-bold text-sinksar">{{ __('app.synaxarium_tap_to_view') }}</span>
-            <svg class="w-3.5 h-3.5 text-sinksar group-hover:translate-x-0.5 transition-all shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </a>
         @endif
     </div>
