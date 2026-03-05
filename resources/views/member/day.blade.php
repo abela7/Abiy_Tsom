@@ -40,29 +40,6 @@
         {{ __('app.link_copied') }}
     </div>
 
-    {{-- Hero: Great Lent Day --}}
-    <div data-tour="day-header" class="rounded-2xl bg-card border border-border shadow-sm overflow-hidden">
-        <div class="px-4 pt-5 pb-4 text-center">
-            <h1 class="text-2xl font-black text-primary">
-                {{ __('app.day_of', ['day' => $daily->day_number, 'total' => 55]) }}
-            </h1>
-            <p class="text-sm text-muted-text mt-1">{{ $daily->date->locale('en')->translatedFormat('l, F j, Y') }}</p>
-        </div>
-        @if($daily->weeklyTheme)
-        <a href="{{ route('member.week', $daily->weeklyTheme) }}" class="flex items-center gap-3 px-4 py-3 bg-accent/5 hover:bg-accent/10 active:scale-[0.98] transition-all group">
-            <div class="shrink-0 w-8 h-8 rounded-lg bg-accent/15 flex items-center justify-center">
-                <i class="bi bi-calendar-week text-accent text-sm"></i>
-            </div>
-            <div class="flex-1 min-w-0">
-                <span class="block text-sm font-bold text-accent">{{ __('app.week', ['number' => $daily->weeklyTheme->week_number]) }} &mdash; {{ localized($daily->weeklyTheme, 'name') ?? $daily->weeklyTheme->name_en ?? $daily->weeklyTheme->name_geez ?? '-' }}</span>
-                <span class="block text-[11px] text-muted-text mt-0.5">{{ __('app.week_tap_to_read') }}</span>
-            </div>
-            <svg class="w-4 h-4 text-accent group-hover:translate-x-0.5 transition-all shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-        </a>
-        @endif
-    </div>
-
-    {{-- Ethiopian Calendar & Commemorations (compact) --}}
     @php
         $hasEthDate = !empty($ethDateInfo['ethiopian_date_formatted'] ?? null);
         $annuals = $ethDateInfo['annual_celebrations'] ?? collect();
@@ -78,51 +55,76 @@
         }
     @endphp
 
-    @if($hasEthDate || $hasCelebrations)
-    <div class="flex items-stretch gap-3">
-        {{-- Ethiopian date (left) --}}
-        @if($hasEthDate)
-        <div class="flex-1 rounded-xl bg-card border border-border shadow-sm px-3 py-3 flex flex-col items-center justify-center text-center">
-            <span class="text-[10px] font-semibold text-accent-secondary uppercase tracking-wider">{{ __('app.ethiopian_calendar_title') }}</span>
-            <span class="text-sm font-black text-primary mt-1">{{ $ethDateInfo['ethiopian_date_formatted'] }}</span>
+    {{-- Day header card --}}
+    <div data-tour="day-header" class="rounded-2xl bg-card border border-border shadow-sm overflow-hidden">
+        {{-- Hero: Day number --}}
+        <div class="px-4 pt-5 pb-4 text-center">
+            <h1 class="text-2xl font-black text-primary">
+                {{ __('app.day_of', ['day' => $daily->day_number, 'total' => 55]) }}
+            </h1>
+            <p class="text-sm text-muted-text mt-1">{{ $daily->date->locale('en')->translatedFormat('l, F j, Y') }}</p>
+        </div>
+
+        {{-- Ethiopian date + Carousel row --}}
+        @if($hasEthDate || $hasCelebrations)
+        <div class="flex items-center gap-3 px-4 py-2.5 bg-muted/30">
+            {{-- Ethiopian date --}}
+            @if($hasEthDate)
+            <div class="flex items-center gap-2 shrink-0">
+                <div class="w-7 h-7 rounded-lg bg-accent/10 flex items-center justify-center">
+                    <svg class="w-3.5 h-3.5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                </div>
+                <span class="text-xs font-bold text-secondary">{{ $ethDateInfo['ethiopian_date_formatted'] }}</span>
+            </div>
+            @endif
+
+            {{-- Divider --}}
+            @if($hasEthDate && $slides->isNotEmpty())
+            <div class="w-px h-5 bg-border shrink-0"></div>
+            @endif
+
+            {{-- Saints carousel --}}
+            @if($slides->isNotEmpty())
+            <a href="{{ route('member.commemorations', $daily) }}"
+               class="flex-1 min-w-0 flex items-center gap-2 hover:opacity-80 transition-opacity"
+               x-data="{ current: 0, total: {{ $slides->count() }} }"
+               x-init="setInterval(() => current = (current + 1) % total, 3000)">
+                <div class="flex-1 min-w-0 relative h-8 overflow-hidden">
+                    @foreach($slides as $i => $slide)
+                    <div x-show="current === {{ $i }}"
+                         x-transition:enter="transition ease-out duration-300"
+                         x-transition:enter-start="opacity-0 translate-y-2"
+                         x-transition:enter-end="opacity-100 translate-y-0"
+                         x-transition:leave="transition ease-in duration-200"
+                         x-transition:leave-start="opacity-100 translate-y-0"
+                         x-transition:leave-end="opacity-0 -translate-y-2"
+                         class="absolute inset-0 flex flex-col justify-center"
+                         x-cloak>
+                        <span class="text-[9px] font-semibold text-muted-text uppercase tracking-wider leading-none">{{ $slide['type'] }}</span>
+                        <span class="text-xs font-bold text-accent mt-0.5 truncate leading-tight">{{ $slide['name'] }}</span>
+                    </div>
+                    @endforeach
+                </div>
+                <svg class="w-3.5 h-3.5 text-muted-text shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </a>
+            @endif
         </div>
         @endif
 
-        {{-- Saints carousel (right) --}}
-        @if($slides->isNotEmpty())
-        <a href="{{ route('member.commemorations', $daily) }}"
-           class="flex-1 rounded-xl bg-card border border-border shadow-sm overflow-hidden hover:bg-muted/30 active:scale-[0.98] transition-all"
-           x-data="{ current: 0, total: {{ $slides->count() }} }"
-           x-init="setInterval(() => current = (current + 1) % total, 3000)">
-            <div class="relative h-full min-h-[72px]">
-                @foreach($slides as $i => $slide)
-                <div x-show="current === {{ $i }}"
-                     x-transition:enter="transition ease-out duration-300"
-                     x-transition:enter-start="opacity-0"
-                     x-transition:enter-end="opacity-100"
-                     x-transition:leave="transition ease-in duration-200"
-                     x-transition:leave-start="opacity-100"
-                     x-transition:leave-end="opacity-0"
-                     class="absolute inset-0 flex flex-col items-center justify-center px-3 py-3 text-center"
-                     x-cloak>
-                    <span class="text-[10px] font-semibold text-accent-secondary uppercase tracking-wider">{{ $slide['type'] }}</span>
-                    <span class="text-sm font-bold text-primary mt-1 line-clamp-1">{{ $slide['name'] }}</span>
-                </div>
-                @endforeach
+        {{-- Weekly theme link --}}
+        @if($daily->weeklyTheme)
+        <a href="{{ route('member.week', $daily->weeklyTheme) }}" class="flex items-center gap-3 px-4 py-2.5 bg-accent/5 hover:bg-accent/10 active:scale-[0.98] transition-all group">
+            <div class="shrink-0 w-7 h-7 rounded-lg bg-accent/15 flex items-center justify-center">
+                <i class="bi bi-calendar-week text-accent text-xs"></i>
             </div>
-            {{-- Dots + chevron --}}
-            <div class="flex items-center justify-center gap-1.5 pb-2">
-                @if($slides->count() > 1)
-                    @foreach($slides as $i => $slide)
-                    <span class="w-1 h-1 rounded-full transition-all" :class="current === {{ $i }} ? 'bg-accent-secondary w-2.5' : 'bg-accent-secondary/25'"></span>
-                    @endforeach
-                @endif
-                <svg class="w-3 h-3 text-accent-secondary ml-1 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <div class="flex-1 min-w-0">
+                <span class="block text-sm font-bold text-accent">{{ __('app.week', ['number' => $daily->weeklyTheme->week_number]) }} &mdash; {{ localized($daily->weeklyTheme, 'name') ?? $daily->weeklyTheme->name_en ?? $daily->weeklyTheme->name_geez ?? '-' }}</span>
+                <span class="block text-[11px] text-muted-text mt-0.5">{{ __('app.week_tap_to_read') }}</span>
             </div>
+            <svg class="w-4 h-4 text-accent group-hover:translate-x-0.5 transition-all shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </a>
         @endif
     </div>
-    @endif
 
     {{-- Day title --}}
     @if(localized($daily, 'day_title'))
