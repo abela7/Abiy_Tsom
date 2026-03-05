@@ -83,11 +83,7 @@
            class="flex items-center gap-3 px-4 py-3 bg-accent/5 hover:bg-accent/10 active:scale-[0.98] transition-all group"
            x-data="{ current: 0, total: {{ $slides->count() }} }"
            x-init="setInterval(() => current = (current + 1) % total, 3000)">
-            <div class="shrink-0 w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center">
-                <svg class="w-4.5 h-4.5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
-                </svg>
-            </div>
+            <img src="{{ asset('images/Saints.png') }}" alt="" class="w-10 h-10 rounded-xl object-cover shrink-0 shadow-sm">
             <div class="flex-1 min-w-0 relative h-10 overflow-hidden">
                 @foreach($slides as $i => $slide)
                 <div x-show="current === {{ $i }}"
