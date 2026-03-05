@@ -218,7 +218,17 @@ class HomeController extends Controller
                 ->keyBy('member_custom_activity_id');
         }
 
-        return view('member.day', compact('member', 'daily', 'activities', 'checklist', 'customActivities', 'customChecklist', 'ethDateInfo'));
+        $prevDay = DailyContent::where('lent_season_id', $daily->lent_season_id)
+            ->where('day_number', $daily->day_number - 1)
+            ->where('is_published', true)
+            ->first();
+
+        $nextDay = DailyContent::where('lent_season_id', $daily->lent_season_id)
+            ->where('day_number', $daily->day_number + 1)
+            ->where('is_published', true)
+            ->first();
+
+        return view('member.day', compact('member', 'daily', 'activities', 'checklist', 'customActivities', 'customChecklist', 'ethDateInfo', 'prevDay', 'nextDay'));
     }
 
     /**
