@@ -50,7 +50,7 @@
                                x-model="baptismName"
                                @keydown.enter="if (baptismName.trim() && cookieConsentAccepted) step = 2"
                                :placeholder="'{{ __('app.baptism_name_placeholder') }}'"
-                               class="w-full px-4 py-3.5 border border-border rounded-xl bg-surface text-primary placeholder:text-muted-text/60 focus:ring-2 focus:ring-accent/40 focus:border-accent outline-none transition text-base">
+                               class="w-full px-4 py-3.5 border-2 border-accent/30 rounded-xl bg-surface text-primary placeholder:text-muted-text/60 focus:ring-2 focus:ring-accent/40 focus:border-accent outline-none transition text-base">
                     </div>
 
                     <div class="mb-6 p-4 rounded-xl border border-border bg-muted/40">
