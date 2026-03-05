@@ -34,8 +34,11 @@
                             {{ __('app.whatsapp_template_en_label') }}
                         </label>
                         <textarea
+                            id="tpl-en-{{ $template['key'] }}"
                             name="templates[{{ $template['key'] }}][en]"
                             rows="4"
+                            data-preview-target="preview-en-{{ $template['key'] }}"
+                            data-locale="en"
                             class="w-full px-3 py-2 border border-border rounded-lg bg-card text-primary focus:ring-2 focus:ring-accent outline-none resize-y"
                         >{{ old("templates.{$template['key']}.en", $template['en']) }}</textarea>
                     </div>
@@ -44,10 +47,29 @@
                             {{ __('app.whatsapp_template_am_label') }}
                         </label>
                         <textarea
+                            id="tpl-am-{{ $template['key'] }}"
                             name="templates[{{ $template['key'] }}][am]"
                             rows="4"
+                            data-preview-target="preview-am-{{ $template['key'] }}"
+                            data-locale="am"
                             class="w-full px-3 py-2 border border-border rounded-lg bg-card text-primary focus:ring-2 focus:ring-accent outline-none resize-y"
                         >{{ old("templates.{$template['key']}.am", $template['am']) }}</textarea>
+                    </div>
+                </div>
+
+                <p class="text-xs text-muted-text mt-3">{{ __('app.whatsapp_template_preview_help') }}</p>
+                <div class="mt-2 grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div class="rounded-lg border border-border bg-muted/40 p-3">
+                        <p class="text-xs font-semibold text-secondary mb-2">
+                            {{ __('app.whatsapp_template_preview_title') }} ({{ __('app.whatsapp_template_en_label') }})
+                        </p>
+                        <p id="preview-en-{{ $template['key'] }}" class="text-sm text-primary whitespace-pre-wrap break-words"></p>
+                    </div>
+                    <div class="rounded-lg border border-border bg-muted/40 p-3">
+                        <p class="text-xs font-semibold text-secondary mb-2">
+                            {{ __('app.whatsapp_template_preview_title') }} ({{ __('app.whatsapp_template_am_label') }})
+                        </p>
+                        <p id="preview-am-{{ $template['key'] }}" class="text-sm text-primary whitespace-pre-wrap break-words"></p>
                     </div>
                 </div>
             </section>
@@ -65,3 +87,55 @@
 </div>
 @endsection
 
+@push('scripts')
+<script>
+(() => {
+    const samples = {
+        en: {
+            name: 'Abel',
+            baptism_name: 'Abel',
+            day: '17',
+            url: 'https://abiytsom.abuneteklehaymanot.org/share/day/15',
+            telegram_url: 'https://t.me/AbiyTsomBot',
+            saint_commemoration: 'Saints Commemoration',
+        },
+        am: {
+            name: 'Abel',
+            baptism_name: 'Abel',
+            day: '17',
+            url: 'https://abiytsom.abuneteklehaymanot.org/share/day/15',
+            telegram_url: 'https://t.me/AbiyTsomBot',
+            saint_commemoration: 'Saints Commemoration',
+        }
+    };
+
+    const replacePlaceholders = (text, locale) => {
+        const map = samples[locale] || samples.en;
+        return String(text || '').replace(/:([a-z_]+)/gi, (match, key) => {
+            const normalized = String(key || '').toLowerCase();
+            return Object.prototype.hasOwnProperty.call(map, normalized)
+                ? map[normalized]
+                : match;
+        });
+    };
+
+    const render = (input) => {
+        const targetId = input.getAttribute('data-preview-target');
+        const locale = input.getAttribute('data-locale') || 'en';
+        if (!targetId) {
+            return;
+        }
+        const target = document.getElementById(targetId);
+        if (!target) {
+            return;
+        }
+        target.textContent = replacePlaceholders(input.value, locale);
+    };
+
+    document.querySelectorAll('textarea[data-preview-target]').forEach((input) => {
+        render(input);
+        input.addEventListener('input', () => render(input));
+    });
+})();
+</script>
+@endpush
