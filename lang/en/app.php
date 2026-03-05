@@ -1286,4 +1286,5 @@ return [
     'feedback_rate_limited'   => 'Too many submissions. Please try again later.',
     'feedback_success_title'  => 'Thank you!',
     'feedback_success_body'   => 'Your feedback has been received. We appreciate your input.',
+    'feedback_contact_us'     => 'Contact Us',
 ];

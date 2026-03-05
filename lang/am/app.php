@@ -1266,4 +1266,5 @@ return [
     'feedback_rate_limited'   => 'በጣም ብዙ ጊዜ ልከዋል። እባክዎ ቆይተው ይሞክሩ።',
     'feedback_success_title'  => 'እናመሰግናለን!',
     'feedback_success_body'   => 'አስተያየትዎ ደርሶናል። ስለ ትብብርዎ እናመሰግናለን።',
+    'feedback_contact_us'     => 'ያግኙን',
 ];

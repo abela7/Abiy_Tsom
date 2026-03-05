@@ -250,6 +250,7 @@ class TranslationSeeder extends Seeder
                 'feedback_send', 'feedback_send_another',
                 'feedback_rate_limited',
                 'feedback_success_title', 'feedback_success_body',
+                'feedback_contact_us',
             ],
             'general' => [
                 'loading', 'save', 'cancel', 'edit', 'delete', 'create', 'back',

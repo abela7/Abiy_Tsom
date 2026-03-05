@@ -439,6 +439,10 @@
                             <button type="button" @click="close()" class="w-full h-11 rounded-xl bg-accent text-on-accent font-bold text-sm hover:bg-accent-hover active:scale-[0.97] transition touch-manipulation">
                                 {{ __('app.close') }}
                             </button>
+                            <a href="https://abuneteklehaymanot.org/contact-us/" target="_blank" rel="noopener noreferrer"
+                               class="w-full h-11 rounded-xl border border-border text-sm font-semibold text-secondary hover:bg-muted active:scale-[0.97] transition touch-manipulation flex items-center justify-center gap-2">
+                                {{ __('app.feedback_contact_us') }}
+                            </a>
                         </div>
                     </div>
                 </div>
