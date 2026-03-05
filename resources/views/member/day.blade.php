@@ -236,19 +236,7 @@
             readerFont: localStorage.getItem('sinksarReaderFont') || 'default',
             fullscreen: false,
             readOpen: false,
-            themeOpen: false,
-            fontOpen: false,
             inlineFontOpen: false,
-            pickTheme(t) {
-                this.readerTheme = t;
-                localStorage.setItem('sinksarReaderTheme', t);
-                this.themeOpen = false;
-            },
-            pickFont(f) {
-                this.readerFont = f;
-                localStorage.setItem('sinksarReaderFont', f);
-                this.fontOpen = false;
-            },
             fontFamily() {
                 if (this.readerFont === 'benaiah') return 'Benaiah,sans-serif';
                 if (this.readerFont === 'kiros') return 'Kiros,sans-serif';
@@ -267,14 +255,15 @@
             },
             closeFullscreen() {
                 this.fullscreen = false;
-                this.themeOpen = false;
-                this.fontOpen = false;
+                this.$dispatch('sinksar-close-shelves');
                 document.body.style.overflow = '';
                 const nav = document.querySelector('nav.fixed.bottom-0');
                 if (nav) nav.style.display = '';
             }
          }"
-         @keydown.escape.window="if(fullscreen) closeFullscreen()">
+         @keydown.escape.window="if(fullscreen) closeFullscreen()"
+         @sinksar-theme-changed.window="readerTheme = $event.detail.theme"
+         @sinksar-font-changed.window="readerFont = $event.detail.font">
 
         {{-- Header --}}
         <div class="px-4 pt-4 pb-3">
@@ -590,8 +579,22 @@
 
                 {{-- Fixed bottom area: overlays + toolbar --}}
                 <div class="shrink-0 relative">
-                    {{-- Font shelf --}}
-                    <div x-show="fontOpen"
+                    {{-- Font shelf (standalone component) --}}
+                    <div x-data="{
+                             fontOpen: false,
+                             readerFont: localStorage.getItem('sinksarReaderFont') || 'default',
+                             readerTheme: localStorage.getItem('sinksarReaderTheme') || 'default',
+                             pickFont(f) {
+                                 this.readerFont = f;
+                                 localStorage.setItem('sinksarReaderFont', f);
+                                 this.$dispatch('sinksar-font-changed', { font: f });
+                                 this.fontOpen = false;
+                             }
+                         }"
+                         @toggle-font-shelf.window="fontOpen = !fontOpen"
+                         @sinksar-close-shelves.window="fontOpen = false"
+                         @sinksar-theme-changed.window="readerTheme = $event.detail.theme"
+                         x-show="fontOpen"
                          x-transition:enter="transition ease-out duration-150"
                          x-transition:enter-start="opacity-0 translate-y-2"
                          x-transition:enter-end="opacity-100 translate-y-0"
@@ -618,8 +621,20 @@
                         </div>
                     </div>
 
-                    {{-- Theme shelf --}}
-                    <div x-show="themeOpen"
+                    {{-- Theme shelf (standalone component) --}}
+                    <div x-data="{
+                             themeOpen: false,
+                             readerTheme: localStorage.getItem('sinksarReaderTheme') || 'default',
+                             pickTheme(t) {
+                                 this.readerTheme = t;
+                                 localStorage.setItem('sinksarReaderTheme', t);
+                                 this.$dispatch('sinksar-theme-changed', { theme: t });
+                                 this.themeOpen = false;
+                             }
+                         }"
+                         @toggle-theme-shelf.window="themeOpen = !themeOpen"
+                         @sinksar-close-shelves.window="themeOpen = false"
+                         x-show="themeOpen"
                          x-transition:enter="transition ease-out duration-150"
                          x-transition:enter-start="opacity-0 translate-y-2"
                          x-transition:enter-end="opacity-100 translate-y-0"
@@ -708,13 +723,10 @@
                             </button>
 
                             {{-- Theme toggle --}}
-                            <button type="button" @click="themeOpen = !themeOpen; fontOpen = false"
+                            <button type="button" @click="$dispatch('toggle-theme-shelf')"
                                     class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition touch-manipulation"
-                                    :class="{
-                                        'text-secondary hover:bg-muted': readerTheme === 'default' && !themeOpen,
-                                        'text-accent bg-accent/10': readerTheme === 'default' && themeOpen
-                                    }"
-                                    :style="readerTheme === 'sepia' ? (themeOpen ? 'color:#8b5e3c;background-color:#d4c5a9' : 'color:#5b4636') : readerTheme === 'dark' ? (themeOpen ? 'color:#7b9fff;background-color:#2a2a4a' : 'color:#c0c0d0') : ''">
+                                    :class="{ 'text-secondary hover:bg-muted': readerTheme === 'default' }"
+                                    :style="readerTheme === 'sepia' ? 'color:#5b4636' : readerTheme === 'dark' ? 'color:#c0c0d0' : ''">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
                                 </svg>
@@ -722,13 +734,10 @@
                             </button>
 
                             {{-- Font toggle --}}
-                            <button type="button" @click="fontOpen = !fontOpen; themeOpen = false"
+                            <button type="button" @click="$dispatch('toggle-font-shelf')"
                                     class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition touch-manipulation"
-                                    :class="{
-                                        'text-secondary hover:bg-muted': readerTheme === 'default' && !fontOpen,
-                                        'text-accent bg-accent/10': readerTheme === 'default' && fontOpen
-                                    }"
-                                    :style="readerTheme === 'sepia' ? (fontOpen ? 'color:#8b5e3c;background-color:#d4c5a9' : 'color:#5b4636') : readerTheme === 'dark' ? (fontOpen ? 'color:#7b9fff;background-color:#2a2a4a' : 'color:#c0c0d0') : ''">
+                                    :class="{ 'text-secondary hover:bg-muted': readerTheme === 'default' }"
+                                    :style="readerTheme === 'sepia' ? 'color:#5b4636' : readerTheme === 'dark' ? 'color:#c0c0d0' : ''">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
                                 </svg>
