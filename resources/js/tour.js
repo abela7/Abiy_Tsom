@@ -477,19 +477,47 @@ function popupAnswered() {
     try { return sessionStorage.getItem('member_popup_answered') === '1'; } catch { return false; }
 }
 
+function popupInitialized() {
+    try { return sessionStorage.getItem('member_popup_initialized') === '1'; } catch { return false; }
+}
+
+/**
+ * Wait until the fundraising popup component is initialized (ready to show or skip).
+ * Safety timeout: if popup doesn't initialize within 8 seconds, proceed anyway.
+ * This prevents tour from blocking indefinitely if popup fails to initialize.
+ */
+async function waitForPopupInitialization() {
+    if (popupInitialized()) return;
+
+    const maxWaitTime = 8000;
+    const startTime = Date.now();
+
+    while (!popupInitialized() && (Date.now() - startTime) < maxWaitTime) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+}
+
 /**
  * Wait until the fundraising popup has been answered (interested OR not today),
  * or until it is confirmed that no popup needs to be shown this session.
  *
- * No timeout — the user may spend several minutes watching a video or filling
- * in the form. The popup component guarantees it fires 'fundraising-ready' in
- * every exit path (user dismissed, no campaign to show, API error), so this
- * promise will always resolve once the user is done with the popup.
+ * First waits for popup component to initialize, then waits for it to finish.
+ * No timeout on the final answer — the user may spend several minutes watching
+ * a video or filling in the form. The popup component guarantees it fires
+ * 'fundraising-ready' in every exit path (user dismissed, no campaign to show,
+ * API error), so this promise will always resolve once the user is done with
+ * the popup.
  */
 async function waitForPopup() {
+    // First, wait for popup component to be initialized
+    await waitForPopupInitialization();
+
     if (popupAnswered()) return;
+
+    // Then wait for popup to finish (either dismissed or answered)
     await new Promise(resolve => window.addEventListener('fundraising-ready', resolve, { once: true }));
     try { sessionStorage.setItem('member_popup_answered', '1'); } catch {}
+
     // Brief pause for the popup's exit animation to finish.
     await new Promise(resolve => setTimeout(resolve, 350));
 }

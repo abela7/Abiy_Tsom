@@ -315,6 +315,9 @@ function fundraisingPopup() {
         },
 
         async init() {
+            // Signal that popup component is initialized (before any waits)
+            try { sessionStorage.setItem('member_popup_initialized', '1'); } catch {}
+
             this.$watch('open', (val, oldVal) => {
                 if (val) {
                     scrollY.value = window.scrollY;
