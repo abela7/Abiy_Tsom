@@ -64,42 +64,72 @@
         @endif
     </div>
 
-    {{-- GROUP B: Ethiopian Calendar & Commemorations (teaser) --}}
+    {{-- GROUP B: Ethiopian Calendar & Commemorations --}}
     @php
         $hasEthDate = !empty($ethDateInfo['ethiopian_date_formatted'] ?? null);
-        $hasCelebrations = ($ethDateInfo['annual_celebrations'] ?? collect())->isNotEmpty() || ($ethDateInfo['monthly_celebrations'] ?? collect())->isNotEmpty();
+        $annuals = $ethDateInfo['annual_celebrations'] ?? collect();
+        $monthlies = $ethDateInfo['monthly_celebrations'] ?? collect();
+        $hasCelebrations = $annuals->isNotEmpty() || $monthlies->isNotEmpty();
+
+        // Build carousel slides: [{type, name}]
+        $slides = collect();
+        foreach ($annuals as $s) {
+            $slides->push(['type' => __('app.synaxarium_yearly_commemorations'), 'name' => localized($s, 'celebration')]);
+        }
+        foreach ($monthlies as $s) {
+            $slides->push(['type' => __('app.synaxarium_monthly_commemorations'), 'name' => localized($s, 'celebration')]);
+        }
     @endphp
 
     @if($hasEthDate || $hasCelebrations)
     <div class="rounded-2xl bg-card border border-border shadow-sm overflow-hidden">
-        {{-- Ethiopian date + Gregorian --}}
+        {{-- Ethiopian Calendar header --}}
         @if($hasEthDate)
-        <div class="flex items-center gap-3 px-4 pt-4 pb-3">
-            <div class="shrink-0 w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center">
-                <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                </svg>
+        <div class="px-5 pt-5 pb-4 text-center">
+            <span class="text-[11px] font-semibold text-accent uppercase tracking-wider">{{ __('app.ethiopian_calendar_title') }}</span>
+            <h2 class="text-xl font-black text-primary mt-1.5">{{ $ethDateInfo['ethiopian_date_formatted'] }}</h2>
+        </div>
+        @endif
+
+        {{-- Saints carousel --}}
+        @if($slides->isNotEmpty())
+        <div x-data="{ current: 0, total: {{ $slides->count() }} }"
+             x-init="setInterval(() => current = (current + 1) % total, 3000)"
+             class="px-4 pb-3">
+            <div class="relative h-16 overflow-hidden">
+                @foreach($slides as $i => $slide)
+                <div x-show="current === {{ $i }}"
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0 translate-x-4"
+                     x-transition:enter-end="opacity-100 translate-x-0"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="opacity-100 translate-x-0"
+                     x-transition:leave-end="opacity-0 -translate-x-4"
+                     class="absolute inset-0 flex items-center justify-center"
+                     x-cloak>
+                    <div class="w-full rounded-xl bg-sinksar/5 border border-sinksar/10 px-4 py-2.5 text-center">
+                        <span class="block text-[10px] font-semibold text-sinksar uppercase tracking-wider">{{ $slide['type'] }}</span>
+                        <span class="block text-sm font-bold text-primary mt-0.5 truncate">{{ $slide['name'] }}</span>
+                    </div>
+                </div>
+                @endforeach
             </div>
-            <div class="min-w-0 flex-1">
-                <span class="block text-sm font-bold text-primary">{{ $ethDateInfo['ethiopian_date_formatted'] }}</span>
-                <span class="block text-[11px] text-muted-text mt-0.5">{{ $daily->date->locale('en')->translatedFormat('l, F j, Y') }}</span>
+            {{-- Dots --}}
+            @if($slides->count() > 1)
+            <div class="flex items-center justify-center gap-1.5 mt-2">
+                @foreach($slides as $i => $slide)
+                <button @click="current = {{ $i }}" class="w-1.5 h-1.5 rounded-full transition-all" :class="current === {{ $i }} ? 'bg-sinksar w-3' : 'bg-sinksar/20'"></button>
+                @endforeach
             </div>
-            <span class="shrink-0 text-[11px] font-bold text-accent bg-accent/10 rounded-lg px-2 py-1">E.C.</span>
+            @endif
         </div>
         @endif
 
         {{-- Commemorations link --}}
         @if($hasCelebrations)
-        <a href="{{ route('member.commemorations', $daily) }}" class="flex items-center gap-3 px-4 py-3 border-t border-border hover:bg-muted/30 active:scale-[0.98] transition-all group">
-            <div class="shrink-0 w-9 h-9 rounded-xl bg-sinksar/10 flex items-center justify-center">
-                <svg class="w-5 h-5 text-sinksar" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
-                </svg>
-            </div>
-            <div class="flex-1 min-w-0">
-                <span class="block text-sm font-bold text-primary group-hover:text-sinksar transition-colors">{{ __('app.synaxarium_tap_to_view') }}</span>
-            </div>
-            <svg class="w-4 h-4 text-muted-text group-hover:text-sinksar group-hover:translate-x-0.5 transition-all shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        <a href="{{ route('member.commemorations', $daily) }}" class="flex items-center justify-center gap-2 px-4 py-2.5 bg-sinksar/5 hover:bg-sinksar/10 active:scale-[0.98] transition-all group">
+            <span class="text-xs font-bold text-sinksar">{{ __('app.synaxarium_tap_to_view') }}</span>
+            <svg class="w-3.5 h-3.5 text-sinksar group-hover:translate-x-0.5 transition-all shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </a>
         @endif
     </div>
