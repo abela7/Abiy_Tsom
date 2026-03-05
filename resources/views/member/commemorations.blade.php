@@ -94,24 +94,42 @@
 
         <div class="divide-y divide-border">
             @foreach($monthlyCelebrations as $saint)
-            <div class="flex items-center gap-3 px-4 py-3 hover:bg-muted/30 transition-colors active:scale-[0.99]">
-                {{-- Use Saints.png as icon for monthly saints --}}
-                @if($saint->imageUrl())
-                    <img src="{{ $saint->imageUrl() }}" alt="" class="w-11 h-11 rounded-xl object-cover shrink-0 shadow-sm ring-1 ring-border">
-                @else
-                    <div class="shrink-0 w-11 h-11 rounded-xl overflow-hidden shadow-sm ring-1 ring-border">
-                        <img src="{{ asset('images/Saints.png') }}" alt="" class="w-full h-full object-cover">
+            @php $monthlyImage = $saint->imageUrl(); @endphp
+            <div x-data="{ open: false }" class="px-4">
+                <button @click="open = !open" class="w-full flex items-center gap-3 py-3 text-left">
+                    {{-- Thumbnail --}}
+                    @if($monthlyImage)
+                        <img src="{{ $monthlyImage }}" alt="" class="w-11 h-11 rounded-xl object-cover shrink-0 shadow-sm ring-1 ring-border">
+                    @else
+                        <div class="shrink-0 w-11 h-11 rounded-xl overflow-hidden shadow-sm ring-1 ring-border">
+                            <img src="{{ asset('images/Saints.png') }}" alt="" class="w-full h-full object-cover">
+                        </div>
+                    @endif
+                    <div class="flex-1 min-w-0">
+                        <span class="block text-sm font-bold text-primary leading-snug">{{ localized($saint, 'celebration') }}</span>
+                        <span class="block text-[10px] text-sinksar font-semibold mt-0.5 tracking-wide">{{ $ethDateInfo['ethiopian_date']['month_name_' . $locale] ?? '' }} {{ $ethDateInfo['ethiopian_date']['day'] ?? $saint->day }}</span>
                     </div>
-                @endif
-                <div class="flex-1 min-w-0">
-                    <span class="block text-sm font-bold text-primary leading-snug">{{ localized($saint, 'celebration') }}</span>
-                    <span class="block text-[10px] text-sinksar font-semibold mt-0.5 tracking-wide">{{ $ethDateInfo['ethiopian_date']['month_name_' . $locale] ?? '' }} {{ $ethDateInfo['ethiopian_date']['day'] ?? $saint->day }}</span>
-                </div>
-                {{-- Cross ornament --}}
-                <div class="shrink-0 text-sinksar/30">
-                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M10 2h4v6h6v4h-6v10h-4V12H4V8h6V2z"/>
-                    </svg>
+                    {{-- Chevron --}}
+                    <div class="shrink-0 text-muted-text">
+                        <svg class="w-4 h-4 transition-transform" :class="open && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                </button>
+
+                {{-- Expandable detail --}}
+                <div x-show="open" x-collapse x-cloak class="pb-3">
+                    @if($monthlyImage)
+                    <div class="rounded-xl overflow-hidden cursor-pointer"
+                         @click="showImageModal = true; modalImage = '{{ $monthlyImage }}'">
+                        <img src="{{ $monthlyImage }}" alt="" class="w-full max-h-52 object-contain">
+                    </div>
+                    @else
+                    <div class="rounded-xl bg-muted/30 p-4 text-center">
+                        <div class="w-12 h-12 rounded-xl overflow-hidden mx-auto mb-2 shadow-sm ring-1 ring-border">
+                            <img src="{{ asset('images/Saints.png') }}" alt="" class="w-full h-full object-cover">
+                        </div>
+                        <p class="text-xs text-muted-text">{{ localized($saint, 'celebration') }}</p>
+                    </div>
+                    @endif
                 </div>
             </div>
             @endforeach
