@@ -1269,4 +1269,20 @@ return [
     'referral_enabled_for'        => 'Referral link enabled for :name.',
     'referral_disabled_for'       => 'Referral link disabled for :name.',
     'referral_regenerated_for'    => 'Referral code regenerated for :name.',
+
+    // Feedback
+    'feedback_page_title'     => 'Feedback',
+    'feedback_subtitle'       => 'If you have feedback, suggestions, or corrections, please write to us.',
+    'feedback_name'           => 'Name',
+    'feedback_name_ph'        => 'Your name',
+    'feedback_email'          => 'Email',
+    'feedback_email_optional' => '(optional)',
+    'feedback_email_ph'       => 'your@email.com',
+    'feedback_message'        => 'Message',
+    'feedback_message_ph'     => 'Write your feedback here...',
+    'feedback_send'           => 'Send',
+    'feedback_send_another'   => 'Send another',
+    'feedback_rate_limited'   => 'Too many submissions. Please try again later.',
+    'feedback_success_title'  => 'Thank you!',
+    'feedback_success_body'   => 'Your feedback has been received. We appreciate your input.',
 ];

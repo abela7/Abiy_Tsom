@@ -1249,4 +1249,20 @@ return [
     'referral_enabled_for'        => 'ለ:name የሪፈራል ሊንክ ነቅቷል።',
     'referral_disabled_for'       => 'ለ:name የሪፈራል ሊንክ ተሰናክሏል።',
     'referral_regenerated_for'    => 'ለ:name የሪፈራል ኮድ ተቀይሯል።',
+
+    // Feedback
+    'feedback_page_title'     => 'አስተያየት',
+    'feedback_subtitle'       => 'ሃሳብ አስተያየት ወይንም ማስተካከያ ካለዎ ይጻፉልን',
+    'feedback_name'           => 'ስም',
+    'feedback_name_ph'        => 'ስምዎን ያስገቡ',
+    'feedback_email'          => 'ኢሜል',
+    'feedback_email_optional' => '(አለማስገባትም ይችላሉ)',
+    'feedback_email_ph'       => 'your@email.com',
+    'feedback_message'        => 'መልዕክት',
+    'feedback_message_ph'     => 'መልዕክትዎን ይጻፉ...',
+    'feedback_send'           => 'ላክ',
+    'feedback_send_another'   => 'ሌላ ላክ',
+    'feedback_rate_limited'   => 'በጣም ብዙ ጊዜ ልከዋል። እባክዎ ቆይተው ይሞክሩ።',
+    'feedback_success_title'  => 'እናመሰግናለን!',
+    'feedback_success_body'   => 'አስተያየትዎ ደርሶናል። ስለ ትብብርዎ እናመሰግናለን።',
 ];

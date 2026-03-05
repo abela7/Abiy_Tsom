@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\ContentSuggestionController;
+use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\Member;
 use App\Http\Controllers\VolunteerInviteController;
 use App\Http\Controllers\Webhook;
@@ -57,6 +58,12 @@ Route::post('/telegram/mini/connect', [TelegramAuthController::class, 'miniConne
 // Public content suggestion form (no auth required)
 Route::get('/suggest', [ContentSuggestionController::class, 'show'])->name('suggest');
 Route::post('/suggest', [ContentSuggestionController::class, 'store'])->name('suggest.store');
+// Public feedback form (no auth required)
+Route::get('/feedback', [FeedbackController::class, 'show'])->name('feedback');
+Route::post('/feedback', [FeedbackController::class, 'store'])
+    ->middleware('throttle:5,60')
+    ->name('feedback.store');
+
 Route::get('/invite/{slug}', [VolunteerInviteController::class, 'show'])->name('volunteer.invite.show');
 Route::post('/invite/{slug}/track', [VolunteerInviteController::class, 'track'])
     ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
@@ -188,6 +195,11 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::put('/banners/{banner}', [Admin\BannerController::class, 'update'])->name('banners.update');
         Route::delete('/banners/{banner}', [Admin\BannerController::class, 'destroy'])->name('banners.destroy');
         Route::post('/banners/{banner}/toggle', [Admin\BannerController::class, 'toggleActive'])->name('banners.toggle');
+
+        // Feedback
+        Route::get('/feedback', [Admin\FeedbackController::class, 'index'])->name('feedback.index');
+        Route::post('/feedback/{feedback}/toggle-read', [Admin\FeedbackController::class, 'toggleRead'])->name('feedback.toggle-read');
+        Route::delete('/feedback/{feedback}', [Admin\FeedbackController::class, 'destroy'])->name('feedback.destroy');
 
         // Content suggestions review
         Route::get('/suggestions', [Admin\ContentSuggestionController::class, 'index'])->name('suggestions.index');
