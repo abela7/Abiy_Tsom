@@ -105,7 +105,7 @@
                 @endif
                 <div class="flex-1 min-w-0">
                     <span class="block text-sm font-bold text-primary leading-snug">{{ localized($saint, 'celebration') }}</span>
-                    <span class="block text-[10px] text-sinksar font-semibold mt-0.5 tracking-wide">{{ $ethDateInfo['ethiopian_date']['day'] ?? $saint->day }} {{ $ethDateInfo['ethiopian_date']['month_name_' . $locale] ?? '' }}</span>
+                    <span class="block text-[10px] text-sinksar font-semibold mt-0.5 tracking-wide">{{ $ethDateInfo['ethiopian_date']['month_name_' . $locale] ?? '' }} {{ $ethDateInfo['ethiopian_date']['day'] ?? $saint->day }}</span>
                 </div>
                 {{-- Cross ornament --}}
                 <div class="shrink-0 text-sinksar/30">
