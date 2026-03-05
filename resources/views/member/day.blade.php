@@ -48,10 +48,10 @@
 
         $slides = collect();
         foreach ($annuals as $s) {
-            $slides->push(['type' => __('app.synaxarium_yearly_commemorations'), 'name' => localized($s, 'celebration')]);
+            $slides->push(['type' => __('app.synaxarium_yearly_commemorations'), 'name' => localized($s, 'celebration'), 'image' => $s->imageUrl()]);
         }
         foreach ($monthlies as $s) {
-            $slides->push(['type' => __('app.synaxarium_monthly_commemorations'), 'name' => localized($s, 'celebration')]);
+            $slides->push(['type' => __('app.synaxarium_monthly_commemorations'), 'name' => localized($s, 'celebration'), 'image' => $s->imageUrl()]);
         }
     @endphp
 
@@ -99,9 +99,11 @@
         @if($slides->isNotEmpty())
         <a href="{{ route('member.commemorations', $daily) }}"
            class="flex items-center gap-3 px-4 py-3 bg-accent/5 hover:bg-accent/10 active:scale-[0.98] transition-all group"
-           x-data="{ current: 0, total: {{ $slides->count() }} }"
+           x-data="{ current: 0, total: {{ $slides->count() }}, images: {{ $slides->map(fn($s) => $s['image'] ?? null)->toJson() }}, fallback: '{{ asset('images/Saints.png') }}' }"
            x-init="setInterval(() => current = (current + 1) % total, 3000)">
-            <img src="{{ asset('images/Saints.png') }}" alt="" class="w-10 h-10 rounded-xl object-cover shrink-0 shadow-sm">
+            <div class="shrink-0 w-10 h-10 rounded-xl overflow-hidden shadow-sm relative">
+                <img :src="images[current] || fallback" alt="" class="w-full h-full object-cover">
+            </div>
             <div class="flex-1 min-w-0 relative h-10 overflow-hidden">
                 @foreach($slides as $i => $slide)
                 <div x-show="current === {{ $i }}"

@@ -578,7 +578,7 @@
     </div>
 
     {{-- Logout / Delete Account --}}
-    <div x-data="{ showLogoutConfirm: false, logoutLoading: false }">
+    <div x-data="{ showLogoutConfirm: false, logoutLoading: false, logoutError: '' }">
         <button type="button" @click="showLogoutConfirm = true"
                 class="w-full py-3.5 bg-error/10 text-error rounded-2xl font-semibold text-sm border border-error/20 hover:bg-error/20 transition">
             <span class="flex items-center justify-center gap-2">
@@ -615,20 +615,23 @@
                         አልፈልግም
                     </button>
                     <button type="button" @click="
+                        logoutError = '';
                         logoutLoading = true;
                         AbiyTsom.api('/api/member/account/delete', {})
-                            .then(() => {
-                                localStorage.clear();
-                                window.location.href = '/';
+                            .then((res) => {
+                                if (res && res.success) {
+                                    localStorage.clear();
+                                    window.location.href = '/';
+                                    return;
+                                }
+                                logoutLoading = false;
+                                logoutError = (res && res.message) ? res.message : '{{ __('app.failed') }}';
                             })
                             .catch(() => {
-                                localStorage.clear();
-                                document.cookie.split(';').forEach(c => {
-                                    document.cookie = c.trim().split('=')[0] + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
-                                });
-                                window.location.href = '/';
+                                logoutLoading = false;
+                                logoutError = '{{ __('app.failed') }}';
                             });
-                    "   :disabled="logoutLoading"
+                    " :disabled="logoutLoading"
                         class="flex-1 py-3 bg-error text-on-error rounded-xl font-medium text-sm hover:opacity-90 transition disabled:opacity-50">
                         <span x-show="!logoutLoading">አዎ</span>
                         <span x-show="logoutLoading" class="flex items-center justify-center">
@@ -636,6 +639,7 @@
                         </span>
                     </button>
                 </div>
+                <p x-show="logoutError" x-text="logoutError" class="mt-3 text-sm text-error"></p>
             </div>
         </div>
     </div>
@@ -1086,3 +1090,5 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endpush
+
+

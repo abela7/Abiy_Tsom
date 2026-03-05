@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
+use App\Models\TelegramAccessToken;
 use App\Services\MemberSessionService;
 use App\Services\TelegramAuthService;
 use App\Services\WhatsAppReminderConfirmationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 /**
@@ -224,19 +226,36 @@ class SettingsController extends Controller
         /** @var \App\Models\Member $member */
         $member = $request->attributes->get('member');
 
-        // Delete all related data
-        $member->checklists()->delete();
-        $member->customChecklists()->delete();
-        $member->customActivities()->delete();
+        try {
+            DB::transaction(function () use ($member, $sessionService): void {
+                TelegramAccessToken::query()
+                    ->where('actor_type', get_class($member))
+                    ->where('actor_id', $member->getKey())
+                    ->delete();
 
-        // Revoke every session for this member
-        $sessionService->revokeAllMemberSessions($member);
-        $sessionService->forgetCookies();
+                // Delete all related data (most children also cascade on member delete).
+                $member->checklists()->delete();
+                $member->customChecklists()->delete();
+                $member->customActivities()->delete();
 
-        // Delete the member record itself
-        $member->delete();
+                // Revoke every session for this member.
+                $sessionService->revokeAllMemberSessions($member);
 
-        return response()->json(['success' => true]);
+                // Delete the member record itself.
+                $member->delete();
+            });
+
+            $sessionService->forgetCookies();
+
+            return response()->json(['success' => true]);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return response()->json([
+                'success' => false,
+                'message' => __('app.failed'),
+            ], 500);
+        }
     }
 
     private function normalizeReminderTime(mixed $time): ?string
