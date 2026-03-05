@@ -684,19 +684,12 @@
                 {{-- Fixed bottom area: overlays + toolbar --}}
                 <div class="shrink-0 relative">
                     {{-- Font shelf --}}
-                    <div x-show="activeShelf === 'font'"
-                         x-transition:enter="transition ease-out duration-150"
-                         x-transition:enter-start="opacity-0 translate-y-2"
-                         x-transition:enter-end="opacity-100 translate-y-0"
-                         x-transition:leave="transition ease-in duration-100"
-                         x-transition:leave-start="opacity-100"
-                         x-transition:leave-end="opacity-0 translate-y-1"
-                         @pointerup="debugLog('font shelf container pointerup', {}, $event)"
-                         @click="debugLog('font shelf container click', {}, $event)"
-                         x-cloak
-                         class="absolute bottom-full left-0 right-0 border-t px-4 py-4 z-[101]"
-                         :class="{ 'bg-card border-border': readerTheme === 'default' }"
-                         :style="readerTheme === 'sepia' ? 'background-color:#e8dcc6;border-color:#d4c5a9' : readerTheme === 'dark' ? 'background-color:#12122a;border-color:#2a2a4a' : ''">
+                    <template x-if="activeShelf === 'font'">
+                        <div @pointerup="debugLog('font shelf container pointerup', {}, $event)"
+                             @click="debugLog('font shelf container click', {}, $event)"
+                             class="absolute bottom-full left-0 right-0 border-t px-4 py-4 z-[101]"
+                             :class="{ 'bg-card border-border': readerTheme === 'default' }"
+                             :style="readerTheme === 'sepia' ? 'background-color:#e8dcc6;border-color:#d4c5a9' : readerTheme === 'dark' ? 'background-color:#12122a;border-color:#2a2a4a' : ''">
                         <div class="flex items-center justify-center gap-4 max-w-xs mx-auto">
                             @foreach([['default','Default','inherit'],['benaiah','Benaiah','Benaiah,sans-serif'],['kiros','Kiros','Kiros,sans-serif'],['handwriting','Writing','Handwriting,sans-serif']] as [$fVal,$fLabel,$fFam])
                             <button type="button"
@@ -716,21 +709,15 @@
                             @endforeach
                         </div>
                     </div>
+                    </template>
 
                     {{-- Theme shelf --}}
-                    <div x-show="activeShelf === 'theme'"
-                         x-transition:enter="transition ease-out duration-150"
-                         x-transition:enter-start="opacity-0 translate-y-2"
-                         x-transition:enter-end="opacity-100 translate-y-0"
-                         x-transition:leave="transition ease-in duration-100"
-                         x-transition:leave-start="opacity-100"
-                         x-transition:leave-end="opacity-0 translate-y-1"
-                         @pointerup="debugLog('theme shelf container pointerup', {}, $event)"
-                         @click="debugLog('theme shelf container click', {}, $event)"
-                         x-cloak
-                         class="absolute bottom-full left-0 right-0 border-t px-4 py-4 z-[101]"
-                         :class="{ 'bg-card border-border': readerTheme === 'default' }"
-                         :style="readerTheme === 'sepia' ? 'background-color:#e8dcc6;border-color:#d4c5a9' : readerTheme === 'dark' ? 'background-color:#12122a;border-color:#2a2a4a' : ''">
+                    <template x-if="activeShelf === 'theme'">
+                        <div @pointerup="debugLog('theme shelf container pointerup', {}, $event)"
+                             @click="debugLog('theme shelf container click', {}, $event)"
+                             class="absolute bottom-full left-0 right-0 border-t px-4 py-4 z-[101]"
+                             :class="{ 'bg-card border-border': readerTheme === 'default' }"
+                             :style="readerTheme === 'sepia' ? 'background-color:#e8dcc6;border-color:#d4c5a9' : readerTheme === 'dark' ? 'background-color:#12122a;border-color:#2a2a4a' : ''">
                         <div class="flex items-center justify-center gap-5 max-w-xs mx-auto">
                             <button type="button"
                                     data-shelf-debug="theme-option-default"
@@ -773,6 +760,7 @@
                             </button>
                         </div>
                     </div>
+                    </template>
 
                     {{-- Bottom toolbar — always stays in place --}}
                     <div class="border-t safe-area-bottom"
