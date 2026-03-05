@@ -518,29 +518,24 @@
                  x-transition:leave-end="opacity-0"
                  x-cloak
                  class="fixed inset-0 z-[9999] flex flex-col"
-                 :class="{ 'bg-surface text-secondary': readerTheme === 'default' }"
-                 :style="readerTheme === 'sepia' ? 'background-color:#f4ecd8;color:#5b4636' : readerTheme === 'dark' ? 'background-color:#1a1a2e;color:#e0e0e0' : ''">
+                 :style="readerTheme === 'default' ? 'background-color:#f8fbfd;color:#1f2937' : readerTheme === 'sepia' ? 'background-color:#f4ecd8;color:#5b4636' : 'background-color:#1a1a2e;color:#e0e0e0'">
 
                 {{-- Fullscreen top bar --}}
                 <div class="flex items-center justify-between gap-3 px-4 py-3 border-b shrink-0"
-                     :class="{ 'bg-card border-border': readerTheme === 'default' }"
-                     :style="readerTheme === 'sepia' ? 'background-color:#ede3cc;border-color:#d4c5a9' : readerTheme === 'dark' ? 'background-color:#16162a;border-color:#2a2a4a' : ''">
+                     :style="readerTheme === 'default' ? 'background-color:#ffffff;border-color:#d7e3ea' : readerTheme === 'sepia' ? 'background-color:#ede3cc;border-color:#d4c5a9' : 'background-color:#16162a;border-color:#2a2a4a'">
                     <div class="flex items-center gap-2.5 min-w-0">
                         <button type="button" @click="closeFullscreen()"
                                 class="p-2 rounded-lg transition touch-manipulation shrink-0"
-                                :class="{ 'bg-muted hover:bg-border text-primary': readerTheme === 'default' }"
-                                :style="readerTheme === 'sepia' ? 'background-color:#e8dcc6;color:#5b4636' : readerTheme === 'dark' ? 'background-color:#2a2a4a;color:#e0e0e0' : ''">
+                                :style="readerTheme === 'default' ? 'background-color:#edf4f7;color:#0a6286' : readerTheme === 'sepia' ? 'background-color:#e8dcc6;color:#5b4636' : 'background-color:#2a2a4a;color:#e0e0e0'">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                             </svg>
                         </button>
                         <div class="min-w-0">
                             <p class="text-sm font-bold truncate"
-                               :class="{ 'text-primary': readerTheme === 'default' }"
-                               :style="readerTheme === 'sepia' ? 'color:#3e2c1c' : readerTheme === 'dark' ? 'color:#f0f0f0' : ''">{{ localized($daily, 'sinksar_title') }}</p>
+                               :style="readerTheme === 'default' ? 'color:#0f172a' : readerTheme === 'sepia' ? 'color:#3e2c1c' : 'color:#f0f0f0'">{{ localized($daily, 'sinksar_title') }}</p>
                             <p class="text-[10px] font-medium uppercase tracking-wider"
-                               :class="{ 'text-muted-text': readerTheme === 'default' }"
-                               :style="readerTheme === 'sepia' ? 'color:#8b7355' : readerTheme === 'dark' ? 'color:#8888aa' : ''">{{ __('app.sinksar') }}</p>
+                               :style="readerTheme === 'default' ? 'color:#64748b' : readerTheme === 'sepia' ? 'color:#8b7355' : 'color:#8888aa'">{{ __('app.sinksar') }}</p>
                         </div>
                     </div>
                 </div>
@@ -612,8 +607,7 @@
                     {{-- Font shelf --}}
                     <template x-if="activeShelf === 'font'">
                         <div class="absolute bottom-full left-0 right-0 border-t px-4 py-4 z-[101]"
-                             :class="{ 'bg-card border-border': readerTheme === 'default' }"
-                             :style="readerTheme === 'sepia' ? 'background-color:#e8dcc6;border-color:#d4c5a9' : readerTheme === 'dark' ? 'background-color:#12122a;border-color:#2a2a4a' : ''">
+                             :style="readerTheme === 'default' ? 'background-color:#ffffff;border-color:#d7e3ea' : readerTheme === 'sepia' ? 'background-color:#e8dcc6;border-color:#d4c5a9' : 'background-color:#12122a;border-color:#2a2a4a'">
                         <div class="flex items-center justify-center gap-4 max-w-xs mx-auto">
                             @foreach([['default','Default','inherit'],['benaiah','Benaiah','Benaiah,sans-serif'],['kiros','Kiros','Kiros,sans-serif'],['handwriting','Writing','Handwriting,sans-serif']] as [$fVal,$fLabel,$fFam])
                             <button type="button"
@@ -637,8 +631,7 @@
                     {{-- Theme shelf --}}
                     <template x-if="activeShelf === 'theme'">
                         <div class="absolute bottom-full left-0 right-0 border-t px-4 py-4 z-[101]"
-                             :class="{ 'bg-card border-border': readerTheme === 'default' }"
-                             :style="readerTheme === 'sepia' ? 'background-color:#e8dcc6;border-color:#d4c5a9' : readerTheme === 'dark' ? 'background-color:#12122a;border-color:#2a2a4a' : ''">
+                             :style="readerTheme === 'default' ? 'background-color:#ffffff;border-color:#d7e3ea' : readerTheme === 'sepia' ? 'background-color:#e8dcc6;border-color:#d4c5a9' : 'background-color:#12122a;border-color:#2a2a4a'">
                         <div class="flex items-center justify-center gap-5 max-w-xs mx-auto">
                             <button type="button"
                                     @pointerup.stop.prevent="pickTheme('default')"
@@ -682,11 +675,8 @@
 
                     {{-- Bottom toolbar — always stays in place --}}
                     <div class="border-t safe-area-bottom"
-                         :class="{
-                             'bg-card border-border': readerTheme === 'default',
-                             'pointer-events-none': shelfTapLock
-                         }"
-                         :style="readerTheme === 'sepia' ? 'background-color:#ede3cc;border-color:#d4c5a9' : readerTheme === 'dark' ? 'background-color:#16162a;border-color:#2a2a4a' : ''">
+                         :class="{ 'pointer-events-none': shelfTapLock }"
+                         :style="readerTheme === 'default' ? 'background-color:#ffffff;border-color:#d7e3ea' : readerTheme === 'sepia' ? 'background-color:#ede3cc;border-color:#d4c5a9' : 'background-color:#16162a;border-color:#2a2a4a'">
                         <div class="flex items-center justify-around h-16 max-w-lg mx-auto px-2">
                             {{-- Close --}}
                             <button type="button" @click="closeFullscreen()"
