@@ -104,7 +104,7 @@
             <div class="shrink-0 w-12 h-12 rounded-xl overflow-hidden shadow-sm relative">
                 <img :src="images[current] || fallback" alt="" class="w-full h-full object-cover">
             </div>
-            <div class="flex-1 min-w-0 relative h-11 overflow-hidden">
+            <div class="flex-1 min-w-0 relative h-12 overflow-hidden">
                 @foreach($slides as $i => $slide)
                 <div x-show="current === {{ $i }}"
                      x-transition:enter="transition ease-out duration-300"
@@ -115,8 +115,8 @@
                      x-transition:leave-end="opacity-0 -translate-y-2"
                      class="absolute inset-0 flex flex-col justify-center"
                      x-cloak>
-                    <span class="text-[11px] font-semibold text-muted-text uppercase tracking-wider leading-none">{{ $slide['type'] }}</span>
-                    <span class="text-base font-bold text-accent mt-0.5 truncate leading-tight">{{ $slide['name'] }}</span>
+                    <span class="text-[9px] font-semibold text-muted-text uppercase tracking-wider leading-none">{{ $slide['type'] }}</span>
+                    <span class="text-sm font-bold text-accent mt-1 truncate leading-tight">{{ $slide['name'] }}</span>
                 </div>
                 @endforeach
             </div>
