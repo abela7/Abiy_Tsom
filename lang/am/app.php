@@ -98,7 +98,6 @@ return [
     'day_page_title' => 'ቀን :day',
     'day_x' => 'ቀን :day',
     'ethiopian_date_label' => 'ኢትዮጵያዊ ቀን',
-    'ethiopian_calendar_title' => 'የኢትዮጲያ ዘመን መቁጠሪያ',
     'share' => 'ያጋሩ',
     'share_btn' => 'ያጋሩ',
     'share_prompt_message' => 'ለወዳጅ ዘመድዎ ያጋሩ',

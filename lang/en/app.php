@@ -94,7 +94,6 @@ return [
     'day_page_title' => 'Day :day',
     'day_x' => 'Day :day',
     'ethiopian_date_label' => 'Ethiopian Date',
-    'ethiopian_calendar_title' => 'Ethiopian Calendar',
     'share' => 'Share',
     'share_btn' => 'Share',
     'share_prompt_message' => 'Share this with your loved ones',
