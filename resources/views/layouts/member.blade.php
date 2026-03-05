@@ -282,7 +282,7 @@
             }
         };
     </script>
-    {{-- Feedback modal --}}
+    {{-- Feedback modal (swipe-to-dismiss bottom sheet) --}}
     @if(isset($currentMember) && request()->routeIs('member.*'))
     <div x-data="{
             open: false,
@@ -294,6 +294,9 @@
             submitted: false,
             rateLimited: false,
             errors: {},
+            dragY: 0,
+            dragging: false,
+            startY: 0,
             get canSubmit() { return this.name.trim().length > 0 && this.message.trim().length > 0; },
             submit() {
                 if (!this.canSubmit || this.submitting) return;
@@ -316,7 +319,22 @@
                 }).catch(function() { self.submitting = false; });
             },
             reset() { this.name = ''; this.email = ''; this.message = ''; this.website = ''; this.submitted = false; this.errors = {}; this.rateLimited = false; this.submitting = false; },
-            close() { this.open = false; var self = this; setTimeout(function() { if (self.submitted) self.reset(); }, 300); }
+            close() { this.open = false; this.dragY = 0; var self = this; setTimeout(function() { if (self.submitted) self.reset(); }, 300); },
+            onTouchStart(e) {
+                this.startY = e.touches[0].clientY;
+                this.dragging = true;
+            },
+            onTouchMove(e) {
+                if (!this.dragging) return;
+                var dy = e.touches[0].clientY - this.startY;
+                this.dragY = Math.max(0, dy);
+            },
+            onTouchEnd() {
+                if (!this.dragging) return;
+                this.dragging = false;
+                if (this.dragY > 120) { this.close(); }
+                else { this.dragY = 0; }
+            }
          }"
          @open-feedback.window="open = true"
          x-show="open"
@@ -329,16 +347,26 @@
              x-show="open"
              x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
              x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+             :style="dragY > 0 ? 'opacity:' + Math.max(0, 1 - dragY / 300) : ''"
              @click="close()"></div>
 
         {{-- Modal panel --}}
         <div class="absolute inset-x-0 bottom-0 max-h-[90vh] flex flex-col"
+             x-ref="fbPanel"
              x-show="open"
              x-transition:enter="transition ease-out duration-300" x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0"
-             x-transition:leave="transition ease-in duration-200" x-transition:leave-start="translate-y-0" x-transition:leave-end="translate-y-full">
+             x-transition:leave="transition ease-in duration-200" x-transition:leave-start="translate-y-0" x-transition:leave-end="translate-y-full"
+             :style="dragY > 0 ? 'transform:translateY(' + dragY + 'px);transition:none' : ''">
             <div class="bg-card rounded-t-2xl border-t border-border shadow-xl overflow-y-auto safe-area-bottom">
-                {{-- Handle --}}
-                <div class="flex justify-center pt-3 pb-1">
+                {{-- Drag handle --}}
+                <div class="flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing touch-manipulation"
+                     @touchstart="onTouchStart($event)"
+                     @touchmove.prevent="onTouchMove($event)"
+                     @touchend="onTouchEnd()"
+                     @mousedown.prevent="startY = $event.clientY; dragging = true;
+                         var mm = function(e) { if (!dragging) return; dragY = Math.max(0, e.clientY - startY); };
+                         var mu = function() { dragging = false; document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); if (dragY > 120) { close(); } else { dragY = 0; } };
+                         document.addEventListener('mousemove', mm); document.addEventListener('mouseup', mu);">
                     <div class="w-10 h-1 rounded-full bg-border"></div>
                 </div>
 
