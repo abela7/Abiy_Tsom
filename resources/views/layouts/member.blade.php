@@ -88,12 +88,12 @@
                     @endif
                 @endif
             </h1>
-            <div class="flex items-center gap-1 shrink-0">
+            <div class="flex items-center gap-1.5 shrink-0">
                 @if($currentMember->passcode_enabled ?? false)
                 <a href="{{ route('member.passcode.lock') }}"
-                   class="p-2 rounded-xl hover:bg-muted transition active:scale-95"
+                   class="w-9 h-9 rounded-full bg-muted/70 border border-border/50 flex items-center justify-center hover:bg-muted transition active:scale-95"
                    aria-label="{{ __('app.lock_app') }}">
-                    <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-4.5 h-4.5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                     </svg>
                 </a>
@@ -101,11 +101,11 @@
                 <div class="relative overflow-visible" x-data="{ open: false }" @click.away="open = false" data-tour="language">
                     <button type="button"
                             @click="open = !open"
-                            class="p-1.5 rounded-xl hover:bg-muted transition active:scale-95 touch-manipulation"
+                            class="w-9 h-9 rounded-full bg-muted/70 border border-border/50 flex items-center justify-center hover:bg-muted transition active:scale-95 touch-manipulation"
                             :aria-label="'{{ __('app.language') }}'">
                         {{-- Show the OTHER language's flag as a hint to switch --}}
-                        <span x-show="locale === 'am'" x-cloak class="text-xl leading-none">🇬🇧</span>
-                        <span x-show="locale === 'en'" x-cloak class="text-xl leading-none">🇪🇹</span>
+                        <span x-show="locale === 'am'" x-cloak class="text-base leading-none">🇬🇧</span>
+                        <span x-show="locale === 'en'" x-cloak class="text-base leading-none">🇪🇹</span>
                     </button>
                     <div x-show="open"
                          x-transition:enter="transition ease-out duration-100"
@@ -139,7 +139,7 @@
                 </div>
                 <button type="button"
                         @click="toggleTheme()"
-                        class="p-2 rounded-xl hover:bg-muted transition active:scale-95"
+                        class="w-9 h-9 rounded-full bg-muted/70 border border-border/50 flex items-center justify-center hover:bg-muted transition active:scale-95"
                         :aria-label="theme === 'light' ? '{{ __('app.theme_light') }}' : (theme === 'sepia' ? '{{ __('app.theme_sepia') }}' : '{{ __('app.theme_dark') }}')"
                         data-tour="theme">
                     {{-- Sun: light theme --}}
