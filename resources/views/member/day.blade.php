@@ -129,15 +129,15 @@
 
         {{-- Weekly theme link --}}
         @if($daily->weeklyTheme)
-        <a href="{{ route('member.week', $daily->weeklyTheme) }}" class="flex items-center gap-3 px-4 py-2.5 bg-accent/5 hover:bg-accent/10 active:scale-[0.98] transition-all group">
-            <div class="shrink-0 w-7 h-7 rounded-lg bg-accent/15 flex items-center justify-center">
-                <i class="bi bi-calendar-week text-accent text-xs"></i>
+        <a href="{{ route('member.week', $daily->weeklyTheme) }}" class="flex items-center gap-4 px-4 py-4 bg-accent/5 hover:bg-accent/10 active:scale-[0.98] transition-all group">
+            <div class="shrink-0 w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center">
+                <i class="bi bi-calendar-week text-accent text-base"></i>
             </div>
             <div class="flex-1 min-w-0">
-                <span class="block text-sm font-bold text-accent">{{ __('app.week', ['number' => $daily->weeklyTheme->week_number]) }} &mdash; {{ localized($daily->weeklyTheme, 'name') ?? $daily->weeklyTheme->name_en ?? $daily->weeklyTheme->name_geez ?? '-' }}</span>
-                <span class="block text-[11px] text-muted-text mt-0.5">{{ __('app.week_tap_to_read') }}</span>
+                <span class="block text-base font-bold text-accent">{{ __('app.week', ['number' => $daily->weeklyTheme->week_number]) }} &mdash; {{ localized($daily->weeklyTheme, 'name') ?? $daily->weeklyTheme->name_en ?? $daily->weeklyTheme->name_geez ?? '-' }}</span>
+                <span class="block text-xs text-muted-text mt-0.5">{{ __('app.week_tap_to_read') }}</span>
             </div>
-            <svg class="w-4 h-4 text-accent group-hover:translate-x-0.5 transition-all shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <svg class="w-6 h-6 text-accent group-hover:translate-x-0.5 transition-all shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </a>
         @endif
     </div>
