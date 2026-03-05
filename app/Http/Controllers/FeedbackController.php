@@ -7,15 +7,9 @@ namespace App\Http\Controllers;
 use App\Models\Feedback;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 
 class FeedbackController extends Controller
 {
-    public function show(): View
-    {
-        return view('public.feedback');
-    }
-
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([

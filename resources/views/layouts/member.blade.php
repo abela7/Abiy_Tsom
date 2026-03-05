@@ -189,11 +189,11 @@
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                     <span>{{ __('app.nav_settings') }}</span>
                 </a>
-                <a href="{{ route('feedback') }}"
-                   class="flex flex-col items-center gap-1 px-3 py-2 text-xs {{ request()->routeIs('feedback') ? 'text-accent' : 'text-muted-text' }}">
+                <button type="button" @click="$dispatch('open-feedback')"
+                        class="flex flex-col items-center gap-1 px-3 py-2 text-xs text-muted-text">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     <span>{{ __('app.feedback_page_title') }}</span>
-                </a>
+                </button>
             </div>
         </nav>
     @endif
@@ -282,6 +282,143 @@
             }
         };
     </script>
+    {{-- Feedback modal --}}
+    @if(isset($currentMember) && request()->routeIs('member.*'))
+    <div x-data="{
+            open: false,
+            name: '',
+            email: '',
+            message: '',
+            website: '',
+            submitting: false,
+            submitted: false,
+            rateLimited: false,
+            errors: {},
+            get canSubmit() { return this.name.trim().length > 0 && this.message.trim().length > 0; },
+            submit() {
+                if (!this.canSubmit || this.submitting) return;
+                this.submitting = true;
+                this.errors = {};
+                this.rateLimited = false;
+                var self = this;
+                fetch(@js(route('feedback.store')), {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': AbiyTsom.csrfToken, 'Accept': 'application/json' },
+                    body: JSON.stringify({ name: self.name, email: self.email, message: self.message, website: self.website }),
+                }).then(function(r) {
+                    if (r.status === 429) { self.rateLimited = true; self.submitting = false; return; }
+                    return r.json();
+                }).then(function(d) {
+                    if (!d) return;
+                    if (d.errors) { self.errors = d.errors; self.submitting = false; return; }
+                    if (d.success) { self.submitted = true; self.submitting = false; }
+                }).catch(function() { self.submitting = false; });
+            },
+            reset() { this.name = ''; this.email = ''; this.message = ''; this.website = ''; this.submitted = false; this.errors = {}; this.rateLimited = false; this.submitting = false; },
+            close() { this.open = false; var self = this; setTimeout(function() { if (self.submitted) self.reset(); }, 300); }
+         }"
+         @open-feedback.window="open = true"
+         x-show="open"
+         x-cloak
+         class="fixed inset-0 z-[100]"
+         @keydown.escape.window="if(open) close()">
+
+        {{-- Backdrop --}}
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+             x-show="open"
+             x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+             @click="close()"></div>
+
+        {{-- Modal panel --}}
+        <div class="absolute inset-x-0 bottom-0 max-h-[90vh] flex flex-col"
+             x-show="open"
+             x-transition:enter="transition ease-out duration-300" x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0"
+             x-transition:leave="transition ease-in duration-200" x-transition:leave-start="translate-y-0" x-transition:leave-end="translate-y-full">
+            <div class="bg-card rounded-t-2xl border-t border-border shadow-xl overflow-y-auto safe-area-bottom">
+                {{-- Handle --}}
+                <div class="flex justify-center pt-3 pb-1">
+                    <div class="w-10 h-1 rounded-full bg-border"></div>
+                </div>
+
+                <div class="px-5 pb-6">
+                    {{-- Header --}}
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-bold text-primary">{{ __('app.feedback_page_title') }}</h2>
+                        <button type="button" @click="close()" class="p-1.5 rounded-lg hover:bg-muted transition">
+                            <svg class="w-5 h-5 text-muted-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+
+                    {{-- Form --}}
+                    <div x-show="!submitted">
+                        <p class="text-sm text-muted-text mb-4">{{ __('app.feedback_subtitle') }}</p>
+
+                        <div class="space-y-3">
+                            {{-- Name --}}
+                            <div>
+                                <label class="block text-xs font-bold text-muted-text uppercase tracking-widest mb-1">{{ __('app.feedback_name') }} <span class="text-red-500">*</span></label>
+                                <input type="text" x-model="name" maxlength="255" placeholder="{{ __('app.feedback_name_ph') }}"
+                                       class="w-full h-11 px-4 rounded-xl border border-border bg-surface text-primary text-sm placeholder:text-muted-text/50 focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent transition">
+                                <template x-if="errors.name"><p class="text-xs text-red-500 mt-1" x-text="errors.name[0]"></p></template>
+                            </div>
+
+                            {{-- Email --}}
+                            <div>
+                                <label class="block text-xs font-bold text-muted-text uppercase tracking-widest mb-1">{{ __('app.feedback_email') }} <span class="text-muted-text/60 normal-case tracking-normal font-normal">{{ __('app.feedback_email_optional') }}</span></label>
+                                <input type="email" x-model="email" maxlength="255" placeholder="{{ __('app.feedback_email_ph') }}"
+                                       class="w-full h-11 px-4 rounded-xl border border-border bg-surface text-primary text-sm placeholder:text-muted-text/50 focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent transition">
+                                <template x-if="errors.email"><p class="text-xs text-red-500 mt-1" x-text="errors.email[0]"></p></template>
+                            </div>
+
+                            {{-- Message --}}
+                            <div>
+                                <label class="block text-xs font-bold text-muted-text uppercase tracking-widest mb-1">{{ __('app.feedback_message') }} <span class="text-red-500">*</span></label>
+                                <textarea x-model="message" rows="3" maxlength="2000" placeholder="{{ __('app.feedback_message_ph') }}"
+                                          class="w-full px-4 py-3 rounded-xl border border-border bg-surface text-primary text-sm placeholder:text-muted-text/50 focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent transition resize-none"></textarea>
+                                <template x-if="errors.message"><p class="text-xs text-red-500 mt-1" x-text="errors.message[0]"></p></template>
+                            </div>
+
+                            {{-- Honeypot --}}
+                            <div class="absolute -left-[9999px]" aria-hidden="true"><input type="text" x-model="website" tabindex="-1" autocomplete="off"></div>
+
+                            {{-- Submit --}}
+                            <button type="button" @click="submit()"
+                                    :disabled="!canSubmit || submitting"
+                                    :class="canSubmit && !submitting ? 'bg-accent text-on-accent hover:bg-accent-hover active:scale-[0.97]' : 'bg-muted text-muted-text cursor-not-allowed'"
+                                    class="w-full h-11 rounded-xl font-bold text-sm transition touch-manipulation flex items-center justify-center gap-2">
+                                <template x-if="submitting">
+                                    <svg class="w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" class="opacity-25"/><path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="3" stroke-linecap="round" class="opacity-75"/></svg>
+                                </template>
+                                <template x-if="!submitting">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                                </template>
+                                {{ __('app.feedback_send') }}
+                            </button>
+                            <template x-if="rateLimited"><p class="text-xs text-red-500 text-center">{{ __('app.feedback_rate_limited') }}</p></template>
+                        </div>
+                    </div>
+
+                    {{-- Success --}}
+                    <div x-show="submitted" x-cloak x-transition>
+                        <div class="text-center py-4 space-y-4">
+                            <div class="mx-auto w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                                <svg class="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            </div>
+                            <h3 class="text-xl font-bold text-primary">{{ __('app.feedback_success_title') }}</h3>
+                            <p class="text-sm text-muted-text">{{ __('app.feedback_success_body') }}</p>
+                            <button type="button" @click="close()" class="w-full h-11 rounded-xl bg-accent text-on-accent font-bold text-sm hover:bg-accent-hover active:scale-[0.97] transition touch-manipulation">
+                                {{ __('app.close') }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
     @stack('scripts')
 </body>
 </html>

@@ -58,8 +58,7 @@ Route::post('/telegram/mini/connect', [TelegramAuthController::class, 'miniConne
 // Public content suggestion form (no auth required)
 Route::get('/suggest', [ContentSuggestionController::class, 'show'])->name('suggest');
 Route::post('/suggest', [ContentSuggestionController::class, 'store'])->name('suggest.store');
-// Public feedback form (no auth required)
-Route::get('/feedback', [FeedbackController::class, 'show'])->name('feedback');
+// Feedback (modal submit, no auth required)
 Route::post('/feedback', [FeedbackController::class, 'store'])
     ->middleware('throttle:5,60')
     ->name('feedback.store');
