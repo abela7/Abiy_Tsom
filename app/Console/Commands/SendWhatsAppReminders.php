@@ -7,12 +7,11 @@ namespace App\Console\Commands;
 use App\Models\DailyContent;
 use App\Models\LentSeason;
 use App\Models\Member;
-use App\Models\Translation;
 use App\Services\TelegramAuthService;
+use App\Services\WhatsAppTemplateService;
 use App\Services\UltraMsgService;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Lang;
 
 /**
  * Send one WhatsApp reminder per day to opted-in members.
@@ -32,7 +31,8 @@ class SendWhatsAppReminders extends Command
 
     public function handle(
         UltraMsgService $ultraMsgService,
-        TelegramAuthService $telegramAuthService
+        TelegramAuthService $telegramAuthService,
+        WhatsAppTemplateService $whatsAppTemplateService
     ): int
     {
         if (! $ultraMsgService->isConfigured()) {
@@ -129,20 +129,8 @@ class SendWhatsAppReminders extends Command
                         'code' => $code,
                     ]);
                     $dayUrl = $this->ensureHttpsUrl($dayUrl);
-                    $locale = in_array((string) $member->whatsapp_language, ['en', 'am'], true)
-                        ? (string) $member->whatsapp_language
-                        : 'en';
-
-                    Translation::loadFromDb($locale);
-
-                    $header = Lang::get('app.whatsapp_daily_reminder_header', [
-                        'baptism_name' => $member->baptism_name ?? '',
-                        'day' => $dailyContent->day_number,
-                    ], $locale);
-                    $content = Lang::get('app.whatsapp_daily_reminder_content', [
-                        'url' => $dayUrl,
-                    ], $locale);
-                    $message = $header."\n".$content;
+                    $message = $whatsAppTemplateService
+                        ->renderDailyReminder($member, $dailyContent, $dayUrl)['message'];
 
                     if ($dryRun) {
                         $sentCount++;

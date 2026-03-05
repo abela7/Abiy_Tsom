@@ -103,17 +103,23 @@
             name: 'Abel',
             baptism_name: 'Abel',
             day: '17',
+            day_title: 'Day 17',
+            date: '2026-03-05',
             url: 'https://abiytsom.abuneteklehaymanot.org/share/day/15',
             telegram_url: 'https://t.me/AbiyTsomBot',
-            saint_commemoration: 'Saints Commemoration',
+            saint_commemoration: 'Synaxarium for March 05',
+            bible_reference: 'Acts 25:13-end',
         },
         am: {
             name: 'Abel',
             baptism_name: 'Abel',
             day: '17',
+            day_title: 'ቀን 17',
+            date: '2026-03-05',
             url: 'https://abiytsom.abuneteklehaymanot.org/share/day/15',
             telegram_url: 'https://t.me/AbiyTsomBot',
-            saint_commemoration: 'Saints Commemoration',
+            saint_commemoration: 'ስንክሳር የመጋቢት 05',
+            bible_reference: 'የሐዋርያት ሥራ 25:13-ፍ.ም',
         }
     };
 

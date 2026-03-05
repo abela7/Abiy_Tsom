@@ -13,7 +13,10 @@ use Illuminate\Support\Facades\Lang;
  */
 final class WhatsAppReminderConfirmationService
 {
-    public function __construct(private readonly UltraMsgService $ultraMsg) {}
+    public function __construct(
+        private readonly UltraMsgService $ultraMsg,
+        private readonly WhatsAppTemplateService $templates,
+    ) {}
 
     /**
      * Send "Please reply YES or NO only" re-prompt after an invalid reply.
@@ -25,9 +28,13 @@ final class WhatsAppReminderConfirmationService
         }
 
         $locale = $this->memberLocale($member);
-        $message = Lang::get('app.whatsapp_invalid_reply_message', [
-            'name' => $member->baptism_name,
-        ], $locale);
+        $message = $this->templates->renderConfirmationTemplate(
+            'app.whatsapp_invalid_reply_message',
+            $member,
+            $this->buildMemberAccessUrl($member),
+            $this->telegramUrl(),
+            $locale
+        );
 
         return $this->ultraMsg->sendTextMessage((string) $member->whatsapp_phone, $message);
     }
@@ -42,9 +49,13 @@ final class WhatsAppReminderConfirmationService
         }
 
         $locale = $this->memberLocale($member);
-        $message = Lang::get('app.whatsapp_confirmation_prompt_message', [
-            'name' => $member->baptism_name,
-        ], $locale);
+        $message = $this->templates->renderConfirmationTemplate(
+            'app.whatsapp_confirmation_prompt_message',
+            $member,
+            $this->buildMemberAccessUrl($member),
+            $this->telegramUrl(),
+            $locale
+        );
 
         return $this->ultraMsg->sendTextMessage((string) $member->whatsapp_phone, $message);
     }
@@ -61,15 +72,15 @@ final class WhatsAppReminderConfirmationService
 
         $locale = $this->memberLocale($member);
 
-        $telegramUsername = trim((string) config('services.telegram.bot_username', ''));
-        $telegramUrl = $telegramUsername !== '' ? 'https://t.me/' . $telegramUsername : 'https://t.me/AbiyTsomBot';
-
         $accessUrl = $this->buildMemberAccessUrl($member);
 
-        $message = Lang::get('app.whatsapp_confirmation_go_back_message', [
-            'url' => $accessUrl,
-            'telegram_url' => $telegramUrl,
-        ], $locale);
+        $message = $this->templates->renderConfirmationTemplate(
+            'app.whatsapp_confirmation_go_back_message',
+            $member,
+            $accessUrl,
+            $this->telegramUrl(),
+            $locale
+        );
 
         return $this->ultraMsg->sendTextMessage((string) $member->whatsapp_phone, $message);
     }
@@ -84,7 +95,13 @@ final class WhatsAppReminderConfirmationService
         }
 
         $locale = $this->memberLocale($member);
-        $message = Lang::get('app.whatsapp_confirmation_activated_message', [], $locale);
+        $message = $this->templates->renderConfirmationTemplate(
+            'app.whatsapp_confirmation_activated_message',
+            $member,
+            $this->buildMemberAccessUrl($member),
+            $this->telegramUrl(),
+            $locale
+        );
 
         return $this->ultraMsg->sendTextMessage((string) $member->whatsapp_phone, $message);
     }
@@ -99,7 +116,13 @@ final class WhatsAppReminderConfirmationService
         }
 
         $locale = $this->memberLocale($member);
-        $message = Lang::get('app.whatsapp_confirmation_rejected_message', [], $locale);
+        $message = $this->templates->renderConfirmationTemplate(
+            'app.whatsapp_confirmation_rejected_message',
+            $member,
+            $this->buildMemberAccessUrl($member),
+            $this->telegramUrl(),
+            $locale
+        );
 
         return $this->ultraMsg->sendTextMessage((string) $member->whatsapp_phone, $message);
     }
@@ -144,6 +167,13 @@ final class WhatsAppReminderConfirmationService
         }
 
         return $url;
+    }
+
+    private function telegramUrl(): string
+    {
+        $telegramUsername = ltrim(trim((string) config('services.telegram.bot_username', '')), '@');
+
+        return $telegramUsername !== '' ? 'https://t.me/'.$telegramUsername : 'https://t.me/AbiyTsomBot';
     }
 
     /**

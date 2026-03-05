@@ -8,14 +8,13 @@ use App\Http\Controllers\Controller;
 use App\Models\DailyContent;
 use App\Models\LentSeason;
 use App\Models\Member;
-use App\Models\Translation;
 use App\Services\TelegramAuthService;
+use App\Services\WhatsAppTemplateService;
 use App\Services\UltraMsgService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Lang;
 use Illuminate\View\View;
 
 /**
@@ -187,7 +186,8 @@ class WhatsAppRemindersController extends Controller
     public function sendReminder(
         Member $member,
         UltraMsgService $ultraMsg,
-        TelegramAuthService $telegramAuthService
+        TelegramAuthService $telegramAuthService,
+        WhatsAppTemplateService $whatsAppTemplateService
     ): JsonResponse
     {
         $this->ensureOptedIn($member);
@@ -223,30 +223,19 @@ class WhatsAppRemindersController extends Controller
             ], 400);
         }
 
-        $lang = in_array((string) $member->whatsapp_language, ['en', 'am'], true)
-            ? (string) $member->whatsapp_language
-            : 'en';
-        Translation::loadFromDb($lang);
+        $code = $telegramAuthService->createCode(
+            $member,
+            TelegramAuthService::PURPOSE_MEMBER_ACCESS,
+            route('member.day', ['daily' => $dailyContent], false)
+        );
+        $dayUrl = route('share.day', [
+            'daily' => $dailyContent,
+            'code' => $code,
+        ]);
+        $dayUrl = $this->ensureHttpsUrl($dayUrl);
 
-            $code = $telegramAuthService->createCode(
-                $member,
-                TelegramAuthService::PURPOSE_MEMBER_ACCESS,
-                route('member.day', ['daily' => $dailyContent], false)
-            );
-            $dayUrl = route('share.day', [
-                'daily' => $dailyContent,
-                'code' => $code,
-            ]);
-            $dayUrl = $this->ensureHttpsUrl($dayUrl);
-
-        $header = Lang::get('app.whatsapp_daily_reminder_header', [
-            'baptism_name' => $member->baptism_name ?? '',
-            'day' => $dailyContent->day_number,
-        ], $lang);
-        $content = Lang::get('app.whatsapp_daily_reminder_content', [
-            'url' => $dayUrl,
-        ], $lang);
-        $message = $header."\n".$content;
+        $message = $whatsAppTemplateService
+            ->renderDailyReminder($member, $dailyContent, $dayUrl)['message'];
 
         $sent = $ultraMsg->sendTextMessage((string) $member->whatsapp_phone, $message);
 
