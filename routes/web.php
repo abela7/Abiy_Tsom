@@ -224,6 +224,12 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/themes/{theme}/edit', [Admin\WeeklyThemeController::class, 'edit'])->name('themes.edit');
         Route::put('/themes/{theme}', [Admin\WeeklyThemeController::class, 'update'])->name('themes.update');
 
+        // Lectionary (ግጻዌ — daily scripture readings)
+        Route::get('/lectionary', [Admin\LectionaryController::class, 'index'])->name('lectionary.index');
+        Route::post('/lectionary', [Admin\LectionaryController::class, 'store'])->name('lectionary.store');
+        Route::put('/lectionary/{lectionary}', [Admin\LectionaryController::class, 'update'])->name('lectionary.update');
+        Route::delete('/lectionary/{lectionary}', [Admin\LectionaryController::class, 'destroy'])->name('lectionary.destroy');
+
         // Ethiopian Synaxarium (calendar celebrations)
         Route::get('/synaxarium', [Admin\SynaxariumController::class, 'index'])->name('synaxarium.index');
         Route::post('/synaxarium/monthly', [Admin\SynaxariumController::class, 'storeMonthly'])->name('synaxarium.monthly.store');

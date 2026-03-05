@@ -72,6 +72,27 @@ final class WhatsAppTemplateService
         'yearly_commemorations_bullets',
         'monthly_commemorations',
         'monthly_commemorations_bullets',
+        'commemorations_block',
+        'bible_reference',
+        'url',
+    ];
+
+    /** @var list<string> */
+    public const DAILY_REMINDER_SECTION_PLACEHOLDERS = [
+        'name',
+        'baptism_name',
+        'day',
+        'day_title',
+        'date',
+        'gregorian_date',
+        'ethiopian_date',
+        'saint_commemoration',
+        'annual_commemorations',
+        'annual_commemorations_bullets',
+        'yearly_commemorations',
+        'yearly_commemorations_bullets',
+        'monthly_commemorations',
+        'monthly_commemorations_bullets',
         'bible_reference',
         'url',
     ];
@@ -95,16 +116,24 @@ final class WhatsAppTemplateService
     ): array {
         $resolvedLocale = $this->normalizeLocale($locale ?? (string) ($member->whatsapp_language ?? $member->locale ?? 'en'));
         $variables = $this->dailyReminderVariables($member, $dailyContent, $url, $resolvedLocale);
+        $variables['commemorations_block'] = $this->renderCommemorationsBlock($variables, $resolvedLocale);
 
-        $header = $this->translate('app.whatsapp_daily_reminder_header', $variables, $resolvedLocale);
-        $content = $this->translate('app.whatsapp_daily_reminder_content', $variables, $resolvedLocale);
+        $header = $this->normalizeRenderedText(
+            $this->translate('app.whatsapp_daily_reminder_header', $variables, $resolvedLocale)
+        );
+        $content = $this->normalizeRenderedText(
+            $this->translate('app.whatsapp_daily_reminder_content', $variables, $resolvedLocale)
+        );
+        $message = $this->normalizeRenderedText(
+            implode("\n", array_values(array_filter([$header, $content], static fn (string $value): bool => $value !== '')))
+        );
 
         return [
             'locale' => $resolvedLocale,
             'variables' => $variables,
             'header' => $header,
             'content' => $content,
-            'message' => $header."\n".$content,
+            'message' => $message,
         ];
     }
 
@@ -204,6 +233,28 @@ final class WhatsAppTemplateService
     private function fallbackLocale(string $locale): string
     {
         return $locale === 'am' ? 'en' : 'am';
+    }
+
+    /**
+     * @param  array<string, string>  $variables
+     */
+    private function renderCommemorationsBlock(array $variables, string $locale): string
+    {
+        $blocks = [];
+
+        if (trim((string) ($variables['yearly_commemorations_bullets'] ?? '')) !== '') {
+            $blocks[] = $this->normalizeRenderedText(
+                $this->translate('app.whatsapp_daily_reminder_yearly_block', $variables, $locale)
+            );
+        }
+
+        if (trim((string) ($variables['monthly_commemorations_bullets'] ?? '')) !== '') {
+            $blocks[] = $this->normalizeRenderedText(
+                $this->translate('app.whatsapp_daily_reminder_monthly_block', $variables, $locale)
+            );
+        }
+
+        return $this->normalizeRenderedText(implode("\n\n", array_filter($blocks, static fn (string $value): bool => $value !== '')));
     }
 
     /**
@@ -314,5 +365,13 @@ final class WhatsAppTemplateService
         }
 
         return '- '.implode("\n- ", $names);
+    }
+
+    private function normalizeRenderedText(string $value): string
+    {
+        $normalized = str_replace(["\r\n", "\r"], "\n", $value);
+        $normalized = preg_replace("/\n{3,}/", "\n\n", $normalized) ?? $normalized;
+
+        return trim($normalized);
     }
 }
