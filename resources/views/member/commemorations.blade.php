@@ -30,11 +30,8 @@
     {{-- Yearly Commemorations --}}
     @if($hasAnnuals)
     <div class="rounded-2xl bg-card border border-border shadow-sm overflow-hidden">
-        <div class="flex items-center gap-2.5 px-4 pt-4 pb-2">
-            <div class="shrink-0 w-7 h-7 rounded-lg bg-accent-secondary/15 flex items-center justify-center">
-                <svg class="w-3.5 h-3.5 text-accent-secondary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><line x1="4" y1="8" x2="20" y2="8"/></svg>
-            </div>
-            <span class="text-xs font-bold text-muted-text uppercase tracking-wider">{{ __('app.synaxarium_yearly_commemorations') }}</span>
+        <div class="px-4 pt-4 pb-2 text-center">
+            <h2 class="text-base font-black text-primary">{{ __('app.synaxarium_yearly_commemorations') }}</h2>
         </div>
 
         <div class="pb-3 space-y-0 divide-y divide-border">
@@ -90,16 +87,12 @@
 
     {{-- Monthly Commemorations --}}
     @if($hasMonthlies)
-    <div>
-        <div class="flex items-center gap-2 mb-3">
-            <div class="shrink-0 w-7 h-7 rounded-lg bg-sinksar/15 flex items-center justify-center">
-                {{-- Cross icon --}}
-                <svg class="w-3.5 h-3.5 text-sinksar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><line x1="4" y1="8" x2="20" y2="8"/></svg>
-            </div>
-            <span class="text-xs font-bold text-muted-text uppercase tracking-wider">{{ __('app.synaxarium_monthly_commemorations') }}</span>
+    <div class="rounded-2xl bg-card border border-border shadow-sm overflow-hidden">
+        <div class="px-4 pt-4 pb-2 text-center">
+            <h2 class="text-base font-black text-primary">{{ __('app.synaxarium_monthly_commemorations') }}</h2>
         </div>
 
-        <div class="rounded-2xl bg-card border border-border shadow-sm overflow-hidden divide-y divide-border">
+        <div class="divide-y divide-border">
             @foreach($monthlyCelebrations as $saint)
             <div class="flex items-center gap-3 px-4 py-3 hover:bg-muted/30 transition-colors active:scale-[0.99]">
                 {{-- Use Saints.png as icon for monthly saints --}}
