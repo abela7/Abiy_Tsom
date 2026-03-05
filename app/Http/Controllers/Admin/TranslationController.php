@@ -40,6 +40,7 @@ class TranslationController extends Controller
                 'settings' => __('app.group_settings'),
                 'telegram_bot' => __('app.group_telegram_bot'),
                 'fundraising_popup' => __('app.group_fundraising_popup'),
+                'feedback' => __('app.group_feedback'),
                 'general' => __('app.group_general'),
             ],
             'admin' => [

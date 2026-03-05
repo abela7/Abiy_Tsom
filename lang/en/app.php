@@ -886,6 +886,7 @@ return [
     'group_settings' => 'Settings',
     'group_telegram_bot' => 'Telegram Bot Messages',
     'group_fundraising_popup' => 'Fundraising Popup',
+    'group_feedback' => 'Feedback',
     'group_general' => 'General (Save, Cancel, etc.)',
     'group_admin_login' => 'Login',
     'group_admin_dashboard' => 'Dashboard',

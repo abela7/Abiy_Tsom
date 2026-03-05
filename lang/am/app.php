@@ -866,6 +866,7 @@ return [
     'group_settings' => 'ቅንብሮች',
     'group_telegram_bot' => 'Telegram Bot Messages',
     'group_fundraising_popup' => 'Fundraising Popup',
+    'group_feedback' => 'አስተያየት',
     'group_general' => 'አጠቃላይ (አስቀምጥ፣ ሰርዝ፣ ወዘተ)',
     'group_admin_login' => 'መግቢያ',
     'group_admin_dashboard' => 'ዋና ማያ',
