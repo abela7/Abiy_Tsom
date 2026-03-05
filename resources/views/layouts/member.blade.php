@@ -297,6 +297,7 @@
             dragY: 0,
             dragging: false,
             startY: 0,
+            fromPopstate: false,
             get canSubmit() { return this.name.trim().length > 0 && this.message.trim().length > 0; },
             submit() {
                 if (!this.canSubmit || this.submitting) return;
@@ -319,7 +320,7 @@
                 }).catch(function() { self.submitting = false; });
             },
             reset() { this.name = ''; this.email = ''; this.message = ''; this.website = ''; this.submitted = false; this.errors = {}; this.rateLimited = false; this.submitting = false; },
-            close() { this.open = false; this.dragY = 0; var self = this; setTimeout(function() { if (self.submitted) self.reset(); }, 300); },
+            close() { this.open = false; this.dragY = 0; if (!this.fromPopstate && history.state && history.state.feedbackOpen) { history.back(); } this.fromPopstate = false; var self = this; setTimeout(function() { if (self.submitted) self.reset(); }, 300); },
             onTouchStart(e) {
                 this.startY = e.touches[0].clientY;
                 this.dragging = true;
@@ -336,7 +337,8 @@
                 else { this.dragY = 0; }
             }
          }"
-         @open-feedback.window="open = true"
+         x-init="() => { const d = $data; window.addEventListener('popstate', () => { if (d.open) { d.fromPopstate = true; d.close(); } }); }"
+         @open-feedback.window="open = true; history.pushState({ feedbackOpen: true }, '')"
          x-show="open"
          x-cloak
          class="fixed inset-0 z-[100]"
