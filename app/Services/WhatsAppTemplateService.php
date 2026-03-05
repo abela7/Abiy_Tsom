@@ -19,6 +19,38 @@ use Illuminate\Support\Facades\Lang;
  */
 final class WhatsAppTemplateService
 {
+    /** @var array<int, string> */
+    private const GREGORIAN_MONTH_NAMES_EN = [
+        1 => 'January',
+        2 => 'February',
+        3 => 'March',
+        4 => 'April',
+        5 => 'May',
+        6 => 'June',
+        7 => 'July',
+        8 => 'August',
+        9 => 'September',
+        10 => 'October',
+        11 => 'November',
+        12 => 'December',
+    ];
+
+    /** @var array<int, string> */
+    private const GREGORIAN_MONTH_NAMES_AM = [
+        1 => 'ጃንዩወሪ',
+        2 => 'ፌብሩወሪ',
+        3 => 'ማርች',
+        4 => 'ኤፕሪል',
+        5 => 'ሜይ',
+        6 => 'ጁን',
+        7 => 'ጁላይ',
+        8 => 'ኦገስት',
+        9 => 'ሴፕቴምበር',
+        10 => 'ኦክቶበር',
+        11 => 'ኖቬምበር',
+        12 => 'ዲሴምበር',
+    ];
+
     public function __construct(
         private readonly EthiopianCalendarService $ethiopianCalendarService
     ) {
@@ -31,6 +63,7 @@ final class WhatsAppTemplateService
         'day',
         'day_title',
         'date',
+        'gregorian_date',
         'ethiopian_date',
         'saint_commemoration',
         'annual_commemorations',
@@ -114,6 +147,7 @@ final class WhatsAppTemplateService
             'day' => trim((string) $dailyContent->day_number),
             'day_title' => $this->localizedDailyValue($dailyContent, 'day_title', $locale),
             'date' => $date,
+            'gregorian_date' => $this->formatGregorianMonthDay($dateValue, $locale),
             'ethiopian_date' => $this->formatEthiopianMonthDay($dateInfo['ethiopian_date'] ?? [], $locale),
             'saint_commemoration' => $this->localizedDailyValue($dailyContent, 'sinksar_title', $locale),
             'annual_commemorations' => $annualCommemorations,
@@ -218,6 +252,23 @@ final class WhatsAppTemplateService
         $monthNameKey = $locale === 'am' ? 'month_name_am' : 'month_name_en';
         $monthName = trim((string) ($ethiopianDate[$monthNameKey] ?? ''));
         $day = trim((string) ($ethiopianDate['day'] ?? ''));
+
+        return trim($monthName.' '.$day);
+    }
+
+    private function formatGregorianMonthDay(mixed $dateValue, string $locale): string
+    {
+        $date = $this->parseCarbonDate($dateValue);
+        if ($date === null) {
+            return '';
+        }
+
+        $monthNames = $locale === 'am'
+            ? self::GREGORIAN_MONTH_NAMES_AM
+            : self::GREGORIAN_MONTH_NAMES_EN;
+
+        $monthName = $monthNames[(int) $date->format('n')] ?? '';
+        $day = $date->format('j');
 
         return trim($monthName.' '.$day);
     }
