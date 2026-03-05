@@ -54,8 +54,8 @@
                     </div>
 
                     <div class="mb-6 p-4 rounded-xl border border-border bg-muted/40">
-                        <h3 class="font-semibold text-primary text-sm">{{ __('app.cookie_consent_title') }}</h3>
-                        <p class="text-xs text-muted-text mt-1.5 leading-relaxed">{{ __('app.cookie_consent_summary') }}</p>
+                        <h3 class="font-semibold text-primary text-sm">{{ __('app.cookie_consent_title', [], 'en') }}</h3>
+                        <p class="text-xs text-muted-text mt-1.5 leading-relaxed">{{ __('app.cookie_consent_summary', [], 'en') }}</p>
 
                         <button type="button"
                                 :aria-expanded="cookieConsentExpanded ? 'true' : 'false'"
@@ -65,30 +65,30 @@
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16M4 12h16"/>
                                 </svg>
-                                {{ __('app.read_more') }}
+                                View more
                             </span>
                             <span x-show="cookieConsentExpanded" class="inline-flex items-center gap-1">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4"/>
                                 </svg>
-                                {{ __('app.show_less') }}
+                                Show less
                             </span>
                         </button>
 
                         <div x-show="cookieConsentExpanded" x-transition class="mt-2 text-xs text-muted-text space-y-2">
-                            <p>{{ __('app.cookie_consent_description') }}</p>
+                            <p>{{ __('app.cookie_consent_description', [], 'en') }}</p>
                             <ul class="space-y-2">
                                 <li class="flex gap-2">
                                     <span>•</span>
-                                    <span>{{ __('app.cookie_consent_session_cookie') }}</span>
+                                    <span>{{ __('app.cookie_consent_session_cookie', [], 'en') }}</span>
                                 </li>
                                 <li class="flex gap-2">
                                     <span>•</span>
-                                    <span>{{ __('app.cookie_consent_device_cookie') }}</span>
+                                    <span>{{ __('app.cookie_consent_device_cookie', [], 'en') }}</span>
                                 </li>
                                 <li class="flex gap-2">
                                     <span>•</span>
-                                    <span>{{ __('app.cookie_consent_privacy_note') }}</span>
+                                    <span>{{ __('app.cookie_consent_privacy_note', [], 'en') }}</span>
                                 </li>
                             </ul>
                         </div>
@@ -98,13 +98,13 @@
                                    x-model="cookieConsentAccepted"
                                    @change="saveCookieConsent()"
                                    class="mt-0.5 h-4 w-4 rounded border-border text-accent focus:ring-accent">
-                            <span class="text-primary leading-6">{{ __('app.cookie_consent_checkbox_label') }}</span>
+                            <span class="text-primary leading-6">{{ __('app.cookie_consent_checkbox_label', [], 'en') }}</span>
                         </label>
 
                         <p x-show="!cookieConsentAccepted"
                            x-transition
                            class="text-xs text-red-600 dark:text-red-400 mt-2">
-                            {{ __('app.cookie_consent_required_error') }}
+                            {{ __('app.cookie_consent_required_error', [], 'en') }}
                         </p>
                     </div>
 
