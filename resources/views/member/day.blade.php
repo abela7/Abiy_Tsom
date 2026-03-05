@@ -55,15 +55,16 @@
         }
     @endphp
 
+    {{-- Day title --}}
+    <div class="text-center">
+        <h1 class="text-2xl font-black text-primary">
+            {{ __('app.day_of', ['day' => $daily->day_number, 'total' => 55]) }}
+        </h1>
+        <p class="text-sm text-muted-text mt-0.5">{{ $daily->date->locale('en')->translatedFormat('l, F j, Y') }}</p>
+    </div>
+
     {{-- Day header card --}}
     <div data-tour="day-header" class="rounded-2xl bg-card border border-border shadow-sm overflow-hidden">
-        {{-- Hero: Day number --}}
-        <div class="px-4 pt-5 pb-4 text-center">
-            <h1 class="text-2xl font-black text-primary">
-                {{ __('app.day_of', ['day' => $daily->day_number, 'total' => 55]) }}
-            </h1>
-            <p class="text-sm text-muted-text mt-1">{{ $daily->date->locale('en')->translatedFormat('l, F j, Y') }}</p>
-        </div>
 
         {{-- Ethiopian Calendar row --}}
         @if($hasEthDate)
@@ -125,10 +126,6 @@
         @endif
     </div>
 
-    {{-- Day title --}}
-    @if(localized($daily, 'day_title'))
-        <h2 class="text-lg font-semibold text-primary">{{ localized($daily, 'day_title') }}</h2>
-    @endif
 
     {{-- Bible Reading --}}
     @if(localized($daily, 'bible_reference'))
