@@ -733,7 +733,7 @@
                             </button>
 
                             {{-- Theme toggle --}}
-                            <button type="button" @click="themeMenuOpen = !themeMenuOpen; fontMenuOpen = false"
+                            <button type="button" @click="toggleThemeMenu()"
                                     class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition touch-manipulation"
                                     :class="{
                                         'text-secondary hover:bg-muted': readerTheme === 'default' && !themeMenuOpen,
@@ -747,7 +747,7 @@
                             </button>
 
                             {{-- Font toggle --}}
-                            <button type="button" @click="fontMenuOpen = !fontMenuOpen; themeMenuOpen = false"
+                            <button type="button" @click="toggleFontMenu()"
                                     class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition touch-manipulation"
                                     :class="{
                                         'text-secondary hover:bg-muted': readerTheme === 'default' && !fontMenuOpen,
