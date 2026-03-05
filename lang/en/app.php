@@ -828,6 +828,7 @@ return [
     'synaxarium_yearly_commemorations' => 'Yearly Commemorations',
     'synaxarium_monthly_commemorations' => 'Monthly Commemorations',
     'synaxarium_tap_to_view' => 'Tap to view commemorations',
+    'synaxarium_tap_more_detail' => 'Tap for more detail',
 
     // Admin members tracking & management
     'members_tracking' => 'Members',

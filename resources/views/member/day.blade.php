@@ -65,49 +65,48 @@
             <p class="text-sm text-muted-text mt-1">{{ $daily->date->locale('en')->translatedFormat('l, F j, Y') }}</p>
         </div>
 
-        {{-- Ethiopian date + Carousel row --}}
-        @if($hasEthDate || $hasCelebrations)
-        <div class="flex items-center gap-3 px-4 py-2.5 bg-muted/30">
-            {{-- Ethiopian date --}}
-            @if($hasEthDate)
-            <div class="flex items-center gap-2 shrink-0">
-                <div class="w-7 h-7 rounded-lg bg-accent/10 flex items-center justify-center">
-                    <svg class="w-3.5 h-3.5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                </div>
-                <span class="text-xs font-bold text-secondary">{{ $ethDateInfo['ethiopian_date_formatted'] }}</span>
+        {{-- Ethiopian Calendar row --}}
+        @if($hasEthDate)
+        <div class="flex items-center gap-3 px-4 py-3 bg-muted/30">
+            <img src="{{ asset('images/EOTC_Logo.jpg') }}" alt="" class="w-9 h-9 rounded-lg object-contain shrink-0">
+            <div class="flex-1 min-w-0">
+                <span class="block text-[10px] font-semibold text-muted-text uppercase tracking-wider">{{ __('app.ethiopian_calendar_title') }}</span>
+                <span class="block text-sm font-bold text-primary mt-0.5">{{ $ethDateInfo['ethiopian_date_formatted'] }}</span>
             </div>
-            @endif
+        </div>
+        @endif
 
-            {{-- Divider --}}
-            @if($hasEthDate && $slides->isNotEmpty())
-            <div class="w-px h-5 bg-border shrink-0"></div>
-            @endif
-
-            {{-- Saints carousel --}}
-            @if($slides->isNotEmpty())
-            <a href="{{ route('member.commemorations', $daily) }}"
-               class="flex-1 min-w-0 flex items-center gap-2 hover:opacity-80 transition-opacity"
-               x-data="{ current: 0, total: {{ $slides->count() }} }"
-               x-init="setInterval(() => current = (current + 1) % total, 3000)">
-                <div class="flex-1 min-w-0 relative h-8 overflow-hidden">
-                    @foreach($slides as $i => $slide)
-                    <div x-show="current === {{ $i }}"
-                         x-transition:enter="transition ease-out duration-300"
-                         x-transition:enter-start="opacity-0 translate-y-2"
-                         x-transition:enter-end="opacity-100 translate-y-0"
-                         x-transition:leave="transition ease-in duration-200"
-                         x-transition:leave-start="opacity-100 translate-y-0"
-                         x-transition:leave-end="opacity-0 -translate-y-2"
-                         class="absolute inset-0 flex flex-col justify-center"
-                         x-cloak>
-                        <span class="text-[9px] font-semibold text-muted-text uppercase tracking-wider leading-none">{{ $slide['type'] }}</span>
-                        <span class="text-xs font-bold text-accent mt-0.5 truncate leading-tight">{{ $slide['name'] }}</span>
-                    </div>
-                    @endforeach
+        {{-- Commemorations carousel row --}}
+        @if($slides->isNotEmpty())
+        <a href="{{ route('member.commemorations', $daily) }}"
+           class="flex items-center gap-3 px-4 py-3 bg-accent/5 hover:bg-accent/10 active:scale-[0.98] transition-all group"
+           x-data="{ current: 0, total: {{ $slides->count() }} }"
+           x-init="setInterval(() => current = (current + 1) % total, 3000)">
+            <div class="shrink-0 w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center">
+                <svg class="w-4.5 h-4.5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                </svg>
+            </div>
+            <div class="flex-1 min-w-0 relative h-10 overflow-hidden">
+                @foreach($slides as $i => $slide)
+                <div x-show="current === {{ $i }}"
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0 translate-y-2"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="opacity-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 -translate-y-2"
+                     class="absolute inset-0 flex flex-col justify-center"
+                     x-cloak>
+                    <span class="text-[10px] font-semibold text-muted-text uppercase tracking-wider leading-none">{{ $slide['type'] }}</span>
+                    <span class="text-sm font-bold text-accent mt-0.5 truncate leading-tight">{{ $slide['name'] }}</span>
                 </div>
-                <svg class="w-3.5 h-3.5 text-muted-text shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-            </a>
-            @endif
+                @endforeach
+            </div>
+            <svg class="w-4 h-4 text-accent group-hover:translate-x-0.5 transition-all shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </a>
+        <div class="px-4 pb-2 bg-accent/5">
+            <span class="text-[10px] text-muted-text">{{ __('app.synaxarium_tap_more_detail') }}</span>
         </div>
         @endif
 
