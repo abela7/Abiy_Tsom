@@ -185,7 +185,7 @@
                     <th class="text-left px-4 py-3 font-semibold text-secondary">{{ __('app.locale_label') }}</th>
                     <th class="text-left px-4 py-3 font-semibold text-secondary">{{ __('app.theme') }}</th>
                     <th class="text-left px-4 py-3 font-semibold text-secondary">{{ __('app.tour_column') }}</th>
-                    <th class="text-left px-4 py-3 font-semibold text-secondary">{{ __('app.passcode') }}</th>
+                    <th class="text-left px-4 py-3 font-semibold text-secondary">WhatsApp</th>
                     <th class="text-left px-4 py-3 font-semibold text-secondary">{{ __('app.registered_at') }}</th>
                     <th class="text-right px-4 py-3 font-semibold text-secondary">{{ __('app.actions') }}</th>
                 </tr>
@@ -214,10 +214,16 @@
                         @endif
                     </td>
                     <td class="px-4 py-3">
-                        @if($member->passcode_enabled)
-                            <span class="px-2 py-0.5 rounded-md bg-success/10 text-success text-xs font-semibold">{{ __('app.on') }}</span>
+                        @if($member->whatsapp_confirmation_status === 'confirmed')
+                            <span class="px-2 py-0.5 rounded-md bg-success/10 text-success text-xs font-semibold">Active</span>
+                            <div class="text-[10px] text-muted-text mt-0.5">{{ $member->whatsapp_phone }} &middot; {{ $member->whatsapp_reminder_time ? \Carbon\Carbon::parse($member->whatsapp_reminder_time)->format('H:i') : '—' }}</div>
+                        @elseif($member->whatsapp_confirmation_status === 'pending')
+                            <span class="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 text-xs font-semibold">Pending</span>
+                            <div class="text-[10px] text-muted-text mt-0.5">{{ $member->whatsapp_phone ?? '—' }}</div>
+                        @elseif($member->whatsapp_confirmation_status === 'rejected')
+                            <span class="px-2 py-0.5 rounded-md bg-red-500/10 text-red-500 text-xs font-semibold">Rejected</span>
                         @else
-                            <span class="px-2 py-0.5 rounded-md bg-muted text-muted-text text-xs font-semibold">{{ __('app.off') }}</span>
+                            <span class="px-2 py-0.5 rounded-md bg-muted text-muted-text text-xs font-semibold">—</span>
                         @endif
                     </td>
                     <td class="px-4 py-3 text-muted-text whitespace-nowrap">
