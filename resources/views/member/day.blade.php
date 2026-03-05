@@ -306,7 +306,7 @@
                 _autoTimer: null,
                 imgNext() { this.imgCurrent = (this.imgCurrent + 1) % this.imgTotal; },
                 imgPrev() { this.imgCurrent = (this.imgCurrent - 1 + this.imgTotal) % this.imgTotal; },
-                startAuto() { this._autoTimer = setInterval(() => this.imgNext(), 5000); },
+                startAuto() { this._autoTimer = setInterval(() => this.imgNext(), 3000); },
                 stopAuto() { if (this._autoTimer) { clearInterval(this._autoTimer); this._autoTimer = null; } },
                 imgTouchStart(e) { this.stopAuto(); this._touchX = e.touches[0].clientX; this._touchY = e.touches[0].clientY; },
                 imgTouchEnd(e) {
@@ -548,7 +548,7 @@
                             _fsAutoTimer: null,
                             fsNext() { this.fsCurrent = (this.fsCurrent + 1) % this.fsTotal; },
                             fsPrev() { this.fsCurrent = (this.fsCurrent - 1 + this.fsTotal) % this.fsTotal; },
-                            fsStartAuto() { this._fsAutoTimer = setInterval(() => this.fsNext(), 5000); },
+                            fsStartAuto() { this._fsAutoTimer = setInterval(() => this.fsNext(), 3000); },
                             fsStopAuto() { if (this._fsAutoTimer) { clearInterval(this._fsAutoTimer); this._fsAutoTimer = null; } },
                             fsTouchStart(e) { this.fsStopAuto(); this._fsTX = e.touches[0].clientX; this._fsTY = e.touches[0].clientY; },
                             fsTouchEnd(e) {
