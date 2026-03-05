@@ -632,7 +632,7 @@
                          :style="readerTheme === 'sepia' ? 'background-color:#e8dcc6;border-color:#d4c5a9' : readerTheme === 'dark' ? 'background-color:#12122a;border-color:#2a2a4a' : ''">
                         <div class="flex items-center justify-center gap-4 max-w-xs mx-auto">
                             @foreach([['default','Default','inherit'],['benaiah','Benaiah','Benaiah,sans-serif'],['kiros','Kiros','Kiros,sans-serif'],['handwriting','Writing','Handwriting,sans-serif']] as [$fVal,$fLabel,$fFam])
-                            <button type="button" @click="setReaderFont('{{ $fVal }}')"
+                            <button type="button" @click.stop="setReaderFont('{{ $fVal }}')"
                                     class="flex flex-col items-center gap-1.5 touch-manipulation">
                                 <span class="w-12 h-12 rounded-xl flex items-center justify-center text-xl font-bold transition-all"
                                       style="font-family:{{ $fFam }}"
@@ -656,7 +656,7 @@
                          :class="{ 'bg-card border-border': readerTheme === 'default' }"
                          :style="readerTheme === 'sepia' ? 'background-color:#e8dcc6;border-color:#d4c5a9' : readerTheme === 'dark' ? 'background-color:#12122a;border-color:#2a2a4a' : ''">
                         <div class="flex items-center justify-center gap-5 max-w-xs mx-auto">
-                            <button type="button" @click="setReaderTheme('default')"
+                            <button type="button" @click.stop="setReaderTheme('default')"
                                     class="flex flex-col items-center gap-1.5 touch-manipulation">
                                 <span class="w-10 h-10 rounded-full bg-white flex items-center justify-center transition-all"
                                       :style="'border:3px solid ' + (readerTheme === 'default' ? 'var(--color-accent)' : '#d1d5db') + (readerTheme === 'default' ? ';box-shadow:0 0 0 4px rgba(10,98,134,0.2);transform:scale(1.1)' : '')">
@@ -665,7 +665,7 @@
                                 <span class="text-[10px] font-semibold"
                                       :style="readerTheme === 'default' ? 'color:var(--color-accent)' : readerTheme === 'sepia' ? 'color:#5b4636' : 'color:#8888aa'">{{ __('app.reader_theme_default') }}</span>
                             </button>
-                            <button type="button" @click="setReaderTheme('sepia')"
+                            <button type="button" @click.stop="setReaderTheme('sepia')"
                                     class="flex flex-col items-center gap-1.5 touch-manipulation">
                                 <span class="w-10 h-10 rounded-full flex items-center justify-center transition-all"
                                       :style="'background-color:#f4ecd8;border:3px solid ' + (readerTheme === 'sepia' ? '#8b5e3c' : '#c4a87c') + (readerTheme === 'sepia' ? ';box-shadow:0 0 0 4px rgba(139,94,60,0.3);transform:scale(1.1)' : '')">
@@ -674,7 +674,7 @@
                                 <span class="text-[10px] font-semibold"
                                       :style="readerTheme === 'sepia' ? 'color:#8b5e3c' : readerTheme === 'dark' ? 'color:#8888aa' : ''">{{ __('app.reader_theme_sepia') }}</span>
                             </button>
-                            <button type="button" @click="setReaderTheme('dark')"
+                            <button type="button" @click.stop="setReaderTheme('dark')"
                                     class="flex flex-col items-center gap-1.5 touch-manipulation">
                                 <span class="w-10 h-10 rounded-full flex items-center justify-center transition-all"
                                       :style="'background-color:#1a1a2e;border:3px solid ' + (readerTheme === 'dark' ? '#7b9fff' : '#4a4a6a') + (readerTheme === 'dark' ? ';box-shadow:0 0 0 4px rgba(123,159,255,0.3);transform:scale(1.1)' : '')">
