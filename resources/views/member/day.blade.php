@@ -107,10 +107,22 @@
     </div>
 
     {{-- GROUP B: Ethiopian Calendar & Celebrations --}}
-    @if(!empty($ethDateInfo['ethiopian_date_formatted'] ?? null) || (!empty($ethDateInfo['celebrations']) && $ethDateInfo['celebrations']->isNotEmpty()))
+    @php
+        $hasEthDate = !empty($ethDateInfo['ethiopian_date_formatted'] ?? null);
+        $annualCelebrations = $ethDateInfo['annual_celebrations'] ?? collect();
+        $monthlyCelebrations = $ethDateInfo['monthly_celebrations'] ?? collect();
+        $hasAnnuals = $annualCelebrations->isNotEmpty();
+        $hasMonthlies = $monthlyCelebrations->isNotEmpty();
+        $mainAnnual = $hasAnnuals ? ($annualCelebrations->firstWhere('is_main', true) ?? $annualCelebrations->first()) : null;
+        $otherAnnuals = $hasAnnuals ? $annualCelebrations->where('id', '!=', optional($mainAnnual)->id) : collect();
+        $mainMonthly = $hasMonthlies ? ($monthlyCelebrations->firstWhere('is_main', true) ?? $monthlyCelebrations->first()) : null;
+        $otherMonthlies = $hasMonthlies ? $monthlyCelebrations->where('id', '!=', optional($mainMonthly)->id) : collect();
+    @endphp
+
+    @if($hasEthDate || $hasAnnuals || $hasMonthlies)
     <div class="rounded-2xl bg-card border border-border shadow-sm overflow-hidden">
         {{-- Ethiopian date --}}
-        @if(!empty($ethDateInfo['ethiopian_date_formatted'] ?? null))
+        @if($hasEthDate)
         <div class="flex items-center gap-3 px-4 pt-4 pb-3">
             <div class="shrink-0 w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center">
                 <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -124,35 +136,71 @@
             <span class="shrink-0 text-[11px] font-bold text-accent bg-accent/10 rounded-lg px-2 py-1">E.C.</span>
         </div>
         @endif
-        {{-- Celebrations --}}
-        @if(!empty($ethDateInfo['celebrations']) && $ethDateInfo['celebrations']->isNotEmpty())
-            @php $mainCelebration = $ethDateInfo['main_celebration']; @endphp
-            {{-- Main celebration --}}
-            @if($mainCelebration)
-            <div class="flex items-start gap-3 px-4 py-3 border-t border-border">
-                @if($mainCelebration->imageUrl())
-                    <img src="{{ $mainCelebration->imageUrl() }}" alt="" class="w-10 h-10 rounded-xl object-cover shrink-0 mt-0.5">
+
+        {{-- Annual feast celebration(s) --}}
+        @if($mainAnnual)
+        <div class="flex items-start gap-3 px-4 py-3 border-t border-border">
+            @if($mainAnnual->imageUrl())
+                <img src="{{ $mainAnnual->imageUrl() }}" alt="" class="w-10 h-10 rounded-xl object-cover shrink-0 mt-0.5">
+            @else
+                <div class="shrink-0 w-10 h-10 rounded-xl bg-sinksar/10 flex items-center justify-center mt-0.5">
+                    <svg class="w-5 h-5 text-sinksar" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                </div>
+            @endif
+            <div class="flex-1 min-w-0">
+                <span class="block text-sm font-bold text-primary">{{ localized($mainAnnual, 'celebration') }}</span>
+                <span class="block text-[11px] text-muted-text mt-0.5">{{ __('app.synaxarium_annual_feast') }}</span>
+                @if($mainAnnual->description_en || $mainAnnual->description_am)
+                    <p class="text-xs text-secondary mt-1.5 whitespace-pre-line leading-relaxed">{{ localized($mainAnnual, 'description') }}</p>
+                @endif
+            </div>
+        </div>
+        @endif
+        {{-- Other annual saints --}}
+        @if($otherAnnuals->isNotEmpty())
+        <div class="px-4 py-2.5 border-t border-border space-y-1.5">
+            @foreach($otherAnnuals as $saint)
+            <div class="flex items-center gap-2.5 px-2 py-1.5 rounded-lg">
+                @if($saint->imageUrl())
+                    <img src="{{ $saint->imageUrl() }}" alt="" class="w-7 h-7 rounded-lg object-cover shrink-0">
                 @else
-                    <div class="shrink-0 w-10 h-10 rounded-xl bg-sinksar/10 flex items-center justify-center mt-0.5">
-                        <svg class="w-5 h-5 text-sinksar" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                    <div class="shrink-0 w-7 h-7 rounded-lg bg-sinksar/5 flex items-center justify-center">
+                        <svg class="w-3.5 h-3.5 text-sinksar/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                    </div>
+                @endif
+                <span class="text-xs font-medium text-secondary truncate">{{ localized($saint, 'celebration') }}</span>
+            </div>
+            @endforeach
+        </div>
+        @endif
+
+        {{-- Monthly commemorations --}}
+        @if($hasMonthlies)
+        <div class="border-t border-border">
+            {{-- Section label --}}
+            <div class="px-4 pt-3 pb-1.5">
+                <span class="text-[11px] font-semibold text-muted-text uppercase tracking-wider">{{ __('app.synaxarium_monthly_saints') }}</span>
+            </div>
+            {{-- Main monthly saint --}}
+            @if($mainMonthly)
+            <div class="flex items-center gap-3 px-4 py-2.5">
+                @if($mainMonthly->imageUrl())
+                    <img src="{{ $mainMonthly->imageUrl() }}" alt="" class="w-9 h-9 rounded-xl object-cover shrink-0">
+                @else
+                    <div class="shrink-0 w-9 h-9 rounded-xl bg-sinksar/10 flex items-center justify-center">
+                        <svg class="w-4.5 h-4.5 text-sinksar" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
                     </div>
                 @endif
                 <div class="flex-1 min-w-0">
-                    <span class="block text-sm font-bold text-primary">{{ localized($mainCelebration, 'celebration') }}</span>
-                    <span class="block text-[11px] text-muted-text mt-0.5">
-                        {{ $ethDateInfo['is_annual_feast'] ? __('app.synaxarium_annual_feast') : __('app.synaxarium_daily_saint') }}
-                    </span>
-                    @if($ethDateInfo['is_annual_feast'] && ($mainCelebration->description_en || $mainCelebration->description_am))
-                        <p class="text-xs text-secondary mt-1.5 whitespace-pre-line leading-relaxed">{{ localized($mainCelebration, 'description') }}</p>
-                    @endif
+                    <span class="block text-sm font-semibold text-primary">{{ localized($mainMonthly, 'celebration') }}</span>
+                    <span class="block text-[11px] text-muted-text mt-0.5">{{ __('app.synaxarium_daily_saint') }}</span>
                 </div>
             </div>
             @endif
-            {{-- Secondary saints --}}
-            @php $secondarySaints = $ethDateInfo['celebrations']->where('is_main', '!=', true); @endphp
-            @if($secondarySaints->isNotEmpty())
-            <div class="px-4 py-2.5 border-t border-border space-y-1.5">
-                @foreach($secondarySaints as $saint)
+            {{-- Other monthly saints --}}
+            @if($otherMonthlies->isNotEmpty())
+            <div class="px-4 pb-2.5 space-y-1">
+                @foreach($otherMonthlies as $saint)
                 <div class="flex items-center gap-2.5 px-2 py-1.5 rounded-lg">
                     @if($saint->imageUrl())
                         <img src="{{ $saint->imageUrl() }}" alt="" class="w-7 h-7 rounded-lg object-cover shrink-0">
@@ -166,6 +214,7 @@
                 @endforeach
             </div>
             @endif
+        </div>
         @endif
     </div>
     @endif

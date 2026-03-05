@@ -68,7 +68,7 @@ class EthiopianCalendarService
 
     /**
      * Get all celebrations for a given Gregorian date.
-     * Priority: if any annual records exist for month+day, use those; otherwise monthly.
+     * Returns annuals only when they exist; otherwise monthlies.
      *
      * @return Collection<int, EthiopianSynaxariumAnnual|EthiopianSynaxariumMonthly>
      */
@@ -94,21 +94,36 @@ class EthiopianCalendarService
 
     /**
      * Get Ethiopian date info and celebrations in one call.
-     *
-     * @return array{ethiopian_date: array, ethiopian_date_formatted: string, celebrations: Collection, main_celebration: EthiopianSynaxariumAnnual|EthiopianSynaxariumMonthly|null, celebration: EthiopianSynaxariumAnnual|EthiopianSynaxariumMonthly|null, is_annual_feast: bool}
+     * Always returns both annual and monthly celebrations separately.
      */
     public function getDateInfo(Carbon $date, string $locale = 'en'): array
     {
-        $celebrations = $this->getCelebrationsForDate($date);
+        $eth = $this->gregorianToEthiopian($date);
+
+        $annuals = EthiopianSynaxariumAnnual::where('month', $eth['month'])
+            ->where('day', $eth['day'])
+            ->orderByDesc('is_main')
+            ->orderBy('sort_order')
+            ->get();
+
+        $monthlies = EthiopianSynaxariumMonthly::where('day', $eth['day'])
+            ->orderByDesc('is_main')
+            ->orderBy('sort_order')
+            ->get();
+
+        // Combined for backward compat: annuals take priority
+        $celebrations = $annuals->isNotEmpty() ? $annuals : $monthlies;
         $mainCelebration = $celebrations->firstWhere('is_main', true) ?? $celebrations->first();
 
         return [
-            'ethiopian_date' => $this->gregorianToEthiopian($date),
+            'ethiopian_date' => $eth,
             'ethiopian_date_formatted' => $this->formatEthiopianDate($date, $locale),
             'celebrations' => $celebrations,
             'main_celebration' => $mainCelebration,
             'celebration' => $mainCelebration,
             'is_annual_feast' => $mainCelebration instanceof EthiopianSynaxariumAnnual,
+            'annual_celebrations' => $annuals,
+            'monthly_celebrations' => $monthlies,
         ];
     }
 }

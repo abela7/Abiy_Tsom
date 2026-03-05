@@ -824,6 +824,7 @@ return [
     'synaxarium_add_saint' => 'Add Saint',
     'synaxarium_description' => 'Description',
     'synaxarium_no_saints_for_day' => 'No saints added for this day yet.',
+    'synaxarium_monthly_saints' => 'Monthly Commemorations',
 
     // Admin members tracking & management
     'members_tracking' => 'Members',
