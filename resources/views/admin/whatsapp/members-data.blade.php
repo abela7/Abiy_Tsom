@@ -41,6 +41,7 @@
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_confirmation_responded') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_activity') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.registered') }}</th>
+                    <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.actions') }}</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-border">
@@ -83,9 +84,19 @@
                             {{ $m->checklists_count }} {{ __('app.whatsapp_checklists') }} / {{ $m->sessions_count }} {{ __('app.whatsapp_sessions') }}
                         </td>
                         <td class="px-5 py-3.5 text-muted-text">{{ $m->created_at->format('M d, Y H:i') }}</td>
+                        <td class="px-5 py-3.5">
+                            <form method="POST" action="{{ route('admin.whatsapp.members-data.destroy', $m) }}"
+                                  x-data @submit.prevent="if (confirm('{{ __('app.member_delete_confirm') }}')) $el.submit()">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="px-2.5 py-1 rounded-md text-xs font-medium bg-error-bg text-error hover:opacity-90 transition">
+                                    {{ __('app.delete') }}
+                                </button>
+                            </form>
+                        </td>
                     </tr>
                 @empty
-                    <tr><td colspan="12" class="px-5 py-12 text-center text-muted-text">{{ __('app.whatsapp_no_members_data') }}</td></tr>
+                    <tr><td colspan="13" class="px-5 py-12 text-center text-muted-text">{{ __('app.whatsapp_no_members_data') }}</td></tr>
                 @endforelse
             </tbody>
         </table>

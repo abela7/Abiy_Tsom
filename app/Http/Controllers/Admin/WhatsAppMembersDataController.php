@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Member;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 /**
@@ -33,5 +33,14 @@ class WhatsAppMembersDataController extends Controller
             ->paginate(50);
 
         return view('admin.whatsapp.members-data', compact('members', 'duplicatePhones'));
+    }
+
+    public function destroy(Member $member): RedirectResponse
+    {
+        $member->delete();
+
+        return redirect()
+            ->route('admin.whatsapp.members-data')
+            ->with('success', __('app.member_deleted'));
     }
 }
