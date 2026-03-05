@@ -40,45 +40,8 @@
         {{ __('app.link_copied') }}
     </div>
 
-    {{-- Navigation: back + share --}}
-    <div data-tour="day-header" class="flex items-center justify-between">
-        <a href="{{ $backUrl }}" class="p-2 rounded-lg bg-muted shrink-0">
-            <svg class="w-5 h-5 text-muted-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-        </a>
-        <div class="relative shrink-0" x-data="{ shareOpen: false }" @click.outside="shareOpen = false">
-            <button type="button"
-                    @click="shareOpen = !shareOpen"
-                    class="p-2.5 rounded-xl bg-accent/10 hover:bg-accent/20 transition touch-manipulation"
-                    :aria-label="'{{ __('app.share') }}'">
-                <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
-                </svg>
-            </button>
-            <div x-show="shareOpen" x-transition
-                 x-cloak
-                 class="absolute right-0 top-full mt-2 w-44 bg-card rounded-xl shadow-xl border border-border z-50 overflow-hidden">
-                <button type="button"
-                        @click="shareOpen = false; shareDay()"
-                        class="flex items-center gap-3 w-full px-4 py-3 text-sm text-primary hover:bg-muted transition text-left">
-                    <svg class="w-4 h-4 text-accent shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
-                    </svg>
-                    {{ __('app.share') }}
-                </button>
-                <button type="button"
-                        @click="shareOpen = false; copyLink()"
-                        class="flex items-center gap-3 w-full px-4 py-3 text-sm text-primary hover:bg-muted transition text-left border-t border-border">
-                    <svg class="w-4 h-4 text-accent shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
-                    </svg>
-                    {{ __('app.copy_link_btn') }}
-                </button>
-            </div>
-        </div>
-    </div>
-
     {{-- GROUP A: Great Lent Journey --}}
-    <div class="rounded-2xl bg-card border border-border shadow-sm overflow-hidden">
+    <div data-tour="day-header" class="rounded-2xl bg-card border border-border shadow-sm overflow-hidden">
         {{-- Day progress --}}
         <div class="flex items-center gap-3 px-4 pt-4 pb-3">
             <div class="shrink-0 w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center">
