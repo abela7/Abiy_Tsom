@@ -37,42 +37,49 @@
             <span class="text-xs font-bold text-muted-text uppercase tracking-wider">{{ __('app.synaxarium_yearly_commemorations') }}</span>
         </div>
 
-        <div class="px-4 pb-4 space-y-3">
+        <div class="pb-3 space-y-0 divide-y divide-border">
             @foreach($annualCelebrations as $saint)
             @php $hasImage = (bool) $saint->imageUrl(); $hasDesc = (bool) localized($saint, 'description'); @endphp
-            <div class="{{ !$loop->first ? 'pt-3 border-t border-border' : '' }}">
-                <div class="flex items-center gap-3">
-                    {{-- Compact thumbnail or cross placeholder --}}
-                    @if($hasImage)
-                    <div class="shrink-0 w-14 h-14 rounded-xl overflow-hidden shadow-sm ring-1 ring-border cursor-pointer"
-                         @click="showImageModal = true; modalImage = '{{ $saint->imageUrl() }}'">
-                        <img src="{{ $saint->imageUrl() }}" alt="" class="w-full h-full object-cover">
+            <div class="px-4 py-3">
+                {{-- Image as a contained hero banner --}}
+                @if($hasImage)
+                <div class="relative rounded-xl overflow-hidden mb-3 cursor-pointer"
+                     @click="showImageModal = true; modalImage = '{{ $saint->imageUrl() }}'">
+                    <img src="{{ $saint->imageUrl() }}" alt="" class="w-full h-36 object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+                    <div class="absolute bottom-0 left-0 right-0 px-3 pb-2.5">
+                        <span class="inline-block px-1.5 py-0.5 rounded bg-accent-secondary/90 text-[9px] font-bold text-white uppercase tracking-wider">{{ __('app.synaxarium_annual_feast') }}</span>
                     </div>
-                    @else
-                    <div class="shrink-0 w-14 h-14 rounded-xl bg-accent-secondary/10 flex items-center justify-center">
-                        <svg class="w-6 h-6 text-accent-secondary" viewBox="0 0 24 24" fill="currentColor">
+                </div>
+                @endif
+
+                {{-- Name --}}
+                <div class="flex items-center gap-2.5">
+                    @if(!$hasImage)
+                    <div class="shrink-0 w-10 h-10 rounded-lg bg-accent-secondary/10 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-accent-secondary" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M10 2h4v6h6v4h-6v10h-4V12H4V8h6V2z"/>
                         </svg>
                     </div>
                     @endif
                     <div class="flex-1 min-w-0">
                         <span class="block text-sm font-bold text-primary leading-snug">{{ localized($saint, 'celebration') }}</span>
+                        @if(!$hasImage)
                         <span class="block text-[10px] text-accent-secondary font-semibold mt-0.5 uppercase tracking-wide">{{ __('app.synaxarium_annual_feast') }}</span>
+                        @endif
                     </div>
                 </div>
 
                 {{-- Description --}}
                 @if($hasDesc)
-                <div class="mt-2 {{ $hasImage ? 'ml-17' : 'ml-17' }}" style="margin-left: 4.25rem;">
-                    <div x-data="{ expanded: false }">
-                        <p class="text-[13px] text-secondary leading-relaxed whitespace-pre-line"
-                           :class="expanded ? '' : 'line-clamp-2'">{{ localized($saint, 'description') }}</p>
-                        <button @click="expanded = !expanded"
-                                class="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-accent hover:text-accent-hover transition-colors">
-                            <span x-text="expanded ? '{{ __('app.show_less') ?? 'Show less' }}' : '{{ __('app.read_more') ?? 'Read more' }}'"></span>
-                            <svg class="w-3 h-3 transition-transform" :class="expanded && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                        </button>
-                    </div>
+                <div class="mt-2" x-data="{ expanded: false }">
+                    <p class="text-[13px] text-secondary leading-relaxed whitespace-pre-line"
+                       :class="expanded ? '' : 'line-clamp-2'">{{ localized($saint, 'description') }}</p>
+                    <button @click="expanded = !expanded"
+                            class="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-accent hover:text-accent-hover transition-colors">
+                        <span x-text="expanded ? '{{ __('app.show_less') ?? 'Show less' }}' : '{{ __('app.read_more') ?? 'Read more' }}'"></span>
+                        <svg class="w-3 h-3 transition-transform" :class="expanded && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
                 </div>
                 @endif
             </div>
