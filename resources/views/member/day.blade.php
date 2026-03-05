@@ -67,12 +67,15 @@
 
         {{-- Ethiopian Calendar row --}}
         @if($hasEthDate)
-        <div class="relative overflow-hidden">
-            <img src="{{ asset('images/EOTC_Logo.jpg') }}" alt="" class="absolute inset-0 w-full h-full object-contain pointer-events-none select-none">
-            <div class="absolute inset-0 bg-card/80"></div>
-            <div class="relative px-4 py-3">
+        <div class="relative overflow-hidden bg-muted/30">
+            {{-- Flag image on the right --}}
+            <img src="{{ asset('images/EOTC_Logo.jpg') }}" alt="" class="absolute right-0 top-0 h-full w-28 object-cover pointer-events-none select-none">
+            {{-- Gradient fade from card color to transparent (covers left side, fades into flag) --}}
+            <div class="absolute right-0 top-0 h-full w-28 bg-gradient-to-r from-muted/80 to-transparent pointer-events-none"></div>
+            {{-- Text content --}}
+            <div class="relative px-4 py-4">
                 <span class="block text-[10px] font-semibold text-muted-text uppercase tracking-wider">{{ __('app.ethiopian_calendar_title') }}</span>
-                <span class="block text-base font-black text-primary mt-0.5">{{ $ethDateInfo['ethiopian_date_formatted'] }}</span>
+                <span class="block text-lg font-black text-primary mt-1">{{ $ethDateInfo['ethiopian_date_formatted'] }}</span>
             </div>
         </div>
         @endif
