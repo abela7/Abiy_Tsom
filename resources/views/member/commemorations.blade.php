@@ -27,39 +27,12 @@
         </div>
     </div>
 
-    {{-- Hero date banner --}}
-    <div class="relative rounded-2xl overflow-hidden bg-gradient-to-br from-accent via-accent to-accent-secondary shadow-lg">
-        <div class="absolute inset-0 opacity-10">
-            <svg class="w-full h-full" viewBox="0 0 400 160" fill="none">
-                {{-- Decorative crosses pattern --}}
-                <g opacity="0.4" stroke="white" stroke-width="1.5">
-                    <line x1="50" y1="20" x2="50" y2="60"/><line x1="30" y1="40" x2="70" y2="40"/>
-                    <line x1="350" y1="100" x2="350" y2="140"/><line x1="330" y1="120" x2="370" y2="120"/>
-                    <line x1="200" y1="10" x2="200" y2="40"/><line x1="185" y1="25" x2="215" y2="25"/>
-                    <line x1="100" y1="110" x2="100" y2="150"/><line x1="80" y1="130" x2="120" y2="130"/>
-                    <line x1="300" y1="30" x2="300" y2="60"/><line x1="285" y1="45" x2="315" y2="45"/>
-                </g>
-            </svg>
-        </div>
-        <div class="relative px-5 py-6 text-center">
-            <span class="inline-block px-3 py-1 rounded-full bg-white/15 backdrop-blur-sm text-[10px] font-bold text-white uppercase tracking-widest">{{ __('app.ethiopian_calendar_title') }}</span>
-            <h2 class="text-2xl font-black text-white mt-2.5 drop-shadow-sm">{{ $ethFormatted }}</h2>
-            <p class="text-sm text-white/70 mt-1">{{ $gregorianDate }}</p>
-            <div class="flex items-center justify-center gap-4 mt-3">
-                @if($hasAnnuals)
-                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/15 backdrop-blur-sm text-[11px] font-semibold text-white">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
-                    {{ $annualCelebrations->count() }}
-                </span>
-                @endif
-                @if($hasMonthlies)
-                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/15 backdrop-blur-sm text-[11px] font-semibold text-white">
-                    {{-- Cross icon --}}
-                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><line x1="4" y1="8" x2="20" y2="8"/></svg>
-                    {{ $monthlyCelebrations->count() }}
-                </span>
-                @endif
-            </div>
+    {{-- Simple date header --}}
+    <div class="rounded-2xl bg-card border border-border shadow-sm px-4 py-4 flex items-center gap-3">
+        <img src="{{ asset('images/EOTC_Logo.jpg') }}" alt="" class="w-10 h-10 rounded-xl object-cover shrink-0 shadow-sm">
+        <div class="flex-1 min-w-0">
+            <span class="block text-[10px] font-semibold text-accent-secondary uppercase tracking-wider">{{ __('app.ethiopian_calendar_title') }}</span>
+            <span class="block text-lg font-bold text-primary mt-0.5">{{ $ethFormatted }}</span>
         </div>
     </div>
 
