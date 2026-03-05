@@ -188,21 +188,30 @@ class WhatsAppTemplateController extends Controller
     ): RedirectResponse {
         $validated = $request->validate([
             'member_id' => ['required', 'integer', 'exists:members,id'],
+            'test_locale' => ['nullable', 'string', 'in:member,en,am'],
         ]);
 
         $member = Member::query()->findOrFail((int) $validated['member_id']);
+        $testLocale = (string) ($validated['test_locale'] ?? 'member');
+        $localeOverride = $testLocale === 'member' ? null : $testLocale;
 
         if (! $member->whatsapp_phone) {
             return redirect()
                 ->route('admin.whatsapp.template')
-                ->withInput(['template_test_member_id' => $member->id])
+                ->withInput([
+                    'template_test_member_id' => $member->id,
+                    'template_test_locale' => $testLocale,
+                ])
                 ->with('error', __('app.whatsapp_template_test_missing_phone'));
         }
 
         if (! $ultraMsg->isConfigured()) {
             return redirect()
                 ->route('admin.whatsapp.template')
-                ->withInput(['template_test_member_id' => $member->id])
+                ->withInput([
+                    'template_test_member_id' => $member->id,
+                    'template_test_locale' => $testLocale,
+                ])
                 ->with('error', __('app.whatsapp_not_configured'));
         }
 
@@ -210,7 +219,10 @@ class WhatsAppTemplateController extends Controller
         if (! $season) {
             return redirect()
                 ->route('admin.whatsapp.template')
-                ->withInput(['template_test_member_id' => $member->id])
+                ->withInput([
+                    'template_test_member_id' => $member->id,
+                    'template_test_locale' => $testLocale,
+                ])
                 ->with('error', __('app.no_active_season'));
         }
 
@@ -224,7 +236,10 @@ class WhatsAppTemplateController extends Controller
         if (! $dailyContent) {
             return redirect()
                 ->route('admin.whatsapp.template')
-                ->withInput(['template_test_member_id' => $member->id])
+                ->withInput([
+                    'template_test_member_id' => $member->id,
+                    'template_test_locale' => $testLocale,
+                ])
                 ->with('error', __('app.timetable_no_content_today'));
         }
 
@@ -240,18 +255,24 @@ class WhatsAppTemplateController extends Controller
         ]);
 
         $message = $whatsAppTemplateService
-            ->renderDailyReminder($member, $dailyContent, $this->ensureHttpsUrl($dayUrl))['message'];
+            ->renderDailyReminder($member, $dailyContent, $this->ensureHttpsUrl($dayUrl), $localeOverride)['message'];
 
         if (! $ultraMsg->sendTextMessage((string) $member->whatsapp_phone, $message)) {
             return redirect()
                 ->route('admin.whatsapp.template')
-                ->withInput(['template_test_member_id' => $member->id])
+                ->withInput([
+                    'template_test_member_id' => $member->id,
+                    'template_test_locale' => $testLocale,
+                ])
                 ->with('error', __('app.whatsapp_test_failed'));
         }
 
         return redirect()
             ->route('admin.whatsapp.template')
-            ->withInput(['template_test_member_id' => $member->id])
+            ->withInput([
+                'template_test_member_id' => $member->id,
+                'template_test_locale' => $testLocale,
+            ])
             ->with('success', __('app.whatsapp_template_test_sent', [
                 'name' => (string) ($member->baptism_name ?: $member->whatsapp_phone),
             ]));

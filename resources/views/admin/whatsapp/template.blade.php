@@ -20,7 +20,7 @@
             <p class="text-sm text-muted-text mt-1">{{ __('app.whatsapp_template_test_help') }}</p>
         </div>
 
-        <form method="POST" action="{{ route('admin.whatsapp.template.test') }}" class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto] gap-3 items-end">
+        <form method="POST" action="{{ route('admin.whatsapp.template.test') }}" class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_220px_auto] gap-3 items-end">
             @csrf
             <div>
                 <label for="template-test-member" class="block text-sm font-medium text-secondary mb-1.5">
@@ -51,6 +51,20 @@
                             {{ $memberLabel }}
                         </option>
                     @endforeach
+                </select>
+            </div>
+            <div>
+                <label for="template-test-language" class="block text-sm font-medium text-secondary mb-1.5">
+                    {{ __('app.whatsapp_template_test_language_label') }}
+                </label>
+                <select
+                    id="template-test-language"
+                    name="test_locale"
+                    class="w-full px-3 py-2 border border-border rounded-lg bg-card text-primary focus:ring-2 focus:ring-accent outline-none"
+                >
+                    <option value="member" @selected((string) old('template_test_locale', 'member') === 'member')>{{ __('app.whatsapp_template_test_language_member') }}</option>
+                    <option value="en" @selected((string) old('template_test_locale') === 'en')>{{ __('app.whatsapp_template_test_language_en') }}</option>
+                    <option value="am" @selected((string) old('template_test_locale') === 'am')>{{ __('app.whatsapp_template_test_language_am') }}</option>
                 </select>
             </div>
             <div>
