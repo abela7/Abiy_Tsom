@@ -619,8 +619,9 @@
                         logoutLoading = true;
                         AbiyTsom.api('/api/member/account/delete', {})
                             .then((res) => {
+                                try { localStorage.clear(); } catch(e) {}
+                                try { sessionStorage.clear(); } catch(e) {}
                                 if (res && res.success) {
-                                    localStorage.clear();
                                     window.location.href = '/';
                                     return;
                                 }
@@ -628,6 +629,8 @@
                                 logoutError = (res && res.message) ? res.message : '{{ __('app.failed') }}';
                             })
                             .catch(() => {
+                                try { localStorage.clear(); } catch(e) {}
+                                try { sessionStorage.clear(); } catch(e) {}
                                 logoutLoading = false;
                                 logoutError = '{{ __('app.failed') }}';
                             });
