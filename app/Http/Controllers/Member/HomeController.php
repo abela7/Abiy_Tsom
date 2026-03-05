@@ -222,6 +222,20 @@ class HomeController extends Controller
     }
 
     /**
+     * Show the commemorations (annual & monthly) for a specific day.
+     */
+    public function commemorations(Request $request, DailyContent $daily, EthiopianCalendarService $ethCalendar): View
+    {
+        if (! $daily->is_published) {
+            abort(404);
+        }
+
+        $ethDateInfo = $ethCalendar->getDateInfo($daily->date, app()->getLocale());
+
+        return view('member.commemorations', compact('daily', 'ethDateInfo'));
+    }
+
+    /**
      * Show a weekly theme's full details.
      */
     public function week(Request $request, WeeklyTheme $weeklyTheme): View

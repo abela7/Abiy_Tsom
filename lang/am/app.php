@@ -822,7 +822,9 @@ return [
     'synaxarium_add_saint' => 'ቅዱስ ጨምር',
     'synaxarium_description' => 'መግለጫ',
     'synaxarium_no_saints_for_day' => 'ለዚህ ቀን ገና ቅዱሳን አልተጨመሩም።',
-    'synaxarium_monthly_saints' => 'ወርሃዊ ቅዱሳን',
+    'synaxarium_yearly_commemorations' => 'አመታዊ በዓላት',
+    'synaxarium_monthly_commemorations' => 'ወሃዊ በዓላት',
+    'synaxarium_tap_to_view' => 'በዛሬው እለት የሚውሉትን እለታዊ እና ወርሃዊ በዓላትን ለመመልከት ይሄንን ይንኩ',
 
     // Admin members tracking (anonymous stats only)
     'members_tracking' => 'አባላት',
