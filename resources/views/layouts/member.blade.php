@@ -101,13 +101,13 @@
                 <div class="relative overflow-visible" x-data="{ open: false }" @click.away="open = false" data-tour="language">
                     <button type="button"
                             @click="open = !open"
-                            class="p-2 rounded-xl hover:bg-muted transition active:scale-95 touch-manipulation"
+                            class="p-1.5 rounded-xl hover:bg-muted transition active:scale-95 touch-manipulation"
                             :aria-label="'{{ __('app.language') }}'">
-                        <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
-                        </svg>
+                        {{-- Show the OTHER language's flag as a hint to switch --}}
+                        <span x-show="locale === 'am'" x-cloak class="text-xl leading-none">🇬🇧</span>
+                        <span x-show="locale === 'en'" x-cloak class="text-xl leading-none">🇪🇹</span>
                     </button>
-                    <div x-show="open" 
+                    <div x-show="open"
                          x-transition:enter="transition ease-out duration-100"
                          x-transition:enter-start="opacity-0 scale-95"
                          x-transition:enter-end="opacity-100 scale-100"
@@ -115,21 +115,23 @@
                          x-transition:leave-start="opacity-100 scale-100"
                          x-transition:leave-end="opacity-0 scale-95"
                          @click.away="open = false"
-                         class="absolute right-0 mt-2 w-44 bg-card border border-border rounded-xl shadow-2xl overflow-hidden"
+                         class="absolute right-0 mt-2 w-48 bg-card border border-border rounded-xl shadow-2xl overflow-hidden"
                          style="display: none; z-index: 9999;">
                         <button @click="setLocale('en'); open = false"
-                                class="w-full px-4 py-3 text-left text-sm hover:bg-muted transition flex items-center justify-between touch-manipulation"
-                                :class="locale === 'en' ? 'bg-accent/10 text-accent font-medium' : 'text-primary'">
+                                class="w-full px-4 py-3 text-left text-sm hover:bg-muted transition flex items-center gap-3 touch-manipulation"
+                                :class="locale === 'en' ? 'bg-accent/10 text-accent font-semibold' : 'text-primary'">
+                            <span class="text-lg">🇬🇧</span>
                             <span>English</span>
-                            <svg x-show="locale === 'en'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg x-show="locale === 'en'" class="w-4 h-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                             </svg>
                         </button>
                         <button @click="setLocale('am'); open = false"
-                                class="w-full px-4 py-3 text-left text-sm hover:bg-muted transition flex items-center justify-between touch-manipulation"
-                                :class="locale === 'am' ? 'bg-accent/10 text-accent font-medium' : 'text-primary'">
+                                class="w-full px-4 py-3 text-left text-sm hover:bg-muted transition flex items-center gap-3 touch-manipulation"
+                                :class="locale === 'am' ? 'bg-accent/10 text-accent font-semibold' : 'text-primary'">
+                            <span class="text-lg">🇪🇹</span>
                             <span>አማርኛ</span>
-                            <svg x-show="locale === 'am'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg x-show="locale === 'am'" class="w-4 h-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                             </svg>
                         </button>
