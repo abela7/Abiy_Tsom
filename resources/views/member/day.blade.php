@@ -67,17 +67,11 @@
 
         {{-- Ethiopian Calendar row --}}
         @if($hasEthDate)
-        <div class="mx-3 mb-2 relative overflow-hidden rounded-xl" style="min-height: 72px;">
-            {{-- Flag on the right half only --}}
-            <img src="{{ asset('images/EOTC_Logo.jpg') }}" alt="" class="absolute right-0 top-0 w-1/2 h-full object-cover pointer-events-none select-none">
-            {{-- Left half solid bg --}}
-            <div class="absolute left-0 top-0 w-[55%] h-full bg-card pointer-events-none"></div>
-            {{-- Gradient blending edge --}}
-            <div class="absolute left-[45%] top-0 w-[20%] h-full bg-gradient-to-r from-card to-transparent pointer-events-none"></div>
-            {{-- Text content --}}
-            <div class="relative px-5 py-4">
-                <span class="block text-[10px] font-bold text-accent uppercase tracking-[0.15em]">{{ __('app.ethiopian_calendar_title') }}</span>
-                <span class="block text-xl font-black text-primary mt-1.5">{{ $ethDateInfo['ethiopian_date_formatted'] }}</span>
+        <div class="flex items-center gap-3 px-4 py-3 bg-muted/30">
+            <img src="{{ asset('images/EOTC_Logo.jpg') }}" alt="" class="w-10 h-10 rounded-xl object-cover shrink-0 shadow-sm">
+            <div class="flex-1 min-w-0">
+                <span class="block text-[10px] font-semibold text-muted-text uppercase tracking-wider">{{ __('app.ethiopian_calendar_title') }}</span>
+                <span class="block text-sm font-bold text-primary mt-0.5">{{ $ethDateInfo['ethiopian_date_formatted'] }}</span>
             </div>
         </div>
         @endif
