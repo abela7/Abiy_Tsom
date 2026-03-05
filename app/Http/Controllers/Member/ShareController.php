@@ -132,6 +132,16 @@ class ShareController extends Controller
         $customActivities = collect();
         $customChecklist = collect();
 
+        $prevDay = DailyContent::where('lent_season_id', $daily->lent_season_id)
+            ->where('day_number', $daily->day_number - 1)
+            ->where('is_published', true)
+            ->first();
+
+        $nextDay = DailyContent::where('lent_season_id', $daily->lent_season_id)
+            ->where('day_number', $daily->day_number + 1)
+            ->where('is_published', true)
+            ->first();
+
         return view('member.day', compact(
             'member',
             'daily',
@@ -141,6 +151,8 @@ class ShareController extends Controller
             'customChecklist',
             'publicPreview',
             'ethDateInfo',
+            'prevDay',
+            'nextDay',
         ));
     }
 }

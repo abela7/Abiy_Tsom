@@ -46,7 +46,10 @@ class TelegramAuthController extends Controller
         $code = (string) $request->query('code', '');
 
         if ($code !== '' && preg_match('/^[A-Za-z0-9]{20,128}$/', $code)) {
-            $token = $telegramAuthService->consumeCode($code);
+            $token = $telegramAuthService->consumeCode(
+                $code,
+                TelegramAuthService::PURPOSE_MEMBER_ACCESS
+            );
 
             if ($token && $telegramAuthService->isMemberToken($token)) {
                 $member = $token->actor;

@@ -24,8 +24,16 @@ trait DetectsPreviewBots
 
         $uaLower = strtolower($ua);
 
+        // WhatsApp's in-app browser includes "WhatsApp" in the UA but is a
+        // real browser (e.g. "Mozilla/5.0 ... Chrome/91.0 ... WhatsApp/2.24").
+        // The actual preview bot UA is just "WhatsApp/2.xx.xx A" with no
+        // browser engine.  Only flag as bot when there is no real browser
+        // engine present alongside the "whatsapp" token.
+        if (str_contains($uaLower, 'whatsapp')) {
+            return ! str_contains($uaLower, 'mozilla');
+        }
+
         $botSignatures = [
-            'whatsapp',
             'facebookexternalhit',
             'facebot',
             'telegrambot',
