@@ -70,7 +70,7 @@ class OnboardingController extends Controller
             'baptism_name' => $validated['baptism_name'],
             'token' => $this->generateUniqueToken(),
             'locale' => app()->getLocale(),
-            'theme' => 'light',
+            'theme' => 'sepia',
             'whatsapp_reminder_enabled' => false,
             'whatsapp_confirmation_status' => 'none',
         ];

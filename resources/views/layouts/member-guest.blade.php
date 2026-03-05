@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
       x-data="{ 
-        theme: (function(){var t=localStorage.getItem('theme');return (t==='light'||t==='sepia'||t==='dark')?t:'light';})(),
+        theme: (function(){var t=localStorage.getItem('theme');return (t==='light'||t==='sepia'||t==='dark')?t:'sepia';})(),
         locale: '{{ app()->getLocale() }}',
         applyThemeClasses() {
           document.documentElement.classList.toggle('dark', this.theme === 'dark');
@@ -25,7 +25,7 @@
       :class="{ 'dark': theme === 'dark', 'theme-sepia': theme === 'sepia' }"
       x-init="
         if ({{ request()->routeIs('volunteer.invite.*') ? 'true' : 'false' }}) { theme = 'dark'; localStorage.setItem('theme', 'dark'); }
-        else if (!localStorage.getItem('theme')) { localStorage.setItem('theme', 'light'); theme = 'light'; }
+        else if (!localStorage.getItem('theme')) { localStorage.setItem('theme', 'sepia'); theme = 'sepia'; }
         document.documentElement.classList.toggle('dark', theme === 'dark');
         document.documentElement.classList.toggle('theme-sepia', theme === 'sepia');
       ">
@@ -44,6 +44,7 @@
             if (forceInviteDark) document.documentElement.classList.add('dark');
             else if (t === 'dark') document.documentElement.classList.add('dark');
             else if (t === 'sepia') document.documentElement.classList.add('theme-sepia');
+            else document.documentElement.classList.add('theme-sepia');
         })();
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">

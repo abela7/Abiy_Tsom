@@ -782,7 +782,7 @@ function settingsPage() {
         telegramLoading: false,
         telegramMsg: '',
         telegramError: '',
-        theme: (function(){var t=(typeof localStorage!=='undefined'?localStorage.getItem('theme'):null)||'{{ $member?->theme ?? 'light' }}';return ['light','sepia','dark'].includes(t)?t:'light';})(),
+        theme: (function(){var t=(typeof localStorage!=='undefined'?localStorage.getItem('theme'):null)||'{{ $member?->theme ?? 'sepia' }}';return ['light','sepia','dark'].includes(t)?t:'sepia';})(),
         baptismName: '{{ addslashes($member?->baptism_name ?? '') }}',
         savedBaptismName: '{{ addslashes($member?->baptism_name ?? '') }}',
         profileSaving: false,
