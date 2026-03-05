@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 @section('title', __('app.whatsapp_template_title'))
 
 @section('content')
@@ -105,21 +105,35 @@
             day: '17',
             day_title: 'Day 17',
             date: '2026-03-05',
+            ethiopian_date: 'Yekatit 26',
             url: 'https://abiytsom.abuneteklehaymanot.org/share/day/15',
             telegram_url: 'https://t.me/AbiyTsomBot',
             saint_commemoration: 'Synaxarium for March 05',
+            annual_commemorations: 'St. Abba A, St. Martyr B',
+            annual_commemorations_bullets: "- St. Abba A\n- St. Martyr B",
+            yearly_commemorations: 'St. Abba A, St. Martyr B',
+            yearly_commemorations_bullets: "- St. Abba A\n- St. Martyr B",
+            monthly_commemorations: 'St. Monthly A, St. Monthly B, St. Monthly C',
+            monthly_commemorations_bullets: "- St. Monthly A\n- St. Monthly B\n- St. Monthly C",
             bible_reference: 'Acts 25:13-end',
         },
         am: {
             name: 'Abel',
             baptism_name: 'Abel',
             day: '17',
-            day_title: 'ቀን 17',
+            day_title: 'Qen 17',
             date: '2026-03-05',
+            ethiopian_date: 'Yekatit 26',
             url: 'https://abiytsom.abuneteklehaymanot.org/share/day/15',
             telegram_url: 'https://t.me/AbiyTsomBot',
-            saint_commemoration: 'ስንክሳር የመጋቢት 05',
-            bible_reference: 'የሐዋርያት ሥራ 25:13-ፍ.ም',
+            saint_commemoration: 'Sinksar for Megabit 05',
+            annual_commemorations: 'Kidus A, Kidus B',
+            annual_commemorations_bullets: "- Kidus A\n- Kidus B",
+            yearly_commemorations: 'Kidus A, Kidus B',
+            yearly_commemorations_bullets: "- Kidus A\n- Kidus B",
+            monthly_commemorations: 'Werhawi Kidusan A, Werhawi Kidusan B, Werhawi Kidusan C',
+            monthly_commemorations_bullets: "- Werhawi Kidusan A\n- Werhawi Kidusan B\n- Werhawi Kidusan C",
+            bible_reference: 'Hawaryat Sira 25:13-f.m.',
         }
     };
 

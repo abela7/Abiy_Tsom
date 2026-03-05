@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Models\DailyContent;
 use App\Models\Member;
 use App\Models\Translation;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Lang;
 
 /**
@@ -18,6 +19,11 @@ use Illuminate\Support\Facades\Lang;
  */
 final class WhatsAppTemplateService
 {
+    public function __construct(
+        private readonly EthiopianCalendarService $ethiopianCalendarService
+    ) {
+    }
+
     /** @var list<string> */
     public const DAILY_REMINDER_PLACEHOLDERS = [
         'name',
@@ -25,7 +31,14 @@ final class WhatsAppTemplateService
         'day',
         'day_title',
         'date',
+        'ethiopian_date',
         'saint_commemoration',
+        'annual_commemorations',
+        'annual_commemorations_bullets',
+        'yearly_commemorations',
+        'yearly_commemorations_bullets',
+        'monthly_commemorations',
+        'monthly_commemorations_bullets',
         'bible_reference',
         'url',
     ];
@@ -89,6 +102,11 @@ final class WhatsAppTemplateService
         $date = $dateValue instanceof \DateTimeInterface
             ? $dateValue->format('Y-m-d')
             : trim((string) $dateValue);
+        $dateInfo = $this->dailyDateInfo($dateValue, $locale);
+        $annualCelebrationNames = $this->localizedCelebrationNames($dateInfo['annual_celebrations'] ?? [], $locale);
+        $monthlyCelebrationNames = $this->localizedCelebrationNames($dateInfo['monthly_celebrations'] ?? [], $locale);
+        $annualCommemorations = $this->formatInlineCelebrationList($annualCelebrationNames);
+        $monthlyCommemorations = $this->formatInlineCelebrationList($monthlyCelebrationNames);
 
         return [
             'name' => $name,
@@ -96,7 +114,14 @@ final class WhatsAppTemplateService
             'day' => trim((string) $dailyContent->day_number),
             'day_title' => $this->localizedDailyValue($dailyContent, 'day_title', $locale),
             'date' => $date,
+            'ethiopian_date' => $this->formatEthiopianMonthDay($dateInfo['ethiopian_date'] ?? [], $locale),
             'saint_commemoration' => $this->localizedDailyValue($dailyContent, 'sinksar_title', $locale),
+            'annual_commemorations' => $annualCommemorations,
+            'annual_commemorations_bullets' => $this->formatBulletCelebrationList($annualCelebrationNames),
+            'yearly_commemorations' => $annualCommemorations,
+            'yearly_commemorations_bullets' => $this->formatBulletCelebrationList($annualCelebrationNames),
+            'monthly_commemorations' => $monthlyCommemorations,
+            'monthly_commemorations_bullets' => $this->formatBulletCelebrationList($monthlyCelebrationNames),
             'bible_reference' => $this->localizedDailyValue($dailyContent, 'bible_reference', $locale),
             'url' => $url,
         ];
@@ -146,5 +171,97 @@ final class WhatsAppTemplateService
     {
         return $locale === 'am' ? 'en' : 'am';
     }
-}
 
+    /**
+     * @return array{ethiopian_date?: array<string, mixed>, annual_celebrations?: iterable<mixed>, monthly_celebrations?: iterable<mixed>}
+     */
+    private function dailyDateInfo(mixed $dateValue, string $locale): array
+    {
+        $date = $this->parseCarbonDate($dateValue);
+        if ($date === null) {
+            return [];
+        }
+
+        /** @var array{ethiopian_date?: array<string, mixed>, annual_celebrations?: iterable<mixed>, monthly_celebrations?: iterable<mixed>} $dateInfo */
+        $dateInfo = $this->ethiopianCalendarService->getDateInfo($date, $locale);
+
+        return $dateInfo;
+    }
+
+    private function parseCarbonDate(mixed $dateValue): ?Carbon
+    {
+        if ($dateValue instanceof Carbon) {
+            return $dateValue->copy();
+        }
+
+        if ($dateValue instanceof \DateTimeInterface) {
+            return Carbon::instance($dateValue);
+        }
+
+        $rawDate = trim((string) $dateValue);
+        if ($rawDate === '') {
+            return null;
+        }
+
+        try {
+            return Carbon::parse($rawDate);
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    /**
+     * @param  array<string, mixed>  $ethiopianDate
+     */
+    private function formatEthiopianMonthDay(array $ethiopianDate, string $locale): string
+    {
+        $monthNameKey = $locale === 'am' ? 'month_name_am' : 'month_name_en';
+        $monthName = trim((string) ($ethiopianDate[$monthNameKey] ?? ''));
+        $day = trim((string) ($ethiopianDate['day'] ?? ''));
+
+        return trim($monthName.' '.$day);
+    }
+
+    /**
+     * @param  iterable<mixed>  $celebrations
+     * @return list<string>
+     */
+    private function localizedCelebrationNames(iterable $celebrations, string $locale): array
+    {
+        $preferredField = 'celebration_'.$locale;
+        $fallbackField = 'celebration_'.$this->fallbackLocale($locale);
+        $names = [];
+
+        foreach ($celebrations as $celebration) {
+            $preferred = trim((string) ($celebration->{$preferredField} ?? ''));
+            $fallback = trim((string) ($celebration->{$fallbackField} ?? ''));
+            $name = $preferred !== '' ? $preferred : $fallback;
+
+            if ($name !== '') {
+                $names[] = $name;
+            }
+        }
+
+        return array_values(array_unique($names));
+    }
+
+    /**
+     * @param  list<string>  $names
+     */
+    private function formatInlineCelebrationList(array $names): string
+    {
+        return implode(', ', $names);
+    }
+
+    /**
+     * @param  list<string>  $names
+     */
+    private function formatBulletCelebrationList(array $names): string
+    {
+        if ($names === []) {
+            return '';
+        }
+
+        return '- '.implode("\n- ", $names);
+    }
+}
