@@ -238,22 +238,31 @@
             readOpen: false,
             inlineFontOpen: false,
             activeShelf: null,
-            shelfPickedAt: 0,
+            shelfTapLock: false,
+            shelfTapLockTimer: null,
+            lockShelfTap(ms = 650) {
+                this.shelfTapLock = true;
+                if (this.shelfTapLockTimer) clearTimeout(this.shelfTapLockTimer);
+                this.shelfTapLockTimer = setTimeout(() => {
+                    this.shelfTapLock = false;
+                    this.shelfTapLockTimer = null;
+                }, ms);
+            },
             toggleShelf(name) {
-                if (Date.now() - this.shelfPickedAt < 500) return;
+                if (this.shelfTapLock) return;
                 this.activeShelf = this.activeShelf === name ? null : name;
             },
             pickTheme(t) {
                 this.readerTheme = t;
                 localStorage.setItem('sinksarReaderTheme', t);
                 this.activeShelf = null;
-                this.shelfPickedAt = Date.now();
+                this.lockShelfTap();
             },
             pickFont(f) {
                 this.readerFont = f;
                 localStorage.setItem('sinksarReaderFont', f);
                 this.activeShelf = null;
-                this.shelfPickedAt = Date.now();
+                this.lockShelfTap();
             },
             fontFamily() {
                 if (this.readerFont === 'benaiah') return 'Benaiah,sans-serif';
@@ -274,6 +283,11 @@
             closeFullscreen() {
                 this.fullscreen = false;
                 this.activeShelf = null;
+                this.shelfTapLock = false;
+                if (this.shelfTapLockTimer) {
+                    clearTimeout(this.shelfTapLockTimer);
+                    this.shelfTapLockTimer = null;
+                }
                 document.body.style.overflow = '';
                 const nav = document.querySelector('nav.fixed.bottom-0');
                 if (nav) nav.style.display = '';
@@ -668,7 +682,10 @@
 
                     {{-- Bottom toolbar — always stays in place --}}
                     <div class="border-t safe-area-bottom"
-                         :class="{ 'bg-card border-border': readerTheme === 'default' }"
+                         :class="{
+                             'bg-card border-border': readerTheme === 'default',
+                             'pointer-events-none': shelfTapLock
+                         }"
                          :style="readerTheme === 'sepia' ? 'background-color:#ede3cc;border-color:#d4c5a9' : readerTheme === 'dark' ? 'background-color:#16162a;border-color:#2a2a4a' : ''">
                         <div class="flex items-center justify-around h-16 max-w-lg mx-auto px-2">
                             {{-- Close --}}
