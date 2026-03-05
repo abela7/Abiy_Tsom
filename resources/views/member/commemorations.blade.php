@@ -27,15 +27,6 @@
         </div>
     </div>
 
-    {{-- Simple date header --}}
-    <div class="rounded-2xl bg-card border border-border shadow-sm px-4 py-4 flex items-center gap-3">
-        <img src="{{ asset('images/EOTC_Logo.jpg') }}" alt="" class="w-10 h-10 rounded-xl object-cover shrink-0 shadow-sm">
-        <div class="flex-1 min-w-0">
-            <span class="block text-[10px] font-semibold text-accent-secondary uppercase tracking-wider">{{ __('app.ethiopian_calendar_title') }}</span>
-            <span class="block text-lg font-bold text-primary mt-0.5">{{ $ethFormatted }}</span>
-        </div>
-    </div>
-
     {{-- Yearly Commemorations --}}
     @if($hasAnnuals)
     <div>
