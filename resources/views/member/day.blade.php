@@ -844,7 +844,6 @@
                                     </svg>
                                     <span>{{ __('app.open_externally') }}</span>
                                 </span>
-                                &rarr;
                             </a>
                         @endif
                     @endif
