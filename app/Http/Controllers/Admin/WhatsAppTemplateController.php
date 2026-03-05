@@ -5,8 +5,14 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\DailyContent;
+use App\Models\LentSeason;
+use App\Models\Member;
 use App\Models\Translation;
+use App\Services\TelegramAuthService;
+use App\Services\UltraMsgService;
 use App\Services\WhatsAppTemplateService;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -77,6 +83,12 @@ class WhatsAppTemplateController extends Controller
     {
         $config = $this->templateConfig();
         $keys = array_map(static fn (array $item): string => $item['key'], $config);
+        $testMembers = Member::query()
+            ->whereNotNull('whatsapp_phone')
+            ->where('whatsapp_phone', '!=', '')
+            ->orderBy('baptism_name')
+            ->orderBy('id')
+            ->get(['id', 'baptism_name', 'whatsapp_phone', 'whatsapp_language', 'whatsapp_confirmation_status']);
 
         $enDb = Translation::query()
             ->where('locale', 'en')
@@ -118,7 +130,7 @@ class WhatsAppTemplateController extends Controller
             ];
         }, $config);
 
-        return view('admin.whatsapp.template', compact('templates'));
+        return view('admin.whatsapp.template', compact('templates', 'testMembers'));
     }
 
     /**
@@ -163,5 +175,98 @@ class WhatsAppTemplateController extends Controller
         return redirect()
             ->route('admin.whatsapp.template')
             ->with('success', __('app.whatsapp_template_saved'));
+    }
+
+    /**
+     * Send today's saved daily reminder template to a selected member.
+     */
+    public function sendTest(
+        Request $request,
+        UltraMsgService $ultraMsg,
+        TelegramAuthService $telegramAuthService,
+        WhatsAppTemplateService $whatsAppTemplateService
+    ): RedirectResponse {
+        $validated = $request->validate([
+            'member_id' => ['required', 'integer', 'exists:members,id'],
+        ]);
+
+        $member = Member::query()->findOrFail((int) $validated['member_id']);
+
+        if (! $member->whatsapp_phone) {
+            return redirect()
+                ->route('admin.whatsapp.template')
+                ->withInput(['template_test_member_id' => $member->id])
+                ->with('error', __('app.whatsapp_template_test_missing_phone'));
+        }
+
+        if (! $ultraMsg->isConfigured()) {
+            return redirect()
+                ->route('admin.whatsapp.template')
+                ->withInput(['template_test_member_id' => $member->id])
+                ->with('error', __('app.whatsapp_not_configured'));
+        }
+
+        $season = LentSeason::active();
+        if (! $season) {
+            return redirect()
+                ->route('admin.whatsapp.template')
+                ->withInput(['template_test_member_id' => $member->id])
+                ->with('error', __('app.no_active_season'));
+        }
+
+        $today = CarbonImmutable::now('Europe/London')->toDateString();
+        $dailyContent = DailyContent::query()
+            ->where('lent_season_id', $season->id)
+            ->whereDate('date', $today)
+            ->where('is_published', true)
+            ->first();
+
+        if (! $dailyContent) {
+            return redirect()
+                ->route('admin.whatsapp.template')
+                ->withInput(['template_test_member_id' => $member->id])
+                ->with('error', __('app.timetable_no_content_today'));
+        }
+
+        $code = $telegramAuthService->createCode(
+            $member,
+            TelegramAuthService::PURPOSE_MEMBER_ACCESS,
+            route('member.day', ['daily' => $dailyContent], false)
+        );
+
+        $dayUrl = route('share.day', [
+            'daily' => $dailyContent,
+            'code' => $code,
+        ]);
+
+        $message = $whatsAppTemplateService
+            ->renderDailyReminder($member, $dailyContent, $this->ensureHttpsUrl($dayUrl))['message'];
+
+        if (! $ultraMsg->sendTextMessage((string) $member->whatsapp_phone, $message)) {
+            return redirect()
+                ->route('admin.whatsapp.template')
+                ->withInput(['template_test_member_id' => $member->id])
+                ->with('error', __('app.whatsapp_test_failed'));
+        }
+
+        return redirect()
+            ->route('admin.whatsapp.template')
+            ->withInput(['template_test_member_id' => $member->id])
+            ->with('success', __('app.whatsapp_template_test_sent', [
+                'name' => (string) ($member->baptism_name ?: $member->whatsapp_phone),
+            ]));
+    }
+
+    /**
+     * Ensure reminder links are sent as full HTTPS URLs
+     * on non-local environments for best WhatsApp clickability.
+     */
+    private function ensureHttpsUrl(string $url): string
+    {
+        if (app()->environment('local')) {
+            return $url;
+        }
+
+        return preg_replace('/^http:\/\//i', 'https://', $url) ?? $url;
     }
 }

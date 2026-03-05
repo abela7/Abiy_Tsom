@@ -14,6 +14,57 @@
         {{ __('app.whatsapp_template_warning') }}
     </div>
 
+    <section class="mb-6 rounded-xl border border-border bg-surface p-4">
+        <div class="mb-3">
+            <h2 class="text-base font-semibold text-primary">{{ __('app.whatsapp_template_test_title') }}</h2>
+            <p class="text-sm text-muted-text mt-1">{{ __('app.whatsapp_template_test_help') }}</p>
+        </div>
+
+        <form method="POST" action="{{ route('admin.whatsapp.template.test') }}" class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto] gap-3 items-end">
+            @csrf
+            <div>
+                <label for="template-test-member" class="block text-sm font-medium text-secondary mb-1.5">
+                    {{ __('app.whatsapp_template_test_member_label') }}
+                </label>
+                <select
+                    id="template-test-member"
+                    name="member_id"
+                    class="w-full px-3 py-2 border border-border rounded-lg bg-card text-primary focus:ring-2 focus:ring-accent outline-none"
+                    required
+                >
+                    <option value="">{{ __('app.whatsapp_template_test_member_placeholder') }}</option>
+                    @foreach($testMembers as $member)
+                        @php
+                            $memberLabel = trim((string) ($member->baptism_name ?: ''));
+                            if ($memberLabel === '') {
+                                $memberLabel = __('app.whatsapp_template_test_member_fallback');
+                            }
+                            $memberLabel .= ' - '.$member->whatsapp_phone;
+                            if ($member->whatsapp_confirmation_status) {
+                                $memberLabel .= ' - '.$member->whatsapp_confirmation_status;
+                            }
+                            if ($member->whatsapp_language) {
+                                $memberLabel .= ' - '.strtoupper((string) $member->whatsapp_language);
+                            }
+                        @endphp
+                        <option value="{{ $member->id }}" @selected((string) old('template_test_member_id') === (string) $member->id)>
+                            {{ $memberLabel }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <button
+                    type="submit"
+                    class="inline-flex items-center justify-center px-5 py-2.5 rounded-lg bg-primary text-white text-sm font-semibold hover:opacity-90 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                    @disabled($testMembers->isEmpty())
+                >
+                    {{ __('app.whatsapp_template_send_test') }}
+                </button>
+            </div>
+        </form>
+    </section>
+
     <form method="POST" action="{{ route('admin.whatsapp.template.update') }}" class="space-y-6">
         @csrf
         @method('PUT')
