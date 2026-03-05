@@ -238,102 +238,30 @@
             readOpen: false,
             inlineFontOpen: false,
             activeShelf: null,
-            debugShelf: true,
             shelfTapLock: false,
             shelfTapLockTimer: null,
-            init() {
-                window.__sinksarDebug = window.__sinksarDebug || [];
-                this.debugLog('init', {
-                    readerTheme: this.readerTheme,
-                    readerFont: this.readerFont,
-                    fontSize: this.fontSize
-                });
-            },
-            debugTarget(node) {
-                if (!(node instanceof Element)) return null;
-                const debugName = node.closest('[data-shelf-debug]')?.getAttribute('data-shelf-debug') || '';
-                const tag = node.tagName ? node.tagName.toLowerCase() : null;
-                const text = (node.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 60);
-                return {
-                    tag: tag,
-                    debug: debugName || null,
-                    text: text || null
-                };
-            },
-            debugEvent(event) {
-                if (!event) return null;
-                return {
-                    type: event.type || null,
-                    pointerType: event.pointerType || null,
-                    detail: typeof event.detail === 'number' ? event.detail : null,
-                    isTrusted: typeof event.isTrusted === 'boolean' ? event.isTrusted : null,
-                    target: this.debugTarget(event.target),
-                    currentTarget: this.debugTarget(event.currentTarget)
-                };
-            },
-            debugLog(label, extra = {}, event = null) {
-                if (!this.debugShelf) return;
-                const payload = {
-                    at: new Date().toISOString(),
-                    label: label,
-                    activeShelf: this.activeShelf,
-                    readerTheme: this.readerTheme,
-                    readerFont: this.readerFont,
-                    shelfTapLock: this.shelfTapLock,
-                    ...extra,
-                    event: this.debugEvent(event)
-                };
-                window.__sinksarDebug = window.__sinksarDebug || [];
-                window.__sinksarDebug.push(payload);
-                console.log('[SinksarDebug]', payload);
-            },
-            setActiveShelf(next, source, event = null) {
-                const prev = this.activeShelf;
-                this.activeShelf = next;
-                this.debugLog('activeShelf change', {
-                    source: source,
-                    prev: prev,
-                    next: next
-                }, event);
-                if (next === 'font') {
-                    console.trace('[SinksarDebug] activeShelf -> font', {
-                        source: source,
-                        prev: prev,
-                        next: next,
-                        event: this.debugEvent(event)
-                    });
-                }
-            },
             lockShelfTap(ms = 650) {
                 this.shelfTapLock = true;
-                this.debugLog('lockShelfTap start', { ms: ms });
                 if (this.shelfTapLockTimer) clearTimeout(this.shelfTapLockTimer);
                 this.shelfTapLockTimer = setTimeout(() => {
                     this.shelfTapLock = false;
                     this.shelfTapLockTimer = null;
-                    this.debugLog('lockShelfTap end');
                 }, ms);
             },
-            toggleShelf(name, event = null) {
-                this.debugLog('toggleShelf called', { name: name }, event);
-                if (this.shelfTapLock) {
-                    this.debugLog('toggleShelf blocked by tap lock', { name: name }, event);
-                    return;
-                }
-                this.setActiveShelf(this.activeShelf === name ? null : name, 'toggleShelf:' + name, event);
+            toggleShelf(name) {
+                if (this.shelfTapLock) return;
+                this.activeShelf = this.activeShelf === name ? null : name;
             },
-            pickTheme(t, event = null) {
-                this.debugLog('pickTheme called', { theme: t }, event);
+            pickTheme(t) {
                 this.readerTheme = t;
                 localStorage.setItem('sinksarReaderTheme', t);
-                this.setActiveShelf(null, 'pickTheme:' + t, event);
+                this.activeShelf = null;
                 this.lockShelfTap();
             },
-            pickFont(f, event = null) {
-                this.debugLog('pickFont called', { font: f }, event);
+            pickFont(f) {
                 this.readerFont = f;
                 localStorage.setItem('sinksarReaderFont', f);
-                this.setActiveShelf(null, 'pickFont:' + f, event);
+                this.activeShelf = null;
                 this.lockShelfTap();
             },
             fontFamily() {
@@ -347,16 +275,14 @@
                 localStorage.setItem('sinksarFontSize', this.fontSize);
             },
             openFullscreen() {
-                this.debugLog('openFullscreen called');
                 this.fullscreen = true;
                 document.body.style.overflow = 'hidden';
                 const nav = document.querySelector('nav.fixed.bottom-0');
                 if (nav) nav.style.display = 'none';
             },
-            closeFullscreen(event = null) {
-                this.debugLog('closeFullscreen called', {}, event);
+            closeFullscreen() {
                 this.fullscreen = false;
-                this.setActiveShelf(null, 'closeFullscreen', event);
+                this.activeShelf = null;
                 this.shelfTapLock = false;
                 if (this.shelfTapLockTimer) {
                     clearTimeout(this.shelfTapLockTimer);
@@ -685,18 +611,15 @@
                 <div class="shrink-0 relative">
                     {{-- Font shelf --}}
                     <template x-if="activeShelf === 'font'">
-                        <div @pointerup="debugLog('font shelf container pointerup', {}, $event)"
-                             @click="debugLog('font shelf container click', {}, $event)"
-                             class="absolute bottom-full left-0 right-0 border-t px-4 py-4 z-[101]"
+                        <div class="absolute bottom-full left-0 right-0 border-t px-4 py-4 z-[101]"
                              :class="{ 'bg-card border-border': readerTheme === 'default' }"
                              :style="readerTheme === 'sepia' ? 'background-color:#e8dcc6;border-color:#d4c5a9' : readerTheme === 'dark' ? 'background-color:#12122a;border-color:#2a2a4a' : ''">
                         <div class="flex items-center justify-center gap-4 max-w-xs mx-auto">
                             @foreach([['default','Default','inherit'],['benaiah','Benaiah','Benaiah,sans-serif'],['kiros','Kiros','Kiros,sans-serif'],['handwriting','Writing','Handwriting,sans-serif']] as [$fVal,$fLabel,$fFam])
                             <button type="button"
-                                    data-shelf-debug="font-option-{{ $fVal }}"
-                                    @pointerup.stop.prevent="pickFont('{{ $fVal }}', $event)"
-                                    @keyup.enter.prevent="pickFont('{{ $fVal }}', $event)"
-                                    @keyup.space.prevent="pickFont('{{ $fVal }}', $event)"
+                                    @pointerup.stop.prevent="pickFont('{{ $fVal }}')"
+                                    @keyup.enter.prevent="pickFont('{{ $fVal }}')"
+                                    @keyup.space.prevent="pickFont('{{ $fVal }}')"
                                     class="flex flex-col items-center gap-1.5 touch-manipulation">
                                 <span class="w-12 h-12 rounded-xl flex items-center justify-center text-xl font-bold transition-all"
                                       style="font-family:{{ $fFam }}"
@@ -713,17 +636,14 @@
 
                     {{-- Theme shelf --}}
                     <template x-if="activeShelf === 'theme'">
-                        <div @pointerup="debugLog('theme shelf container pointerup', {}, $event)"
-                             @click="debugLog('theme shelf container click', {}, $event)"
-                             class="absolute bottom-full left-0 right-0 border-t px-4 py-4 z-[101]"
+                        <div class="absolute bottom-full left-0 right-0 border-t px-4 py-4 z-[101]"
                              :class="{ 'bg-card border-border': readerTheme === 'default' }"
                              :style="readerTheme === 'sepia' ? 'background-color:#e8dcc6;border-color:#d4c5a9' : readerTheme === 'dark' ? 'background-color:#12122a;border-color:#2a2a4a' : ''">
                         <div class="flex items-center justify-center gap-5 max-w-xs mx-auto">
                             <button type="button"
-                                    data-shelf-debug="theme-option-default"
-                                    @pointerup.stop.prevent="pickTheme('default', $event)"
-                                    @keyup.enter.prevent="pickTheme('default', $event)"
-                                    @keyup.space.prevent="pickTheme('default', $event)"
+                                    @pointerup.stop.prevent="pickTheme('default')"
+                                    @keyup.enter.prevent="pickTheme('default')"
+                                    @keyup.space.prevent="pickTheme('default')"
                                     class="flex flex-col items-center gap-1.5 touch-manipulation">
                                 <span class="w-10 h-10 rounded-full bg-white flex items-center justify-center transition-all"
                                       :style="'border:3px solid ' + (readerTheme === 'default' ? 'var(--color-accent)' : '#d1d5db') + (readerTheme === 'default' ? ';box-shadow:0 0 0 4px rgba(10,98,134,0.2);transform:scale(1.1)' : '')">
@@ -733,10 +653,9 @@
                                       :style="readerTheme === 'default' ? 'color:var(--color-accent)' : readerTheme === 'sepia' ? 'color:#5b4636' : 'color:#8888aa'">{{ __('app.reader_theme_default') }}</span>
                             </button>
                             <button type="button"
-                                    data-shelf-debug="theme-option-sepia"
-                                    @pointerup.stop.prevent="pickTheme('sepia', $event)"
-                                    @keyup.enter.prevent="pickTheme('sepia', $event)"
-                                    @keyup.space.prevent="pickTheme('sepia', $event)"
+                                    @pointerup.stop.prevent="pickTheme('sepia')"
+                                    @keyup.enter.prevent="pickTheme('sepia')"
+                                    @keyup.space.prevent="pickTheme('sepia')"
                                     class="flex flex-col items-center gap-1.5 touch-manipulation">
                                 <span class="w-10 h-10 rounded-full flex items-center justify-center transition-all"
                                       :style="'background-color:#f4ecd8;border:3px solid ' + (readerTheme === 'sepia' ? '#8b5e3c' : '#c4a87c') + (readerTheme === 'sepia' ? ';box-shadow:0 0 0 4px rgba(139,94,60,0.3);transform:scale(1.1)' : '')">
@@ -746,10 +665,9 @@
                                       :style="readerTheme === 'sepia' ? 'color:#8b5e3c' : readerTheme === 'dark' ? 'color:#8888aa' : ''">{{ __('app.reader_theme_sepia') }}</span>
                             </button>
                             <button type="button"
-                                    data-shelf-debug="theme-option-dark"
-                                    @pointerup.stop.prevent="pickTheme('dark', $event)"
-                                    @keyup.enter.prevent="pickTheme('dark', $event)"
-                                    @keyup.space.prevent="pickTheme('dark', $event)"
+                                    @pointerup.stop.prevent="pickTheme('dark')"
+                                    @keyup.enter.prevent="pickTheme('dark')"
+                                    @keyup.space.prevent="pickTheme('dark')"
                                     class="flex flex-col items-center gap-1.5 touch-manipulation">
                                 <span class="w-10 h-10 rounded-full flex items-center justify-center transition-all"
                                       :style="'background-color:#1a1a2e;border:3px solid ' + (readerTheme === 'dark' ? '#7b9fff' : '#4a4a6a') + (readerTheme === 'dark' ? ';box-shadow:0 0 0 4px rgba(123,159,255,0.3);transform:scale(1.1)' : '')">
@@ -764,8 +682,6 @@
 
                     {{-- Bottom toolbar — always stays in place --}}
                     <div class="border-t safe-area-bottom"
-                         @pointerup="debugLog('toolbar container pointerup', {}, $event)"
-                         @click="debugLog('toolbar container click', {}, $event)"
                          :class="{
                              'bg-card border-border': readerTheme === 'default',
                              'pointer-events-none': shelfTapLock
@@ -815,10 +731,9 @@
 
                             {{-- Theme toggle --}}
                             <button type="button"
-                                    data-shelf-debug="toolbar-theme-toggle"
-                                    @pointerup.stop.prevent="toggleShelf('theme', $event)"
-                                    @keyup.enter.prevent="toggleShelf('theme', $event)"
-                                    @keyup.space.prevent="toggleShelf('theme', $event)"
+                                    @pointerup.stop.prevent="toggleShelf('theme')"
+                                    @keyup.enter.prevent="toggleShelf('theme')"
+                                    @keyup.space.prevent="toggleShelf('theme')"
                                     class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition touch-manipulation"
                                     :class="{
                                         'text-secondary hover:bg-muted': readerTheme === 'default' && activeShelf !== 'theme',
@@ -833,10 +748,9 @@
 
                             {{-- Font toggle --}}
                             <button type="button"
-                                    data-shelf-debug="toolbar-font-toggle"
-                                    @pointerup.stop.prevent="toggleShelf('font', $event)"
-                                    @keyup.enter.prevent="toggleShelf('font', $event)"
-                                    @keyup.space.prevent="toggleShelf('font', $event)"
+                                    @pointerup.stop.prevent="toggleShelf('font')"
+                                    @keyup.enter.prevent="toggleShelf('font')"
+                                    @keyup.space.prevent="toggleShelf('font')"
                                     class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition touch-manipulation"
                                     :class="{
                                         'text-secondary hover:bg-muted': readerTheme === 'default' && activeShelf !== 'font',
