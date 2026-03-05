@@ -98,13 +98,13 @@
         {{-- Commemorations carousel row --}}
         @if($slides->isNotEmpty())
         <a href="{{ route('member.commemorations', $daily) }}"
-           class="flex items-center gap-4 px-4 py-4 bg-accent/5 hover:bg-accent/10 active:scale-[0.98] transition-all group"
+           class="flex items-center gap-4 px-4 py-5 bg-accent/5 hover:bg-accent/10 active:scale-[0.98] transition-all group"
            x-data="{ current: 0, total: {{ $slides->count() }}, images: {{ $slides->map(fn($s) => $s['image'] ?? null)->toJson() }}, fallback: '{{ asset('images/Saints.png') }}' }"
            x-init="setInterval(() => current = (current + 1) % total, 3000)">
-            <div class="shrink-0 w-14 h-14 rounded-xl overflow-hidden shadow-sm relative">
+            <div class="shrink-0 w-16 h-16 rounded-2xl overflow-hidden shadow-md relative ring-1 ring-border">
                 <img :src="images[current] || fallback" alt="" class="w-full h-full object-cover">
             </div>
-            <div class="flex-1 min-w-0 relative h-14 overflow-hidden">
+            <div class="flex-1 min-w-0 relative h-16 overflow-hidden">
                 @foreach($slides as $i => $slide)
                 <div x-show="current === {{ $i }}"
                      x-transition:enter="transition ease-out duration-300"
@@ -115,12 +115,12 @@
                      x-transition:leave-end="opacity-0 -translate-y-2"
                      class="absolute inset-0 flex flex-col justify-center"
                      x-cloak>
-                    <span class="text-[10px] font-semibold text-muted-text uppercase tracking-wider leading-none">{{ $slide['type'] }}</span>
-                    <span class="text-base font-bold text-accent mt-1 truncate leading-tight">{{ $slide['name'] }}</span>
+                    <span class="text-[11px] font-semibold text-muted-text uppercase tracking-wider leading-none">{{ $slide['type'] }}</span>
+                    <span class="text-lg font-bold text-accent mt-1.5 truncate leading-tight">{{ $slide['name'] }}</span>
                 </div>
                 @endforeach
             </div>
-            <svg class="w-5 h-5 text-accent group-hover:translate-x-0.5 transition-all shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <svg class="w-6 h-6 text-accent group-hover:translate-x-0.5 transition-all shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </a>
         <div class="px-4 pb-2.5 bg-accent/5">
             <span class="text-[11px] text-muted-text">{{ __('app.synaxarium_tap_more_detail') }}</span>
