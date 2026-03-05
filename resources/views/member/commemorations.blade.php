@@ -63,7 +63,7 @@
                     </div>
                     @endif
                     <div class="flex-1 min-w-0">
-                        <span class="block text-sm font-bold text-primary leading-snug">{{ localized($saint, 'celebration') }}</span>
+                        <span class="block text-base font-bold text-primary leading-snug">{{ localized($saint, 'celebration') }}</span>
                         @if(!$hasImage)
                         <span class="block text-[10px] text-accent-secondary font-semibold mt-0.5 uppercase tracking-wide">{{ __('app.synaxarium_annual_feast') }}</span>
                         @endif
@@ -73,7 +73,7 @@
                 {{-- Description --}}
                 @if($hasDesc)
                 <div class="mt-2" x-data="{ expanded: false }">
-                    <p class="text-[13px] text-secondary leading-relaxed whitespace-pre-line"
+                    <p class="text-sm text-secondary leading-relaxed whitespace-pre-line"
                        :class="expanded ? '' : 'line-clamp-2'">{{ localized($saint, 'description') }}</p>
                     <button @click="expanded = !expanded"
                             class="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-accent hover:text-accent-hover transition-colors">
