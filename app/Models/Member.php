@@ -41,6 +41,7 @@ class Member extends Model
     /** @var list<string> */
     protected $hidden = [
         'passcode',
+        'token',
         'trusted_device_hash',
     ];
 
