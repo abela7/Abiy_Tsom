@@ -72,34 +72,31 @@
 
     @if($hasEthDate || $hasCelebrations)
     <div class="rounded-2xl bg-card border border-border shadow-sm overflow-hidden">
-        {{-- Ethiopian date + Gregorian --}}
+        {{-- Ethiopian date with EOTC watermark --}}
         @if($hasEthDate)
-        <div class="flex items-center gap-3 px-4 pt-4 pb-3">
-            <div class="shrink-0 w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center">
-                <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                </svg>
+        <div class="relative overflow-hidden">
+            {{-- EOTC logo watermark --}}
+            <img src="{{ asset('images/EOTC_Logo.jpg') }}" alt="" class="absolute right-[-20px] top-1/2 -translate-y-1/2 w-28 h-28 object-contain opacity-[0.06] pointer-events-none select-none">
+            {{-- Content --}}
+            <div class="relative px-5 py-5 text-center">
+                <span class="text-[11px] font-semibold text-accent uppercase tracking-wider">{{ __('app.ethiopian_calendar_title') }}</span>
+                <h2 class="text-xl font-black text-primary mt-1.5">{{ $ethDateInfo['ethiopian_date_formatted'] }}</h2>
             </div>
-            <div class="min-w-0 flex-1">
-                <span class="block text-sm font-bold text-primary">{{ $ethDateInfo['ethiopian_date_formatted'] }}</span>
-                <span class="block text-[11px] text-muted-text mt-0.5">{{ $daily->date->locale('en')->translatedFormat('l, F j, Y') }}</span>
-            </div>
-            <span class="shrink-0 text-[11px] font-bold text-accent bg-accent/10 rounded-lg px-2 py-1">E.C.</span>
         </div>
         @endif
 
         {{-- Commemorations link --}}
         @if($hasCelebrations)
-        <a href="{{ route('member.commemorations', $daily) }}" class="flex items-center gap-3 px-4 py-3 border-t border-border hover:bg-muted/30 active:scale-[0.98] transition-all group">
+        <a href="{{ route('member.commemorations', $daily) }}" class="flex items-center gap-3 px-4 py-3 bg-sinksar/5 hover:bg-sinksar/10 active:scale-[0.98] transition-all group">
             <div class="shrink-0 w-9 h-9 rounded-xl bg-sinksar/10 flex items-center justify-center">
                 <svg class="w-5 h-5 text-sinksar" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                 </svg>
             </div>
             <div class="flex-1 min-w-0">
-                <span class="block text-sm font-bold text-primary group-hover:text-sinksar transition-colors">{{ __('app.synaxarium_tap_to_view') }}</span>
+                <span class="block text-sm font-bold text-sinksar">{{ __('app.synaxarium_tap_to_view') }}</span>
             </div>
-            <svg class="w-4 h-4 text-muted-text group-hover:text-sinksar group-hover:translate-x-0.5 transition-all shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <svg class="w-4 h-4 text-sinksar group-hover:translate-x-0.5 transition-all shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </a>
         @endif
     </div>
