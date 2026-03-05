@@ -393,7 +393,7 @@ document.addEventListener('alpine:init', function() {
             total: total,
             current: 0,
             direction: 1,
-            mode: 'carousel',
+            mode: 'list',
             autoplayInterval: null,
             autoplayDelay: 5000,
             touchStartX: 0,
