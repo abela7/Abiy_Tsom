@@ -824,7 +824,7 @@ return [
     'synaxarium_description' => 'መግለጫ',
     'synaxarium_no_saints_for_day' => 'ለዚህ ቀን ገና ቅዱሳን አልተጨመሩም።',
     'synaxarium_yearly_commemorations' => 'አመታዊ በዓላት',
-    'synaxarium_monthly_commemorations' => 'ወሃዊ በዓላት',
+    'synaxarium_monthly_commemorations' => 'ወርሃዊ በዓላት',
     'synaxarium_tap_to_view' => 'በዛሬው እለት የሚውሉትን እለታዊ እና ወርሃዊ በዓላትን ለመመልከት ይሄንን ይንኩ',
     'synaxarium_tap_more_detail' => 'ተጨማሪ መረጃ ለማግኘት ይሄንን ይንኩ',
 

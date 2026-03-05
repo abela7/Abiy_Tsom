@@ -23,7 +23,7 @@
         </a>
         <div class="flex-1 min-w-0">
             <h1 class="text-lg font-black text-primary truncate">{{ $ethFormatted }}</h1>
-            <p class="text-[11px] text-muted-text">{{ $gregorianDate }}</p>
+            <p class="text-xs text-muted-text">{{ $gregorianDate }}</p>
         </div>
     </div>
 
