@@ -236,33 +236,18 @@
             readerFont: localStorage.getItem('sinksarReaderFont') || 'default',
             fullscreen: false,
             readOpen: false,
-            themeMenuOpen: false,
-            fontMenuOpen: false,
+            themeOpen: false,
+            fontOpen: false,
             inlineFontOpen: false,
-            _shelfLock: false,
-            toggleThemeMenu() {
-                if (this._shelfLock) return;
-                this._shelfLock = true;
-                this.themeMenuOpen = !this.themeMenuOpen;
-                this.fontMenuOpen = false;
-                setTimeout(() => { this._shelfLock = false; }, 350);
+            pickTheme(t) {
+                this.readerTheme = t;
+                localStorage.setItem('sinksarReaderTheme', t);
+                this.themeOpen = false;
             },
-            toggleFontMenu() {
-                if (this._shelfLock) return;
-                this._shelfLock = true;
-                this.fontMenuOpen = !this.fontMenuOpen;
-                this.themeMenuOpen = false;
-                setTimeout(() => { this._shelfLock = false; }, 350);
-            },
-            closeFontMenu() {
-                this._shelfLock = true;
-                this.fontMenuOpen = false;
-                setTimeout(() => { this._shelfLock = false; }, 350);
-            },
-            closeThemeMenu() {
-                this._shelfLock = true;
-                this.themeMenuOpen = false;
-                setTimeout(() => { this._shelfLock = false; }, 350);
+            pickFont(f) {
+                this.readerFont = f;
+                localStorage.setItem('sinksarReaderFont', f);
+                this.fontOpen = false;
             },
             fontFamily() {
                 if (this.readerFont === 'benaiah') return 'Benaiah,sans-serif';
@@ -274,22 +259,6 @@
                 this.fontSize = Math.min(28, Math.max(12, size));
                 localStorage.setItem('sinksarFontSize', this.fontSize);
             },
-            setReaderTheme(theme) {
-                this.readerTheme = theme;
-                localStorage.setItem('sinksarReaderTheme', theme);
-                this._shelfLock = true;
-                this.themeMenuOpen = false;
-                this.fontMenuOpen = false;
-                setTimeout(() => { this._shelfLock = false; }, 350);
-            },
-            setReaderFont(font) {
-                this.readerFont = font;
-                localStorage.setItem('sinksarReaderFont', font);
-                this._shelfLock = true;
-                this.fontMenuOpen = false;
-                this.themeMenuOpen = false;
-                setTimeout(() => { this._shelfLock = false; }, 350);
-            },
             openFullscreen() {
                 this.fullscreen = true;
                 document.body.style.overflow = 'hidden';
@@ -298,8 +267,8 @@
             },
             closeFullscreen() {
                 this.fullscreen = false;
-                this.themeMenuOpen = false;
-                this.fontMenuOpen = false;
+                this.themeOpen = false;
+                this.fontOpen = false;
                 document.body.style.overflow = '';
                 const nav = document.querySelector('nav.fixed.bottom-0');
                 if (nav) nav.style.display = '';
@@ -476,7 +445,7 @@
                                  style="display:none">
                                 @foreach([['default','Default','inherit','ሀ'],['benaiah','Benaiah','Benaiah,sans-serif','ሀ'],['kiros','Kiros','Kiros,sans-serif','ሀ'],['handwriting','Handwriting','Handwriting,sans-serif','ሀ']] as [$val,$label,$ff,$glyph])
                                 <button type="button"
-                                        @click="inlineFontOpen = false; setReaderFont('{{ $val }}')"
+                                        @click="inlineFontOpen = false; pickFont('{{ $val }}')"
                                         class="w-full px-4 py-3 text-left transition touch-manipulation flex items-center justify-between gap-3 border-b border-border last:border-0"
                                         :class="readerFont === '{{ $val }}' ? 'bg-accent/10' : 'hover:bg-muted'">
                                     <div class="min-w-0">
@@ -621,18 +590,27 @@
 
                 {{-- Fixed bottom area: overlays + toolbar --}}
                 <div class="shrink-0 relative">
-                    {{-- Font shelf — absolute overlay, does NOT push toolbar --}}
-                    <div x-show="fontMenuOpen" @click.outside="fontMenuOpen = false"
+                    {{-- Backdrop: closes any open shelf when tapping outside --}}
+                    <div x-show="themeOpen || fontOpen"
+                         @click="themeOpen = false; fontOpen = false"
+                         class="fixed inset-0 z-[100]"
+                         x-cloak></div>
+
+                    {{-- Font shelf --}}
+                    <div x-show="fontOpen"
                          x-transition:enter="transition ease-out duration-150"
                          x-transition:enter-start="opacity-0 translate-y-2"
                          x-transition:enter-end="opacity-100 translate-y-0"
+                         x-transition:leave="transition ease-in duration-100"
+                         x-transition:leave-start="opacity-100"
+                         x-transition:leave-end="opacity-0 translate-y-1"
                          x-cloak
-                         class="absolute bottom-full left-0 right-0 border-t px-4 py-3"
+                         class="absolute bottom-full left-0 right-0 border-t px-4 py-4 z-[101]"
                          :class="{ 'bg-card border-border': readerTheme === 'default' }"
                          :style="readerTheme === 'sepia' ? 'background-color:#e8dcc6;border-color:#d4c5a9' : readerTheme === 'dark' ? 'background-color:#12122a;border-color:#2a2a4a' : ''">
                         <div class="flex items-center justify-center gap-4 max-w-xs mx-auto">
                             @foreach([['default','Default','inherit'],['benaiah','Benaiah','Benaiah,sans-serif'],['kiros','Kiros','Kiros,sans-serif'],['handwriting','Writing','Handwriting,sans-serif']] as [$fVal,$fLabel,$fFam])
-                            <button type="button" @click.stop="setReaderFont('{{ $fVal }}')"
+                            <button type="button" @click="pickFont('{{ $fVal }}')"
                                     class="flex flex-col items-center gap-1.5 touch-manipulation">
                                 <span class="w-12 h-12 rounded-xl flex items-center justify-center text-xl font-bold transition-all"
                                       style="font-family:{{ $fFam }}"
@@ -646,17 +624,20 @@
                         </div>
                     </div>
 
-                    {{-- Theme shelf — absolute overlay, does NOT push toolbar --}}
-                    <div x-show="themeMenuOpen" @click.outside="themeMenuOpen = false"
+                    {{-- Theme shelf --}}
+                    <div x-show="themeOpen"
                          x-transition:enter="transition ease-out duration-150"
                          x-transition:enter-start="opacity-0 translate-y-2"
                          x-transition:enter-end="opacity-100 translate-y-0"
+                         x-transition:leave="transition ease-in duration-100"
+                         x-transition:leave-start="opacity-100"
+                         x-transition:leave-end="opacity-0 translate-y-1"
                          x-cloak
-                         class="absolute bottom-full left-0 right-0 border-t px-4 py-3"
+                         class="absolute bottom-full left-0 right-0 border-t px-4 py-4 z-[101]"
                          :class="{ 'bg-card border-border': readerTheme === 'default' }"
                          :style="readerTheme === 'sepia' ? 'background-color:#e8dcc6;border-color:#d4c5a9' : readerTheme === 'dark' ? 'background-color:#12122a;border-color:#2a2a4a' : ''">
                         <div class="flex items-center justify-center gap-5 max-w-xs mx-auto">
-                            <button type="button" @click.stop="setReaderTheme('default')"
+                            <button type="button" @click="pickTheme('default')"
                                     class="flex flex-col items-center gap-1.5 touch-manipulation">
                                 <span class="w-10 h-10 rounded-full bg-white flex items-center justify-center transition-all"
                                       :style="'border:3px solid ' + (readerTheme === 'default' ? 'var(--color-accent)' : '#d1d5db') + (readerTheme === 'default' ? ';box-shadow:0 0 0 4px rgba(10,98,134,0.2);transform:scale(1.1)' : '')">
@@ -665,7 +646,7 @@
                                 <span class="text-[10px] font-semibold"
                                       :style="readerTheme === 'default' ? 'color:var(--color-accent)' : readerTheme === 'sepia' ? 'color:#5b4636' : 'color:#8888aa'">{{ __('app.reader_theme_default') }}</span>
                             </button>
-                            <button type="button" @click.stop="setReaderTheme('sepia')"
+                            <button type="button" @click="pickTheme('sepia')"
                                     class="flex flex-col items-center gap-1.5 touch-manipulation">
                                 <span class="w-10 h-10 rounded-full flex items-center justify-center transition-all"
                                       :style="'background-color:#f4ecd8;border:3px solid ' + (readerTheme === 'sepia' ? '#8b5e3c' : '#c4a87c') + (readerTheme === 'sepia' ? ';box-shadow:0 0 0 4px rgba(139,94,60,0.3);transform:scale(1.1)' : '')">
@@ -674,7 +655,7 @@
                                 <span class="text-[10px] font-semibold"
                                       :style="readerTheme === 'sepia' ? 'color:#8b5e3c' : readerTheme === 'dark' ? 'color:#8888aa' : ''">{{ __('app.reader_theme_sepia') }}</span>
                             </button>
-                            <button type="button" @click.stop="setReaderTheme('dark')"
+                            <button type="button" @click="pickTheme('dark')"
                                     class="flex flex-col items-center gap-1.5 touch-manipulation">
                                 <span class="w-10 h-10 rounded-full flex items-center justify-center transition-all"
                                       :style="'background-color:#1a1a2e;border:3px solid ' + (readerTheme === 'dark' ? '#7b9fff' : '#4a4a6a') + (readerTheme === 'dark' ? ';box-shadow:0 0 0 4px rgba(123,159,255,0.3);transform:scale(1.1)' : '')">
@@ -733,13 +714,13 @@
                             </button>
 
                             {{-- Theme toggle --}}
-                            <button type="button" @click="toggleThemeMenu()"
+                            <button type="button" @click="themeOpen = !themeOpen; fontOpen = false"
                                     class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition touch-manipulation"
                                     :class="{
-                                        'text-secondary hover:bg-muted': readerTheme === 'default' && !themeMenuOpen,
-                                        'text-accent bg-accent/10': readerTheme === 'default' && themeMenuOpen
+                                        'text-secondary hover:bg-muted': readerTheme === 'default' && !themeOpen,
+                                        'text-accent bg-accent/10': readerTheme === 'default' && themeOpen
                                     }"
-                                    :style="readerTheme === 'sepia' ? (themeMenuOpen ? 'color:#8b5e3c;background-color:#d4c5a9' : 'color:#5b4636') : readerTheme === 'dark' ? (themeMenuOpen ? 'color:#7b9fff;background-color:#2a2a4a' : 'color:#c0c0d0') : ''">
+                                    :style="readerTheme === 'sepia' ? (themeOpen ? 'color:#8b5e3c;background-color:#d4c5a9' : 'color:#5b4636') : readerTheme === 'dark' ? (themeOpen ? 'color:#7b9fff;background-color:#2a2a4a' : 'color:#c0c0d0') : ''">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
                                 </svg>
@@ -747,13 +728,13 @@
                             </button>
 
                             {{-- Font toggle --}}
-                            <button type="button" @click="toggleFontMenu()"
+                            <button type="button" @click="fontOpen = !fontOpen; themeOpen = false"
                                     class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition touch-manipulation"
                                     :class="{
-                                        'text-secondary hover:bg-muted': readerTheme === 'default' && !fontMenuOpen,
-                                        'text-accent bg-accent/10': readerTheme === 'default' && fontMenuOpen
+                                        'text-secondary hover:bg-muted': readerTheme === 'default' && !fontOpen,
+                                        'text-accent bg-accent/10': readerTheme === 'default' && fontOpen
                                     }"
-                                    :style="readerTheme === 'sepia' ? (fontMenuOpen ? 'color:#8b5e3c;background-color:#d4c5a9' : 'color:#5b4636') : readerTheme === 'dark' ? (fontMenuOpen ? 'color:#7b9fff;background-color:#2a2a4a' : 'color:#c0c0d0') : ''">
+                                    :style="readerTheme === 'sepia' ? (fontOpen ? 'color:#8b5e3c;background-color:#d4c5a9' : 'color:#5b4636') : readerTheme === 'dark' ? (fontOpen ? 'color:#7b9fff;background-color:#2a2a4a' : 'color:#c0c0d0') : ''">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
                                 </svg>
