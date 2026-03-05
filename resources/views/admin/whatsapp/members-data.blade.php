@@ -37,8 +37,6 @@
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_reminder_time') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.language') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_last_sent') }}</th>
-                    <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_confirmation_requested') }}</th>
-                    <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_confirmation_responded') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_activity') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.registered') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.actions') }}</th>
@@ -78,8 +76,6 @@
                         </td>
                         <td class="px-5 py-3.5 text-secondary">{{ $m->whatsapp_language ?? '—' }}</td>
                         <td class="px-5 py-3.5 text-secondary">{{ $m->whatsapp_last_sent_date ? $m->whatsapp_last_sent_date->format('Y-m-d') : '—' }}</td>
-                        <td class="px-5 py-3.5 text-muted-text text-xs">{{ $m->whatsapp_confirmation_requested_at?->format('Y-m-d H:i') ?? '—' }}</td>
-                        <td class="px-5 py-3.5 text-muted-text text-xs">{{ $m->whatsapp_confirmation_responded_at?->format('Y-m-d H:i') ?? '—' }}</td>
                         <td class="px-5 py-3.5 text-secondary tabular-nums text-xs">
                             {{ $m->checklists_count }} {{ __('app.whatsapp_checklists') }} / {{ $m->sessions_count }} {{ __('app.whatsapp_sessions') }}
                         </td>
@@ -96,7 +92,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="13" class="px-5 py-12 text-center text-muted-text">{{ __('app.whatsapp_no_members_data') }}</td></tr>
+                    <tr><td colspan="11" class="px-5 py-12 text-center text-muted-text">{{ __('app.whatsapp_no_members_data') }}</td></tr>
                 @endforelse
             </tbody>
         </table>
