@@ -6,7 +6,9 @@
     <title>{{ $ogTitle }} - {{ __('app.app_name') }}</title>
     <meta name="description" content="{{ $ogDescription }}">
 
-    {{-- No <meta refresh> - JS handles redirect so we can preserve app flow --}}
+    {{-- Redirect to public day view for bots and users without valid auth code.
+         Authenticated users never see this page (server handles auth and redirects). --}}
+    <meta http-equiv="refresh" content="0;url={{ $publicDayUrl }}">
 
     @php
         $storedOgImage = seo('og_image');
@@ -38,26 +40,13 @@
     <meta name="twitter:description" content="{{ $ogDescription }}">
     <meta name="twitter:image" content="{{ $ogImageUrl }}">
 
-    <noscript>
-        <meta http-equiv="refresh" content="0;url={{ $publicDayUrl }}">
-    </noscript>
 </head>
 <body style="font-family:system-ui,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#0d1117;color:#e6edf3;">
-    <p>{{ __('app.redirecting') }}... <a href="{{ $publicDayUrl }}" id="fallback-link" style="color:#58a6ff;">{{ $ogTitle }}</a></p>
+    <p>{{ __('app.redirecting') }}... <a href="{{ $publicDayUrl }}" style="color:#58a6ff;">{{ $ogTitle }}</a></p>
 
     <script>
         (function() {
-            var publicDayUrl = @js($publicDayUrl);
-            var code = new URLSearchParams(window.location.search).get('code');
-
-            if (code && /^[A-Za-z0-9]{20,128}$/.test(code)) {
-                var accessUrl = '/auth/access?code=' + encodeURIComponent(code)
-                    + '&fallback=' + encodeURIComponent(publicDayUrl);
-                window.location.replace(accessUrl);
-                return;
-            }
-
-            window.location.replace(publicDayUrl);
+            window.location.replace(@js($publicDayUrl));
         })();
     </script>
 </body>

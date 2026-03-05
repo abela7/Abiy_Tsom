@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Concerns\DetectsPreviewBots;
 use App\Models\DailyContent;
 use App\Models\LentSeason;
 use App\Models\Member;
@@ -16,21 +17,63 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class TelegramAuthController extends Controller
 {
+    use DetectsPreviewBots;
+
     /**
      * Landing page for WhatsApp go-back links.
      *
-     * The WhatsApp preview bot fetches this URL to generate a rich preview.
-     * The HTML is returned with OG tags so WhatsApp shows a proper card.
-     * JavaScript then immediately redirects to /auth/access?code=XXX — which
-     * actually consumes the token — so the preview bot never consumes it.
+     * Preview bots receive OG tags only (code is NOT consumed).
+     * Human browsers with a valid code are authenticated server-side
+     * and redirected — no client-side JS redirect chain needed.
      */
-    public function go(Request $request): View
-    {
+    public function go(
+        Request $request,
+        TelegramAuthService $telegramAuthService,
+        MemberSessionService $memberSessionService
+    ): View|Response {
+        // Preview bots get OG tags only.
+        if ($this->isPreviewBot($request)) {
+            return view('auth.go');
+        }
+
+        // Human browser with a valid code: authenticate server-side.
+        $code = (string) $request->query('code', '');
+
+        if ($code !== '' && preg_match('/^[A-Za-z0-9]{20,128}$/', $code)) {
+            $token = $telegramAuthService->consumeCode($code);
+
+            if ($token && $telegramAuthService->isMemberToken($token)) {
+                $member = $token->actor;
+
+                if ($member instanceof Member) {
+                    $memberSessionService->establishSession($member, $request);
+                    $request->session()->regenerate();
+
+                    $redirectUrl = $member->passcode_enabled
+                        ? route('member.passcode')
+                        : $telegramAuthService->sanitizeRedirectPath(
+                            $token->redirect_to,
+                            '/member/home'
+                        );
+
+                    return response()->view('auth.authenticated', [
+                        'redirectUrl' => $redirectUrl,
+                    ]);
+                }
+            }
+
+            if ($token && $telegramAuthService->isAdminToken($token)) {
+                return $this->authenticateAdmin($request, $token, $telegramAuthService);
+            }
+        }
+
+        // No code or invalid code — show OG page which redirects to home.
         return view('auth.go');
     }
 

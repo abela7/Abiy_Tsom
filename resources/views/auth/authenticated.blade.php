@@ -6,10 +6,11 @@
     <meta name="robots" content="noindex,nofollow">
     <title>{{ __('app.redirecting') }}</title>
 
-    {{-- Fallback for no-JS environments --}}
-    <noscript>
-        <meta http-equiv="refresh" content="0;url={{ $redirectUrl }}">
-    </noscript>
+    {{-- Universal fallback: fires even when JS is present but silently fails
+         (common in WhatsApp's in-app browser). The 1s delay gives the browser
+         time to commit Set-Cookie headers before navigating. JS below fires
+         faster (100ms) when it works. --}}
+    <meta http-equiv="refresh" content="1;url={{ $redirectUrl }}">
 </head>
 <body style="font-family:system-ui,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#0d1117;color:#e6edf3;">
     <p style="text-align:center;">

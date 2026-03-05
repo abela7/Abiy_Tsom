@@ -40,27 +40,18 @@
     <meta name="twitter:description" content="{{ $description }}">
     <meta name="twitter:image" content="{{ $ogImageUrl }}">
 
-    {{-- Fallback for no-JS environments --}}
-    <noscript>
-        <meta http-equiv="refresh" content="0;url={{ route('home') }}">
-    </noscript>
+    {{-- Redirect to home for bots and users without valid auth code.
+         Authenticated users never see this page (server handles auth and redirects). --}}
+    <meta http-equiv="refresh" content="0;url={{ route('home') }}">
 </head>
 <body style="font-family:system-ui,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#0d1117;color:#e6edf3;">
     <p style="text-align:center;">
         {{ __('app.redirecting') }}...<br>
-        <a href="{{ route('home') }}" id="fallback-link" style="color:#58a6ff;font-size:0.9em;">Click here</a>
+        <a href="{{ route('home') }}" style="color:#58a6ff;font-size:0.9em;">Click here</a>
     </p>
 
     <script>
         (function () {
-            var code = new URLSearchParams(window.location.search).get('code');
-
-            if (code && /^[A-Za-z0-9]{20,128}$/.test(code)) {
-                window.location.replace('/auth/access?code=' + encodeURIComponent(code));
-                return;
-            }
-
-            // No valid code — just go home
             window.location.replace('/');
         })();
     </script>
