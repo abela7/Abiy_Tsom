@@ -28,6 +28,7 @@ class WhatsAppMembersDataController extends Controller
         $members = Member::query()
             ->whereNotNull('whatsapp_phone')
             ->where('whatsapp_phone', '!=', '')
+            ->withCount(['checklists', 'customActivities', 'sessions'])
             ->orderBy('created_at', 'desc')
             ->paginate(50);
 
