@@ -19,7 +19,7 @@ use Illuminate\View\View;
 class WhatsAppTemplateController extends Controller
 {
     /**
-     * @return array<int, array{key: string, group: string, title: string, placeholders: string}>
+     * @return array<int, array{key: string, group: string, title: string, placeholder_keys: list<string>}>
      */
     private function templateConfig(): array
     {
@@ -28,43 +28,43 @@ class WhatsAppTemplateController extends Controller
                 'key' => 'whatsapp_daily_reminder_header',
                 'group' => 'whatsapp_member',
                 'title' => __('app.whatsapp_template_daily_header'),
-                'placeholders' => ':baptism_name, :day',
+                'placeholder_keys' => ['baptism_name', 'day'],
             ],
             [
                 'key' => 'whatsapp_daily_reminder_content',
                 'group' => 'whatsapp_member',
                 'title' => __('app.whatsapp_template_daily_content'),
-                'placeholders' => ':url',
+                'placeholder_keys' => ['url'],
             ],
             [
                 'key' => 'whatsapp_confirmation_prompt_message',
                 'group' => 'wizard',
                 'title' => __('app.whatsapp_template_confirm_prompt'),
-                'placeholders' => ':name',
+                'placeholder_keys' => ['name'],
             ],
             [
                 'key' => 'whatsapp_invalid_reply_message',
                 'group' => 'wizard',
                 'title' => __('app.whatsapp_template_invalid_reply'),
-                'placeholders' => ':name',
+                'placeholder_keys' => ['name'],
             ],
             [
                 'key' => 'whatsapp_confirmation_activated_message',
                 'group' => 'wizard',
                 'title' => __('app.whatsapp_template_confirmed_notice'),
-                'placeholders' => __('app.whatsapp_template_none'),
+                'placeholder_keys' => [],
             ],
             [
                 'key' => 'whatsapp_confirmation_go_back_message',
                 'group' => 'wizard',
                 'title' => __('app.whatsapp_template_go_back'),
-                'placeholders' => ':url, :telegram_url',
+                'placeholder_keys' => ['url', 'telegram_url'],
             ],
             [
                 'key' => 'whatsapp_confirmation_rejected_message',
                 'group' => 'wizard',
                 'title' => __('app.whatsapp_template_rejected_notice'),
-                'placeholders' => __('app.whatsapp_template_none'),
+                'placeholder_keys' => [],
             ],
         ];
     }
@@ -164,4 +164,3 @@ class WhatsAppTemplateController extends Controller
             ->with('success', __('app.whatsapp_template_saved'));
     }
 }
-

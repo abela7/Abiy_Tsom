@@ -20,11 +20,17 @@
 
         @foreach($templates as $template)
             <section class="rounded-xl border border-border p-4 bg-surface">
+                @php
+                    $placeholderList = array_map(
+                        static fn (string $key): string => ':'.$key,
+                        $template['placeholder_keys']
+                    );
+                @endphp
                 <div class="mb-3">
                     <h2 class="text-base font-semibold text-primary">{{ $template['title'] }}</h2>
                     <p class="text-xs text-muted-text mt-1">
                         <span class="font-medium">{{ __('app.whatsapp_template_placeholders') }}:</span>
-                        <code>{{ $template['placeholders'] }}</code>
+                        <code>{{ $placeholderList !== [] ? implode(', ', $placeholderList) : __('app.whatsapp_template_none') }}</code>
                     </p>
                 </div>
 
@@ -39,6 +45,7 @@
                             rows="4"
                             data-preview-target="preview-en-{{ $template['key'] }}"
                             data-locale="en"
+                            data-allowed-placeholders='@json($template['placeholder_keys'])'
                             class="w-full px-3 py-2 border border-border rounded-lg bg-card text-primary focus:ring-2 focus:ring-accent outline-none resize-y"
                         >{{ old("templates.{$template['key']}.en", $template['en']) }}</textarea>
                     </div>
@@ -52,6 +59,7 @@
                             rows="4"
                             data-preview-target="preview-am-{{ $template['key'] }}"
                             data-locale="am"
+                            data-allowed-placeholders='@json($template['placeholder_keys'])'
                             class="w-full px-3 py-2 border border-border rounded-lg bg-card text-primary focus:ring-2 focus:ring-accent outline-none resize-y"
                         >{{ old("templates.{$template['key']}.am", $template['am']) }}</textarea>
                     </div>
@@ -109,11 +117,11 @@
         }
     };
 
-    const replacePlaceholders = (text, locale) => {
+    const replacePlaceholders = (text, locale, allowedKeys) => {
         const map = samples[locale] || samples.en;
         return String(text || '').replace(/:([a-z_]+)/gi, (match, key) => {
             const normalized = String(key || '').toLowerCase();
-            return Object.prototype.hasOwnProperty.call(map, normalized)
+            return allowedKeys.includes(normalized) && Object.prototype.hasOwnProperty.call(map, normalized)
                 ? map[normalized]
                 : match;
         });
@@ -129,7 +137,13 @@
         if (!target) {
             return;
         }
-        target.textContent = replacePlaceholders(input.value, locale);
+        let allowedKeys = [];
+        try {
+            allowedKeys = JSON.parse(input.getAttribute('data-allowed-placeholders') || '[]');
+        } catch (error) {
+            allowedKeys = [];
+        }
+        target.textContent = replacePlaceholders(input.value, locale, allowedKeys);
     };
 
     document.querySelectorAll('textarea[data-preview-target]').forEach((input) => {

@@ -584,6 +584,7 @@
                              fontOpen: false,
                              readerFont: localStorage.getItem('sinksarReaderFont') || 'default',
                              readerTheme: localStorage.getItem('sinksarReaderTheme') || 'default',
+                             _blocked: false,
                              pickFont(f) {
                                  this.readerFont = f;
                                  localStorage.setItem('sinksarReaderFont', f);
@@ -591,9 +592,9 @@
                                  this.fontOpen = false;
                              }
                          }"
-                         @toggle-font-shelf.window="fontOpen = !fontOpen"
+                         @toggle-font-shelf.window="if (!_blocked) { fontOpen = !fontOpen }"
                          @sinksar-close-shelves.window="fontOpen = false"
-                         @sinksar-theme-changed.window="readerTheme = $event.detail.theme"
+                         @sinksar-theme-changed.window="readerTheme = $event.detail.theme; _blocked = true; setTimeout(() => { _blocked = false; }, 500)"
                          x-show="fontOpen"
                          x-transition:enter="transition ease-out duration-150"
                          x-transition:enter-start="opacity-0 translate-y-2"
