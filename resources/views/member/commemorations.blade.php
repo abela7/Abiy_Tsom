@@ -45,7 +45,7 @@
                 @if($hasImage)
                 <div class="relative rounded-xl overflow-hidden mb-3 cursor-pointer"
                      @click="showImageModal = true; modalImage = '{{ $saint->imageUrl() }}'">
-                    <img src="{{ $saint->imageUrl() }}" alt="" class="w-full h-36 object-cover object-top">
+                    <img src="{{ $saint->imageUrl() }}" alt="" class="w-full max-h-64 object-contain">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
                     <div class="absolute bottom-0 left-0 right-0 px-3 pb-2.5">
                         <span class="inline-block px-1.5 py-0.5 rounded bg-accent-secondary/90 text-[9px] font-bold text-white uppercase tracking-wider">{{ __('app.synaxarium_annual_feast') }}</span>
