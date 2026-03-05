@@ -132,31 +132,12 @@ final class WhatsAppReminderConfirmationService
     }
 
     /**
-     * Build an authenticated one-tap access URL for the member.
-     * Uses TelegramAuthService to create a time-limited code that
-     * establishes a session in any browser (including WhatsApp in-app).
+     * Build a permanent access URL for the member using their token.
+     * No expiry, no one-time codes — just takes the user to /member/home.
      */
     private function buildMemberAccessUrl(Member $member): string
     {
-        $telegramAuth = app(TelegramAuthService::class);
-
-        // 2-hour window: long enough if the user comes back to the message
-        // shortly after confirming, short enough to limit exposure if someone
-        // else sees the WhatsApp message before the real user taps it.
-        $code = $telegramAuth->createCode(
-            $member,
-            TelegramAuthService::PURPOSE_MEMBER_ACCESS,
-            '/member/home',
-            120
-        );
-
-        // Use the /auth/go landing page instead of /auth/access directly.
-        // WhatsApp's preview bot fetches any URL in a message to generate a link
-        // card — if we sent /auth/access?code=XXX directly it would consume the
-        // one-time token before the user even taps the link. The landing page
-        // returns HTML with OG tags (safe for bots) and uses JavaScript to
-        // redirect to /auth/access, which bots never execute.
-        $url = route('auth.go', ['code' => $code]);
+        $url = route('member.access', ['token' => $member->token]);
 
         if (! app()->environment('local')) {
             $url = preg_replace('/^http:\/\//i', 'https://', $url) ?? $url;

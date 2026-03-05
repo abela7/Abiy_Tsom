@@ -20,6 +20,9 @@ use Illuminate\Support\Facades\Route;
 // Welcome / onboarding (no auth required)
 Route::get('/', [Member\OnboardingController::class, 'welcome'])->name('home');
 Route::post('/member/register', [Member\OnboardingController::class, 'register'])->name('member.register');
+Route::get('/member/access/{token}', [Member\OnboardingController::class, 'access'])
+    ->where('token', '[A-Za-z0-9]{20,128}')
+    ->name('member.access');
 Route::get('/r/{code}', [Member\ReferralController::class, 'track'])
     ->where('code', '[A-Za-z0-9]{8}')
     ->name('referral.track');
