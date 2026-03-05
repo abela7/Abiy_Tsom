@@ -8,6 +8,10 @@
        class="px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 {{ request()->routeIs('admin.whatsapp.reminders') ? 'bg-accent text-on-accent shadow-sm' : 'text-secondary hover:text-primary hover:bg-accent-overlay' }}">
         {{ __('app.whatsapp_reminders_tab') }}
     </a>
+    <a href="{{ route('admin.whatsapp.template') }}"
+       class="px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 {{ request()->routeIs('admin.whatsapp.template') ? 'bg-accent text-on-accent shadow-sm' : 'text-secondary hover:text-primary hover:bg-accent-overlay' }}">
+        {{ __('app.whatsapp_template_tab') }}
+    </a>
     <a href="{{ route('admin.whatsapp.timetable') }}"
        class="px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 {{ request()->routeIs('admin.whatsapp.timetable') ? 'bg-accent text-on-accent shadow-sm' : 'text-secondary hover:text-primary hover:bg-accent-overlay' }}">
         {{ __('app.timetable_title') }}

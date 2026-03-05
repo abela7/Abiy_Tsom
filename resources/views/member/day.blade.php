@@ -590,12 +590,6 @@
 
                 {{-- Fixed bottom area: overlays + toolbar --}}
                 <div class="shrink-0 relative">
-                    {{-- Backdrop: closes any open shelf when tapping outside --}}
-                    <div x-show="themeOpen || fontOpen"
-                         @click="themeOpen = false; fontOpen = false"
-                         class="fixed inset-0 z-[100]"
-                         x-cloak></div>
-
                     {{-- Font shelf --}}
                     <div x-show="fontOpen"
                          x-transition:enter="transition ease-out duration-150"

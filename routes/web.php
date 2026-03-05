@@ -285,6 +285,8 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::put('/whatsapp/webhook-secret', [Admin\WhatsAppSettingsController::class, 'updateWebhookSecret'])->name('whatsapp.update-webhook-secret');
         Route::put('/whatsapp/reminder-once-only', [Admin\WhatsAppSettingsController::class, 'updateReminderOnceOnly'])->name('whatsapp.update-reminder-once-only');
         Route::get('/whatsapp/reminders', [Admin\WhatsAppRemindersController::class, 'index'])->name('whatsapp.reminders');
+        Route::get('/whatsapp/template', [Admin\WhatsAppTemplateController::class, 'index'])->name('whatsapp.template');
+        Route::put('/whatsapp/template', [Admin\WhatsAppTemplateController::class, 'update'])->name('whatsapp.template.update');
         Route::get('/whatsapp/timetable', [Admin\WhatsAppTimetableController::class, 'index'])->name('whatsapp.timetable');
         Route::put('/whatsapp/reminders/{member}', [Admin\WhatsAppRemindersController::class, 'update'])->name('whatsapp.reminders.update');
         Route::post('/whatsapp/reminders/{member}/send', [Admin\WhatsAppRemindersController::class, 'sendReminder'])->name('whatsapp.reminders.send');
