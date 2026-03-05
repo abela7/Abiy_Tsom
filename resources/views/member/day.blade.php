@@ -42,21 +42,16 @@
 
     {{-- GROUP A: Great Lent Journey --}}
     <div data-tour="day-header" class="rounded-2xl bg-card border border-border shadow-sm overflow-hidden">
-        {{-- Day progress --}}
-        <div class="flex items-center gap-3 px-4 pt-4 pb-3">
-            <div class="shrink-0 w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center">
-                <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-            </div>
-            <div class="flex-1 min-w-0">
-                <h1 class="text-lg font-bold text-primary">
-                    {{ __('app.day_of', ['day' => $daily->day_number, 'total' => 55]) }}
-                </h1>
-                <p class="text-xs text-muted-text mt-0.5">{{ $daily->date->locale('en')->translatedFormat('l, F j, Y') }}</p>
-            </div>
+        {{-- Day title (centered) --}}
+        <div class="px-4 pt-5 pb-4 text-center">
+            <h1 class="text-2xl font-black text-primary">
+                {{ __('app.day_of', ['day' => $daily->day_number, 'total' => 55]) }}
+            </h1>
+            <p class="text-sm text-muted-text mt-1">{{ $daily->date->locale('en')->translatedFormat('l, F j, Y') }}</p>
         </div>
         {{-- Weekly theme link --}}
         @if($daily->weeklyTheme)
-        <a href="{{ route('member.week', $daily->weeklyTheme) }}" class="flex items-center gap-3 px-4 py-3 border-t border-border hover:bg-muted/30 active:scale-[0.98] transition-all group">
+        <a href="{{ route('member.week', $daily->weeklyTheme) }}" class="flex items-center gap-3 px-4 py-3 bg-muted/20 hover:bg-muted/40 active:scale-[0.98] transition-all group">
             <div class="shrink-0 w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center">
                 <i class="bi bi-calendar-week text-accent text-sm"></i>
             </div>
