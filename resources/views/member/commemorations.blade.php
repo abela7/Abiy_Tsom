@@ -94,9 +94,9 @@
 
         <div class="divide-y divide-border">
             @foreach($monthlyCelebrations as $saint)
-            @php $monthlyImage = $saint->imageUrl(); @endphp
+            @php $monthlyImage = $saint->imageUrl(); $monthlyDesc = localized($saint, 'description'); $hasMonthlyDetail = $monthlyImage || $monthlyDesc; @endphp
             <div x-data="{ open: false }" class="px-4">
-                <button @click="open = !open" class="w-full flex items-center gap-3 py-3 text-left">
+                <div class="flex items-center gap-3 py-3 {{ $hasMonthlyDetail ? 'cursor-pointer' : '' }}" @if($hasMonthlyDetail) @click="open = !open" @endif>
                     {{-- Thumbnail --}}
                     @if($monthlyImage)
                         <img src="{{ $monthlyImage }}" alt="" class="w-11 h-11 rounded-xl object-cover shrink-0 shadow-sm ring-1 ring-border">
@@ -109,28 +109,28 @@
                         <span class="block text-sm font-bold text-primary leading-snug">{{ localized($saint, 'celebration') }}</span>
                         <span class="block text-[10px] text-sinksar font-semibold mt-0.5 tracking-wide">{{ $ethDateInfo['ethiopian_date']['month_name_' . $locale] ?? '' }} {{ $ethDateInfo['ethiopian_date']['day'] ?? $saint->day }}</span>
                     </div>
-                    {{-- Chevron --}}
+                    {{-- Chevron only if expandable --}}
+                    @if($hasMonthlyDetail)
                     <div class="shrink-0 text-muted-text">
                         <svg class="w-4 h-4 transition-transform" :class="open && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                     </div>
-                </button>
-
-                {{-- Expandable detail --}}
-                <div x-show="open" x-collapse x-cloak class="pb-3">
-                    @if($monthlyImage)
-                    <div class="rounded-xl overflow-hidden cursor-pointer"
-                         @click="showImageModal = true; modalImage = '{{ $monthlyImage }}'">
-                        <img src="{{ $monthlyImage }}" alt="" class="w-full max-h-52 object-contain">
-                    </div>
-                    @else
-                    <div class="rounded-xl bg-muted/30 p-4 text-center">
-                        <div class="w-12 h-12 rounded-xl overflow-hidden mx-auto mb-2 shadow-sm ring-1 ring-border">
-                            <img src="{{ asset('images/Saints.png') }}" alt="" class="w-full h-full object-cover">
-                        </div>
-                        <p class="text-xs text-muted-text">{{ localized($saint, 'celebration') }}</p>
-                    </div>
                     @endif
                 </div>
+
+                {{-- Expandable detail --}}
+                @if($hasMonthlyDetail)
+                <div x-show="open" x-collapse x-cloak class="pb-3 space-y-2.5">
+                    @if($monthlyImage)
+                    <div class="rounded-xl overflow-hidden cursor-pointer"
+                         @click.stop="showImageModal = true; modalImage = '{{ $monthlyImage }}'">
+                        <img src="{{ $monthlyImage }}" alt="" class="w-full max-h-52 object-contain">
+                    </div>
+                    @endif
+                    @if($monthlyDesc)
+                    <p class="text-sm text-secondary leading-relaxed whitespace-pre-line">{{ $monthlyDesc }}</p>
+                    @endif
+                </div>
+                @endif
             </div>
             @endforeach
         </div>

@@ -18,6 +18,8 @@ class EthiopianSynaxariumMonthly extends Model
         'sort_order',
         'celebration_en',
         'celebration_am',
+        'description_en',
+        'description_am',
         'image_path',
     ];
 

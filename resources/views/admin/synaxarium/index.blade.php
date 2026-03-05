@@ -144,6 +144,21 @@
                                 </div>
                             </div>
 
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-muted-text mb-1">{{ __('app.synaxarium_description') }} (English)</label>
+                                    <textarea name="description_en" rows="2"
+                                              class="w-full px-3 py-2.5 rounded-xl border border-border bg-surface text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent"
+                                              placeholder="Optional description...">{{ old('description_en', $editingMonthly->description_en) }}</textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-muted-text mb-1">{{ __('app.synaxarium_description') }} (&#x12A0;&#x121B;&#x122D;&#x129B;)</label>
+                                    <textarea name="description_am" rows="2"
+                                              class="w-full px-3 py-2.5 rounded-xl border border-border bg-surface text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent"
+                                              placeholder="የበዓሉ መግለጫ...">{{ old('description_am', $editingMonthly->description_am) }}</textarea>
+                                </div>
+                            </div>
+
                             <div class="mb-3">
                                 <label class="block text-xs font-medium text-muted-text mb-1">{{ __('app.synaxarium_image') }}</label>
                                 @if($editingMonthly->image_path)
@@ -206,6 +221,21 @@
                                     <input type="text" name="celebration_am" value="{{ old('celebration_am') }}"
                                            class="w-full px-3 py-2.5 rounded-xl border border-border bg-surface text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent"
                                            placeholder="e.g. ቅዱስ ሚካኤል">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-muted-text mb-1">{{ __('app.synaxarium_description') }} (English)</label>
+                                    <textarea name="description_en" rows="2"
+                                              class="w-full px-3 py-2.5 rounded-xl border border-border bg-surface text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent"
+                                              placeholder="Optional description...">{{ old('description_en') }}</textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-muted-text mb-1">{{ __('app.synaxarium_description') }} (&#x12A0;&#x121B;&#x122D;&#x129B;)</label>
+                                    <textarea name="description_am" rows="2"
+                                              class="w-full px-3 py-2.5 rounded-xl border border-border bg-surface text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent"
+                                              placeholder="የበዓሉ መግለጫ...">{{ old('description_am') }}</textarea>
                                 </div>
                             </div>
 

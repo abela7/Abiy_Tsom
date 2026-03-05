@@ -54,6 +54,8 @@ class SynaxariumController extends Controller
             'day' => ['required', 'integer', 'min:1', 'max:30'],
             'celebration_en' => ['required', 'string', 'max:500'],
             'celebration_am' => ['nullable', 'string', 'max:500'],
+            'description_en' => ['nullable', 'string', 'max:5000'],
+            'description_am' => ['nullable', 'string', 'max:5000'],
             'image' => ['nullable', 'image', 'max:2048'],
             'is_main' => ['nullable'],
             'sort_order' => ['nullable', 'integer', 'min:0', 'max:255'],
@@ -83,6 +85,8 @@ class SynaxariumController extends Controller
         $data = $request->validate([
             'celebration_en' => ['required', 'string', 'max:500'],
             'celebration_am' => ['nullable', 'string', 'max:500'],
+            'description_en' => ['nullable', 'string', 'max:5000'],
+            'description_am' => ['nullable', 'string', 'max:5000'],
             'image' => ['nullable', 'image', 'max:2048'],
             'is_main' => ['nullable'],
             'sort_order' => ['nullable', 'integer', 'min:0', 'max:255'],
