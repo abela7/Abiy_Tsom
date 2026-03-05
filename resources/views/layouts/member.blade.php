@@ -388,7 +388,7 @@
                             <div>
                                 <label class="block text-xs font-bold text-muted-text uppercase tracking-widest mb-1">{{ __('app.feedback_name') }} <span class="text-red-500">*</span></label>
                                 <input type="text" x-model="name" maxlength="255" placeholder="{{ __('app.feedback_name_ph') }}"
-                                       class="w-full h-11 px-4 rounded-xl border border-border bg-surface text-primary text-sm placeholder:text-muted-text/50 focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent transition">
+                                       class="w-full h-11 px-4 rounded-xl border-2 border-accent/30 bg-surface text-primary text-sm placeholder:text-muted-text/60 focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent transition">
                                 <template x-if="errors.name"><p class="text-xs text-red-500 mt-1" x-text="errors.name[0]"></p></template>
                             </div>
 
@@ -396,7 +396,7 @@
                             <div>
                                 <label class="block text-xs font-bold text-muted-text uppercase tracking-widest mb-1">{{ __('app.feedback_email') }} <span class="text-muted-text/60 normal-case tracking-normal font-normal">{{ __('app.feedback_email_optional') }}</span></label>
                                 <input type="email" x-model="email" maxlength="255" placeholder="{{ __('app.feedback_email_ph') }}"
-                                       class="w-full h-11 px-4 rounded-xl border border-border bg-surface text-primary text-sm placeholder:text-muted-text/50 focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent transition">
+                                       class="w-full h-11 px-4 rounded-xl border-2 border-accent/30 bg-surface text-primary text-sm placeholder:text-muted-text/60 focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent transition">
                                 <template x-if="errors.email"><p class="text-xs text-red-500 mt-1" x-text="errors.email[0]"></p></template>
                             </div>
 
@@ -404,7 +404,7 @@
                             <div>
                                 <label class="block text-xs font-bold text-muted-text uppercase tracking-widest mb-1">{{ __('app.feedback_message') }} <span class="text-red-500">*</span></label>
                                 <textarea x-model="message" rows="3" maxlength="2000" placeholder="{{ __('app.feedback_message_ph') }}"
-                                          class="w-full px-4 py-3 rounded-xl border border-border bg-surface text-primary text-sm placeholder:text-muted-text/50 focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent transition resize-none"></textarea>
+                                          class="w-full px-4 py-3 rounded-xl border-2 border-accent/30 bg-surface text-primary text-sm placeholder:text-muted-text/60 focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent transition resize-none"></textarea>
                                 <template x-if="errors.message"><p class="text-xs text-red-500 mt-1" x-text="errors.message[0]"></p></template>
                             </div>
 
