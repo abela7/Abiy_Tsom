@@ -977,7 +977,9 @@
                             <svg class="w-4 h-4 text-muted-text shrink-0 transition-transform duration-300" :class="isSectionOpen('{{ $r['key'] }}')&&'rotate-180 text-accent'"
                                  fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </button>
-                        <div x-show="isSectionOpen('{{ $r['key'] }}')" x-collapse x-cloak>
+                        <div x-show="isSectionOpen('{{ $r['key'] }}')" x-cloak
+                             x-transition:enter="transition-all ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                             x-transition:leave="transition-all ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
                             <div class="px-3.5 pb-4 pt-1 text-primary"
                                  :style="'font-size:'+fontSize+'px;line-height:'+(fontSize<20?'1.85':'1.75')+';font-family:'+fontFamily()">
                                 @if($r['key']==='mesbak')
@@ -1087,7 +1089,9 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                                 </svg>
                             </button>
-                            <div x-show="isFsSectionOpen('{{ $r['key'] }}')" x-collapse x-cloak>
+                            <div x-show="isFsSectionOpen('{{ $r['key'] }}')" x-cloak
+                                 x-transition:enter="transition-all ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                                 x-transition:leave="transition-all ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
                                 <div class="px-4 pb-4 pt-1"
                                      :style="'font-size:'+fontSize+'px;line-height:'+(fontSize<20?'1.9':'1.8')+';font-family:'+fontFamily()+';color:'+(readerTheme==='dark'?'#d4d4e8':readerTheme==='sepia'?'#3e2c1c':'var(--color-primary)')">
                                     @if($r['key']==='mesbak')
