@@ -368,35 +368,32 @@ $labelClass = 'block text-xs font-medium text-muted-text mb-1';
                             </div>
                         </div>
 
-                        {{-- 3 lines: each line has Ge'ez | Amharic | English --}}
-                        @foreach([1, 2, 3] as $line)
-                        <div class="rounded-lg border border-border/60 bg-surface p-3 space-y-2">
-                            <p class="text-[11px] font-bold text-muted-text uppercase tracking-wide">{{ __('app.lectionary_mesbak_line') }} {{ $line }}</p>
+                        {{-- Ge'ez: 3 separate line inputs --}}
+                        <div class="space-y-2">
+                            <label class="{{ $labelClass }}">{{ __('app.lectionary_geez') }}</label>
+                            @foreach([1, 2, 3] as $line)
+                            <input type="text" name="mesbak_geez_{{ $line }}"
+                                   value="{{ old('mesbak_geez_'.$line, $entry?->{'mesbak_geez_'.$line}) }}"
+                                   placeholder="{{ $line === 1 ? 'እግዚአብሔርሰ ንጉሥ ውእቱ እምቅድመ ዓለም།' : ($line === 2 ? 'ወገብረ መድኃኒት በማእከለ ምድር།' : 'አንተ አጽናዕካ ለባሕር በኃይልከ།') }}"
+                                   class="{{ $inputClass }} font-mono">
+                            @endforeach
+                        </div>
+
+                        {{-- Translation: single textarea per language --}}
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
-                                <label class="{{ $labelClass }}">{{ __('app.lectionary_geez') }}</label>
-                                <input type="text" name="mesbak_geez_{{ $line }}"
-                                       value="{{ old('mesbak_geez_'.$line, $entry?->{'mesbak_geez_'.$line}) }}"
-                                       placeholder="{{ $line === 1 ? 'እግዚአብሔርሰ ንጉሥ ውእቱ እምቅድመ ዓለም።' : ($line === 2 ? 'ወገብረ መድኃኒት በማእከለ ምድር።' : 'አንተ አጽናዕካ ለባሕር በኃይልከ።') }}"
-                                       class="{{ $inputClass }} font-mono">
+                                <label class="{{ $labelClass }}">{{ __('app.lectionary_text_am') }}</label>
+                                <textarea name="mesbak_text_am" rows="4"
+                                          placeholder="እግዚአብሔር ግን ከዓለም አስቀድሞ ንጉሥ ነው፥ በምድርም መካከል መድኃኒትን አደረገ። አንተ ባሕርን በኃይልህ አጸናሃት፤"
+                                          class="{{ $inputClass }}">{{ old('mesbak_text_am', $entry?->mesbak_text_am) }}</textarea>
                             </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                <div>
-                                    <label class="{{ $labelClass }}">{{ __('app.lectionary_text_am') }}</label>
-                                    <input type="text" name="mesbak_am_{{ $line }}"
-                                           value="{{ old('mesbak_am_'.$line, $entry?->{'mesbak_am_'.$line}) }}"
-                                           placeholder="{{ $line === 1 ? 'እግዚአብሔር ግን ከዓለም አስቀድሞ ንጉሥ ነው፥' : ($line === 2 ? 'በምድርም መካከል መድኃኒትን አደረገ።' : 'አንተ ባሕርን በኃይልህ አጸናሃት፤') }}"
-                                           class="{{ $inputClass }}">
-                                </div>
-                                <div>
-                                    <label class="{{ $labelClass }}">{{ __('app.lectionary_text_en') }}</label>
-                                    <input type="text" name="mesbak_en_{{ $line }}"
-                                           value="{{ old('mesbak_en_'.$line, $entry?->{'mesbak_en_'.$line}) }}"
-                                           placeholder="{{ $line === 1 ? 'Yet God is my king from of old,' : ($line === 2 ? 'working salvation in the midst of the earth.' : 'You divided the sea by your might;') }}"
-                                           class="{{ $inputClass }}">
-                                </div>
+                            <div>
+                                <label class="{{ $labelClass }}">{{ __('app.lectionary_text_en') }}</label>
+                                <textarea name="mesbak_text_en" rows="4"
+                                          placeholder="Yet God is my king from of old, working salvation in the midst of the earth..."
+                                          class="{{ $inputClass }}">{{ old('mesbak_text_en', $entry?->mesbak_text_en) }}</textarea>
                             </div>
                         </div>
-                        @endforeach
                     </div>
                 </div>
 
