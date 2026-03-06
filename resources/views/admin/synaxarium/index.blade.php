@@ -3,458 +3,745 @@
 @section('title', __('app.synaxarium_admin_title'))
 
 @section('content')
-<div class="max-w-3xl" x-data="{
-    tab: '{{ request()->query('edit_annual') ? 'annual' : 'monthly' }}',
-    selectedDay: {{ $editingMonthly ? $editingMonthly->day : (int)(request()->query('day', 1)) }}
-}">
 
-    <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl font-bold text-primary">{{ __('app.synaxarium_admin_title') }}</h1>
+@php
+$monthNames = [
+    1 => 'Meskerem', 2 => 'Tikimt', 3 => 'Hidar',
+    4 => 'Tahsas', 5 => 'Tir', 6 => 'Yekatit',
+    7 => 'Megabit', 8 => 'Miyazia', 9 => 'Ginbot',
+    10 => 'Sene', 11 => 'Hamle', 12 => 'Nehase',
+    13 => 'Pagumen',
+];
+$monthNamesAm = [
+    1 => 'መስከረም', 2 => 'ጥቅምት', 3 => 'ኅዳር',
+    4 => 'ታኅሣሥ', 5 => 'ጥር', 6 => 'የካቲት',
+    7 => 'መጋቢት', 8 => 'ሚያዝያ', 9 => 'ግንቦት',
+    10 => 'ሰኔ', 11 => 'ሐምሌ', 12 => 'ነሐሴ',
+    13 => 'ጳጉሜን',
+];
+$monthNamesFull = [
+    1 => 'Meskerem / መስከረም', 2 => 'Tikimt / ጥቅምት', 3 => 'Hidar / ኅዳር',
+    4 => 'Tahsas / ታኅሣሥ', 5 => 'Tir / ጥር', 6 => 'Yekatit / የካቲት',
+    7 => 'Megabit / መጋቢት', 8 => 'Miyazia / ሚያዝያ', 9 => 'Ginbot / ግንቦት',
+    10 => 'Sene / ሰኔ', 11 => 'Hamle / ሐምሌ', 12 => 'Nehase / ነሐሴ',
+    13 => 'Pagumen / ጳጉሜን',
+];
+
+// Determine which sheet to auto-open based on URL params or old form data
+$autoSheet = '';
+if ($editingMonthly) $autoSheet = 'edit-monthly';
+elseif ($editingAnnual) $autoSheet = 'edit-annual';
+elseif (old('_form') === 'add_monthly') $autoSheet = 'add-monthly';
+elseif (old('_form') === 'add_annual') $autoSheet = 'add-annual';
+@endphp
+
+<style>[x-cloak]{display:none!important}</style>
+
+<div class="max-w-2xl pb-28"
+     x-data="{
+         tab: '{{ request()->query('edit_annual') ? 'annual' : 'monthly' }}',
+         selectedDay: {{ $editingMonthly ? $editingMonthly->day : (int)request()->query('day', 1) }},
+         sheet: '{{ $autoSheet }}',
+         pendingDeleteId: null,
+         imgAdd: null,
+         imgEdit: null,
+         previewImg(event, key) {
+             const file = event.target.files[0];
+             if (!file) return;
+             const r = new FileReader();
+             r.onload = e => { this[key] = e.target.result; };
+             r.readAsDataURL(file);
+         },
+         openSheet(name) { this.sheet = name; },
+         closeSheet() { this.sheet = ''; this.imgAdd = null; },
+         confirmDelete(id) { this.pendingDeleteId = id; this.sheet = 'delete'; },
+         submitDelete() { if (this.pendingDeleteId) document.getElementById(this.pendingDeleteId)?.submit(); }
+     }"
+     @keydown.escape.window="closeSheet()">
+
+    {{-- ── Page Header ── --}}
+    <div class="flex items-center gap-3 mb-5">
+        <div class="w-11 h-11 rounded-2xl bg-accent/10 flex items-center justify-center shrink-0">
+            <svg class="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+            </svg>
+        </div>
+        <div>
+            <h1 class="text-xl font-bold text-primary leading-tight">{{ __('app.synaxarium_admin_title') }}</h1>
+            <p class="text-xs text-muted-text">Monthly & annual celebrations</p>
+        </div>
     </div>
 
+    {{-- ── Success Banner ── --}}
     @if(session('success'))
-        <div class="mb-5 px-4 py-3 rounded-xl bg-green-50 border border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400 text-sm">
-            {{ session('success') }}
-        </div>
+    <div class="mb-4 flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-green-50 border border-green-200 dark:bg-green-900/20 dark:border-green-800">
+        <svg class="w-5 h-5 text-green-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span class="text-sm text-green-700 dark:text-green-400 font-medium">{{ session('success') }}</span>
+    </div>
     @endif
 
-    {{-- Tab switcher --}}
-    <div class="flex bg-muted rounded-xl p-1 gap-1 mb-6">
+    {{-- ── Tab Switcher ── --}}
+    <div class="flex bg-muted rounded-2xl p-1 gap-1 mb-5">
         <button type="button" @click="tab = 'monthly'"
-                class="flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200"
-                :class="tab === 'monthly' ? 'bg-card text-primary shadow-sm' : 'text-muted-text hover:text-secondary'">
-            {{ __('app.synaxarium_monthly_tab') }} ({{ $monthlyCelebrations->count() }})
+                class="flex-1 py-3.5 rounded-xl text-sm font-semibold transition-all duration-200"
+                :class="tab === 'monthly' ? 'bg-card text-primary shadow-sm' : 'text-muted-text'">
+            {{ __('app.synaxarium_monthly_tab') }}
+            <span class="ml-1.5 text-xs px-1.5 py-0.5 rounded-full"
+                  :class="tab === 'monthly' ? 'bg-accent/10 text-accent' : 'opacity-50'">{{ $monthlyCelebrations->count() }}</span>
         </button>
         <button type="button" @click="tab = 'annual'"
-                class="flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200"
-                :class="tab === 'annual' ? 'bg-card text-primary shadow-sm' : 'text-muted-text hover:text-secondary'">
-            {{ __('app.synaxarium_annual_tab') }} ({{ $annualCelebrations->count() }})
+                class="flex-1 py-3.5 rounded-xl text-sm font-semibold transition-all duration-200"
+                :class="tab === 'annual' ? 'bg-card text-primary shadow-sm' : 'text-muted-text'">
+            {{ __('app.synaxarium_annual_tab') }}
+            <span class="ml-1.5 text-xs px-1.5 py-0.5 rounded-full"
+                  :class="tab === 'annual' ? 'bg-accent/10 text-accent' : 'opacity-50'">{{ $annualCelebrations->count() }}</span>
         </button>
     </div>
 
-    {{-- =============================== MONTHLY TAB =============================== --}}
+    {{-- ════════════════════════ MONTHLY TAB ════════════════════════ --}}
     <div x-show="tab === 'monthly'">
 
-        {{-- Day Picker Grid --}}
+        {{-- Day Grid --}}
         <div class="bg-card rounded-2xl border border-border shadow-sm p-4 mb-4">
-            <p class="text-xs font-semibold text-muted-text uppercase tracking-wide mb-3">{{ __('app.synaxarium_day_number') }}</p>
-            <div class="grid grid-cols-6 gap-2">
+            <p class="text-[11px] font-bold text-muted-text uppercase tracking-widest mb-3">{{ __('app.synaxarium_day_number') }}</p>
+            <div class="grid grid-cols-5 sm:grid-cols-6 gap-2">
                 @for($d = 1; $d <= 30; $d++)
                 <button type="button" @click="selectedDay = {{ $d }}"
-                        class="relative h-11 rounded-xl text-sm font-semibold transition-all duration-150"
+                        class="relative h-14 rounded-2xl text-base font-bold transition-all duration-150 active:scale-95 select-none"
                         :class="selectedDay === {{ $d }}
-                            ? 'bg-accent text-on-accent shadow-md scale-105'
-                            : 'bg-surface text-primary hover:bg-muted border border-border'">
+                            ? 'bg-accent text-on-accent shadow-lg shadow-accent/30 scale-105'
+                            : 'bg-surface text-primary border border-border'">
                     {{ $d }}
                     @if(isset($monthlyByDay[$d]) && $monthlyByDay[$d]->count() > 0)
-                        <span class="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 text-[10px] font-bold rounded-full flex items-center justify-center"
-                              :class="selectedDay === {{ $d }} ? 'bg-white text-accent' : 'bg-accent text-on-accent'">
-                            {{ $monthlyByDay[$d]->count() }}
-                        </span>
+                        <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full"
+                              :class="selectedDay === {{ $d }} ? 'bg-white/80' : 'bg-accent'"></span>
                     @endif
                 </button>
                 @endfor
             </div>
         </div>
 
-        {{-- Selected Day Panel --}}
-        <div class="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
+        {{-- Saints for selected day --}}
+        <div class="bg-card rounded-2xl border border-border shadow-sm overflow-hidden mb-4">
             {{-- Day header --}}
-            <div class="px-5 py-3 bg-gradient-to-r from-accent/10 to-transparent border-b border-border">
-                <h2 class="text-sm font-bold text-primary flex items-center gap-2">
-                    <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                    <span x-text="'{{ __('app.synaxarium_day_number_short', ['day' => '']) }}' + selectedDay"></span>
-                </h2>
+            <div class="px-5 py-4 bg-gradient-to-r from-accent/10 to-transparent border-b border-border flex items-center gap-2">
+                <svg class="w-5 h-5 text-accent shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                <h2 class="font-bold text-primary" x-text="'{{ __('app.synaxarium_day_number_short', ['day' => '']) }}' + selectedDay"></h2>
             </div>
 
-            <div class="p-5 space-y-4">
-                {{-- Saints list for each day --}}
-                @for($d = 1; $d <= 30; $d++)
-                <div x-show="selectedDay === {{ $d }}" {{ $d !== ($editingMonthly ? $editingMonthly->day : 1) ? 'x-cloak' : '' }}>
-                    @php $saints = $monthlyByDay[$d] ?? collect(); @endphp
+            {{-- Day panels --}}
+            @for($d = 1; $d <= 30; $d++)
+            <div x-show="selectedDay === {{ $d }}" x-cloak>
+                @php $saints = $monthlyByDay[$d] ?? collect(); @endphp
 
-                    @if($saints->isNotEmpty())
-                    <div class="space-y-2 mb-5">
-                        @foreach($saints as $item)
-                        <div class="flex items-center gap-3 p-3 rounded-xl border border-border bg-surface group hover:border-accent/30 transition">
-                            @if($item->image_path)
-                                <img src="{{ $item->imageUrl() }}" alt="" class="w-10 h-10 rounded-lg object-cover shrink-0">
-                            @else
-                                <div class="w-10 h-10 rounded-lg bg-sinksar/10 flex items-center justify-center shrink-0">
-                                    <svg class="w-5 h-5 text-sinksar" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
-                                </div>
-                            @endif
-                            <div class="flex-1 min-w-0">
-                                <div class="flex items-center gap-1.5 flex-wrap">
-                                    <span class="font-medium text-primary text-sm">{{ $item->celebration_en }}</span>
-                                    @if($item->is_main)
-                                        <span class="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">{{ __('app.synaxarium_main_badge') }}</span>
-                                    @endif
-                                </div>
-                                @if($item->celebration_am)
-                                    <p class="text-xs text-muted-text">{{ $item->celebration_am }}</p>
-                                @endif
-                            </div>
-                            <div class="flex items-center gap-0.5 shrink-0 opacity-50 group-hover:opacity-100 transition">
-                                <a href="/admin/synaxarium?edit_monthly={{ $item->id }}" class="p-1.5 rounded-lg text-accent hover:bg-accent/10 transition" title="{{ __('app.edit') }}">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                </a>
-                                <form method="POST" action="/admin/synaxarium/monthly/{{ $item->id }}" onsubmit="return confirm('{{ __('app.synaxarium_delete_confirm') }}')" class="inline">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition" title="{{ __('app.delete') }}">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
+                @forelse($saints as $item)
+                <div class="flex items-center gap-3 px-4 py-3.5 {{ !$loop->last ? 'border-b border-border/50' : '' }} hover:bg-muted/30 transition">
+                    {{-- Thumbnail --}}
+                    @if($item->image_path)
+                        <img src="{{ $item->imageUrl() }}" alt="" class="w-12 h-12 rounded-xl object-cover shrink-0">
                     @else
-                    <div class="text-center py-4 mb-4">
-                        <p class="text-sm text-muted-text">{{ __('app.synaxarium_no_saints_for_day') }}</p>
-                    </div>
+                        <div class="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
+                            <svg class="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                        </div>
                     @endif
-                </div>
-                @endfor
-
-                {{-- Divider + Form --}}
-                <div class="border-t border-border pt-4">
-
-                    {{-- Edit form (shown when editing and on the correct day) --}}
-                    @if($editingMonthly)
-                    <div x-show="selectedDay === {{ $editingMonthly->day }}">
-                        <h3 class="text-sm font-semibold text-primary mb-3 flex items-center gap-2">
-                            <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                            {{ __('app.synaxarium_edit_monthly') }}
-                        </h3>
-                        <form method="POST" action="/admin/synaxarium/monthly/{{ $editingMonthly->id }}" enctype="multipart/form-data">
-                            @csrf @method('PUT')
-
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                                <div>
-                                    <label class="block text-xs font-medium text-muted-text mb-1">{{ __('app.synaxarium_celebration') }} (English) <span class="text-red-400">*</span></label>
-                                    <input type="text" name="celebration_en" value="{{ old('celebration_en', $editingMonthly->celebration_en) }}" required
-                                           class="w-full px-3 py-2.5 rounded-xl border border-border bg-surface text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent">
-                                    @error('celebration_en') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-muted-text mb-1">{{ __('app.synaxarium_celebration') }} (&#x12A0;&#x121B;&#x122D;&#x129B;)</label>
-                                    <input type="text" name="celebration_am" value="{{ old('celebration_am', $editingMonthly->celebration_am) }}"
-                                           class="w-full px-3 py-2.5 rounded-xl border border-border bg-surface text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent">
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                                <div>
-                                    <label class="block text-xs font-medium text-muted-text mb-1">{{ __('app.synaxarium_description') }} (English)</label>
-                                    <textarea name="description_en" rows="2"
-                                              class="w-full px-3 py-2.5 rounded-xl border border-border bg-surface text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent"
-                                              placeholder="Optional description...">{{ old('description_en', $editingMonthly->description_en) }}</textarea>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-muted-text mb-1">{{ __('app.synaxarium_description') }} (&#x12A0;&#x121B;&#x122D;&#x129B;)</label>
-                                    <textarea name="description_am" rows="2"
-                                              class="w-full px-3 py-2.5 rounded-xl border border-border bg-surface text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent"
-                                              placeholder="የበዓሉ መግለጫ...">{{ old('description_am', $editingMonthly->description_am) }}</textarea>
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="block text-xs font-medium text-muted-text mb-1">{{ __('app.synaxarium_image') }}</label>
-                                @if($editingMonthly->image_path)
-                                    <div class="flex items-center gap-2 mb-1.5">
-                                        <img src="{{ $editingMonthly->imageUrl() }}" alt="" class="h-14 rounded-lg object-cover">
-                                        <label class="text-xs text-red-500 cursor-pointer inline-flex items-center gap-1">
-                                            <input type="checkbox" name="remove_image" value="1" class="rounded text-red-500">
-                                            {{ __('app.remove') }}
-                                        </label>
-                                    </div>
-                                @endif
-                                <input type="file" name="image" accept="image/*"
-                                       class="w-full text-xs text-muted-text file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-accent/10 file:text-accent">
-                            </div>
-
-                            <div class="flex items-center gap-5 mb-4">
-                                <label class="inline-flex items-center gap-2 text-sm text-secondary cursor-pointer">
-                                    <input type="checkbox" name="is_main" value="1" {{ $editingMonthly->is_main ? 'checked' : '' }}
-                                           class="rounded border-border text-accent focus:ring-accent/50">
-                                    {{ __('app.synaxarium_is_main') }}
-                                </label>
-                                <div class="flex items-center gap-2">
-                                    <label class="text-xs text-muted-text">{{ __('app.synaxarium_sort_order') }}:</label>
-                                    <input type="number" name="sort_order" min="0" max="255" value="{{ $editingMonthly->sort_order }}"
-                                           class="w-16 px-2 py-1.5 rounded-lg border border-border bg-surface text-primary text-sm text-center">
-                                </div>
-                            </div>
-
-                            <div class="flex items-center gap-2 justify-end">
-                                <a href="/admin/synaxarium?day={{ $editingMonthly->day }}" class="px-4 py-2 text-sm text-muted-text hover:text-primary transition">{{ __('app.cancel') }}</a>
-                                <button type="submit" class="px-5 py-2 bg-accent text-on-accent text-sm font-semibold rounded-xl hover:opacity-90 transition active:scale-95">
-                                    {{ __('app.save_changes') }}
-                                </button>
-                            </div>
-                        </form>
+                    {{-- Name --}}
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="font-semibold text-primary text-sm leading-snug">{{ $item->celebration_en }}</span>
+                            @if($item->is_main)
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">{{ __('app.synaxarium_main_badge') }}</span>
+                            @endif
+                        </div>
+                        @if($item->celebration_am)
+                            <p class="text-sm text-muted-text leading-snug mt-0.5">{{ $item->celebration_am }}</p>
+                        @endif
                     </div>
-                    @endif
-
-                    {{-- Create form --}}
-                    <div x-show="{{ $editingMonthly ? 'selectedDay !== ' . $editingMonthly->day : 'true' }}"
-                         {{ $editingMonthly ? 'x-cloak' : '' }}>
-                        <h3 class="text-sm font-semibold text-primary mb-3 flex items-center gap-2">
-                            <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
-                            {{ __('app.synaxarium_add_saint') }}
-                        </h3>
-                        <form method="POST" action="/admin/synaxarium/monthly" enctype="multipart/form-data">
-                            @csrf
-                            <input type="hidden" name="day" :value="selectedDay">
-
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                                <div>
-                                    <label class="block text-xs font-medium text-muted-text mb-1">{{ __('app.synaxarium_celebration') }} (English) <span class="text-red-400">*</span></label>
-                                    <input type="text" name="celebration_en" value="{{ old('celebration_en') }}" required
-                                           class="w-full px-3 py-2.5 rounded-xl border border-border bg-surface text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent"
-                                           placeholder="e.g. Angel Mikael (Michael)">
-                                    @error('celebration_en') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-muted-text mb-1">{{ __('app.synaxarium_celebration') }} (&#x12A0;&#x121B;&#x122D;&#x129B;)</label>
-                                    <input type="text" name="celebration_am" value="{{ old('celebration_am') }}"
-                                           class="w-full px-3 py-2.5 rounded-xl border border-border bg-surface text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent"
-                                           placeholder="e.g. ቅዱስ ሚካኤል">
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                                <div>
-                                    <label class="block text-xs font-medium text-muted-text mb-1">{{ __('app.synaxarium_description') }} (English)</label>
-                                    <textarea name="description_en" rows="2"
-                                              class="w-full px-3 py-2.5 rounded-xl border border-border bg-surface text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent"
-                                              placeholder="Optional description...">{{ old('description_en') }}</textarea>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-muted-text mb-1">{{ __('app.synaxarium_description') }} (&#x12A0;&#x121B;&#x122D;&#x129B;)</label>
-                                    <textarea name="description_am" rows="2"
-                                              class="w-full px-3 py-2.5 rounded-xl border border-border bg-surface text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent"
-                                              placeholder="የበዓሉ መግለጫ...">{{ old('description_am') }}</textarea>
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="block text-xs font-medium text-muted-text mb-1">{{ __('app.synaxarium_image') }}</label>
-                                <input type="file" name="image" accept="image/*"
-                                       class="w-full text-xs text-muted-text file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-accent/10 file:text-accent">
-                            </div>
-
-                            <div class="flex items-center gap-5 mb-4">
-                                <label class="inline-flex items-center gap-2 text-sm text-secondary cursor-pointer">
-                                    <input type="checkbox" name="is_main" value="1"
-                                           class="rounded border-border text-accent focus:ring-accent/50">
-                                    {{ __('app.synaxarium_is_main') }}
-                                </label>
-                                <div class="flex items-center gap-2">
-                                    <label class="text-xs text-muted-text">{{ __('app.synaxarium_sort_order') }}:</label>
-                                    <input type="number" name="sort_order" min="0" max="255" value="0"
-                                           class="w-16 px-2 py-1.5 rounded-lg border border-border bg-surface text-primary text-sm text-center">
-                                </div>
-                            </div>
-
-                            <div class="flex justify-end">
-                                <button type="submit" class="px-5 py-2 bg-accent text-on-accent text-sm font-semibold rounded-xl hover:opacity-90 transition active:scale-95">
-                                    {{ __('app.synaxarium_add_saint') }}
-                                </button>
-                            </div>
+                    {{-- Actions — always visible, 44px touch targets --}}
+                    <div class="flex items-center gap-1.5 shrink-0">
+                        <a href="/admin/synaxarium?edit_monthly={{ $item->id }}&day={{ $item->day }}"
+                           class="w-10 h-10 rounded-xl flex items-center justify-center text-accent bg-accent/10 active:scale-90 transition">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                        </a>
+                        <button type="button" @click="confirmDelete('del-m-{{ $item->id }}')"
+                                class="w-10 h-10 rounded-xl flex items-center justify-center text-red-500 bg-red-50 dark:bg-red-900/20 active:scale-90 transition">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        </button>
+                        <form id="del-m-{{ $item->id }}" method="POST" action="/admin/synaxarium/monthly/{{ $item->id }}" class="hidden">
+                            @csrf @method('DELETE')
                         </form>
                     </div>
                 </div>
+                @empty
+                <div class="flex flex-col items-center justify-center py-12 text-center px-6">
+                    <div class="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-3">
+                        <svg class="w-8 h-8 text-muted-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                    </div>
+                    <p class="text-sm text-muted-text mb-4">{{ __('app.synaxarium_no_saints_for_day') }}</p>
+                    <button type="button" @click="openSheet('add-monthly')"
+                            class="px-5 py-3 bg-accent text-on-accent text-sm font-semibold rounded-2xl active:scale-95 transition shadow-md shadow-accent/20">
+                        + {{ __('app.synaxarium_add_saint') }}
+                    </button>
+                </div>
+                @endforelse
             </div>
+            @endfor
+        </div>
+    </div>{{-- /monthly --}}
+
+    {{-- ════════════════════════ ANNUAL TAB ════════════════════════ --}}
+    <div x-show="tab === 'annual'" x-cloak>
+
+        {{-- Add button --}}
+        <button type="button" @click="openSheet('add-annual')"
+                class="w-full flex items-center justify-center gap-2 py-4 mb-4 bg-accent text-on-accent text-sm font-bold rounded-2xl shadow-lg shadow-accent/20 active:scale-[0.98] transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+            {{ __('app.synaxarium_add_annual') }}
+        </button>
+
+        {{-- Annual list --}}
+        <div class="space-y-3">
+            @forelse($annualByMonthDay as $key => $saints)
+            @php
+                $first = $saints->first();
+                $mLabel = ($monthNames[$first->month] ?? $first->month) . ' / ' . ($monthNamesAm[$first->month] ?? '');
+            @endphp
+            <div class="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
+                <div class="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-amber-50/80 to-transparent dark:from-amber-900/10 border-b border-border">
+                    <div>
+                        <span class="text-sm font-bold text-primary">{{ $mLabel }}</span>
+                        <span class="text-sm text-muted-text ml-1.5">· Day {{ $first->day }}</span>
+                    </div>
+                    <span class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                        {{ $saints->count() }} {{ $saints->count() === 1 ? 'saint' : 'saints' }}
+                    </span>
+                </div>
+                @foreach($saints as $item)
+                <div class="flex items-center gap-3 px-4 py-3.5 {{ !$loop->last ? 'border-b border-border/50' : '' }} hover:bg-muted/30 transition">
+                    @if($item->image_path)
+                        <img src="{{ $item->imageUrl() }}" alt="" class="w-12 h-12 rounded-xl object-cover shrink-0">
+                    @else
+                        <div class="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
+                            <svg class="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                        </div>
+                    @endif
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="font-semibold text-primary text-sm">{{ $item->celebration_en }}</span>
+                            @if($item->is_main)
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">{{ __('app.synaxarium_main_badge') }}</span>
+                            @endif
+                        </div>
+                        @if($item->celebration_am)
+                            <p class="text-sm text-muted-text mt-0.5">{{ $item->celebration_am }}</p>
+                        @endif
+                        @if($item->description_en)
+                            <p class="text-xs text-secondary mt-1 line-clamp-1">{{ $item->description_en }}</p>
+                        @endif
+                    </div>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                        <a href="/admin/synaxarium?edit_annual={{ $item->id }}"
+                           class="w-10 h-10 rounded-xl flex items-center justify-center text-accent bg-accent/10 active:scale-90 transition">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                        </a>
+                        <button type="button" @click="confirmDelete('del-a-{{ $item->id }}')"
+                                class="w-10 h-10 rounded-xl flex items-center justify-center text-red-500 bg-red-50 dark:bg-red-900/20 active:scale-90 transition">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        </button>
+                        <form id="del-a-{{ $item->id }}" method="POST" action="/admin/synaxarium/annual/{{ $item->id }}" class="hidden">
+                            @csrf @method('DELETE')
+                        </form>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+            @empty
+            <div class="bg-card rounded-2xl border border-border p-12 text-center">
+                <div class="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-3">
+                    <svg class="w-8 h-8 text-muted-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                </div>
+                <p class="text-sm text-muted-text">{{ __('app.synaxarium_no_annual') }}</p>
+            </div>
+            @endforelse
+        </div>
+    </div>{{-- /annual --}}
+
+    {{-- ── FAB (Monthly Add) ── --}}
+    <div x-show="tab === 'monthly'" x-cloak
+         class="fixed bottom-6 right-4 sm:right-6 z-30">
+        <button type="button" @click="openSheet('add-monthly')"
+                class="w-14 h-14 bg-accent text-on-accent rounded-2xl shadow-2xl shadow-accent/40 flex items-center justify-center active:scale-90 transition-all duration-150">
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+        </button>
+    </div>
+
+    {{-- ═══════════════════════ BOTTOM SHEETS ═══════════════════════ --}}
+
+    {{-- Backdrop --}}
+    <div x-show="sheet !== ''" x-cloak
+         x-transition:enter="transition duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @click="closeSheet()"
+         class="fixed inset-0 bg-black/50 z-40 backdrop-blur-sm"></div>
+
+    {{-- ── ADD MONTHLY SHEET ── --}}
+    <div x-show="sheet === 'add-monthly'" x-cloak
+         x-transition:enter="transition duration-300 ease-out"
+         x-transition:enter-start="translate-y-full"
+         x-transition:enter-end="translate-y-0"
+         x-transition:leave="transition duration-200 ease-in"
+         x-transition:leave-start="translate-y-0"
+         x-transition:leave-end="translate-y-full"
+         class="fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-3xl shadow-2xl max-h-[90vh] overflow-y-auto">
+
+        <div class="sticky top-0 bg-card pt-3 pb-2 flex justify-center">
+            <div class="w-10 h-1 rounded-full bg-border"></div>
+        </div>
+
+        <div class="px-5 pt-2" style="padding-bottom: max(1.5rem, env(safe-area-inset-bottom, 1.5rem))">
+            <div class="flex items-center justify-between mb-5">
+                <div>
+                    <h3 class="text-lg font-bold text-primary">{{ __('app.synaxarium_add_saint') }}</h3>
+                    <p class="text-xs text-muted-text" x-text="'Day ' + selectedDay"></p>
+                </div>
+                <button type="button" @click="closeSheet()"
+                        class="w-10 h-10 rounded-xl flex items-center justify-center bg-muted text-muted-text active:scale-90 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            <form method="POST" action="/admin/synaxarium/monthly" enctype="multipart/form-data">
+                @csrf
+                <input type="hidden" name="_form" value="add_monthly">
+                <input type="hidden" name="day" :value="selectedDay">
+
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2">{{ __('app.synaxarium_celebration') }} (English) <span class="text-red-400 normal-case font-normal">*</span></label>
+                    <input type="text" name="celebration_en" value="{{ old('celebration_en') }}" required autocomplete="off"
+                           class="w-full px-4 py-3.5 rounded-2xl border border-border bg-surface text-primary text-base focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition"
+                           placeholder="e.g. Angel Mikael (Michael)">
+                    @error('celebration_en') <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2">{{ __('app.synaxarium_celebration') }} (አማርኛ)</label>
+                    <input type="text" name="celebration_am" value="{{ old('celebration_am') }}" autocomplete="off"
+                           class="w-full px-4 py-3.5 rounded-2xl border border-border bg-surface text-primary text-base focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition"
+                           placeholder="ለምሳሌ ቅዱስ ሚካኤል">
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2">{{ __('app.synaxarium_description') }} (English)</label>
+                    <textarea name="description_en" rows="3"
+                              class="w-full px-4 py-3.5 rounded-2xl border border-border bg-surface text-primary text-base focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent resize-none transition"
+                              placeholder="Optional description...">{{ old('description_en') }}</textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2">{{ __('app.synaxarium_description') }} (አማርኛ)</label>
+                    <textarea name="description_am" rows="3"
+                              class="w-full px-4 py-3.5 rounded-2xl border border-border bg-surface text-primary text-base focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent resize-none transition"
+                              placeholder="የበዓሉ መግለጫ...">{{ old('description_am') }}</textarea>
+                </div>
+
+                {{-- Image Upload --}}
+                <div class="mb-5">
+                    <label class="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2">{{ __('app.synaxarium_image') }}</label>
+                    <label class="relative flex flex-col items-center justify-center w-full h-36 rounded-2xl border-2 border-dashed border-border bg-surface cursor-pointer overflow-hidden transition hover:border-accent/50 active:scale-[0.99]">
+                        <div x-show="!imgAdd" class="flex flex-col items-center gap-2 pointer-events-none">
+                            <svg class="w-9 h-9 text-muted-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            <span class="text-sm font-semibold text-muted-text">Tap to upload image</span>
+                            <span class="text-xs text-muted-text/70">JPG, PNG · max 2 MB</span>
+                        </div>
+                        <img x-show="imgAdd" :src="imgAdd" x-cloak class="absolute inset-0 w-full h-full object-cover">
+                        <div x-show="imgAdd" x-cloak class="absolute inset-0 bg-black/30 flex items-center justify-center pointer-events-none">
+                            <span class="text-white text-sm font-semibold">Tap to change</span>
+                        </div>
+                        <input type="file" name="image" accept="image/*" class="sr-only" @change="previewImg($event, 'imgAdd')">
+                    </label>
+                </div>
+
+                {{-- Options --}}
+                <div class="flex items-center gap-4 mb-6 px-1">
+                    <label class="flex items-center gap-3 cursor-pointer select-none">
+                        <div class="relative">
+                            <input type="checkbox" name="is_main" value="1" class="sr-only peer">
+                            <div class="w-11 h-6 rounded-full bg-muted peer-checked:bg-accent transition-colors duration-200"></div>
+                            <div class="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform duration-200 peer-checked:translate-x-5"></div>
+                        </div>
+                        <span class="text-sm font-medium text-primary">{{ __('app.synaxarium_is_main') }}</span>
+                    </label>
+                    <div class="ml-auto flex items-center gap-2">
+                        <label class="text-xs font-medium text-muted-text">{{ __('app.synaxarium_sort_order') }}</label>
+                        <input type="number" name="sort_order" min="0" max="255" value="0"
+                               class="w-16 px-2 py-2.5 rounded-xl border border-border bg-surface text-primary text-base text-center focus:outline-none focus:ring-2 focus:ring-accent/50">
+                    </div>
+                </div>
+
+                <button type="submit"
+                        class="w-full py-4 bg-accent text-on-accent text-base font-bold rounded-2xl shadow-lg shadow-accent/20 hover:opacity-90 active:scale-[0.98] transition">
+                    + {{ __('app.synaxarium_add_saint') }}
+                </button>
+            </form>
         </div>
     </div>
 
-    {{-- =============================== ANNUAL TAB =============================== --}}
-    <div x-show="tab === 'annual'" x-cloak>
+    {{-- ── EDIT MONTHLY SHEET ── --}}
+    @if($editingMonthly)
+    <div x-show="sheet === 'edit-monthly'"
+         x-transition:enter="transition duration-300 ease-out"
+         x-transition:enter-start="translate-y-full"
+         x-transition:enter-end="translate-y-0"
+         x-transition:leave="transition duration-200 ease-in"
+         x-transition:leave-start="translate-y-0"
+         x-transition:leave-end="translate-y-full"
+         class="fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-3xl shadow-2xl max-h-[90vh] overflow-y-auto">
 
-        @php
-            $monthNames = [
-                1 => 'Meskerem / መስከረም', 2 => 'Tikimt / ጥቅምት', 3 => 'Hidar / ኅዳር',
-                4 => 'Tahsas / ታኅሣሥ', 5 => 'Tir / ጥር', 6 => 'Yekatit / የካቲት',
-                7 => 'Megabit / መጋቢት', 8 => 'Miyazia / ሚያዝያ', 9 => 'Ginbot / ግንቦት',
-                10 => 'Sene / ሰኔ', 11 => 'Hamle / ሐምሌ', 12 => 'Nehase / ነሐሴ',
-                13 => 'Pagumen / ጳጉሜን',
-            ];
-        @endphp
+        <div class="sticky top-0 bg-card pt-3 pb-2 flex justify-center">
+            <div class="w-10 h-1 rounded-full bg-border"></div>
+        </div>
 
-        {{-- Annual Create/Edit Form --}}
-        <div class="bg-card rounded-2xl border border-border shadow-sm p-6 mb-6">
-            <h2 class="text-sm font-semibold text-primary mb-4 flex items-center gap-2">
-                @if($editingAnnual)
-                    <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                    {{ __('app.synaxarium_edit_annual') }}
-                @else
-                    <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
-                    {{ __('app.synaxarium_add_annual') }}
-                @endif
-            </h2>
+        <div class="px-5 pt-2" style="padding-bottom: max(1.5rem, env(safe-area-inset-bottom, 1.5rem))">
+            <div class="flex items-center justify-between mb-5">
+                <div>
+                    <h3 class="text-lg font-bold text-primary">{{ __('app.synaxarium_edit_monthly') }}</h3>
+                    <p class="text-xs text-muted-text">Day {{ $editingMonthly->day }}</p>
+                </div>
+                <a href="/admin/synaxarium?day={{ $editingMonthly->day }}"
+                   class="w-10 h-10 rounded-xl flex items-center justify-center bg-muted text-muted-text active:scale-90 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </a>
+            </div>
 
-            <form method="POST"
-                  action="{{ $editingAnnual ? '/admin/synaxarium/annual/'.$editingAnnual->id : '/admin/synaxarium/annual' }}"
-                  enctype="multipart/form-data">
+            <form method="POST" action="/admin/synaxarium/monthly/{{ $editingMonthly->id }}" enctype="multipart/form-data">
+                @csrf @method('PUT')
+
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2">{{ __('app.synaxarium_celebration') }} (English) <span class="text-red-400 normal-case font-normal">*</span></label>
+                    <input type="text" name="celebration_en" value="{{ old('celebration_en', $editingMonthly->celebration_en) }}" required
+                           class="w-full px-4 py-3.5 rounded-2xl border border-border bg-surface text-primary text-base focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition">
+                    @error('celebration_en') <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2">{{ __('app.synaxarium_celebration') }} (አማርኛ)</label>
+                    <input type="text" name="celebration_am" value="{{ old('celebration_am', $editingMonthly->celebration_am) }}"
+                           class="w-full px-4 py-3.5 rounded-2xl border border-border bg-surface text-primary text-base focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition">
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2">{{ __('app.synaxarium_description') }} (English)</label>
+                    <textarea name="description_en" rows="3"
+                              class="w-full px-4 py-3.5 rounded-2xl border border-border bg-surface text-primary text-base focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent resize-none transition">{{ old('description_en', $editingMonthly->description_en) }}</textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2">{{ __('app.synaxarium_description') }} (አማርኛ)</label>
+                    <textarea name="description_am" rows="3"
+                              class="w-full px-4 py-3.5 rounded-2xl border border-border bg-surface text-primary text-base focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent resize-none transition">{{ old('description_am', $editingMonthly->description_am) }}</textarea>
+                </div>
+
+                {{-- Image --}}
+                <div class="mb-5">
+                    <label class="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2">{{ __('app.synaxarium_image') }}</label>
+                    @if($editingMonthly->image_path)
+                    <div class="flex items-center gap-3 p-3 rounded-2xl border border-border bg-surface mb-3">
+                        <img src="{{ $editingMonthly->imageUrl() }}" alt="" class="w-16 h-16 rounded-xl object-cover shrink-0">
+                        <div class="flex-1">
+                            <p class="text-sm font-semibold text-primary mb-1.5">Current image</p>
+                            <label class="inline-flex items-center gap-2 cursor-pointer text-sm text-red-500">
+                                <input type="checkbox" name="remove_image" value="1" class="rounded text-red-500 w-4 h-4">
+                                {{ __('app.remove') }}
+                            </label>
+                        </div>
+                    </div>
+                    @endif
+                    <label class="relative flex items-center justify-center w-full h-28 rounded-2xl border-2 border-dashed border-border bg-surface cursor-pointer overflow-hidden hover:border-accent/50 transition">
+                        <div x-show="!imgEdit" class="flex items-center gap-2 text-muted-text pointer-events-none">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            <span class="text-sm font-medium">{{ $editingMonthly->image_path ? 'Upload new image' : 'Tap to upload' }}</span>
+                        </div>
+                        <img x-show="imgEdit" :src="imgEdit" x-cloak class="absolute inset-0 w-full h-full object-cover">
+                        <input type="file" name="image" accept="image/*" class="sr-only" @change="previewImg($event, 'imgEdit')">
+                    </label>
+                </div>
+
+                <div class="flex items-center gap-4 mb-6 px-1">
+                    <label class="flex items-center gap-3 cursor-pointer select-none">
+                        <div class="relative">
+                            <input type="checkbox" name="is_main" value="1" {{ $editingMonthly->is_main ? 'checked' : '' }} class="sr-only peer">
+                            <div class="w-11 h-6 rounded-full bg-muted peer-checked:bg-accent transition-colors duration-200"></div>
+                            <div class="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform duration-200 peer-checked:translate-x-5"></div>
+                        </div>
+                        <span class="text-sm font-medium text-primary">{{ __('app.synaxarium_is_main') }}</span>
+                    </label>
+                    <div class="ml-auto flex items-center gap-2">
+                        <label class="text-xs font-medium text-muted-text">{{ __('app.synaxarium_sort_order') }}</label>
+                        <input type="number" name="sort_order" min="0" max="255" value="{{ $editingMonthly->sort_order }}"
+                               class="w-16 px-2 py-2.5 rounded-xl border border-border bg-surface text-primary text-base text-center focus:outline-none focus:ring-2 focus:ring-accent/50">
+                    </div>
+                </div>
+
+                <button type="submit"
+                        class="w-full py-4 bg-accent text-on-accent text-base font-bold rounded-2xl shadow-lg shadow-accent/20 hover:opacity-90 active:scale-[0.98] transition">
+                    {{ __('app.save_changes') }}
+                </button>
+            </form>
+        </div>
+    </div>
+    @endif
+
+    {{-- ── ADD ANNUAL SHEET ── --}}
+    <div x-show="sheet === 'add-annual'" x-cloak
+         x-transition:enter="transition duration-300 ease-out"
+         x-transition:enter-start="translate-y-full"
+         x-transition:enter-end="translate-y-0"
+         x-transition:leave="transition duration-200 ease-in"
+         x-transition:leave-start="translate-y-0"
+         x-transition:leave-end="translate-y-full"
+         class="fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-3xl shadow-2xl max-h-[90vh] overflow-y-auto">
+
+        <div class="sticky top-0 bg-card pt-3 pb-2 flex justify-center">
+            <div class="w-10 h-1 rounded-full bg-border"></div>
+        </div>
+
+        <div class="px-5 pt-2" style="padding-bottom: max(1.5rem, env(safe-area-inset-bottom, 1.5rem))">
+            <div class="flex items-center justify-between mb-5">
+                <h3 class="text-lg font-bold text-primary">{{ __('app.synaxarium_add_annual') }}</h3>
+                <button type="button" @click="closeSheet()"
+                        class="w-10 h-10 rounded-xl flex items-center justify-center bg-muted text-muted-text active:scale-90 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            <form method="POST" action="/admin/synaxarium/annual" enctype="multipart/form-data">
                 @csrf
-                @if($editingAnnual) @method('PUT') @endif
+                <input type="hidden" name="_form" value="add_annual">
 
-                {{-- Month + Day (only on create) --}}
-                @unless($editingAnnual)
                 <div class="grid grid-cols-3 gap-3 mb-4">
                     <div class="col-span-2">
-                        <label class="block text-xs font-medium text-muted-text mb-1">{{ __('app.synaxarium_month_number') }}</label>
+                        <label class="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2">{{ __('app.synaxarium_month_number') }}</label>
                         <select name="month" required
-                                class="w-full px-3 py-2.5 rounded-xl border border-border bg-surface text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent">
+                                class="w-full px-4 py-3.5 rounded-2xl border border-border bg-surface text-primary text-base focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent">
                             @for($m = 1; $m <= 13; $m++)
-                                <option value="{{ $m }}" {{ old('month') == $m ? 'selected' : '' }}>{{ $m }} - {{ $monthNames[$m] }}</option>
+                                <option value="{{ $m }}" {{ old('month') == $m ? 'selected' : '' }}>{{ $m }} — {{ $monthNamesFull[$m] }}</option>
                             @endfor
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-muted-text mb-1">{{ __('app.synaxarium_day_number') }}</label>
+                        <label class="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2">Day</label>
                         <input type="number" name="day" min="1" max="30" value="{{ old('day') }}" required
-                               class="w-full px-3 py-2.5 rounded-xl border border-border bg-surface text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent">
-                        @error('day') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
-                    </div>
-                </div>
-                @endunless
-
-                {{-- Name fields side by side --}}
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                    <div>
-                        <label class="block text-xs font-medium text-muted-text mb-1">{{ __('app.synaxarium_celebration') }} (English) <span class="text-red-400">*</span></label>
-                        <input type="text" name="celebration_en" value="{{ old('celebration_en', $editingAnnual?->celebration_en) }}" required
-                               class="w-full px-3 py-2.5 rounded-xl border border-border bg-surface text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent"
-                               placeholder="e.g. Ethiopian Christmas (Genna)">
-                        @error('celebration_en') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-muted-text mb-1">{{ __('app.synaxarium_celebration') }} (&#x12A0;&#x121B;&#x122D;&#x129B;)</label>
-                        <input type="text" name="celebration_am" value="{{ old('celebration_am', $editingAnnual?->celebration_am) }}"
-                               class="w-full px-3 py-2.5 rounded-xl border border-border bg-surface text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent"
-                               placeholder="e.g. ገና">
+                               class="w-full px-4 py-3.5 rounded-2xl border border-border bg-surface text-primary text-base focus:outline-none focus:ring-2 focus:ring-accent/50 text-center">
+                        @error('day') <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p> @enderror
                     </div>
                 </div>
 
-                {{-- Description fields side by side --}}
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                    <div>
-                        <label class="block text-xs font-medium text-muted-text mb-1">{{ __('app.synaxarium_description') }} (English)</label>
-                        <textarea name="description_en" rows="2"
-                                  class="w-full px-3 py-2.5 rounded-xl border border-border bg-surface text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent"
-                                  placeholder="Optional description...">{{ old('description_en', $editingAnnual?->description_en) }}</textarea>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-muted-text mb-1">{{ __('app.synaxarium_description') }} (&#x12A0;&#x121B;&#x122D;&#x129B;)</label>
-                        <textarea name="description_am" rows="2"
-                                  class="w-full px-3 py-2.5 rounded-xl border border-border bg-surface text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent"
-                                  placeholder="የበዓሉ መግለጫ...">{{ old('description_am', $editingAnnual?->description_am) }}</textarea>
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2">{{ __('app.synaxarium_celebration') }} (English) <span class="text-red-400 normal-case font-normal">*</span></label>
+                    <input type="text" name="celebration_en" value="{{ old('celebration_en') }}" required autocomplete="off"
+                           class="w-full px-4 py-3.5 rounded-2xl border border-border bg-surface text-primary text-base focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition"
+                           placeholder="e.g. Ethiopian Christmas (Genna)">
+                    @error('celebration_en') <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2">{{ __('app.synaxarium_celebration') }} (አማርኛ)</label>
+                    <input type="text" name="celebration_am" value="{{ old('celebration_am') }}" autocomplete="off"
+                           class="w-full px-4 py-3.5 rounded-2xl border border-border bg-surface text-primary text-base focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition"
+                           placeholder="ለምሳሌ ገና">
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2">{{ __('app.synaxarium_description') }} (English)</label>
+                    <textarea name="description_en" rows="2"
+                              class="w-full px-4 py-3.5 rounded-2xl border border-border bg-surface text-primary text-base focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent resize-none transition"
+                              placeholder="Optional description...">{{ old('description_en') }}</textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2">{{ __('app.synaxarium_description') }} (አማርኛ)</label>
+                    <textarea name="description_am" rows="2"
+                              class="w-full px-4 py-3.5 rounded-2xl border border-border bg-surface text-primary text-base focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent resize-none transition"
+                              placeholder="የበዓሉ መግለጫ...">{{ old('description_am') }}</textarea>
+                </div>
+
+                <div class="mb-5">
+                    <label class="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2">{{ __('app.synaxarium_image') }}</label>
+                    <label class="relative flex flex-col items-center justify-center w-full h-28 rounded-2xl border-2 border-dashed border-border bg-surface cursor-pointer overflow-hidden hover:border-accent/50 transition">
+                        <div x-show="!imgAdd" class="flex items-center gap-2 text-muted-text pointer-events-none">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            <span class="text-sm font-medium">Tap to upload image</span>
+                        </div>
+                        <img x-show="imgAdd" :src="imgAdd" x-cloak class="absolute inset-0 w-full h-full object-cover">
+                        <input type="file" name="image" accept="image/*" class="sr-only" @change="previewImg($event, 'imgAdd')">
+                    </label>
+                </div>
+
+                <div class="flex items-center gap-4 mb-6 px-1">
+                    <label class="flex items-center gap-3 cursor-pointer select-none">
+                        <div class="relative">
+                            <input type="checkbox" name="is_main" value="1" class="sr-only peer">
+                            <div class="w-11 h-6 rounded-full bg-muted peer-checked:bg-accent transition-colors duration-200"></div>
+                            <div class="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform duration-200 peer-checked:translate-x-5"></div>
+                        </div>
+                        <span class="text-sm font-medium text-primary">{{ __('app.synaxarium_is_main') }}</span>
+                    </label>
+                    <div class="ml-auto flex items-center gap-2">
+                        <label class="text-xs font-medium text-muted-text">{{ __('app.synaxarium_sort_order') }}</label>
+                        <input type="number" name="sort_order" min="0" max="255" value="0"
+                               class="w-16 px-2 py-2.5 rounded-xl border border-border bg-surface text-primary text-base text-center focus:outline-none focus:ring-2 focus:ring-accent/50">
                     </div>
                 </div>
 
-                {{-- Image upload --}}
-                <div class="mb-3">
-                    <label class="block text-xs font-medium text-muted-text mb-1">{{ __('app.synaxarium_image') }}</label>
-                    @if($editingAnnual?->image_path)
-                        <div class="flex items-center gap-2 mb-1.5">
-                            <img src="{{ $editingAnnual->imageUrl() }}" alt="" class="h-14 rounded-lg object-cover">
-                            <label class="text-xs text-red-500 cursor-pointer inline-flex items-center gap-1">
-                                <input type="checkbox" name="remove_image" value="1" class="rounded text-red-500">
+                <button type="submit"
+                        class="w-full py-4 bg-accent text-on-accent text-base font-bold rounded-2xl shadow-lg shadow-accent/20 hover:opacity-90 active:scale-[0.98] transition">
+                    {{ __('app.create') }}
+                </button>
+            </form>
+        </div>
+    </div>
+
+    {{-- ── EDIT ANNUAL SHEET ── --}}
+    @if($editingAnnual)
+    <div x-show="sheet === 'edit-annual'"
+         x-transition:enter="transition duration-300 ease-out"
+         x-transition:enter-start="translate-y-full"
+         x-transition:enter-end="translate-y-0"
+         x-transition:leave="transition duration-200 ease-in"
+         x-transition:leave-start="translate-y-0"
+         x-transition:leave-end="translate-y-full"
+         class="fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-3xl shadow-2xl max-h-[90vh] overflow-y-auto">
+
+        <div class="sticky top-0 bg-card pt-3 pb-2 flex justify-center">
+            <div class="w-10 h-1 rounded-full bg-border"></div>
+        </div>
+
+        <div class="px-5 pt-2" style="padding-bottom: max(1.5rem, env(safe-area-inset-bottom, 1.5rem))">
+            <div class="flex items-center justify-between mb-5">
+                <div>
+                    <h3 class="text-lg font-bold text-primary">{{ __('app.synaxarium_edit_annual') }}</h3>
+                    <p class="text-xs text-muted-text">{{ $monthNames[$editingAnnual->month] ?? '' }} · Day {{ $editingAnnual->day }}</p>
+                </div>
+                <a href="/admin/synaxarium"
+                   class="w-10 h-10 rounded-xl flex items-center justify-center bg-muted text-muted-text active:scale-90 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </a>
+            </div>
+
+            <form method="POST" action="/admin/synaxarium/annual/{{ $editingAnnual->id }}" enctype="multipart/form-data">
+                @csrf @method('PUT')
+
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2">{{ __('app.synaxarium_celebration') }} (English) <span class="text-red-400 normal-case font-normal">*</span></label>
+                    <input type="text" name="celebration_en" value="{{ old('celebration_en', $editingAnnual->celebration_en) }}" required
+                           class="w-full px-4 py-3.5 rounded-2xl border border-border bg-surface text-primary text-base focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition">
+                    @error('celebration_en') <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2">{{ __('app.synaxarium_celebration') }} (አማርኛ)</label>
+                    <input type="text" name="celebration_am" value="{{ old('celebration_am', $editingAnnual->celebration_am) }}"
+                           class="w-full px-4 py-3.5 rounded-2xl border border-border bg-surface text-primary text-base focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition">
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2">{{ __('app.synaxarium_description') }} (English)</label>
+                    <textarea name="description_en" rows="3"
+                              class="w-full px-4 py-3.5 rounded-2xl border border-border bg-surface text-primary text-base focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent resize-none transition">{{ old('description_en', $editingAnnual->description_en) }}</textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2">{{ __('app.synaxarium_description') }} (አማርኛ)</label>
+                    <textarea name="description_am" rows="3"
+                              class="w-full px-4 py-3.5 rounded-2xl border border-border bg-surface text-primary text-base focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent resize-none transition">{{ old('description_am', $editingAnnual->description_am) }}</textarea>
+                </div>
+
+                <div class="mb-5">
+                    <label class="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2">{{ __('app.synaxarium_image') }}</label>
+                    @if($editingAnnual->image_path)
+                    <div class="flex items-center gap-3 p-3 rounded-2xl border border-border bg-surface mb-3">
+                        <img src="{{ $editingAnnual->imageUrl() }}" alt="" class="w-16 h-16 rounded-xl object-cover shrink-0">
+                        <div class="flex-1">
+                            <p class="text-sm font-semibold text-primary mb-1.5">Current image</p>
+                            <label class="inline-flex items-center gap-2 cursor-pointer text-sm text-red-500">
+                                <input type="checkbox" name="remove_image" value="1" class="rounded text-red-500 w-4 h-4">
                                 {{ __('app.remove') }}
                             </label>
                         </div>
+                    </div>
                     @endif
-                    <input type="file" name="image" accept="image/*"
-                           class="w-full text-xs text-muted-text file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-accent/10 file:text-accent">
+                    <label class="relative flex items-center justify-center w-full h-28 rounded-2xl border-2 border-dashed border-border bg-surface cursor-pointer overflow-hidden hover:border-accent/50 transition">
+                        <div x-show="!imgEdit" class="flex items-center gap-2 text-muted-text pointer-events-none">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            <span class="text-sm font-medium">{{ $editingAnnual->image_path ? 'Upload new image' : 'Tap to upload' }}</span>
+                        </div>
+                        <img x-show="imgEdit" :src="imgEdit" x-cloak class="absolute inset-0 w-full h-full object-cover">
+                        <input type="file" name="image" accept="image/*" class="sr-only" @change="previewImg($event, 'imgEdit')">
+                    </label>
                 </div>
 
-                {{-- Is Main + Sort Order --}}
-                <div class="flex items-center gap-5 mb-4">
-                    <label class="inline-flex items-center gap-2 text-sm text-secondary cursor-pointer">
-                        <input type="checkbox" name="is_main" value="1"
-                               {{ old('is_main', $editingAnnual?->is_main) ? 'checked' : '' }}
-                               class="rounded border-border text-accent focus:ring-accent/50">
-                        {{ __('app.synaxarium_is_main') }}
+                <div class="flex items-center gap-4 mb-6 px-1">
+                    <label class="flex items-center gap-3 cursor-pointer select-none">
+                        <div class="relative">
+                            <input type="checkbox" name="is_main" value="1" {{ old('is_main', $editingAnnual->is_main) ? 'checked' : '' }} class="sr-only peer">
+                            <div class="w-11 h-6 rounded-full bg-muted peer-checked:bg-accent transition-colors duration-200"></div>
+                            <div class="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform duration-200 peer-checked:translate-x-5"></div>
+                        </div>
+                        <span class="text-sm font-medium text-primary">{{ __('app.synaxarium_is_main') }}</span>
                     </label>
-                    <div class="flex items-center gap-2">
-                        <label class="text-xs text-muted-text">{{ __('app.synaxarium_sort_order') }}:</label>
+                    <div class="ml-auto flex items-center gap-2">
+                        <label class="text-xs font-medium text-muted-text">{{ __('app.synaxarium_sort_order') }}</label>
                         <input type="number" name="sort_order" min="0" max="255"
-                               value="{{ old('sort_order', $editingAnnual?->sort_order ?? 0) }}"
-                               class="w-16 px-2 py-1.5 rounded-lg border border-border bg-surface text-primary text-sm text-center">
+                               value="{{ old('sort_order', $editingAnnual->sort_order ?? 0) }}"
+                               class="w-16 px-2 py-2.5 rounded-xl border border-border bg-surface text-primary text-base text-center focus:outline-none focus:ring-2 focus:ring-accent/50">
                     </div>
                 </div>
 
-                <div class="flex items-center gap-2 justify-end">
-                    @if($editingAnnual)
-                        <a href="/admin/synaxarium" class="px-4 py-2 text-sm text-muted-text hover:text-primary transition">{{ __('app.cancel') }}</a>
-                    @endif
-                    <button type="submit" class="px-5 py-2 bg-accent text-on-accent text-sm font-semibold rounded-xl hover:opacity-90 transition active:scale-95">
-                        {{ $editingAnnual ? __('app.save_changes') : __('app.create') }}
-                    </button>
-                </div>
+                <button type="submit"
+                        class="w-full py-4 bg-accent text-on-accent text-base font-bold rounded-2xl shadow-lg shadow-accent/20 hover:opacity-90 active:scale-[0.98] transition">
+                    {{ __('app.save_changes') }}
+                </button>
             </form>
         </div>
+    </div>
+    @endif
 
-        {{-- Annual List (grouped by month+day) --}}
-        <div class="bg-card rounded-2xl border border-border shadow-sm p-6">
-            <div class="space-y-4">
-                @forelse($annualByMonthDay as $key => $saints)
-                @php
-                    $firstSaint = $saints->first();
-                    $monthLabel = $monthNames[$firstSaint->month] ?? $firstSaint->month;
-                @endphp
-                <div class="rounded-xl border border-border bg-surface overflow-hidden">
-                    <div class="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-amber-50 to-transparent dark:from-amber-900/10 border-b border-border">
-                        <span class="text-sm font-bold text-primary">{{ $monthLabel }} / {{ $firstSaint->day }}</span>
-                        <span class="text-[10px] text-muted-text font-medium">{{ $saints->count() }} {{ $saints->count() === 1 ? 'saint' : 'saints' }}</span>
-                    </div>
-                    <div class="divide-y divide-border/50">
-                        @foreach($saints as $item)
-                        <div class="p-3 flex items-start gap-3 group hover:bg-muted/50 transition">
-                            @if($item->image_path)
-                                <img src="{{ $item->imageUrl() }}" alt="" class="w-10 h-10 rounded-lg object-cover shrink-0">
-                            @else
-                                <div class="w-10 h-10 rounded-lg bg-sinksar/10 flex items-center justify-center shrink-0">
-                                    <svg class="w-5 h-5 text-sinksar" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
-                                </div>
-                            @endif
-                            <div class="flex-1 min-w-0">
-                                <div class="flex items-center gap-1.5 flex-wrap">
-                                    <span class="font-medium text-primary text-sm">{{ $item->celebration_en }}</span>
-                                    @if($item->is_main)
-                                        <span class="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">{{ __('app.synaxarium_main_badge') }}</span>
-                                    @endif
-                                </div>
-                                @if($item->celebration_am)
-                                    <p class="text-xs text-muted-text">{{ $item->celebration_am }}</p>
-                                @endif
-                                @if($item->description_en)
-                                    <p class="text-xs text-secondary mt-1 line-clamp-2">{{ $item->description_en }}</p>
-                                @endif
-                            </div>
-                            <div class="flex items-center gap-0.5 shrink-0 opacity-50 group-hover:opacity-100 transition">
-                                <a href="/admin/synaxarium?edit_annual={{ $item->id }}" class="p-1.5 rounded-lg text-accent hover:bg-accent/10 transition" title="{{ __('app.edit') }}">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                </a>
-                                <form method="POST" action="/admin/synaxarium/annual/{{ $item->id }}" onsubmit="return confirm('{{ __('app.synaxarium_delete_confirm') }}')" class="inline">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition" title="{{ __('app.delete') }}">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
+    {{-- ── DELETE CONFIRM SHEET ── --}}
+    <div x-show="sheet === 'delete'" x-cloak
+         x-transition:enter="transition duration-200 ease-out"
+         x-transition:enter-start="translate-y-full"
+         x-transition:enter-end="translate-y-0"
+         x-transition:leave="transition duration-150 ease-in"
+         x-transition:leave-start="translate-y-0"
+         x-transition:leave-end="translate-y-full"
+         class="fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-3xl shadow-2xl">
+
+        <div class="flex justify-center pt-3 pb-1">
+            <div class="w-10 h-1 rounded-full bg-border"></div>
+        </div>
+
+        <div class="px-5 py-5" style="padding-bottom: max(1.25rem, env(safe-area-inset-bottom, 1.25rem))">
+            <div class="flex items-start gap-4 mb-6">
+                <div class="w-12 h-12 rounded-2xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center shrink-0">
+                    <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                 </div>
-                @empty
-                <div class="text-center py-8 text-muted-text text-sm">
-                    {{ __('app.synaxarium_no_annual') }}
+                <div>
+                    <h3 class="text-base font-bold text-primary">Delete this celebration?</h3>
+                    <p class="text-sm text-muted-text mt-0.5">{{ __('app.synaxarium_delete_confirm') }}</p>
                 </div>
-                @endforelse
+            </div>
+            <div class="flex gap-3">
+                <button type="button" @click="closeSheet()"
+                        class="flex-1 py-4 rounded-2xl border border-border text-primary font-semibold text-base active:scale-[0.98] transition">
+                    {{ __('app.cancel') }}
+                </button>
+                <button type="button" @click="submitDelete()"
+                        class="flex-1 py-4 rounded-2xl bg-red-500 text-white font-bold text-base active:scale-[0.98] transition hover:bg-red-600">
+                    {{ __('app.delete') }}
+                </button>
             </div>
         </div>
     </div>
