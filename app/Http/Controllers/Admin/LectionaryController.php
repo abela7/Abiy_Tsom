@@ -69,7 +69,8 @@ class LectionaryController extends Controller
         Lectionary::create($data);
 
         return redirect($this->redirectUrl((int) $data['month'], (int) $data['day']))
-            ->with('success', __('app.lectionary_saved'));
+            ->with('success', __('app.lectionary_saved'))
+            ->with('show_preview', true);
     }
 
     public function update(Request $request, Lectionary $lectionary): RedirectResponse
@@ -79,7 +80,8 @@ class LectionaryController extends Controller
         $lectionary->update($data);
 
         return redirect($this->redirectUrl($lectionary->month, $lectionary->day))
-            ->with('success', __('app.lectionary_saved'));
+            ->with('success', __('app.lectionary_saved'))
+            ->with('show_preview', true);
     }
 
     public function destroy(Lectionary $lectionary): RedirectResponse

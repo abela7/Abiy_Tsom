@@ -8,7 +8,7 @@ $inputClass = 'w-full px-3 py-2 rounded-xl border border-border bg-surface text-
 $labelClass = 'block text-xs font-medium text-muted-text mb-1';
 @endphp
 
-<div class="max-w-3xl" x-data="{ openSection: 'pauline' }">
+<div class="max-w-3xl" x-data="{ openSection: 'pauline', showPreview: {{ session('show_preview') ? 'true' : 'false' }} }">
 
     {{-- Header --}}
     <div class="flex items-center justify-between mb-6">
@@ -131,17 +131,27 @@ $labelClass = 'block text-xs font-medium text-muted-text mb-1';
                         </span>
                     @endif
                 </h2>
-                @if($entry)
-                    <form method="POST" action="{{ route('admin.lectionary.destroy', $entry) }}"
-                          onsubmit="return confirm('{{ __('app.lectionary_delete_confirm') }}')">
-                        @csrf @method('DELETE')
-                        <button type="submit" class="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition" title="{{ __('app.delete') }}">
+                <div class="flex items-center gap-2">
+                    @if($entry)
+                        <button type="button" @click="showPreview = true" class="p-1.5 rounded-lg text-primary/70 hover:bg-muted transition" title="Preview entry">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                             </svg>
                         </button>
-                    </form>
-                @endif
+                    @endif
+                    @if($entry)
+                        <form method="POST" action="{{ route('admin.lectionary.destroy', $entry) }}"
+                              onsubmit="return confirm('{{ __('app.lectionary_delete_confirm') }}')">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition" title="{{ __('app.delete') }}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </button>
+                        </form>
+                    @endif
+                </div>
             </div>
 
             {{-- Form --}}
@@ -489,6 +499,31 @@ $labelClass = 'block text-xs font-medium text-muted-text mb-1';
                 </div>
 
             </form>
+
+            {{-- Preview Modal --}}
+            @if($entry)
+            <div x-show="showPreview" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+                 @click="showPreview = false"
+                 x-transition
+                 style="display: none;">
+                <div @click.stop class="bg-card rounded-2xl border border-border shadow-lg max-w-2xl max-h-[90vh] overflow-y-auto">
+                    {{-- Modal header --}}
+                    <div class="sticky top-0 px-5 py-4 border-b border-border bg-gradient-to-r from-accent/10 to-transparent flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-primary">Preview</h3>
+                        <button @click="showPreview = false" class="p-1 rounded-lg text-muted-text hover:bg-muted transition">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    {{-- Modal content --}}
+                    <div class="p-6">
+                        <x-lectionary-preview :entry="$entry" :monthNames="$monthNames" />
+                    </div>
+                </div>
+            </div>
+            @endif
         </div>
 
     @else
