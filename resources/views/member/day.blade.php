@@ -830,19 +830,6 @@
                 if (this.allExpanded) { this.openSections = []; this.allExpanded = false; }
                 else { this.openSections = [...this.availableKeys]; this.allExpanded = true; }
             },
-            nextSection(key) {
-                const idx = this.availableKeys.indexOf(key);
-                if (idx < this.availableKeys.length - 1) {
-                    const next = this.availableKeys[idx + 1];
-                    if (!this.isSectionOpen(next)) this.toggleSection(next);
-                    else this.$nextTick(() => { const el = this.$refs['sec_' + next]; if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); });
-                }
-            },
-            hasNextSection(key) { return this.availableKeys.indexOf(key) < this.availableKeys.length - 1; },
-            nextSectionLabel(key) {
-                const idx = this.availableKeys.indexOf(key);
-                return idx < this.availableKeys.length - 1 ? this.availableKeys[idx + 1] : '';
-            },
             isFsSectionOpen(key) { return this.fsOpenSections.includes(key); },
             toggleFsSection(key) {
                 if (this.isFsSectionOpen(key)) {
@@ -860,14 +847,6 @@
             toggleFsAll() {
                 if (this.fsAllExpanded) { this.fsOpenSections = []; this.fsAllExpanded = false; }
                 else { this.fsOpenSections = [...this.availableKeys]; this.fsAllExpanded = true; }
-            },
-            nextFsSection(key) {
-                const idx = this.availableKeys.indexOf(key);
-                if (idx < this.availableKeys.length - 1) {
-                    const next = this.availableKeys[idx + 1];
-                    if (!this.isFsSectionOpen(next)) this.toggleFsSection(next);
-                    else this.$nextTick(() => { const el = this.$refs['fssec_' + next]; if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); });
-                }
             },
             lockShelfTap(ms=650){ this.shelfTapLock=true; if(this.shelfTapLockTimer) clearTimeout(this.shelfTapLockTimer); this.shelfTapLockTimer=setTimeout(()=>{this.shelfTapLock=false;this.shelfTapLockTimer=null;},ms); },
             toggleShelf(n){ if(this.shelfTapLock) return; this.activeShelf=this.activeShelf===n?null:n; },
@@ -976,14 +955,14 @@
                 </div>
 
                 {{-- Reading accordion --}}
-                <div class="rounded-xl border border-border overflow-hidden">
+                <div class="space-y-2">
                     @foreach($lecReadings as $r)
                     @if($r['has'])
-                    <div x-ref="sec_{{ $r['key'] }}" class="border-b border-border last:border-b-0 transition-colors duration-200"
-                         :class="isSectionOpen('{{ $r['key'] }}') && 'bg-accent/[0.03]'">
+                    <div x-ref="sec_{{ $r['key'] }}" class="rounded-xl border transition-all duration-200 overflow-hidden"
+                         :class="isSectionOpen('{{ $r['key'] }}') ? 'border-accent/30 bg-accent/[0.03] shadow-sm' : 'border-border bg-card'">
                         <button type="button" @click="toggleSection('{{ $r['key'] }}')"
-                                class="w-full flex items-center justify-between px-4 py-3.5 text-left transition-colors touch-manipulation"
-                                :class="isSectionOpen('{{ $r['key'] }}') ? 'bg-accent/[0.06]' : 'hover:bg-muted/40'">
+                                class="w-full flex items-center justify-between px-3.5 py-3 text-left transition-colors touch-manipulation"
+                                :class="isSectionOpen('{{ $r['key'] }}') ? '' : 'hover:bg-muted/40'">
                             <div class="flex items-center gap-3">
                                 <span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition-colors duration-200"
                                       :class="isSectionOpen('{{ $r['key'] }}') ? 'bg-accent text-on-accent' : 'bg-muted text-muted-text'">{{ $r['num'] }}</span>
@@ -999,7 +978,7 @@
                                  fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </button>
                         <div x-show="isSectionOpen('{{ $r['key'] }}')" x-collapse x-cloak>
-                            <div class="px-4 pb-2 pt-1 text-primary"
+                            <div class="px-3.5 pb-4 pt-1 text-primary"
                                  :style="'font-size:'+fontSize+'px;line-height:'+(fontSize<20?'1.85':'1.75')+';font-family:'+fontFamily()">
                                 @if($r['key']==='mesbak')
                                     @if(filled($lectionary->mesbak_geez_1)||filled($lectionary->mesbak_geez_2)||filled($lectionary->mesbak_geez_3))
@@ -1022,14 +1001,6 @@
                                 @elseif(filled($r['text']))
                                     <div class="whitespace-pre-wrap">{{ $r['text'] }}</div>
                                 @endif
-                            </div>
-                            {{-- Next reading navigation --}}
-                            <div class="px-4 pb-4 pt-2 flex justify-end" x-show="hasNextSection('{{ $r['key'] }}')">
-                                <button type="button" @click="nextSection('{{ $r['key'] }}')"
-                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent/10 hover:bg-accent/20 text-accent text-xs font-semibold transition touch-manipulation">
-                                    {{ $locale === 'am' ? 'ቀጣይ' : 'Next' }}
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
-                                </button>
                             </div>
                         </div>
                     </div>
@@ -1075,14 +1046,18 @@
                     </div>
 
                     {{-- Sections --}}
-                    <div class="max-w-2xl mx-auto px-1 pb-8">
+                    <div class="max-w-2xl mx-auto px-3 pb-8 space-y-2.5">
                         @foreach($lecReadings as $r)
                         @if($r['has'])
-                        <div x-ref="fssec_{{ $r['key'] }}" class="border-b last:border-0 transition-colors duration-200"
-                             :style="(readerTheme==='dark'?'border-color:#2a2a4a':readerTheme==='sepia'?'border-color:#d4c5a9':'border-color:#e5e7eb') + (isFsSectionOpen('{{ $r['key'] }}') ? ';background-color:'+(readerTheme==='dark'?'rgba(123,159,255,0.04)':readerTheme==='sepia'?'rgba(139,94,60,0.04)':'rgba(var(--color-accent-rgb,99,102,241),0.03)') : '')">
+                        <div x-ref="fssec_{{ $r['key'] }}" class="rounded-xl overflow-hidden transition-all duration-200"
+                             :style="'border:1px solid '+(isFsSectionOpen('{{ $r['key'] }}')
+                                 ? (readerTheme==='dark'?'rgba(123,159,255,0.3)':readerTheme==='sepia'?'rgba(139,94,60,0.3)':'rgba(var(--color-accent-rgb,99,102,241),0.3)')
+                                 : (readerTheme==='dark'?'#2a2a4a':readerTheme==='sepia'?'#d4c5a9':'#e5e7eb'))
+                                 + ';background-color:'+(isFsSectionOpen('{{ $r['key'] }}')
+                                 ? (readerTheme==='dark'?'rgba(123,159,255,0.04)':readerTheme==='sepia'?'rgba(139,94,60,0.04)':'rgba(var(--color-accent-rgb,99,102,241),0.03)')
+                                 : (readerTheme==='dark'?'rgba(255,255,255,0.02)':readerTheme==='sepia'?'rgba(139,94,60,0.02)':'rgba(0,0,0,0.01)'))">
                             <button type="button" @click="toggleFsSection('{{ $r['key'] }}')"
-                                    class="w-full flex items-center justify-between px-4 py-4 text-left touch-manipulation transition-colors duration-200"
-                                    :style="isFsSectionOpen('{{ $r['key'] }}') ? 'background-color:'+(readerTheme==='dark'?'rgba(123,159,255,0.07)':readerTheme==='sepia'?'rgba(139,94,60,0.06)':'rgba(var(--color-accent-rgb,99,102,241),0.06)') : ''">
+                                    class="w-full flex items-center justify-between px-4 py-3.5 text-left touch-manipulation">
                                 <div class="flex items-center gap-3">
                                     <span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition-all duration-200"
                                           :style="isFsSectionOpen('{{ $r['key'] }}')
@@ -1113,7 +1088,7 @@
                                 </svg>
                             </button>
                             <div x-show="isFsSectionOpen('{{ $r['key'] }}')" x-collapse x-cloak>
-                                <div class="px-4 pb-2 pt-1"
+                                <div class="px-4 pb-4 pt-1"
                                      :style="'font-size:'+fontSize+'px;line-height:'+(fontSize<20?'1.9':'1.8')+';font-family:'+fontFamily()+';color:'+(readerTheme==='dark'?'#d4d4e8':readerTheme==='sepia'?'#3e2c1c':'var(--color-primary)')">
                                     @if($r['key']==='mesbak')
                                         @if(filled($lectionary->mesbak_geez_1)||filled($lectionary->mesbak_geez_2)||filled($lectionary->mesbak_geez_3))
@@ -1136,15 +1111,6 @@
                                     @elseif(filled($r['text']))
                                         <div class="whitespace-pre-wrap">{{ $r['text'] }}</div>
                                     @endif
-                                </div>
-                                {{-- Next reading navigation --}}
-                                <div class="px-4 pb-4 pt-2 flex justify-end" x-show="availableKeys.indexOf('{{ $r['key'] }}') < availableKeys.length - 1">
-                                    <button type="button" @click="nextFsSection('{{ $r['key'] }}')"
-                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition touch-manipulation"
-                                            :style="readerTheme==='dark'?'color:#7b9fff;background-color:rgba(123,159,255,0.1)':readerTheme==='sepia'?'color:#8b5e3c;background-color:rgba(139,94,60,0.1)':'color:var(--color-accent);background-color:rgba(var(--color-accent-rgb,99,102,241),0.1)'">
-                                        {{ $locale === 'am' ? 'ቀጣይ' : 'Next' }}
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
-                                    </button>
                                 </div>
                             </div>
                         </div>
