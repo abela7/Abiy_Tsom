@@ -215,13 +215,6 @@
                 @method('PUT')
 
                 @foreach($templates as $template)
-                    @php
-                        $placeholderList = array_map(
-                            static fn (string $key): string => ':'.$key,
-                            $template['placeholder_keys']
-                        );
-                    @endphp
-
                     <section
                         x-cloak
                         x-show="activeTemplate === '{{ $template['key'] }}'"
@@ -252,7 +245,7 @@
                                     </div>
                                 </div>
                                 <div class="mt-4 flex flex-wrap gap-2">
-                                    @forelse($placeholderList as $placeholder)
+                                    @forelse(array_map(static fn (string $key): string => ':'.$key, $template['placeholder_keys']) as $placeholder)
                                         <button
                                             type="button"
                                             @click.prevent="insertPlaceholder('{{ $placeholder }}')"
