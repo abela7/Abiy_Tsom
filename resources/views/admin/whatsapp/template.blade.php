@@ -49,6 +49,14 @@
         ],
     ];
 
+    $templateAliasMap = [
+        'whatsapp_daily_reminder_header' => [':header_en', ':header_am'],
+        'whatsapp_daily_reminder_yearly_block' => [':commemorations_block_en', ':commemorations_block_am'],
+        'whatsapp_daily_reminder_monthly_block' => [':commemorations_block_en', ':commemorations_block_am'],
+        'whatsapp_daily_reminder_footer' => [':footer_en', ':footer_am'],
+        'whatsapp_daily_reminder_content' => [':header_en', ':commemorations_block_en', ':footer_en', ':header_am', ':commemorations_block_am', ':footer_am'],
+    ];
+
     $templateGroups = [
         'daily' => array_values(array_filter($templates, static fn (array $template): bool => ($templateMeta[$template['key']]['group'] ?? 'confirmation') === 'daily')),
         'confirmation' => array_values(array_filter($templates, static fn (array $template): bool => ($templateMeta[$template['key']]['group'] ?? 'confirmation') === 'confirmation')),
@@ -300,7 +308,12 @@
                                     </span>
                                     <code class="text-[11px] text-muted-text bg-muted/50 px-2 py-0.5 rounded-md">{{ $template['key'] }}</code>
                                 </div>
-                                <h2 class="text-lg font-bold text-primary">{{ $template['title'] }}</h2>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <h2 class="text-lg font-bold text-primary">{{ $template['title'] }}</h2>
+                                    @foreach($templateAliasMap[$template['key']] ?? [] as $alias)
+                                        <code class="rounded-md border border-border bg-card px-2 py-0.5 text-[11px] font-semibold text-muted-text">{{ $alias }}</code>
+                                    @endforeach
+                                </div>
                                 <p class="mt-1 text-sm text-muted-text">{{ $templateMeta[$template['key']]['description'] ?? '' }}</p>
                             </div>
                         </div>
@@ -683,30 +696,10 @@ function whatsappTemplateEditor(initialTemplate) {
         return normalizeRenderedText(replacePlaceholders(input.value, map, allowedKeysFor(input)));
     };
 
-    const render = (input) => {
-        const targetId = input.getAttribute('data-preview-target');
-        if (!targetId) {
-            return;
-        }
-        const target = document.getElementById(targetId);
-        if (!target) {
-            return;
-        }
-        target.textContent = renderInput(input);
-    };
-
-    const buildCommemorationsBlock = (locale) => {
-        const yearly = renderInput(document.getElementById(`tpl-${locale}-${DAILY_TEMPLATE_IDS.yearly}`));
-        const monthly = renderInput(document.getElementById(`tpl-${locale}-${DAILY_TEMPLATE_IDS.monthly}`));
-
-        return normalizeRenderedText([yearly, monthly].filter(Boolean).join('\n\n'));
-    };
-
-    const renderFinalDailyReminder = (locale) => {
+    const buildFinalDailyReminderText = (locale) => {
         const contentInput = document.getElementById(`tpl-${locale}-${DAILY_TEMPLATE_IDS.content}`);
-        const target = document.getElementById(`final-preview-${locale}`);
-        if (!contentInput || !target) {
-            return;
+        if (!contentInput) {
+            return '';
         }
 
         const headerEn = renderInput(document.getElementById(`tpl-en-${DAILY_TEMPLATE_IDS.header}`));
@@ -729,9 +722,42 @@ function whatsappTemplateEditor(initialTemplate) {
             footer: locale === 'am' ? footerAm : footerEn,
         };
 
-        target.textContent = normalizeRenderedText(
+        return normalizeRenderedText(
             replacePlaceholders(contentInput.value, baseMap, allowedKeysFor(contentInput))
         );
+    };
+
+    const render = (input) => {
+        const targetId = input.getAttribute('data-preview-target');
+        if (!targetId) {
+            return;
+        }
+        const target = document.getElementById(targetId);
+        if (!target) {
+            return;
+        }
+        const locale = input.getAttribute('data-locale') || 'en';
+        if (input.id === `tpl-${locale}-${DAILY_TEMPLATE_IDS.content}`) {
+            target.textContent = buildFinalDailyReminderText(locale);
+            return;
+        }
+
+        target.textContent = renderInput(input);
+    };
+
+    const buildCommemorationsBlock = (locale) => {
+        const yearly = renderInput(document.getElementById(`tpl-${locale}-${DAILY_TEMPLATE_IDS.yearly}`));
+        const monthly = renderInput(document.getElementById(`tpl-${locale}-${DAILY_TEMPLATE_IDS.monthly}`));
+
+        return normalizeRenderedText([yearly, monthly].filter(Boolean).join('\n\n'));
+    };
+
+    const renderFinalDailyReminder = (locale) => {
+        const target = document.getElementById(`final-preview-${locale}`);
+        if (!target) {
+            return;
+        }
+        target.textContent = buildFinalDailyReminderText(locale);
     };
 
     document.querySelectorAll('textarea[data-preview-target]').forEach((input) => {
