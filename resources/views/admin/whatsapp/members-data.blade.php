@@ -33,7 +33,6 @@
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.baptism_name') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_phone') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_reminder_time') }}</th>
-                    <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.language') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_last_sent') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_activity') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.actions') }}</th>
@@ -70,7 +69,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="8" class="px-5 py-12 text-center text-muted-text">{{ __('app.whatsapp_no_members_data') }}</td></tr>
+                    <tr><td colspan="7" class="px-5 py-12 text-center text-muted-text">{{ __('app.whatsapp_no_members_data') }}</td></tr>
                 @endforelse
             </tbody>
         </table>
