@@ -814,17 +814,9 @@
             shelfTapLockTimer: null,
             isSectionOpen(key) { return this.openSections.includes(key); },
             toggleSection(key) {
-                if (this.isSectionOpen(key)) {
-                    this.openSections = this.openSections.filter(k => k !== key);
-                    this.allExpanded = false;
-                } else {
-                    if (this.allExpanded) { this.openSections.push(key); }
-                    else { this.openSections = [key]; }
-                    setTimeout(() => {
-                        const el = this.$refs['sec_' + key];
-                        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }, 220);
-                }
+                if (this.isSectionOpen(key)) { this.openSections = []; this.allExpanded = false; }
+                else if (this.allExpanded) { this.openSections.push(key); }
+                else { this.openSections = [key]; }
             },
             toggleAll() {
                 if (this.allExpanded) { this.openSections = []; this.allExpanded = false; }
@@ -832,16 +824,9 @@
             },
             isFsSectionOpen(key) { return this.fsOpenSections.includes(key); },
             toggleFsSection(key) {
-                if (this.isFsSectionOpen(key)) {
-                    this.fsOpenSections = this.fsOpenSections.filter(k => k !== key);
-                    this.fsAllExpanded = false;
-                } else {
-                    if (this.fsAllExpanded) { this.fsOpenSections.push(key); }
-                    else { this.fsOpenSections = [key]; }
-                    setTimeout(() => {
-                        const el = this.$refs['fssec_' + key];
-                        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }, 220);
+                if (this.isFsSectionOpen(key)) { this.fsOpenSections = []; this.fsAllExpanded = false; }
+                else if (this.fsAllExpanded) { this.fsOpenSections.push(key); }
+                else { this.fsOpenSections = [key]; }
                 }
             },
             toggleFsAll() {
