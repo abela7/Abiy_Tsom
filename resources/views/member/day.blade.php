@@ -377,7 +377,14 @@
                     $mezmurUrl = $mezmur->mediaUrl($locale);
                 @endphp
                 @if($mezmurUrl)
-                            <x-embedded-media :url="$mezmurUrl" play-label="{{ __('app.listen') }}" :open-label="__('app.open_in_youtube')" />
+                            <x-embedded-media
+                                :url="$mezmurUrl"
+                                :title="localized($mezmur, 'title')"
+                                play-label="{{ __('app.listen') }}"
+                                :open-label="__('app.open_in_youtube')"
+                                variant="clean"
+                                :show-external-link="false"
+                            />
                         @endif
                     </div>
                 </div>
