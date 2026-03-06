@@ -241,31 +241,33 @@
                         </div>
                     </div>
 
-                    <div class="p-5 space-y-5">
+                    <div class="p-5 space-y-4">
 
-                        {{-- Placeholders --}}
+                        {{-- Placeholder toolbar --}}
                         <div class="rounded-xl bg-surface/60 border border-border px-4 py-3">
-                            <div class="flex items-center gap-2 mb-2.5">
-                                <svg class="w-4 h-4 text-muted-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
-                                <h3 class="text-xs font-semibold text-secondary uppercase tracking-wide">{{ __('app.whatsapp_template_placeholders') }}</h3>
+                            <div class="flex items-center justify-between gap-3 mb-2">
+                                <div class="flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+                                    <h3 class="text-xs font-semibold text-primary uppercase tracking-wide">{{ __('app.whatsapp_template_placeholders') }}</h3>
+                                </div>
+                                <span class="text-[10px] text-muted-text hidden sm:inline">{{ __('app.whatsapp_template_insert_help') }}</span>
                             </div>
                             <div class="flex flex-wrap gap-1.5">
                                 @forelse(array_map(static fn (string $key): string => ':'.$key, $template['placeholder_keys']) as $placeholder)
                                     <button type="button"
                                         @click.prevent="insertPlaceholder('{{ $placeholder }}')"
-                                        class="rounded-lg border border-border bg-card px-2.5 py-1 text-xs font-mono font-medium text-secondary transition hover:border-accent/40 hover:bg-accent/10 hover:text-accent active:scale-95">
+                                        class="group inline-flex items-center gap-1.5 rounded-lg border border-border bg-card pl-2 pr-2.5 py-1.5 text-xs font-mono font-medium text-secondary transition-all hover:border-accent hover:bg-accent/10 hover:text-accent hover:shadow-sm active:scale-95">
+                                        <svg class="w-3 h-3 text-muted-text group-hover:text-accent transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                                         {{ $placeholder }}
                                     </button>
                                 @empty
                                     <span class="text-xs text-muted-text">{{ __('app.whatsapp_template_none') }}</span>
                                 @endforelse
                             </div>
-                            <p class="mt-2 text-[11px] text-muted-text">{{ __('app.whatsapp_template_insert_help') }}</p>
                         </div>
 
-                        {{-- Editor + Preview grid --}}
-                        <div class="grid gap-4 2xl:grid-cols-[1fr_1fr_340px]">
-
+                        {{-- EN + AM editors side by side --}}
+                        <div class="grid gap-4 md:grid-cols-2">
                             {{-- English editor --}}
                             <div>
                                 <label for="tpl-en-{{ $template['key'] }}" class="flex items-center gap-2 mb-2 text-sm font-semibold text-primary">
@@ -275,7 +277,7 @@
                                 <textarea
                                     id="tpl-en-{{ $template['key'] }}"
                                     name="templates[{{ $template['key'] }}][en]"
-                                    rows="12"
+                                    rows="14"
                                     data-preview-target="preview-en-{{ $template['key'] }}"
                                     data-locale="en"
                                     data-allowed-placeholders='@json($template['placeholder_keys'])'
@@ -293,7 +295,7 @@
                                 <textarea
                                     id="tpl-am-{{ $template['key'] }}"
                                     name="templates[{{ $template['key'] }}][am]"
-                                    rows="12"
+                                    rows="14"
                                     data-preview-target="preview-am-{{ $template['key'] }}"
                                     data-locale="am"
                                     data-allowed-placeholders='@json($template['placeholder_keys'])'
@@ -301,41 +303,51 @@
                                     class="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm leading-6 text-primary font-mono outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 resize-y"
                                 >{{ old("templates.{$template['key']}.am", $template['am']) }}</textarea>
                             </div>
+                        </div>
 
-                            {{-- WhatsApp-style preview --}}
-                            <div class="2xl:sticky 2xl:top-28 2xl:self-start">
-                                <div class="flex items-center gap-2 mb-2">
-                                    <svg class="w-4 h-4 text-muted-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                                    <h3 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_template_preview_title') }}</h3>
-                                </div>
-                                <p class="mb-3 text-[11px] text-muted-text">{{ __('app.whatsapp_template_preview_help') }}</p>
+                        {{-- WhatsApp preview below editors --}}
+                        <div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <svg class="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                <h3 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_template_preview_title') }}</h3>
+                                <span class="text-[10px] text-muted-text ml-1">{{ __('app.whatsapp_template_preview_help') }}</span>
+                            </div>
 
-                                {{-- WhatsApp chat mockup --}}
+                            {{-- Side-by-side WhatsApp previews --}}
+                            <div class="grid gap-4 md:grid-cols-2">
+                                {{-- EN preview --}}
                                 <div class="rounded-2xl overflow-hidden border border-border shadow-sm">
-                                    {{-- Chat header --}}
-                                    <div class="bg-[#075e54] dark:bg-[#1f2c34] px-4 py-2.5 flex items-center gap-3">
-                                        <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                                            <svg class="w-4 h-4 text-white/80" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                                    <div class="bg-[#075e54] dark:bg-[#1f2c34] px-3 py-2 flex items-center gap-2.5">
+                                        <div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center">
+                                            <svg class="w-3.5 h-3.5 text-white/80" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
                                         </div>
-                                        <div>
-                                            <p class="text-white text-sm font-medium">Abiy Tsom Bot</p>
-                                            <p class="text-white/60 text-[10px]">online</p>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-white text-xs font-medium">Abiy Tsom Bot</p>
                                         </div>
+                                        <span class="flex h-5 items-center rounded bg-white/15 px-1.5 text-[10px] font-bold text-white/80">EN</span>
                                     </div>
-
-                                    {{-- Chat body --}}
-                                    <div class="bg-[#ece5dd] dark:bg-[#0b141a] px-4 py-4 space-y-3 min-h-[200px]" style="background-image: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22><rect fill=%22%23e5ddd5%22 width=%2260%22 height=%2260%22 opacity=%220.03%22/></svg>')">
-                                        {{-- EN bubble --}}
-                                        <div class="ml-2">
-                                            <p class="text-[10px] font-semibold text-muted-text mb-1 uppercase tracking-wide">{{ __('app.whatsapp_template_en_label') }}</p>
+                                    <div class="bg-[#ece5dd] dark:bg-[#0b141a] px-3 py-3 min-h-[180px]">
+                                        <div class="ml-1.5">
                                             <div class="wa-bubble wa-bubble-en inline-block max-w-[95%] rounded-lg rounded-tl-none bg-[#dcf8c6] dark:bg-[#025144] px-3 py-2 shadow-sm">
                                                 <p id="preview-en-{{ $template['key'] }}" class="whitespace-pre-wrap break-words text-[13px] leading-[1.45] text-[#111b21] dark:text-[#e9edef]"></p>
                                             </div>
                                         </div>
+                                    </div>
+                                </div>
 
-                                        {{-- AM bubble --}}
-                                        <div class="ml-2">
-                                            <p class="text-[10px] font-semibold text-muted-text mb-1 uppercase tracking-wide">{{ __('app.whatsapp_template_am_label') }}</p>
+                                {{-- AM preview --}}
+                                <div class="rounded-2xl overflow-hidden border border-border shadow-sm">
+                                    <div class="bg-[#075e54] dark:bg-[#1f2c34] px-3 py-2 flex items-center gap-2.5">
+                                        <div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center">
+                                            <svg class="w-3.5 h-3.5 text-white/80" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-white text-xs font-medium">Abiy Tsom Bot</p>
+                                        </div>
+                                        <span class="flex h-5 items-center rounded bg-white/15 px-1.5 text-[10px] font-bold text-white/80">AM</span>
+                                    </div>
+                                    <div class="bg-[#ece5dd] dark:bg-[#0b141a] px-3 py-3 min-h-[180px]">
+                                        <div class="ml-1.5">
                                             <div class="wa-bubble wa-bubble-am inline-block max-w-[95%] rounded-lg rounded-tl-none bg-white dark:bg-[#1f2c34] px-3 py-2 shadow-sm">
                                                 <p id="preview-am-{{ $template['key'] }}" class="whitespace-pre-wrap break-words text-[13px] leading-[1.45] text-[#111b21] dark:text-[#e9edef]"></p>
                                             </div>
