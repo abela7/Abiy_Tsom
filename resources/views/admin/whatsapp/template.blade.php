@@ -314,7 +314,24 @@
                                         <h3 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_template_final_components_title') }}</h3>
                                         <p class="mt-1 text-sm text-muted-text">{{ __('app.whatsapp_template_final_preview_help') }}</p>
                                     </div>
-                                    <div class="flex flex-col gap-2 lg:items-end">
+                                    <div class="flex flex-col gap-3 lg:items-end">
+                                        <div class="flex flex-wrap gap-2 lg:justify-end">
+                                            <span class="text-[11px] font-semibold uppercase tracking-wide text-muted-text">{{ __('app.whatsapp_template_apply_recommended') }}</span>
+                                            <button
+                                                type="button"
+                                                @click="applyRecommendedFinalTemplate('en')"
+                                                class="inline-flex items-center justify-center rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-primary transition hover:bg-muted/50"
+                                            >
+                                                {{ __('app.whatsapp_template_apply_recommended_en') }}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                @click="applyRecommendedFinalTemplate('am')"
+                                                class="inline-flex items-center justify-center rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-primary transition hover:bg-muted/50"
+                                            >
+                                                {{ __('app.whatsapp_template_apply_recommended_am') }}
+                                            </button>
+                                        </div>
                                         <div class="text-[11px] font-semibold uppercase tracking-wide text-muted-text">{{ __('app.whatsapp_template_final_components_en') }}</div>
                                         <div class="flex flex-wrap gap-2 lg:justify-end">
                                             <span class="rounded-full border border-border bg-card px-3 py-1 text-xs font-mono text-primary">:header_en</span>
@@ -528,6 +545,20 @@ function whatsappTemplateEditor(initialTemplate) {
             input.focus();
             const caret = start + token.length;
             input.setSelectionRange(caret, caret);
+            this.activeFieldId = input.id;
+        },
+        applyRecommendedFinalTemplate(locale) {
+            const input = document.getElementById(`tpl-${locale}-whatsapp_daily_reminder_content`);
+            if (!input) {
+                return;
+            }
+
+            input.value = locale === 'am'
+                ? ':header_am\n\n:commemorations_block_am\n\n:footer_am'
+                : ':header_en\n\n:commemorations_block_en\n\n:footer_en';
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+            input.focus();
+            this.activeTemplate = 'whatsapp_daily_reminder_content';
             this.activeFieldId = input.id;
         },
     };
