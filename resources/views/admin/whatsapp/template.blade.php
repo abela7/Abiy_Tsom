@@ -218,6 +218,67 @@
                 <span>{{ __('app.whatsapp_template_warning') }}</span>
             </div>
 
+            <section
+                x-cloak
+                x-show="['whatsapp_daily_reminder_header','whatsapp_daily_reminder_yearly_block','whatsapp_daily_reminder_monthly_block','whatsapp_daily_reminder_footer','whatsapp_daily_reminder_content'].includes(activeTemplate)"
+                class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden"
+            >
+                <div class="border-b border-border bg-surface/60 px-5 py-4">
+                    <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                        <div>
+                            <h2 class="text-base font-semibold text-primary">{{ __('app.whatsapp_template_final_preview_title') }}</h2>
+                            <p class="mt-1 text-sm text-muted-text">{{ __('app.whatsapp_template_final_preview_help') }}</p>
+                        </div>
+                        <button
+                            type="button"
+                            @click="selectTemplate('whatsapp_daily_reminder_content')"
+                            class="inline-flex items-center justify-center rounded-lg border border-border bg-card px-4 py-2 text-sm font-semibold text-primary transition hover:bg-muted/50"
+                        >
+                            {{ __('app.whatsapp_template_final_preview_open') }}
+                        </button>
+                    </div>
+                </div>
+                <div class="grid gap-4 p-5 md:grid-cols-2">
+                    <div class="rounded-2xl overflow-hidden border border-border shadow-sm">
+                        <div class="bg-[#075e54] dark:bg-[#1f2c34] px-3 py-2 flex items-center gap-2.5">
+                            <div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center">
+                                <svg class="w-3.5 h-3.5 text-white/80" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-white text-xs font-medium">Abiy Tsom Bot</p>
+                            </div>
+                            <span class="flex h-5 items-center rounded bg-white/15 px-1.5 text-[10px] font-bold text-white/80">EN</span>
+                        </div>
+                        <div class="bg-[#ece5dd] dark:bg-[#0b141a] px-3 py-3 min-h-[180px]">
+                            <div class="ml-1.5">
+                                <div class="wa-bubble wa-bubble-en inline-block max-w-[95%] rounded-lg rounded-tl-none bg-[#dcf8c6] dark:bg-[#025144] px-3 py-2 shadow-sm">
+                                    <p id="final-preview-en" class="whitespace-pre-wrap break-words text-[13px] leading-[1.45] text-[#111b21] dark:text-[#e9edef]"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rounded-2xl overflow-hidden border border-border shadow-sm">
+                        <div class="bg-[#075e54] dark:bg-[#1f2c34] px-3 py-2 flex items-center gap-2.5">
+                            <div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center">
+                                <svg class="w-3.5 h-3.5 text-white/80" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-white text-xs font-medium">Abiy Tsom Bot</p>
+                            </div>
+                            <span class="flex h-5 items-center rounded bg-white/15 px-1.5 text-[10px] font-bold text-white/80">AM</span>
+                        </div>
+                        <div class="bg-[#ece5dd] dark:bg-[#0b141a] px-3 py-3 min-h-[180px]">
+                            <div class="ml-1.5">
+                                <div class="wa-bubble wa-bubble-am inline-block max-w-[95%] rounded-lg rounded-tl-none bg-white dark:bg-[#1f2c34] px-3 py-2 shadow-sm">
+                                    <p id="final-preview-am" class="whitespace-pre-wrap break-words text-[13px] leading-[1.45] text-[#111b21] dark:text-[#e9edef]"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <form id="whatsapp-template-form" method="POST" action="{{ route('admin.whatsapp.template.update') }}" class="space-y-4">
                 @csrf
                 @method('PUT')
@@ -246,6 +307,21 @@
                     </div>
 
                     <div class="p-5 space-y-4">
+                        @if($template['key'] === 'whatsapp_daily_reminder_content')
+                            <div class="rounded-xl border border-primary/15 bg-primary/5 px-4 py-4">
+                                <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                                    <div>
+                                        <h3 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_template_final_preview_title') }}</h3>
+                                        <p class="mt-1 text-sm text-muted-text">{{ __('app.whatsapp_template_final_preview_help') }}</p>
+                                    </div>
+                                    <div class="flex flex-wrap gap-2">
+                                        <span class="rounded-full border border-border bg-card px-3 py-1 text-xs font-mono text-primary">:header</span>
+                                        <span class="rounded-full border border-border bg-card px-3 py-1 text-xs font-mono text-primary">:commemorations_block</span>
+                                        <span class="rounded-full border border-border bg-card px-3 py-1 text-xs font-mono text-primary">:footer</span>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
 
                         {{-- Placeholder toolbar --}}
                         <div class="rounded-xl bg-surface/60 border border-border px-4 py-3">
@@ -418,6 +494,14 @@ function whatsappTemplateEditor(initialTemplate) {
 }
 
 (() => {
+    const DAILY_TEMPLATE_IDS = {
+        header: 'whatsapp_daily_reminder_header',
+        yearly: 'whatsapp_daily_reminder_yearly_block',
+        monthly: 'whatsapp_daily_reminder_monthly_block',
+        footer: 'whatsapp_daily_reminder_footer',
+        content: 'whatsapp_daily_reminder_content',
+    };
+
     const samples = {
         en: {
             name: 'Abel',
@@ -465,8 +549,13 @@ function whatsappTemplateEditor(initialTemplate) {
         }
     };
 
-    const replacePlaceholders = (text, locale, allowedKeys) => {
-        const map = samples[locale] || samples.en;
+    const normalizeRenderedText = (text) => String(text || '')
+        .replace(/\r\n/g, '\n')
+        .replace(/\r/g, '\n')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+
+    const replacePlaceholders = (text, map, allowedKeys) => {
         return String(text || '').replace(/:([a-z_]+)/gi, (match, key) => {
             const normalized = String(key || '').toLowerCase();
             return allowedKeys.includes(normalized) && Object.prototype.hasOwnProperty.call(map, normalized)
@@ -475,9 +564,26 @@ function whatsappTemplateEditor(initialTemplate) {
         });
     };
 
+    const allowedKeysFor = (input) => {
+        try {
+            return JSON.parse(input.getAttribute('data-allowed-placeholders') || '[]');
+        } catch (error) {
+            return [];
+        }
+    };
+
+    const renderInput = (input) => {
+        if (!input) {
+            return '';
+        }
+
+        const locale = input.getAttribute('data-locale') || 'en';
+        const map = samples[locale] || samples.en;
+        return normalizeRenderedText(replacePlaceholders(input.value, map, allowedKeysFor(input)));
+    };
+
     const render = (input) => {
         const targetId = input.getAttribute('data-preview-target');
-        const locale = input.getAttribute('data-locale') || 'en';
         if (!targetId) {
             return;
         }
@@ -485,19 +591,46 @@ function whatsappTemplateEditor(initialTemplate) {
         if (!target) {
             return;
         }
-        let allowedKeys = [];
-        try {
-            allowedKeys = JSON.parse(input.getAttribute('data-allowed-placeholders') || '[]');
-        } catch (error) {
-            allowedKeys = [];
+        target.textContent = renderInput(input);
+    };
+
+    const buildCommemorationsBlock = (locale) => {
+        const yearly = renderInput(document.getElementById(`tpl-${locale}-${DAILY_TEMPLATE_IDS.yearly}`));
+        const monthly = renderInput(document.getElementById(`tpl-${locale}-${DAILY_TEMPLATE_IDS.monthly}`));
+
+        return normalizeRenderedText([yearly, monthly].filter(Boolean).join('\n\n'));
+    };
+
+    const renderFinalDailyReminder = (locale) => {
+        const contentInput = document.getElementById(`tpl-${locale}-${DAILY_TEMPLATE_IDS.content}`);
+        const target = document.getElementById(`final-preview-${locale}`);
+        if (!contentInput || !target) {
+            return;
         }
-        target.textContent = replacePlaceholders(input.value, locale, allowedKeys);
+
+        const baseMap = {
+            ...(samples[locale] || samples.en),
+            header: renderInput(document.getElementById(`tpl-${locale}-${DAILY_TEMPLATE_IDS.header}`)),
+            commemorations_block: buildCommemorationsBlock(locale),
+            footer: renderInput(document.getElementById(`tpl-${locale}-${DAILY_TEMPLATE_IDS.footer}`)),
+        };
+
+        target.textContent = normalizeRenderedText(
+            replacePlaceholders(contentInput.value, baseMap, allowedKeysFor(contentInput))
+        );
     };
 
     document.querySelectorAll('textarea[data-preview-target]').forEach((input) => {
         render(input);
-        input.addEventListener('input', () => render(input));
+        input.addEventListener('input', () => {
+            render(input);
+            renderFinalDailyReminder('en');
+            renderFinalDailyReminder('am');
+        });
     });
+
+    renderFinalDailyReminder('en');
+    renderFinalDailyReminder('am');
 })();
 </script>
 @endpush

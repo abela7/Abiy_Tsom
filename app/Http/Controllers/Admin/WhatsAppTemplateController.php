@@ -38,18 +38,6 @@ class WhatsAppTemplateController extends Controller
                 'placeholder_keys' => WhatsAppTemplateService::DAILY_REMINDER_PLACEHOLDERS,
             ],
             [
-                'key' => 'whatsapp_daily_reminder_content',
-                'group' => 'whatsapp_member',
-                'title' => __('app.whatsapp_template_daily_content'),
-                'placeholder_keys' => WhatsAppTemplateService::DAILY_REMINDER_PLACEHOLDERS,
-            ],
-            [
-                'key' => 'whatsapp_daily_reminder_footer',
-                'group' => 'whatsapp_member',
-                'title' => __('app.whatsapp_template_daily_footer'),
-                'placeholder_keys' => WhatsAppTemplateService::DAILY_REMINDER_SECTION_PLACEHOLDERS,
-            ],
-            [
                 'key' => 'whatsapp_daily_reminder_yearly_block',
                 'group' => 'whatsapp_member',
                 'title' => __('app.whatsapp_template_daily_yearly_block'),
@@ -60,6 +48,18 @@ class WhatsAppTemplateController extends Controller
                 'group' => 'whatsapp_member',
                 'title' => __('app.whatsapp_template_daily_monthly_block'),
                 'placeholder_keys' => WhatsAppTemplateService::DAILY_REMINDER_SECTION_PLACEHOLDERS,
+            ],
+            [
+                'key' => 'whatsapp_daily_reminder_footer',
+                'group' => 'whatsapp_member',
+                'title' => __('app.whatsapp_template_daily_footer'),
+                'placeholder_keys' => WhatsAppTemplateService::DAILY_REMINDER_SECTION_PLACEHOLDERS,
+            ],
+            [
+                'key' => 'whatsapp_daily_reminder_content',
+                'group' => 'whatsapp_member',
+                'title' => __('app.whatsapp_template_daily_content'),
+                'placeholder_keys' => WhatsAppTemplateService::DAILY_REMINDER_PLACEHOLDERS,
             ],
             [
                 'key' => 'whatsapp_confirmation_prompt_message',
