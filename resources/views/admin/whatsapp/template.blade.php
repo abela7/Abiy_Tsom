@@ -15,6 +15,10 @@
             'group' => 'daily',
             'description' => __('app.whatsapp_template_desc_daily_content'),
         ],
+        'whatsapp_daily_reminder_footer' => [
+            'group' => 'daily',
+            'description' => __('app.whatsapp_template_desc_daily_footer'),
+        ],
         'whatsapp_daily_reminder_yearly_block' => [
             'group' => 'daily',
             'description' => __('app.whatsapp_template_desc_daily_yearly_block'),
@@ -432,7 +436,9 @@ function whatsappTemplateEditor(initialTemplate) {
             yearly_commemorations_bullets: "- St. Abba A\n- St. Martyr B",
             monthly_commemorations: 'St. Monthly A, St. Monthly B, St. Monthly C',
             monthly_commemorations_bullets: "- St. Monthly A\n- St. Monthly B\n- St. Monthly C",
+            header: 'Hello Abel. Today is day 17 of the 55 great lent days.',
             commemorations_block: "Today, on March 5 or Yekatit 26, the following yearly feasts are:\n\n- St. Abba A\n- St. Martyr B\n\nAlso, the following monthly feasts are:\n\n- St. Monthly A\n- St. Monthly B\n- St. Monthly C",
+            footer: "You can find the day’s Bible reading, Mezmur, Gitsawe, Synaxarium, and other spiritual content at this link:\nhttps://abiytsom.abuneteklehaymanot.org/share/day/15",
             bible_reference: 'Acts 25:13-end',
         },
         am: {
@@ -452,7 +458,9 @@ function whatsappTemplateEditor(initialTemplate) {
             yearly_commemorations_bullets: "- Kidus A\n- Kidus B",
             monthly_commemorations: 'Werhawi Kidusan A, Werhawi Kidusan B, Werhawi Kidusan C',
             monthly_commemorations_bullets: "- Werhawi Kidusan A\n- Werhawi Kidusan B\n- Werhawi Kidusan C",
+            header: 'Selam Abel. Zare 17egna yetsom qen new.',
             commemorations_block: "Zare March 5 weyim Yekatit 26 qen yemikeberu ametawi bealat:\n\n- Kidus A\n- Kidus B\n\nEndihum werhawi bealat:\n\n- Werhawi Kidusan A\n- Werhawi Kidusan B\n- Werhawi Kidusan C",
+            footer: "Yeletun Metsihaf Kidus nibab, Mezmur, Gitsawe, Sinksar ena leloch menfesawi yizetoch bezih link yagegnalu:\nhttps://abiytsom.abuneteklehaymanot.org/share/day/15",
             bible_reference: 'Hawaryat Sira 25:13-f.m.',
         }
     };

@@ -72,7 +72,9 @@ final class WhatsAppTemplateService
         'yearly_commemorations_bullets',
         'monthly_commemorations',
         'monthly_commemorations_bullets',
+        'header',
         'commemorations_block',
+        'footer',
         'bible_reference',
         'url',
     ];
@@ -116,24 +118,38 @@ final class WhatsAppTemplateService
     ): array {
         $resolvedLocale = $this->normalizeLocale($locale ?? (string) ($member->whatsapp_language ?? $member->locale ?? 'en'));
         $variables = $this->dailyReminderVariables($member, $dailyContent, $url, $resolvedLocale);
-        $variables['commemorations_block'] = $this->renderCommemorationsBlock($variables, $resolvedLocale);
-
         $header = $this->normalizeRenderedText(
             $this->translate('app.whatsapp_daily_reminder_header', $variables, $resolvedLocale)
         );
+        $footer = $this->normalizeRenderedText(
+            $this->translate('app.whatsapp_daily_reminder_footer', $variables, $resolvedLocale)
+        );
+
+        $variables['header'] = $header;
+        $variables['commemorations_block'] = $this->renderCommemorationsBlock($variables, $resolvedLocale);
+        $variables['footer'] = $footer;
+
         $content = $this->normalizeRenderedText(
             $this->translate('app.whatsapp_daily_reminder_content', $variables, $resolvedLocale)
         );
-        $message = $this->normalizeRenderedText(
-            implode("\n", array_values(array_filter([$header, $content], static fn (string $value): bool => $value !== '')))
-        );
+
+        if ($content === '') {
+            $content = $this->normalizeRenderedText(
+                implode("\n\n", array_values(array_filter([
+                    $header,
+                    $variables['commemorations_block'],
+                    $footer,
+                ], static fn (string $value): bool => $value !== '')))
+            );
+        }
 
         return [
             'locale' => $resolvedLocale,
             'variables' => $variables,
             'header' => $header,
+            'footer' => $footer,
             'content' => $content,
-            'message' => $message,
+            'message' => $content,
         ];
     }
 

@@ -44,6 +44,12 @@ class WhatsAppTemplateController extends Controller
                 'placeholder_keys' => WhatsAppTemplateService::DAILY_REMINDER_PLACEHOLDERS,
             ],
             [
+                'key' => 'whatsapp_daily_reminder_footer',
+                'group' => 'whatsapp_member',
+                'title' => __('app.whatsapp_template_daily_footer'),
+                'placeholder_keys' => WhatsAppTemplateService::DAILY_REMINDER_SECTION_PLACEHOLDERS,
+            ],
+            [
                 'key' => 'whatsapp_daily_reminder_yearly_block',
                 'group' => 'whatsapp_member',
                 'title' => __('app.whatsapp_template_daily_yearly_block'),
