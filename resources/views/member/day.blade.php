@@ -800,7 +800,11 @@
     <div class="bg-card rounded-2xl shadow-sm border border-border overflow-hidden"
          x-data="{
             readOpen: false,
-            openSection: null,
+            openSections: [],
+            allExpanded: false,
+            fsOpenSections: [],
+            fsAllExpanded: false,
+            availableKeys: {{ Js::from(collect($lecReadings)->where('has', true)->pluck('key')->values()) }},
             fontSize: parseInt(localStorage.getItem('lecFontSize') || '16'),
             readerTheme: localStorage.getItem('lecReaderTheme') || 'default',
             readerFont: localStorage.getItem('lecReaderFont') || 'default',
@@ -808,13 +812,70 @@
             activeShelf: null,
             shelfTapLock: false,
             shelfTapLockTimer: null,
+            isSectionOpen(key) { return this.openSections.includes(key); },
+            toggleSection(key) {
+                if (this.isSectionOpen(key)) {
+                    this.openSections = this.openSections.filter(k => k !== key);
+                    this.allExpanded = false;
+                } else {
+                    this.openSections.push(key);
+                    if (this.openSections.length === this.availableKeys.length) this.allExpanded = true;
+                    this.$nextTick(() => {
+                        const el = this.$refs['sec_' + key];
+                        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    });
+                }
+            },
+            toggleAll() {
+                if (this.allExpanded) { this.openSections = []; this.allExpanded = false; }
+                else { this.openSections = [...this.availableKeys]; this.allExpanded = true; }
+            },
+            nextSection(key) {
+                const idx = this.availableKeys.indexOf(key);
+                if (idx < this.availableKeys.length - 1) {
+                    const next = this.availableKeys[idx + 1];
+                    if (!this.isSectionOpen(next)) this.toggleSection(next);
+                    else this.$nextTick(() => { const el = this.$refs['sec_' + next]; if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); });
+                }
+            },
+            hasNextSection(key) { return this.availableKeys.indexOf(key) < this.availableKeys.length - 1; },
+            nextSectionLabel(key) {
+                const idx = this.availableKeys.indexOf(key);
+                return idx < this.availableKeys.length - 1 ? this.availableKeys[idx + 1] : '';
+            },
+            isFsSectionOpen(key) { return this.fsOpenSections.includes(key); },
+            toggleFsSection(key) {
+                if (this.isFsSectionOpen(key)) {
+                    this.fsOpenSections = this.fsOpenSections.filter(k => k !== key);
+                    this.fsAllExpanded = false;
+                } else {
+                    this.fsOpenSections.push(key);
+                    if (this.fsOpenSections.length === this.availableKeys.length) this.fsAllExpanded = true;
+                    this.$nextTick(() => {
+                        const el = this.$refs['fssec_' + key];
+                        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    });
+                }
+            },
+            toggleFsAll() {
+                if (this.fsAllExpanded) { this.fsOpenSections = []; this.fsAllExpanded = false; }
+                else { this.fsOpenSections = [...this.availableKeys]; this.fsAllExpanded = true; }
+            },
+            nextFsSection(key) {
+                const idx = this.availableKeys.indexOf(key);
+                if (idx < this.availableKeys.length - 1) {
+                    const next = this.availableKeys[idx + 1];
+                    if (!this.isFsSectionOpen(next)) this.toggleFsSection(next);
+                    else this.$nextTick(() => { const el = this.$refs['fssec_' + next]; if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); });
+                }
+            },
             lockShelfTap(ms=650){ this.shelfTapLock=true; if(this.shelfTapLockTimer) clearTimeout(this.shelfTapLockTimer); this.shelfTapLockTimer=setTimeout(()=>{this.shelfTapLock=false;this.shelfTapLockTimer=null;},ms); },
             toggleShelf(n){ if(this.shelfTapLock) return; this.activeShelf=this.activeShelf===n?null:n; },
             pickTheme(t){ this.readerTheme=t; localStorage.setItem('lecReaderTheme',t); this.activeShelf=null; this.lockShelfTap(); },
             pickFont(f){ this.readerFont=f; localStorage.setItem('lecReaderFont',f); this.activeShelf=null; this.lockShelfTap(); },
             fontFamily(){ if(this.readerFont==='benaiah') return 'Benaiah,sans-serif'; if(this.readerFont==='kiros') return 'Kiros,sans-serif'; if(this.readerFont==='handwriting') return 'Handwriting,sans-serif'; return 'inherit'; },
             setFontSize(s){ this.fontSize=Math.min(28,Math.max(12,s)); localStorage.setItem('lecFontSize',this.fontSize); },
-            openFullscreen(){ this.fullscreen=true; document.body.style.overflow='hidden'; const n=document.querySelector('nav.fixed.bottom-0'); if(n) n.style.display='none'; },
+            openFullscreen(){ this.fullscreen=true; this.fsOpenSections=[...this.openSections]; this.fsAllExpanded=this.allExpanded; document.body.style.overflow='hidden'; const n=document.querySelector('nav.fixed.bottom-0'); if(n) n.style.display='none'; },
             closeFullscreen(){ this.fullscreen=false; this.activeShelf=null; this.shelfTapLock=false; if(this.shelfTapLockTimer){clearTimeout(this.shelfTapLockTimer);this.shelfTapLockTimer=null;} document.body.style.overflow=''; const n=document.querySelector('nav.fixed.bottom-0'); if(n) n.style.display=''; }
          }"
          @keydown.escape.window="if(fullscreen) closeFullscreen()">
@@ -886,6 +947,11 @@
                         </button>
                     </div>
                     <div class="flex items-center gap-1.5">
+                        <button type="button" @click="toggleAll()" :class="allExpanded?'bg-accent border-accent text-on-accent':'bg-card border-border text-secondary hover:bg-muted'"
+                                class="h-7 px-2.5 rounded-lg border transition touch-manipulation flex items-center gap-1 text-xs font-semibold">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                            <span x-text="allExpanded ? '{{ $locale === 'am' ? 'ዝጋ' : 'Collapse' }}' : '{{ $locale === 'am' ? 'ሁሉንም' : 'All' }}'"></span>
+                        </button>
                         <div class="relative" x-data="{fo:false}" @click.outside="fo=false">
                             <button type="button" @click="fo=!fo" :class="fo?'bg-accent border-accent text-on-accent':'bg-card border-border text-secondary hover:bg-muted'"
                                     class="h-7 px-2.5 rounded-lg border transition touch-manipulation flex items-center gap-1">
@@ -910,38 +976,61 @@
                 </div>
 
                 {{-- Reading accordion --}}
-                <div class="divide-y divide-border rounded-xl border border-border overflow-hidden">
+                <div class="rounded-xl border border-border overflow-hidden">
                     @foreach($lecReadings as $r)
                     @if($r['has'])
-                    <div>
-                        <button type="button" @click="openSection = openSection==='{{ $r['key'] }}'?null:'{{ $r['key'] }}'"
-                                class="w-full flex items-center justify-between px-4 py-3.5 text-left hover:bg-muted/40 transition-colors touch-manipulation">
-                            <div>
-                                <span class="text-sm font-semibold text-primary">{{ $r['num'] }}. {{ __($r['label_key']) }}</span>
-                                @if(filled($r['book']))
-                                <span class="block text-xs text-muted-text mt-0.5">{{ $r['book'] }}{{ filled($r['chapter'])?' '.$r['chapter']:'' }}{{ filled($r['verses'])?':'.$r['verses']:'' }}</span>
-                                @endif
+                    <div x-ref="sec_{{ $r['key'] }}" class="border-b border-border last:border-b-0 transition-colors duration-200"
+                         :class="isSectionOpen('{{ $r['key'] }}') && 'bg-accent/[0.03]'">
+                        <button type="button" @click="toggleSection('{{ $r['key'] }}')"
+                                class="w-full flex items-center justify-between px-4 py-3.5 text-left transition-colors touch-manipulation"
+                                :class="isSectionOpen('{{ $r['key'] }}') ? 'bg-accent/[0.06]' : 'hover:bg-muted/40'">
+                            <div class="flex items-center gap-3">
+                                <span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition-colors duration-200"
+                                      :class="isSectionOpen('{{ $r['key'] }}') ? 'bg-accent text-on-accent' : 'bg-muted text-muted-text'">{{ $r['num'] }}</span>
+                                <div>
+                                    <span class="text-sm font-semibold transition-colors duration-200"
+                                          :class="isSectionOpen('{{ $r['key'] }}') ? 'text-accent' : 'text-primary'">{{ __($r['label_key']) }}</span>
+                                    @if(filled($r['book']))
+                                    <span class="block text-xs text-muted-text mt-0.5">{{ $r['book'] }}{{ filled($r['chapter'])?' '.$r['chapter']:'' }}{{ filled($r['verses'])?':'.$r['verses']:'' }}</span>
+                                    @endif
+                                </div>
                             </div>
-                            <svg class="w-4 h-4 text-muted-text shrink-0 transition-transform duration-200" :class="openSection==='{{ $r['key'] }}'?'rotate-180':''"
+                            <svg class="w-4 h-4 text-muted-text shrink-0 transition-transform duration-300" :class="isSectionOpen('{{ $r['key'] }}')&&'rotate-180 text-accent'"
                                  fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </button>
-                        <div x-show="openSection==='{{ $r['key'] }}'" x-cloak
-                             x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-                             class="px-4 pb-5 pt-1 text-primary"
-                             :style="'font-size:'+fontSize+'px;line-height:'+(fontSize<20?'1.85':'1.75')+';font-family:'+fontFamily()">
-                            @if($r['key']==='mesbak')
-                                @if(filled($lectionary->mesbak_geez_1)||filled($lectionary->mesbak_geez_2)||filled($lectionary->mesbak_geez_3))
-                                <div class="mb-4">
-                                    @if(filled($lectionary->mesbak_geez_1))<p class="mb-1"><span class="font-semibold">፩</span> {{ $lectionary->mesbak_geez_1 }}</p>@endif
-                                    @if(filled($lectionary->mesbak_geez_2))<p class="mb-1"><span class="font-semibold">፪</span> {{ $lectionary->mesbak_geez_2 }}</p>@endif
-                                    @if(filled($lectionary->mesbak_geez_3))<p><span class="font-semibold">፫</span> {{ $lectionary->mesbak_geez_3 }}</p>@endif
-                                </div>
+                        <div x-show="isSectionOpen('{{ $r['key'] }}')" x-collapse x-cloak>
+                            <div class="px-4 pb-2 pt-1 text-primary"
+                                 :style="'font-size:'+fontSize+'px;line-height:'+(fontSize<20?'1.85':'1.75')+';font-family:'+fontFamily()">
+                                @if($r['key']==='mesbak')
+                                    @if(filled($lectionary->mesbak_geez_1)||filled($lectionary->mesbak_geez_2)||filled($lectionary->mesbak_geez_3))
+                                    <div class="mb-4">
+                                        @if(filled($lectionary->mesbak_geez_1))
+                                        <p class="mb-1"><span class="font-semibold">፩</span> {{ $lectionary->mesbak_geez_1 }}</p>
+                                        @endif
+                                        @if(filled($lectionary->mesbak_geez_2))
+                                        <p class="mb-1"><span class="font-semibold">፪</span> {{ $lectionary->mesbak_geez_2 }}</p>
+                                        @endif
+                                        @if(filled($lectionary->mesbak_geez_3))
+                                        <p><span class="font-semibold">፫</span> {{ $lectionary->mesbak_geez_3 }}</p>
+                                        @endif
+                                    </div>
+                                    @endif
+                                    @php $mt=$locale==='am'?$lectionary->mesbak_text_am:$lectionary->mesbak_text_en; @endphp
+                                    @if(filled($mt))
+                                    <div class="whitespace-pre-wrap">{{ $mt }}</div>
+                                    @endif
+                                @elseif(filled($r['text']))
+                                    <div class="whitespace-pre-wrap">{{ $r['text'] }}</div>
                                 @endif
-                                @php $mt=$locale==='am'?$lectionary->mesbak_text_am:$lectionary->mesbak_text_en; @endphp
-                                @if(filled($mt))<div class="whitespace-pre-wrap">{{ $mt }}</div>@endif
-                            @elseif(filled($r['text']))
-                                <div class="whitespace-pre-wrap">{{ $r['text'] }}</div>
-                            @endif
+                            </div>
+                            {{-- Next reading navigation --}}
+                            <div class="px-4 pb-4 pt-2 flex justify-end" x-show="hasNextSection('{{ $r['key'] }}')">
+                                <button type="button" @click="nextSection('{{ $r['key'] }}')"
+                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent/10 hover:bg-accent/20 text-accent text-xs font-semibold transition touch-manipulation">
+                                    {{ $locale === 'am' ? 'ቀጣይ' : 'Next' }}
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                                </button>
+                            </div>
                         </div>
                     </div>
                     @endif
@@ -975,49 +1064,88 @@
                         </div>
                     </div>
 
+                    {{-- Expand all toggle --}}
+                    <div class="px-4 py-2 flex justify-end">
+                        <button type="button" @click="toggleFsAll()"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition touch-manipulation"
+                                :style="readerTheme==='dark'?(fsAllExpanded?'color:#7b9fff;background-color:#2a2a4a':'color:#8888aa'):readerTheme==='sepia'?(fsAllExpanded?'color:#8b5e3c;background-color:#d4c5a9':'color:#8b7355'):(fsAllExpanded?'color:var(--color-accent);background-color:rgba(var(--color-accent-rgb,99,102,241),0.1)':'color:var(--color-muted-text)')">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                            <span x-text="fsAllExpanded ? '{{ $locale === 'am' ? 'ዝጋ ሁሉንም' : 'Collapse All' }}' : '{{ $locale === 'am' ? 'ሁሉንም ክፈት' : 'Expand All' }}'"></span>
+                        </button>
+                    </div>
+
                     {{-- Sections --}}
-                    <div class="max-w-2xl mx-auto px-1 py-2 pb-8">
+                    <div class="max-w-2xl mx-auto px-1 pb-8">
                         @foreach($lecReadings as $r)
                         @if($r['has'])
-                        <div class="border-b last:border-0"
-                             :style="readerTheme==='dark'?'border-color:#2a2a4a':readerTheme==='sepia'?'border-color:#d4c5a9':'border-color:#e5e7eb'">
-                            <button type="button" @click="openSection=openSection==='{{ $r['key'] }}_fs'?null:'{{ $r['key'] }}_fs'"
-                                    class="w-full flex items-center justify-between px-4 py-4 text-left touch-manipulation">
-                                <div>
-                                    <span class="text-sm font-bold"
-                                          :style="readerTheme==='dark'?'color:#f0f0f0':readerTheme==='sepia'?'color:#3e2c1c':'color:var(--color-primary)'">
-                                        {{ $r['num'] }}. {{ __($r['label_key']) }}
-                                    </span>
-                                    @if(filled($r['book']))
-                                    <span class="block text-xs mt-0.5"
-                                          :style="readerTheme==='dark'?'color:#8888aa':readerTheme==='sepia'?'color:#8b7355':'color:var(--color-muted-text)'">
-                                        {{ $r['book'] }}{{ filled($r['chapter'])?' '.$r['chapter']:'' }}{{ filled($r['verses'])?':'.$r['verses']:'' }}
-                                    </span>
-                                    @endif
+                        <div x-ref="fssec_{{ $r['key'] }}" class="border-b last:border-0 transition-colors duration-200"
+                             :style="(readerTheme==='dark'?'border-color:#2a2a4a':readerTheme==='sepia'?'border-color:#d4c5a9':'border-color:#e5e7eb') + (isFsSectionOpen('{{ $r['key'] }}') ? ';background-color:'+(readerTheme==='dark'?'rgba(123,159,255,0.04)':readerTheme==='sepia'?'rgba(139,94,60,0.04)':'rgba(var(--color-accent-rgb,99,102,241),0.03)') : '')">
+                            <button type="button" @click="toggleFsSection('{{ $r['key'] }}')"
+                                    class="w-full flex items-center justify-between px-4 py-4 text-left touch-manipulation transition-colors duration-200"
+                                    :style="isFsSectionOpen('{{ $r['key'] }}') ? 'background-color:'+(readerTheme==='dark'?'rgba(123,159,255,0.07)':readerTheme==='sepia'?'rgba(139,94,60,0.06)':'rgba(var(--color-accent-rgb,99,102,241),0.06)') : ''">
+                                <div class="flex items-center gap-3">
+                                    <span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition-all duration-200"
+                                          :style="isFsSectionOpen('{{ $r['key'] }}')
+                                              ? 'background-color:'+(readerTheme==='dark'?'#7b9fff':readerTheme==='sepia'?'#8b5e3c':'var(--color-accent)')+';color:#fff'
+                                              : 'background-color:'+(readerTheme==='dark'?'#2a2a4a':readerTheme==='sepia'?'#d4c5a9':'var(--color-muted,#f1f5f9)')+';color:'+(readerTheme==='dark'?'#8888aa':readerTheme==='sepia'?'#8b7355':'var(--color-muted-text)')">{{ $r['num'] }}</span>
+                                    <div>
+                                        <span class="text-sm font-bold transition-colors duration-200"
+                                              :style="isFsSectionOpen('{{ $r['key'] }}')
+                                                  ? 'color:'+(readerTheme==='dark'?'#7b9fff':readerTheme==='sepia'?'#8b5e3c':'var(--color-accent)')
+                                                  : 'color:'+(readerTheme==='dark'?'#f0f0f0':readerTheme==='sepia'?'#3e2c1c':'var(--color-primary)')">
+                                            {{ __($r['label_key']) }}
+                                        </span>
+                                        @if(filled($r['book']))
+                                        <span class="block text-xs mt-0.5"
+                                              :style="readerTheme==='dark'?'color:#8888aa':readerTheme==='sepia'?'color:#8b7355':'color:var(--color-muted-text)'">
+                                            {{ $r['book'] }}{{ filled($r['chapter'])?' '.$r['chapter']:'' }}{{ filled($r['verses'])?':'.$r['verses']:'' }}
+                                        </span>
+                                        @endif
+                                    </div>
                                 </div>
-                                <svg class="w-5 h-5 shrink-0 transition-transform duration-200" :class="openSection==='{{ $r['key'] }}_fs'?'rotate-180':''"
-                                     :style="readerTheme==='dark'?'color:#8888aa':readerTheme==='sepia'?'color:#8b7355':'color:var(--color-muted-text)'"
+                                <svg class="w-5 h-5 shrink-0 transition-transform duration-300"
+                                     :class="isFsSectionOpen('{{ $r['key'] }}')&&'rotate-180'"
+                                     :style="isFsSectionOpen('{{ $r['key'] }}')
+                                         ? 'color:'+(readerTheme==='dark'?'#7b9fff':readerTheme==='sepia'?'#8b5e3c':'var(--color-accent)')
+                                         : 'color:'+(readerTheme==='dark'?'#8888aa':readerTheme==='sepia'?'#8b7355':'var(--color-muted-text)')"
                                      fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                                 </svg>
                             </button>
-                            <div x-show="openSection==='{{ $r['key'] }}_fs'" x-cloak
-                                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-                                 class="px-4 pb-6"
-                                 :style="'font-size:'+fontSize+'px;line-height:'+(fontSize<20?'1.9':'1.8')+';font-family:'+fontFamily()+';color:'+(readerTheme==='dark'?'#d4d4e8':readerTheme==='sepia'?'#3e2c1c':'var(--color-primary)')">
-                                @if($r['key']==='mesbak')
-                                    @if(filled($lectionary->mesbak_geez_1)||filled($lectionary->mesbak_geez_2)||filled($lectionary->mesbak_geez_3))
-                                    <div class="mb-5">
-                                        @if(filled($lectionary->mesbak_geez_1))<p class="mb-1"><span class="font-semibold">፩</span> {{ $lectionary->mesbak_geez_1 }}</p>@endif
-                                        @if(filled($lectionary->mesbak_geez_2))<p class="mb-1"><span class="font-semibold">፪</span> {{ $lectionary->mesbak_geez_2 }}</p>@endif
-                                        @if(filled($lectionary->mesbak_geez_3))<p><span class="font-semibold">፫</span> {{ $lectionary->mesbak_geez_3 }}</p>@endif
-                                    </div>
+                            <div x-show="isFsSectionOpen('{{ $r['key'] }}')" x-collapse x-cloak>
+                                <div class="px-4 pb-2 pt-1"
+                                     :style="'font-size:'+fontSize+'px;line-height:'+(fontSize<20?'1.9':'1.8')+';font-family:'+fontFamily()+';color:'+(readerTheme==='dark'?'#d4d4e8':readerTheme==='sepia'?'#3e2c1c':'var(--color-primary)')">
+                                    @if($r['key']==='mesbak')
+                                        @if(filled($lectionary->mesbak_geez_1)||filled($lectionary->mesbak_geez_2)||filled($lectionary->mesbak_geez_3))
+                                        <div class="mb-5">
+                                            @if(filled($lectionary->mesbak_geez_1))
+                                            <p class="mb-1"><span class="font-semibold">፩</span> {{ $lectionary->mesbak_geez_1 }}</p>
+                                            @endif
+                                            @if(filled($lectionary->mesbak_geez_2))
+                                            <p class="mb-1"><span class="font-semibold">፪</span> {{ $lectionary->mesbak_geez_2 }}</p>
+                                            @endif
+                                            @if(filled($lectionary->mesbak_geez_3))
+                                            <p><span class="font-semibold">፫</span> {{ $lectionary->mesbak_geez_3 }}</p>
+                                            @endif
+                                        </div>
+                                        @endif
+                                        @php $mt=$locale==='am'?$lectionary->mesbak_text_am:$lectionary->mesbak_text_en; @endphp
+                                        @if(filled($mt))
+                                        <div class="whitespace-pre-wrap">{{ $mt }}</div>
+                                        @endif
+                                    @elseif(filled($r['text']))
+                                        <div class="whitespace-pre-wrap">{{ $r['text'] }}</div>
                                     @endif
-                                    @php $mt=$locale==='am'?$lectionary->mesbak_text_am:$lectionary->mesbak_text_en; @endphp
-                                    @if(filled($mt))<div class="whitespace-pre-wrap">{{ $mt }}</div>@endif
-                                @elseif(filled($r['text']))
-                                    <div class="whitespace-pre-wrap">{{ $r['text'] }}</div>
-                                @endif
+                                </div>
+                                {{-- Next reading navigation --}}
+                                <div class="px-4 pb-4 pt-2 flex justify-end" x-show="availableKeys.indexOf('{{ $r['key'] }}') < availableKeys.length - 1">
+                                    <button type="button" @click="nextFsSection('{{ $r['key'] }}')"
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition touch-manipulation"
+                                            :style="readerTheme==='dark'?'color:#7b9fff;background-color:rgba(123,159,255,0.1)':readerTheme==='sepia'?'color:#8b5e3c;background-color:rgba(139,94,60,0.1)':'color:var(--color-accent);background-color:rgba(var(--color-accent-rgb,99,102,241),0.1)'">
+                                        {{ $locale === 'am' ? 'ቀጣይ' : 'Next' }}
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         @endif
@@ -1069,7 +1197,7 @@
                         </button>
                         <button type="button" @click="setFontSize(fontSize-2)" :disabled="fontSize<=12" :class="fontSize<=12?'opacity-30 cursor-not-allowed':''"
                                 class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition touch-manipulation"
-                                :style="fontSize>12?(readerTheme==='sepia'?'color:#5b4636':readerTheme==='dark'?'color:#c0c0d0':''):''">>
+                                :style="fontSize>12?(readerTheme==='sepia'?'color:#5b4636':readerTheme==='dark'?'color:#c0c0d0':''):''">
                             <span class="text-base font-bold leading-none">A</span>
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2.5" d="M5 12h14"/></svg>
                         </button>
@@ -1081,7 +1209,7 @@
                         </div>
                         <button type="button" @click="setFontSize(fontSize+2)" :disabled="fontSize>=28" :class="fontSize>=28?'opacity-30 cursor-not-allowed':''"
                                 class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition touch-manipulation"
-                                :style="fontSize<28?(readerTheme==='sepia'?'color:#5b4636':readerTheme==='dark'?'color:#c0c0d0':''):''">>
+                                :style="fontSize<28?(readerTheme==='sepia'?'color:#5b4636':readerTheme==='dark'?'color:#c0c0d0':''):''">
                             <span class="text-xl font-bold leading-none">A</span>
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2.5" d="M12 5v14m-7-7h14"/></svg>
                         </button>
