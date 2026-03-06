@@ -834,7 +834,30 @@
             },
             lockShelfTap(ms=650){ this.shelfTapLock=true; if(this.shelfTapLockTimer) clearTimeout(this.shelfTapLockTimer); this.shelfTapLockTimer=setTimeout(()=>{this.shelfTapLock=false;this.shelfTapLockTimer=null;},ms); },
             toggleShelf(n){ if(this.shelfTapLock) return; this.activeShelf=this.activeShelf===n?null:n; },
-            pickTheme(t){ this.readerTheme=t; localStorage.setItem('lecReaderTheme',t); this.activeShelf=null; this.lockShelfTap(); },
+            pickTheme(t){
+                this.readerTheme=t; localStorage.setItem('lecReaderTheme',t); this.activeShelf=null; this.lockShelfTap();
+                this.$nextTick(()=>{
+                    const fs=document.querySelector('[x-ref]')?.closest('.fixed')||document.querySelector('.fixed.inset-0.z-\\[100\\]');
+                    if(!fs){console.warn('[LecTheme] fullscreen container not found');return;}
+                    const cs=getComputedStyle(fs);
+                    console.group('[LecTheme] picked "'+t+'"');
+                    console.log('classes:', fs.className);
+                    console.log('html classes:', document.documentElement.className);
+                    console.log('--app-surface:', cs.getPropertyValue('--app-surface').trim());
+                    console.log('--color-surface:', cs.getPropertyValue('--color-surface').trim());
+                    console.log('--app-card:', cs.getPropertyValue('--app-card').trim());
+                    console.log('--color-card:', cs.getPropertyValue('--color-card').trim());
+                    console.log('--app-primary:', cs.getPropertyValue('--app-primary').trim());
+                    console.log('--color-primary:', cs.getPropertyValue('--color-primary').trim());
+                    console.log('--app-border:', cs.getPropertyValue('--app-border').trim());
+                    console.log('--color-border:', cs.getPropertyValue('--color-border').trim());
+                    console.log('--app-accent:', cs.getPropertyValue('--app-accent').trim());
+                    console.log('--color-accent:', cs.getPropertyValue('--color-accent').trim());
+                    console.log('computed bg:', cs.backgroundColor);
+                    console.log('computed color:', cs.color);
+                    console.groupEnd();
+                });
+            },
             pickFont(f){ this.readerFont=f; localStorage.setItem('lecReaderFont',f); this.activeShelf=null; this.lockShelfTap(); },
             fontFamily(){ if(this.readerFont==='benaiah') return 'Benaiah,sans-serif'; if(this.readerFont==='kiros') return 'Kiros,sans-serif'; if(this.readerFont==='handwriting') return 'Handwriting,sans-serif'; return 'inherit'; },
             setFontSize(s){ this.fontSize=Math.min(28,Math.max(12,s)); localStorage.setItem('lecFontSize',this.fontSize); },
