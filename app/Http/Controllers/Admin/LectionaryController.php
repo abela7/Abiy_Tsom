@@ -123,9 +123,15 @@ class LectionaryController extends Controller
             // Mesbak
             'mesbak_psalm'     => ['nullable', 'integer', 'min:1', 'max:151'],
             'mesbak_verses'    => ['nullable', 'string', 'max:30'],
-            'mesbak_text_geez' => ['nullable', 'string'],
-            'mesbak_text_am'   => ['nullable', 'string'],
-            'mesbak_text_en'   => ['nullable', 'string'],
+            'mesbak_geez_1'    => ['nullable', 'string', 'max:500'],
+            'mesbak_geez_2'    => ['nullable', 'string', 'max:500'],
+            'mesbak_geez_3'    => ['nullable', 'string', 'max:500'],
+            'mesbak_am_1'      => ['nullable', 'string', 'max:500'],
+            'mesbak_am_2'      => ['nullable', 'string', 'max:500'],
+            'mesbak_am_3'      => ['nullable', 'string', 'max:500'],
+            'mesbak_en_1'      => ['nullable', 'string', 'max:500'],
+            'mesbak_en_2'      => ['nullable', 'string', 'max:500'],
+            'mesbak_en_3'      => ['nullable', 'string', 'max:500'],
             // Gospel
             'gospel_book_am'   => ['nullable', 'string', 'max:100'],
             'gospel_book_en'   => ['nullable', 'string', 'max:100'],

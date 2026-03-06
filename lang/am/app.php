@@ -893,6 +893,7 @@ return [
     'lectionary_acts_am'       => 'ሐዋርያት',
     'lectionary_mesbak'        => 'Mesbak (Psalm)',
     'lectionary_mesbak_am'     => 'ምስባክ',
+    'lectionary_mesbak_line'   => 'መስመር',
     'lectionary_gospel'        => 'Gospel',
     'lectionary_gospel_am'     => 'ወንጌል',
     'lectionary_qiddase'       => 'Qiddase (Anaphora)',

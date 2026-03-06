@@ -41,9 +41,9 @@ class Lectionary extends Model
         // Mesbak
         'mesbak_psalm',
         'mesbak_verses',
-        'mesbak_text_geez',
-        'mesbak_text_am',
-        'mesbak_text_en',
+        'mesbak_geez_1', 'mesbak_geez_2', 'mesbak_geez_3',
+        'mesbak_am_1',   'mesbak_am_2',   'mesbak_am_3',
+        'mesbak_en_1',   'mesbak_en_2',   'mesbak_en_3',
         // Gospel
         'gospel_book_am',
         'gospel_book_en',
