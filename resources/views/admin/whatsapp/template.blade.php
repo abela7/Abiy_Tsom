@@ -184,13 +184,13 @@
         {{-- Sidebar: template list --}}
         <aside class="space-y-3 xl:sticky xl:top-24 xl:self-start">
             @foreach(['daily' => __('app.whatsapp_template_group_daily'), 'confirmation' => __('app.whatsapp_template_group_confirmation')] as $groupKey => $groupLabel)
-            <div class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
-                <div class="px-4 py-2.5 bg-surface/60 border-b border-border">
+            <details class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden" @if($groupKey === 'daily') open @endif>
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 bg-surface/60 marker:hidden">
                     <h2 class="text-[11px] font-bold uppercase tracking-widest text-muted-text">{{ $groupLabel }}</h2>
-                </div>
-                <div class="p-2 space-y-1">
+                    <span class="text-xs font-bold text-muted-text">+</span>
+                </summary>
+                <div class="p-2 space-y-1 border-t border-border">
                     @foreach($templateGroups[$groupKey] as $template)
-                        @php($meta = $templateMeta[$template['key']] ?? ['description' => ''])
                         <button type="button"
                             @click="selectTemplate('{{ $template['key'] }}')"
                             :class="activeTemplate === '{{ $template['key'] }}'
@@ -198,11 +198,11 @@
                                 : 'bg-transparent text-secondary border-transparent hover:bg-muted/50'"
                             class="w-full rounded-xl border px-3 py-2.5 text-left transition-all duration-150">
                             <div class="text-[13px] font-semibold leading-snug">{{ $template['title'] }}</div>
-                            <div class="mt-0.5 text-[11px] leading-relaxed text-muted-text line-clamp-2">{{ $meta['description'] }}</div>
+                            <div class="mt-0.5 text-[11px] leading-relaxed text-muted-text line-clamp-2">{{ $templateMeta[$template['key']]['description'] ?? '' }}</div>
                         </button>
                     @endforeach
                 </div>
-            </div>
+            </details>
             @endforeach
         </aside>
 
