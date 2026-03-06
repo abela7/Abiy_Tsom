@@ -709,20 +709,19 @@ $monthEmpty    = $maxDay - count($filledDays);
     <div x-show="sheet === 'preview'"
          x-transition:enter="transition duration-300 ease-out" x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0"
          x-transition:leave="transition duration-200 ease-in" x-transition:leave-start="translate-y-0" x-transition:leave-end="translate-y-full"
-         class="fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-3xl shadow-2xl max-h-[92vh] flex flex-col"
-         style="display:none"
+         class="fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-3xl shadow-2xl overflow-y-auto"
+         style="display:none; max-height:88vh"
          @click.stop>
-        {{-- Handle + header --}}
-        <div class="relative flex items-center justify-between px-5 pt-5 pb-3 border-b border-border shrink-0">
-            <div class="absolute top-3 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full bg-border"></div>
+        {{-- Handle + header (sticky) --}}
+        <div class="sticky top-0 bg-card z-10 relative flex items-center justify-between px-5 pt-5 pb-3 border-b border-border">
+            <div class="absolute top-2.5 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full bg-border"></div>
             <h3 class="text-base font-bold text-primary">{{ $monthAm ?? '' }} {{ $selectedDay }}</h3>
             <button type="button" @click="closeSheet()"
                     class="w-9 h-9 rounded-xl flex items-center justify-center bg-muted text-muted-text active:scale-90 transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
         </div>
-        {{-- Scrollable content --}}
-        <div class="overflow-y-auto flex-1 px-5 py-5" style="padding-bottom: max(1.5rem, env(safe-area-inset-bottom, 1.5rem))">
+        <div class="px-5 py-5" style="padding-bottom: max(1.5rem, env(safe-area-inset-bottom, 1.5rem))">
             <x-lectionary-preview :entry="$entry" :monthNames="$monthNames" />
         </div>
     </div>
