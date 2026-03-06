@@ -99,7 +99,7 @@ class UltraMsgWebhookController extends Controller
             $noticeSent = $confirmation->sendConfirmedNotice($member);
 
             // UltraMsg rate-limits rapid-fire messages from the same instance.
-            // A 1-second pause ensures the go-back link is not silently dropped.
+            // A short pause keeps the follow-up go-back message reliable.
             sleep(1);
 
             $goBackSent = $confirmation->sendGoBackMessage($member);

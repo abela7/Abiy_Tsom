@@ -42,6 +42,8 @@ class TelegramAuthController extends Controller
             return view('auth.go');
         }
 
+        $currentMember = $memberSessionService->resolveMember($request);
+
         // Human browser with a valid code: authenticate server-side.
         $code = (string) $request->query('code', '');
 
@@ -76,7 +78,18 @@ class TelegramAuthController extends Controller
             }
         }
 
-        // No code or invalid code — show OG page which redirects to home.
+        if ($currentMember instanceof Member) {
+            $redirectUrl = $currentMember->passcode_enabled
+                ? route('member.passcode')
+                : route('member.home');
+
+            return response()->view('auth.authenticated', [
+                'redirectUrl' => $redirectUrl,
+            ]);
+        }
+
+        // No code or invalid code and no existing member session —
+        // show OG page which redirects to home.
         return view('auth.go');
     }
 

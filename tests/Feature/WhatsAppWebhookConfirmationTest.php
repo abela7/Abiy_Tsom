@@ -6,6 +6,7 @@ namespace Tests\Feature;
 
 use App\Models\Member;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class WhatsAppWebhookConfirmationTest extends TestCase
@@ -54,6 +55,17 @@ class WhatsAppWebhookConfirmationTest extends TestCase
 
     public function test_yes_reply_confirms_pending_whatsapp_reminder(): void
     {
+        config()->set('services.ultramsg.instance_id', 'instance999');
+        config()->set('services.ultramsg.token', 'token-123');
+        config()->set('app.url', 'https://abiytsom.abuneteklehaymanot.org');
+
+        Http::fake([
+            'https://api.ultramsg.com/instance999/messages/chat' => Http::response([
+                'sent' => 'true',
+                'message' => 'ok',
+            ]),
+        ]);
+
         $member = Member::create([
             'baptism_name' => 'Abel',
             'token' => str_repeat('a', 64),
@@ -82,6 +94,18 @@ class WhatsAppWebhookConfirmationTest extends TestCase
         $this->assertTrue((bool) $member->whatsapp_reminder_enabled);
         $this->assertSame('confirmed', $member->whatsapp_confirmation_status);
         $this->assertNotNull($member->whatsapp_confirmation_responded_at);
+
+        Http::assertSentCount(2);
+        Http::assertSent(function (\Illuminate\Http\Client\Request $request) use ($member): bool {
+            return $request->url() === 'https://api.ultramsg.com/instance999/messages/chat'
+                && $request['to'] === '+447700900123'
+                && $request['token'] === 'token-123'
+                && is_string($request['body'])
+                && ! str_contains($request['body'], '/member/access/')
+                && ! str_contains($request['body'], $member->token)
+                && str_contains($request['body'], 'https://abiytsom.abuneteklehaymanot.org/auth/go')
+                && str_contains($request['body'], 'do not share this link');
+        });
     }
 
     public function test_no_reply_rejects_pending_whatsapp_reminder(): void

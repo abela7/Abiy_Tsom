@@ -31,7 +31,7 @@ final class WhatsAppReminderConfirmationService
         $message = $this->templates->renderConfirmationTemplate(
             'app.whatsapp_invalid_reply_message',
             $member,
-            $this->buildMemberAccessUrl($member),
+            $this->buildWebsiteUrl(),
             $this->telegramUrl(),
             $locale
         );
@@ -52,7 +52,7 @@ final class WhatsAppReminderConfirmationService
         $message = $this->templates->renderConfirmationTemplate(
             'app.whatsapp_confirmation_prompt_message',
             $member,
-            $this->buildMemberAccessUrl($member),
+            $this->buildWebsiteUrl(),
             $this->telegramUrl(),
             $locale
         );
@@ -72,15 +72,19 @@ final class WhatsAppReminderConfirmationService
 
         $locale = $this->memberLocale($member);
 
-        $accessUrl = $this->buildMemberAccessUrl($member);
+        $websiteUrl = $this->buildWebsiteUrl();
 
         $message = $this->templates->renderConfirmationTemplate(
             'app.whatsapp_confirmation_go_back_message',
             $member,
-            $accessUrl,
+            $websiteUrl,
             $this->telegramUrl(),
             $locale
         );
+        $warning = $this->warningMessage($locale);
+        $message = trim($message) !== ''
+            ? trim($message)."\n\n".$warning
+            : $warning;
 
         return $this->ultraMsg->sendTextMessage((string) $member->whatsapp_phone, $message);
     }
@@ -98,7 +102,7 @@ final class WhatsAppReminderConfirmationService
         $message = $this->templates->renderConfirmationTemplate(
             'app.whatsapp_confirmation_activated_message',
             $member,
-            $this->buildMemberAccessUrl($member),
+            $this->buildWebsiteUrl(),
             $this->telegramUrl(),
             $locale
         );
@@ -119,7 +123,7 @@ final class WhatsAppReminderConfirmationService
         $message = $this->templates->renderConfirmationTemplate(
             'app.whatsapp_confirmation_rejected_message',
             $member,
-            $this->buildMemberAccessUrl($member),
+            $this->buildWebsiteUrl(),
             $this->telegramUrl(),
             $locale
         );
@@ -155,12 +159,13 @@ final class WhatsAppReminderConfirmationService
     }
 
     /**
-     * Build a permanent access URL for the member using their token.
-     * No expiry, no one-time codes — just takes the user to /member/home.
+     * Build a safe go-back URL for WhatsApp confirmation.
+     * The link may resume an existing browser session, but it never
+     * authenticates a new device on its own.
      */
-    private function buildMemberAccessUrl(Member $member): string
+    private function buildWebsiteUrl(): string
     {
-        $url = route('member.access', ['token' => $member->token]);
+        $url = route('auth.go');
 
         if (! app()->environment('local')) {
             $url = preg_replace('/^http:\/\//i', 'https://', $url) ?? $url;
@@ -174,6 +179,11 @@ final class WhatsAppReminderConfirmationService
         $telegramUsername = ltrim(trim((string) config('services.telegram.bot_username', '')), '@');
 
         return $telegramUsername !== '' ? 'https://t.me/'.$telegramUsername : 'https://t.me/AbiyTsomBot';
+    }
+
+    private function warningMessage(string $locale): string
+    {
+        return trim(Lang::get('app.whatsapp_confirmation_link_warning', locale: $locale));
     }
 
     /**
