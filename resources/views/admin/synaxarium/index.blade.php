@@ -42,6 +42,7 @@ elseif (old('_form') === 'add_annual') $autoSheet = 'add-annual';
          tab: '{{ request()->query('edit_annual') ? 'annual' : 'monthly' }}',
          selectedDay: {{ $editingMonthly ? $editingMonthly->day : (int)request()->query('day', 1) }},
          sheet: '{{ $autoSheet }}',
+         dayPickerOpen: true,
          pendingDeleteId: null,
          imgAdd: null,
          imgEdit: null,
@@ -101,23 +102,49 @@ elseif (old('_form') === 'add_annual') $autoSheet = 'add-annual';
     {{-- ════════════════════════ MONTHLY TAB ════════════════════════ --}}
     <div x-show="tab === 'monthly'">
 
-        {{-- Day Grid --}}
-        <div class="bg-card rounded-2xl border border-border shadow-sm p-4 mb-4">
-            <p class="text-[11px] font-bold text-muted-text uppercase tracking-widest mb-3">{{ __('app.synaxarium_day_number') }}</p>
-            <div class="grid grid-cols-5 sm:grid-cols-6 gap-2">
-                @for($d = 1; $d <= 30; $d++)
-                <button type="button" @click="selectedDay = {{ $d }}"
-                        class="relative h-14 rounded-2xl text-base font-bold transition-all duration-150 active:scale-95 select-none"
-                        :class="selectedDay === {{ $d }}
-                            ? 'bg-accent text-on-accent shadow-lg shadow-accent/30 scale-105'
-                            : 'bg-surface text-primary border border-border'">
-                    {{ $d }}
-                    @if(isset($monthlyByDay[$d]) && $monthlyByDay[$d]->count() > 0)
-                        <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full"
-                              :class="selectedDay === {{ $d }} ? 'bg-white/80' : 'bg-accent'"></span>
-                    @endif
-                </button>
-                @endfor
+        {{-- Day Grid Accordion --}}
+        <div class="bg-card rounded-2xl border border-border shadow-sm mb-4 overflow-hidden">
+            {{-- Accordion header --}}
+            <button type="button" @click="dayPickerOpen = !dayPickerOpen"
+                    class="w-full flex items-center justify-between px-4 py-3.5 active:bg-muted/40 transition select-none">
+                <div class="flex items-center gap-3">
+                    <svg class="w-4 h-4 text-accent shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    <span class="text-sm font-semibold text-primary">{{ __('app.synaxarium_day_number') }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-sm font-bold text-accent px-2.5 py-1 rounded-xl bg-accent/10"
+                          x-text="'Day ' + selectedDay"></span>
+                    <svg class="w-4 h-4 text-muted-text transition-transform duration-200"
+                         :class="dayPickerOpen ? 'rotate-180' : ''"
+                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </div>
+            </button>
+            {{-- Accordion body --}}
+            <div x-show="dayPickerOpen"
+                 x-transition:enter="transition duration-200 ease-out"
+                 x-transition:enter-start="opacity-0 -translate-y-2"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 x-transition:leave="transition duration-150 ease-in"
+                 x-transition:leave-start="opacity-100 translate-y-0"
+                 x-transition:leave-end="opacity-0 -translate-y-2"
+                 class="px-4 pb-4 border-t border-border">
+                <div class="grid grid-cols-5 sm:grid-cols-6 gap-2 pt-3">
+                    @for($d = 1; $d <= 30; $d++)
+                    <button type="button" @click="selectedDay = {{ $d }}; dayPickerOpen = false"
+                            class="relative h-14 rounded-2xl text-base font-bold transition-all duration-150 active:scale-95 select-none"
+                            :class="selectedDay === {{ $d }}
+                                ? 'bg-accent text-on-accent shadow-lg shadow-accent/30 scale-105'
+                                : 'bg-surface text-primary border border-border'">
+                        {{ $d }}
+                        @if(isset($monthlyByDay[$d]) && $monthlyByDay[$d]->count() > 0)
+                            <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full"
+                                  :class="selectedDay === {{ $d }} ? 'bg-white/80' : 'bg-accent'"></span>
+                        @endif
+                    </button>
+                    @endfor
+                </div>
             </div>
         </div>
 
