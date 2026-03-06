@@ -87,6 +87,25 @@
     --app-cal-upcoming-bg: rgba(148, 163, 184, 0.1);
     --app-cal-upcoming-border: #475569;
     --app-cal-upcoming-text: #94a3b8;
+    /* Re-bind Tailwind color tokens so themes work on nested elements (e.g. fullscreen reader) */
+    --color-surface: var(--app-surface);
+    --color-card: var(--app-card);
+    --color-muted: var(--app-muted);
+    --color-primary: var(--app-primary);
+    --color-secondary: var(--app-secondary);
+    --color-muted-text: var(--app-muted-text);
+    --color-border: var(--app-border);
+    --color-border-muted: var(--app-border-muted);
+    --color-accent: var(--app-accent);
+    --color-accent-hover: var(--app-accent-hover);
+    --color-accent-secondary: var(--app-accent-secondary);
+    --color-on-accent: var(--app-on-accent);
+    --color-success: var(--app-success);
+    --color-success-bg: var(--app-success-bg);
+    --color-error: var(--app-error);
+    --color-error-bg: var(--app-error-bg);
+    --color-on-error: var(--app-on-error);
+    --color-overlay: var(--app-overlay);
 }
 
 /* ─── Semantic theme variables (sepia) ────────────────────────────────────── */
@@ -137,6 +156,25 @@
     --app-cal-upcoming-bg: #f1f5f9;
     --app-cal-upcoming-border: #cbd5e1;
     --app-cal-upcoming-text: #64748b;
+    /* Re-bind Tailwind color tokens so themes work on nested elements (e.g. fullscreen reader) */
+    --color-surface: var(--app-surface);
+    --color-card: var(--app-card);
+    --color-muted: var(--app-muted);
+    --color-primary: var(--app-primary);
+    --color-secondary: var(--app-secondary);
+    --color-muted-text: var(--app-muted-text);
+    --color-border: var(--app-border);
+    --color-border-muted: var(--app-border-muted);
+    --color-accent: var(--app-accent);
+    --color-accent-hover: var(--app-accent-hover);
+    --color-accent-secondary: var(--app-accent-secondary);
+    --color-on-accent: var(--app-on-accent);
+    --color-success: var(--app-success);
+    --color-success-bg: var(--app-success-bg);
+    --color-error: var(--app-error);
+    --color-error-bg: var(--app-error-bg);
+    --color-on-error: var(--app-on-error);
+    --color-overlay: var(--app-overlay);
 }
 
 /* ─── Map to Tailwind color utilities (bg-surface, text-primary, etc.) ────── */
