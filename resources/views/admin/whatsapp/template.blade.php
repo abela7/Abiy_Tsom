@@ -216,7 +216,6 @@
 
                 @foreach($templates as $template)
                     @php
-                        $meta = $templateMeta[$template['key']] ?? ['group' => 'confirmation', 'description' => ''];
                         $placeholderList = array_map(
                             static fn (string $key): string => ':'.$key,
                             $template['placeholder_keys']
@@ -232,10 +231,10 @@
                             <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                                 <div>
                                     <span class="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-                                        {{ $meta['group'] === 'daily' ? __('app.whatsapp_template_group_daily') : __('app.whatsapp_template_group_confirmation') }}
+                                        {{ (($templateMeta[$template['key']]['group'] ?? 'confirmation') === 'daily') ? __('app.whatsapp_template_group_daily') : __('app.whatsapp_template_group_confirmation') }}
                                     </span>
                                     <h2 class="mt-3 text-2xl font-semibold tracking-tight text-primary">{{ $template['title'] }}</h2>
-                                    <p class="mt-2 max-w-3xl text-sm leading-6 text-muted-text">{{ $meta['description'] }}</p>
+                                    <p class="mt-2 max-w-3xl text-sm leading-6 text-muted-text">{{ $templateMeta[$template['key']]['description'] ?? '' }}</p>
                                 </div>
                                 <div class="rounded-2xl border border-border bg-card px-4 py-3 text-xs text-muted-text">
                                     <div class="font-semibold uppercase tracking-[0.18em]">{{ __('app.whatsapp_template_key_label') }}</div>
