@@ -90,6 +90,27 @@ final class TelegramAuthService
         return $token->load('actor');
     }
 
+    public function peekCode(string $code, ?string $purpose = null): ?TelegramAccessToken
+    {
+        $this->cleanupExpiredTokens();
+
+        $normalized = trim($code);
+        if (! preg_match('/^[A-Za-z0-9]{20,128}$/', $normalized)) {
+            return null;
+        }
+
+        $query = TelegramAccessToken::query()
+            ->where('token_hash', hash('sha256', $normalized))
+            ->whereNull('consumed_at')
+            ->where('expires_at', '>', now());
+
+        if ($purpose !== null) {
+            $query->where('purpose', $purpose);
+        }
+
+        return $query->first()?->load('actor');
+    }
+
     public function consumeCode(string $code, ?string $purpose = null): ?TelegramAccessToken
     {
         return $this->resolveCode($code, $purpose);

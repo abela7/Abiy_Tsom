@@ -6,8 +6,8 @@
     <title>{{ $ogTitle }} - {{ __('app.app_name') }}</title>
     <meta name="description" content="{{ $ogDescription }}">
 
-    {{-- Redirect to public day view for bots and users without valid auth code.
-         Authenticated users never see this page (server handles auth and redirects). --}}
+    {{-- Redirect to public day view for bots and browsers that do not already
+         have the matching member session for this reminder link. --}}
     <meta http-equiv="refresh" content="0;url={{ $publicDayUrl }}">
 
     @php
