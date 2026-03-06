@@ -1,4 +1,4 @@
-﻿@extends('layouts.admin')
+@extends('layouts.admin')
 @section('title', __('app.whatsapp_template_title'))
 
 @section('content')
@@ -53,161 +53,165 @@
 
 <style>
     [x-cloak] { display: none !important; }
+    .wa-bubble { position: relative; }
+    .wa-bubble::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -6px;
+        width: 12px;
+        height: 12px;
+        background: inherit;
+        clip-path: polygon(100% 0, 0 0, 100% 100%);
+    }
+    .wa-bubble-en::before { background: #dcf8c6; }
+    .wa-bubble-am::before { background: #fff; }
+    @media (prefers-color-scheme: dark) {
+        .wa-bubble-en::before { background: #025144; }
+        .wa-bubble-am::before { background: #1f2c34; }
+    }
 </style>
 
 <div x-data="whatsappTemplateEditor(@js($firstTemplateKey))" class="space-y-6">
-    <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+
+    {{-- Page header --}}
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-            <h1 class="text-3xl font-bold tracking-tight text-primary">{{ __('app.whatsapp_template_title') }}</h1>
-            <p class="mt-2 max-w-3xl text-sm leading-6 text-muted-text">{{ __('app.whatsapp_template_help') }}</p>
+            <h1 class="text-2xl font-bold tracking-tight text-primary">{{ __('app.whatsapp_template_title') }}</h1>
+            <p class="mt-1 max-w-2xl text-sm text-muted-text">{{ __('app.whatsapp_template_help') }}</p>
         </div>
-        <button
-            type="submit"
-            form="whatsapp-template-form"
-            class="inline-flex items-center justify-center rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-on-accent shadow-sm transition hover:bg-accent-hover"
-        >
+        <button type="submit" form="whatsapp-template-form"
+            class="inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-on-accent shadow-sm transition hover:bg-accent-hover active:scale-[0.97] shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
             {{ __('app.whatsapp_template_save') }}
         </button>
     </div>
 
-    <div class="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
-        <section class="rounded-2xl border border-border bg-card p-5 shadow-sm">
-            <div class="flex items-center gap-3">
-                <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-accent/10 text-accent text-lg font-bold">1</div>
+    {{-- Top cards: Workflow + Test --}}
+    <div class="grid gap-4 lg:grid-cols-[1fr_380px]">
+
+        {{-- Workflow steps --}}
+        <div class="rounded-2xl border border-border bg-card p-5 shadow-sm">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                </div>
+                <h2 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_template_workflow_title') }}</h2>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-3">
+                <div class="flex-1 flex items-start gap-3 rounded-xl border border-border bg-surface px-3.5 py-3">
+                    <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-on-accent">1</span>
+                    <p class="text-sm text-secondary leading-snug">{{ __('app.whatsapp_template_workflow_step_1') }}</p>
+                </div>
+                <div class="hidden sm:flex items-center text-muted-text">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </div>
+                <div class="flex-1 flex items-start gap-3 rounded-xl border border-border bg-surface px-3.5 py-3">
+                    <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-on-accent">2</span>
+                    <p class="text-sm text-secondary leading-snug">{{ __('app.whatsapp_template_workflow_step_2') }}</p>
+                </div>
+                <div class="hidden sm:flex items-center text-muted-text">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </div>
+                <div class="flex-1 flex items-start gap-3 rounded-xl border border-border bg-surface px-3.5 py-3">
+                    <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-on-accent">3</span>
+                    <p class="text-sm text-secondary leading-snug">{{ __('app.whatsapp_template_workflow_step_3') }}</p>
+                </div>
+            </div>
+        </div>
+
+        {{-- Test send --}}
+        <div class="rounded-2xl border border-border bg-card p-5 shadow-sm">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                </div>
                 <div>
-                    <h2 class="text-base font-semibold text-primary">{{ __('app.whatsapp_template_workflow_title') }}</h2>
-                    <p class="text-sm text-muted-text">{{ __('app.whatsapp_template_warning') }}</p>
+                    <h2 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_template_test_title') }}</h2>
+                    <p class="text-xs text-muted-text">{{ __('app.whatsapp_template_test_help') }}</p>
                 </div>
             </div>
-            <div class="mt-5 grid gap-3 md:grid-cols-3">
-                <div class="rounded-2xl border border-border bg-surface px-4 py-4">
-                    <p class="text-sm font-semibold text-primary">{{ __('app.whatsapp_template_workflow_step_1') }}</p>
-                </div>
-                <div class="rounded-2xl border border-border bg-surface px-4 py-4">
-                    <p class="text-sm font-semibold text-primary">{{ __('app.whatsapp_template_workflow_step_2') }}</p>
-                </div>
-                <div class="rounded-2xl border border-border bg-surface px-4 py-4">
-                    <p class="text-sm font-semibold text-primary">{{ __('app.whatsapp_template_workflow_step_3') }}</p>
-                </div>
-            </div>
-        </section>
-
-        <section class="rounded-2xl border border-border bg-card p-5 shadow-sm">
-            <div class="mb-4">
-                <h2 class="text-base font-semibold text-primary">{{ __('app.whatsapp_template_test_title') }}</h2>
-                <p class="mt-1 text-sm text-muted-text">{{ __('app.whatsapp_template_test_help') }}</p>
-            </div>
-
-            <form method="POST" action="{{ route('admin.whatsapp.template.test') }}" class="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+            <form method="POST" action="{{ route('admin.whatsapp.template.test') }}" class="space-y-3">
                 @csrf
-                <div>
-                    <label for="template-test-member" class="mb-1.5 block text-sm font-medium text-secondary">
-                        {{ __('app.whatsapp_template_test_member_label') }}
-                    </label>
-                    <select
-                        id="template-test-member"
-                        name="member_id"
-                        class="w-full rounded-xl border border-border bg-surface px-3 py-3 text-sm text-primary outline-none transition focus:ring-2 focus:ring-accent"
-                        required
-                    >
-                        <option value="">{{ __('app.whatsapp_template_test_member_placeholder') }}</option>
-                        @foreach($testMembers as $member)
-                            @php
-                                $memberLabel = trim((string) ($member->baptism_name ?: ''));
-                                if ($memberLabel === '') {
-                                    $memberLabel = __('app.whatsapp_template_test_member_fallback');
-                                }
-                                $memberLabel .= ' - '.$member->whatsapp_phone;
-                                if ($member->whatsapp_confirmation_status) {
-                                    $memberLabel .= ' - '.$member->whatsapp_confirmation_status;
-                                }
-                                if ($member->whatsapp_language) {
-                                    $memberLabel .= ' - '.strtoupper((string) $member->whatsapp_language);
-                                }
-                            @endphp
-                            <option value="{{ $member->id }}" @selected((string) old('template_test_member_id') === (string) $member->id)>
-                                {{ $memberLabel }}
-                            </option>
-                        @endforeach
-                    </select>
+                <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+                    <div>
+                        <label for="template-test-member" class="mb-1 block text-xs font-medium text-secondary">{{ __('app.whatsapp_template_test_member_label') }}</label>
+                        <select id="template-test-member" name="member_id" required
+                            class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-primary outline-none transition focus:ring-2 focus:ring-accent">
+                            <option value="">{{ __('app.whatsapp_template_test_member_placeholder') }}</option>
+                            @foreach($testMembers as $member)
+                                @php
+                                    $memberLabel = trim((string) ($member->baptism_name ?: ''));
+                                    if ($memberLabel === '') {
+                                        $memberLabel = __('app.whatsapp_template_test_member_fallback');
+                                    }
+                                    $memberLabel .= ' - '.$member->whatsapp_phone;
+                                    if ($member->whatsapp_confirmation_status) {
+                                        $memberLabel .= ' - '.$member->whatsapp_confirmation_status;
+                                    }
+                                    if ($member->whatsapp_language) {
+                                        $memberLabel .= ' - '.strtoupper((string) $member->whatsapp_language);
+                                    }
+                                @endphp
+                                <option value="{{ $member->id }}" @selected((string) old('template_test_member_id') === (string) $member->id)>
+                                    {{ $memberLabel }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label for="template-test-language" class="mb-1 block text-xs font-medium text-secondary">{{ __('app.whatsapp_template_test_language_label') }}</label>
+                        <select id="template-test-language" name="test_locale"
+                            class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-primary outline-none transition focus:ring-2 focus:ring-accent">
+                            <option value="member" @selected((string) old('template_test_locale', 'member') === 'member')>{{ __('app.whatsapp_template_test_language_member') }}</option>
+                            <option value="en" @selected((string) old('template_test_locale') === 'en')>{{ __('app.whatsapp_template_test_language_en') }}</option>
+                            <option value="am" @selected((string) old('template_test_locale') === 'am')>{{ __('app.whatsapp_template_test_language_am') }}</option>
+                        </select>
+                    </div>
                 </div>
-
-                <div>
-                    <label for="template-test-language" class="mb-1.5 block text-sm font-medium text-secondary">
-                        {{ __('app.whatsapp_template_test_language_label') }}
-                    </label>
-                    <select
-                        id="template-test-language"
-                        name="test_locale"
-                        class="w-full rounded-xl border border-border bg-surface px-3 py-3 text-sm text-primary outline-none transition focus:ring-2 focus:ring-accent"
-                    >
-                        <option value="member" @selected((string) old('template_test_locale', 'member') === 'member')>{{ __('app.whatsapp_template_test_language_member') }}</option>
-                        <option value="en" @selected((string) old('template_test_locale') === 'en')>{{ __('app.whatsapp_template_test_language_en') }}</option>
-                        <option value="am" @selected((string) old('template_test_locale') === 'am')>{{ __('app.whatsapp_template_test_language_am') }}</option>
-                    </select>
-                </div>
-
-                <button
-                    type="submit"
-                    class="inline-flex items-center justify-center rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-                    @disabled($testMembers->isEmpty())
-                >
+                <button type="submit" @disabled($testMembers->isEmpty())
+                    class="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
                     {{ __('app.whatsapp_template_send_test') }}
                 </button>
             </form>
-        </section>
+        </div>
     </div>
 
-    <div class="grid gap-6 xl:grid-cols-[280px_minmax(0,1fr)]">
-        <aside class="space-y-4 xl:sticky xl:top-24 xl:self-start">
-            <section class="rounded-2xl border border-border bg-card p-4 shadow-sm">
-                <div class="mb-4">
-                    <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-muted-text">{{ __('app.whatsapp_template_group_daily') }}</h2>
-                </div>
-                <div class="space-y-2">
-                    @foreach($templateGroups['daily'] as $template)
-                        @php($meta = $templateMeta[$template['key']] ?? ['description' => ''])
-                        <button
-                            type="button"
-                            @click="selectTemplate('{{ $template['key'] }}')"
-                            :class="activeTemplate === '{{ $template['key'] }}'
-                                ? 'border-primary/30 bg-primary/10 text-primary shadow-sm'
-                                : 'border-transparent bg-surface text-secondary hover:border-border hover:bg-muted/40'"
-                            class="w-full rounded-2xl border px-4 py-3 text-left transition"
-                        >
-                            <div class="text-sm font-semibold">{{ $template['title'] }}</div>
-                            <div class="mt-1 text-xs leading-5 text-muted-text">{{ $meta['description'] }}</div>
-                        </button>
-                    @endforeach
-                </div>
-            </section>
+    {{-- Main editor area --}}
+    <div class="grid gap-5 xl:grid-cols-[260px_minmax(0,1fr)]">
 
-            <section class="rounded-2xl border border-border bg-card p-4 shadow-sm">
-                <div class="mb-4">
-                    <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-muted-text">{{ __('app.whatsapp_template_group_confirmation') }}</h2>
+        {{-- Sidebar: template list --}}
+        <aside class="space-y-3 xl:sticky xl:top-24 xl:self-start">
+            @foreach(['daily' => __('app.whatsapp_template_group_daily'), 'confirmation' => __('app.whatsapp_template_group_confirmation')] as $groupKey => $groupLabel)
+            <div class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+                <div class="px-4 py-2.5 bg-surface/60 border-b border-border">
+                    <h2 class="text-[11px] font-bold uppercase tracking-widest text-muted-text">{{ $groupLabel }}</h2>
                 </div>
-                <div class="space-y-2">
-                    @foreach($templateGroups['confirmation'] as $template)
+                <div class="p-2 space-y-1">
+                    @foreach($templateGroups[$groupKey] as $template)
                         @php($meta = $templateMeta[$template['key']] ?? ['description' => ''])
-                        <button
-                            type="button"
+                        <button type="button"
                             @click="selectTemplate('{{ $template['key'] }}')"
                             :class="activeTemplate === '{{ $template['key'] }}'
-                                ? 'border-primary/30 bg-primary/10 text-primary shadow-sm'
-                                : 'border-transparent bg-surface text-secondary hover:border-border hover:bg-muted/40'"
-                            class="w-full rounded-2xl border px-4 py-3 text-left transition"
-                        >
-                            <div class="text-sm font-semibold">{{ $template['title'] }}</div>
-                            <div class="mt-1 text-xs leading-5 text-muted-text">{{ $meta['description'] }}</div>
+                                ? 'bg-accent/10 text-accent border-accent/20 shadow-sm'
+                                : 'bg-transparent text-secondary border-transparent hover:bg-muted/50'"
+                            class="w-full rounded-xl border px-3 py-2.5 text-left transition-all duration-150">
+                            <div class="text-[13px] font-semibold leading-snug">{{ $template['title'] }}</div>
+                            <div class="mt-0.5 text-[11px] leading-relaxed text-muted-text line-clamp-2">{{ $meta['description'] }}</div>
                         </button>
                     @endforeach
                 </div>
-            </section>
+            </div>
+            @endforeach
         </aside>
 
+        {{-- Editor panels --}}
         <div class="space-y-4">
-            <div class="rounded-2xl border border-amber-300/60 bg-amber-50/70 px-4 py-3 text-sm text-amber-900 shadow-sm dark:bg-amber-900/20 dark:text-amber-200">
-                {{ __('app.whatsapp_template_warning') }}
+            {{-- Warning --}}
+            <div class="flex items-start gap-3 rounded-xl border border-amber-300/50 bg-amber-50/60 px-4 py-3 text-sm text-amber-800 dark:bg-amber-900/15 dark:text-amber-200 dark:border-amber-500/20">
+                <svg class="w-5 h-5 shrink-0 mt-0.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+                <span>{{ __('app.whatsapp_template_warning') }}</span>
             </div>
 
             <form id="whatsapp-template-form" method="POST" action="{{ route('admin.whatsapp.template.update') }}" class="space-y-4">
@@ -215,113 +219,140 @@
                 @method('PUT')
 
                 @foreach($templates as $template)
-                    <section
-                        x-cloak
-                        x-show="activeTemplate === '{{ $template['key'] }}'"
-                        class="overflow-hidden rounded-3xl border border-border bg-card shadow-sm"
-                    >
-                        <div class="border-b border-border bg-surface/80 px-5 py-5 sm:px-6">
-                            <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                                <div>
-                                    <span class="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+                <section x-cloak x-show="activeTemplate === '{{ $template['key'] }}'"
+                    x-transition:enter="transition ease-out duration-150"
+                    x-transition:enter-start="opacity-0 translate-y-1"
+                    x-transition:enter-end="opacity-100 translate-y-0"
+                    class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+
+                    {{-- Template header --}}
+                    <div class="border-b border-border bg-surface/50 px-5 py-4">
+                        <div class="flex flex-wrap items-start justify-between gap-3">
+                            <div>
+                                <div class="flex items-center gap-2 mb-1.5">
+                                    <span class="inline-flex items-center rounded-md bg-accent/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-accent">
                                         {{ (($templateMeta[$template['key']]['group'] ?? 'confirmation') === 'daily') ? __('app.whatsapp_template_group_daily') : __('app.whatsapp_template_group_confirmation') }}
                                     </span>
-                                    <h2 class="mt-3 text-2xl font-semibold tracking-tight text-primary">{{ $template['title'] }}</h2>
-                                    <p class="mt-2 max-w-3xl text-sm leading-6 text-muted-text">{{ $templateMeta[$template['key']]['description'] ?? '' }}</p>
+                                    <code class="text-[11px] text-muted-text bg-muted/50 px-2 py-0.5 rounded-md">{{ $template['key'] }}</code>
                                 </div>
-                                <div class="rounded-2xl border border-border bg-card px-4 py-3 text-xs text-muted-text">
-                                    <div class="font-semibold uppercase tracking-[0.18em]">{{ __('app.whatsapp_template_key_label') }}</div>
-                                    <code class="mt-1 block text-primary">{{ $template['key'] }}</code>
+                                <h2 class="text-lg font-bold text-primary">{{ $template['title'] }}</h2>
+                                <p class="mt-1 text-sm text-muted-text">{{ $templateMeta[$template['key']]['description'] ?? '' }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-5 space-y-5">
+
+                        {{-- Placeholders --}}
+                        <div class="rounded-xl bg-surface/60 border border-border px-4 py-3">
+                            <div class="flex items-center gap-2 mb-2.5">
+                                <svg class="w-4 h-4 text-muted-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+                                <h3 class="text-xs font-semibold text-secondary uppercase tracking-wide">{{ __('app.whatsapp_template_placeholders') }}</h3>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5">
+                                @forelse(array_map(static fn (string $key): string => ':'.$key, $template['placeholder_keys']) as $placeholder)
+                                    <button type="button"
+                                        @click.prevent="insertPlaceholder('{{ $placeholder }}')"
+                                        class="rounded-lg border border-border bg-card px-2.5 py-1 text-xs font-mono font-medium text-secondary transition hover:border-accent/40 hover:bg-accent/10 hover:text-accent active:scale-95">
+                                        {{ $placeholder }}
+                                    </button>
+                                @empty
+                                    <span class="text-xs text-muted-text">{{ __('app.whatsapp_template_none') }}</span>
+                                @endforelse
+                            </div>
+                            <p class="mt-2 text-[11px] text-muted-text">{{ __('app.whatsapp_template_insert_help') }}</p>
+                        </div>
+
+                        {{-- Editor + Preview grid --}}
+                        <div class="grid gap-4 2xl:grid-cols-[1fr_1fr_340px]">
+
+                            {{-- English editor --}}
+                            <div>
+                                <label for="tpl-en-{{ $template['key'] }}" class="flex items-center gap-2 mb-2 text-sm font-semibold text-primary">
+                                    <span class="flex h-5 w-5 items-center justify-center rounded bg-blue-500/10 text-[10px] font-bold text-blue-600 dark:text-blue-400">EN</span>
+                                    {{ __('app.whatsapp_template_en_label') }}
+                                </label>
+                                <textarea
+                                    id="tpl-en-{{ $template['key'] }}"
+                                    name="templates[{{ $template['key'] }}][en]"
+                                    rows="12"
+                                    data-preview-target="preview-en-{{ $template['key'] }}"
+                                    data-locale="en"
+                                    data-allowed-placeholders='@json($template['placeholder_keys'])'
+                                    @focus="rememberField('tpl-en-{{ $template['key'] }}')"
+                                    class="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm leading-6 text-primary font-mono outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 resize-y"
+                                >{{ old("templates.{$template['key']}.en", $template['en']) }}</textarea>
+                            </div>
+
+                            {{-- Amharic editor --}}
+                            <div>
+                                <label for="tpl-am-{{ $template['key'] }}" class="flex items-center gap-2 mb-2 text-sm font-semibold text-primary">
+                                    <span class="flex h-5 w-5 items-center justify-center rounded bg-emerald-500/10 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">AM</span>
+                                    {{ __('app.whatsapp_template_am_label') }}
+                                </label>
+                                <textarea
+                                    id="tpl-am-{{ $template['key'] }}"
+                                    name="templates[{{ $template['key'] }}][am]"
+                                    rows="12"
+                                    data-preview-target="preview-am-{{ $template['key'] }}"
+                                    data-locale="am"
+                                    data-allowed-placeholders='@json($template['placeholder_keys'])'
+                                    @focus="rememberField('tpl-am-{{ $template['key'] }}')"
+                                    class="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm leading-6 text-primary font-mono outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 resize-y"
+                                >{{ old("templates.{$template['key']}.am", $template['am']) }}</textarea>
+                            </div>
+
+                            {{-- WhatsApp-style preview --}}
+                            <div class="2xl:sticky 2xl:top-28 2xl:self-start">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <svg class="w-4 h-4 text-muted-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                    <h3 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_template_preview_title') }}</h3>
+                                </div>
+                                <p class="mb-3 text-[11px] text-muted-text">{{ __('app.whatsapp_template_preview_help') }}</p>
+
+                                {{-- WhatsApp chat mockup --}}
+                                <div class="rounded-2xl overflow-hidden border border-border shadow-sm">
+                                    {{-- Chat header --}}
+                                    <div class="bg-[#075e54] dark:bg-[#1f2c34] px-4 py-2.5 flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                                            <svg class="w-4 h-4 text-white/80" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                                        </div>
+                                        <div>
+                                            <p class="text-white text-sm font-medium">Abiy Tsom Bot</p>
+                                            <p class="text-white/60 text-[10px]">online</p>
+                                        </div>
+                                    </div>
+
+                                    {{-- Chat body --}}
+                                    <div class="bg-[#ece5dd] dark:bg-[#0b141a] px-4 py-4 space-y-3 min-h-[200px]" style="background-image: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22><rect fill=%22%23e5ddd5%22 width=%2260%22 height=%2260%22 opacity=%220.03%22/></svg>')">
+                                        {{-- EN bubble --}}
+                                        <div class="ml-2">
+                                            <p class="text-[10px] font-semibold text-muted-text mb-1 uppercase tracking-wide">{{ __('app.whatsapp_template_en_label') }}</p>
+                                            <div class="wa-bubble wa-bubble-en inline-block max-w-[95%] rounded-lg rounded-tl-none bg-[#dcf8c6] dark:bg-[#025144] px-3 py-2 shadow-sm">
+                                                <p id="preview-en-{{ $template['key'] }}" class="whitespace-pre-wrap break-words text-[13px] leading-[1.45] text-[#111b21] dark:text-[#e9edef]"></p>
+                                            </div>
+                                        </div>
+
+                                        {{-- AM bubble --}}
+                                        <div class="ml-2">
+                                            <p class="text-[10px] font-semibold text-muted-text mb-1 uppercase tracking-wide">{{ __('app.whatsapp_template_am_label') }}</p>
+                                            <div class="wa-bubble wa-bubble-am inline-block max-w-[95%] rounded-lg rounded-tl-none bg-white dark:bg-[#1f2c34] px-3 py-2 shadow-sm">
+                                                <p id="preview-am-{{ $template['key'] }}" class="whitespace-pre-wrap break-words text-[13px] leading-[1.45] text-[#111b21] dark:text-[#e9edef]"></p>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-
-                        <div class="space-y-5 p-5 sm:p-6">
-                            <section class="rounded-2xl border border-border bg-surface px-4 py-4">
-                                <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                                    <div>
-                                        <h3 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_template_placeholders') }}</h3>
-                                        <p class="mt-1 text-sm text-muted-text">{{ __('app.whatsapp_template_insert_help') }}</p>
-                                    </div>
-                                </div>
-                                <div class="mt-4 flex flex-wrap gap-2">
-                                    @forelse(array_map(static fn (string $key): string => ':'.$key, $template['placeholder_keys']) as $placeholder)
-                                        <button
-                                            type="button"
-                                            @click.prevent="insertPlaceholder('{{ $placeholder }}')"
-                                            class="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-secondary transition hover:border-primary/30 hover:bg-primary/10 hover:text-primary"
-                                        >
-                                            {{ $placeholder }}
-                                        </button>
-                                    @empty
-                                        <span class="text-sm text-muted-text">{{ __('app.whatsapp_template_none') }}</span>
-                                    @endforelse
-                                </div>
-                            </section>
-
-                            <div class="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_320px]">
-                                <section class="rounded-2xl border border-border bg-surface p-4">
-                                    <div class="mb-3 flex items-center justify-between gap-3">
-                                        <label for="tpl-en-{{ $template['key'] }}" class="text-sm font-semibold text-primary">
-                                            {{ __('app.whatsapp_template_en_label') }}
-                                        </label>
-                                    </div>
-                                    <textarea
-                                        id="tpl-en-{{ $template['key'] }}"
-                                        name="templates[{{ $template['key'] }}][en]"
-                                        rows="14"
-                                        data-preview-target="preview-en-{{ $template['key'] }}"
-                                        data-locale="en"
-                                        data-allowed-placeholders='@json($template['placeholder_keys'])'
-                                        @focus="rememberField('tpl-en-{{ $template['key'] }}')"
-                                        class="w-full rounded-2xl border border-border bg-card px-4 py-3 text-sm leading-6 text-primary outline-none transition focus:ring-2 focus:ring-accent"
-                                    >{{ old("templates.{$template['key']}.en", $template['en']) }}</textarea>
-                                </section>
-
-                                <section class="rounded-2xl border border-border bg-surface p-4">
-                                    <div class="mb-3 flex items-center justify-between gap-3">
-                                        <label for="tpl-am-{{ $template['key'] }}" class="text-sm font-semibold text-primary">
-                                            {{ __('app.whatsapp_template_am_label') }}
-                                        </label>
-                                    </div>
-                                    <textarea
-                                        id="tpl-am-{{ $template['key'] }}"
-                                        name="templates[{{ $template['key'] }}][am]"
-                                        rows="14"
-                                        data-preview-target="preview-am-{{ $template['key'] }}"
-                                        data-locale="am"
-                                        data-allowed-placeholders='@json($template['placeholder_keys'])'
-                                        @focus="rememberField('tpl-am-{{ $template['key'] }}')"
-                                        class="w-full rounded-2xl border border-border bg-card px-4 py-3 text-sm leading-6 text-primary outline-none transition focus:ring-2 focus:ring-accent"
-                                    >{{ old("templates.{$template['key']}.am", $template['am']) }}</textarea>
-                                </section>
-
-                                <section class="rounded-2xl border border-border bg-surface p-4 2xl:sticky 2xl:top-28 2xl:self-start">
-                                    <div class="mb-4">
-                                        <h3 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_template_preview_title') }}</h3>
-                                        <p class="mt-1 text-sm text-muted-text">{{ __('app.whatsapp_template_preview_help') }}</p>
-                                    </div>
-                                    <div class="space-y-3">
-                                        <div class="rounded-2xl border border-border bg-card p-3">
-                                            <p class="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.whatsapp_template_en_label') }}</p>
-                                            <p id="preview-en-{{ $template['key'] }}" class="whitespace-pre-wrap break-words text-sm leading-6 text-primary"></p>
-                                        </div>
-                                        <div class="rounded-2xl border border-border bg-card p-3">
-                                            <p class="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.whatsapp_template_am_label') }}</p>
-                                            <p id="preview-am-{{ $template['key'] }}" class="whitespace-pre-wrap break-words text-sm leading-6 text-primary"></p>
-                                        </div>
-                                    </div>
-                                </section>
-                            </div>
-                        </div>
-                    </section>
+                    </div>
+                </section>
                 @endforeach
 
-                <div class="flex justify-end">
-                    <button
-                        type="submit"
-                        class="inline-flex items-center justify-center rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-on-accent shadow-sm transition hover:bg-accent-hover"
-                    >
+                {{-- Bottom save --}}
+                <div class="flex justify-end pt-2">
+                    <button type="submit"
+                        class="inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-on-accent shadow-sm transition hover:bg-accent-hover active:scale-[0.97]">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                         {{ __('app.whatsapp_template_save') }}
                     </button>
                 </div>
