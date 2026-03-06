@@ -225,71 +225,112 @@ elseif (old('_form') === 'add_annual') $autoSheet = 'add-annual';
             {{ __('app.synaxarium_add_annual') }}
         </button>
 
-        {{-- Annual list --}}
-        <div class="space-y-3">
-            @forelse($annualByMonthDay as $key => $saints)
+        {{-- Annual list — grouped by month, each month is an accordion --}}
+        @php $byMonth = $annualCelebrations->groupBy('month'); @endphp
+
+        @if($byMonth->isEmpty())
+        <div class="bg-card rounded-2xl border border-border p-12 text-center">
+            <div class="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-3">
+                <svg class="w-8 h-8 text-muted-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            </div>
+            <p class="text-sm text-muted-text">{{ __('app.synaxarium_no_annual') }}</p>
+        </div>
+        @else
+        <div class="space-y-2">
+            @foreach($monthNames as $m => $mFull)
+            @if(!isset($byMonth[$m])) @continue @endif
             @php
-                $first = $saints->first();
-                $mLabel = ($monthNames[$first->month] ?? $first->month) . ' / ' . ($monthNamesAm[$first->month] ?? '');
+                $monthSaints  = $byMonth[$m];
+                $monthByDay   = $monthSaints->groupBy('day');
+                [$mEn, $mAm]  = explode(' / ', $mFull);
+                $totalInMonth = $monthSaints->count();
             @endphp
-            <div class="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
-                <div class="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-amber-50/80 to-transparent dark:from-amber-900/10 border-b border-border">
-                    <div>
-                        <span class="text-sm font-bold text-primary">{{ $mLabel }}</span>
-                        <span class="text-sm text-muted-text ml-1.5">· Day {{ $first->day }}</span>
-                    </div>
-                    <span class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
-                        {{ $saints->count() }} {{ $saints->count() === 1 ? 'saint' : 'saints' }}
-                    </span>
-                </div>
-                @foreach($saints as $item)
-                <div class="flex items-center gap-3 px-4 py-3.5 {{ !$loop->last ? 'border-b border-border/50' : '' }} hover:bg-muted/30 transition">
-                    @if($item->image_path)
-                        <img src="{{ $item->imageUrl() }}" alt="" class="w-12 h-12 rounded-xl object-cover shrink-0">
-                    @else
-                        <div class="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
-                            <svg class="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+
+            <div x-data="{ open: false }" class="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
+
+                {{-- Month accordion header --}}
+                <button type="button" @click="open = !open"
+                        class="w-full flex items-center justify-between px-4 py-3.5 active:bg-muted/30 transition select-none">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center shrink-0">
+                            <span class="text-xs font-bold text-amber-700 dark:text-amber-400">{{ $m }}</span>
                         </div>
-                    @endif
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-1.5 flex-wrap">
-                            <span class="font-semibold text-primary text-sm">{{ $item->celebration_en }}</span>
-                            @if($item->is_main)
-                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">{{ __('app.synaxarium_main_badge') }}</span>
+                        <div class="text-left">
+                            <p class="text-sm font-bold text-primary leading-tight">{{ $mAm }}</p>
+                            <p class="text-xs text-muted-text leading-tight">{{ $mEn }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                            {{ $totalInMonth }} {{ $totalInMonth === 1 ? 'feast' : 'feasts' }}
+                        </span>
+                        <svg class="w-4 h-4 text-muted-text transition-transform duration-200 shrink-0"
+                             :class="open ? 'rotate-180' : ''"
+                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </div>
+                </button>
+
+                {{-- Month accordion body --}}
+                <div x-show="open"
+                     x-transition:enter="transition duration-200 ease-out"
+                     x-transition:enter-start="opacity-0 -translate-y-1"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition duration-150 ease-in"
+                     x-transition:leave-start="opacity-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 -translate-y-1"
+                     class="border-t border-border divide-y divide-border/40">
+
+                    @foreach($monthByDay as $day => $daySaints)
+                    {{-- Day sub-header --}}
+                    <div class="px-4 py-2 bg-muted/40 flex items-center gap-2">
+                        <span class="text-xs font-bold text-accent bg-accent/10 px-2 py-0.5 rounded-lg">Day {{ $day }}</span>
+                        <span class="text-xs text-muted-text">· {{ $daySaints->count() }} {{ $daySaints->count() === 1 ? 'saint' : 'saints' }}</span>
+                    </div>
+
+                    @foreach($daySaints as $item)
+                    <div class="flex items-center gap-3 px-4 py-3.5 hover:bg-muted/20 transition">
+                        @if($item->image_path)
+                            <img src="{{ $item->imageUrl() }}" alt="" class="w-11 h-11 rounded-xl object-cover shrink-0">
+                        @else
+                            <div class="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
+                                <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                            </div>
+                        @endif
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <span class="font-semibold text-primary text-sm leading-snug">{{ $item->celebration_en }}</span>
+                                @if($item->is_main)
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">{{ __('app.synaxarium_main_badge') }}</span>
+                                @endif
+                            </div>
+                            @if($item->celebration_am)
+                                <p class="text-sm text-muted-text mt-0.5 leading-snug">{{ $item->celebration_am }}</p>
                             @endif
                         </div>
-                        @if($item->celebration_am)
-                            <p class="text-sm text-muted-text mt-0.5">{{ $item->celebration_am }}</p>
-                        @endif
-                        @if($item->description_en)
-                            <p class="text-xs text-secondary mt-1 line-clamp-1">{{ $item->description_en }}</p>
-                        @endif
+                        <div class="flex items-center gap-1.5 shrink-0">
+                            <a href="/admin/synaxarium?edit_annual={{ $item->id }}"
+                               class="w-10 h-10 rounded-xl flex items-center justify-center text-accent bg-accent/10 active:scale-90 transition">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </a>
+                            <button type="button" @click="confirmDelete('del-a-{{ $item->id }}')"
+                                    class="w-10 h-10 rounded-xl flex items-center justify-center text-red-500 bg-red-50 dark:bg-red-900/20 active:scale-90 transition">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                            <form id="del-a-{{ $item->id }}" method="POST" action="/admin/synaxarium/annual/{{ $item->id }}" class="hidden">
+                                @csrf @method('DELETE')
+                            </form>
+                        </div>
                     </div>
-                    <div class="flex items-center gap-1.5 shrink-0">
-                        <a href="/admin/synaxarium?edit_annual={{ $item->id }}"
-                           class="w-10 h-10 rounded-xl flex items-center justify-center text-accent bg-accent/10 active:scale-90 transition">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                        </a>
-                        <button type="button" @click="confirmDelete('del-a-{{ $item->id }}')"
-                                class="w-10 h-10 rounded-xl flex items-center justify-center text-red-500 bg-red-50 dark:bg-red-900/20 active:scale-90 transition">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                        </button>
-                        <form id="del-a-{{ $item->id }}" method="POST" action="/admin/synaxarium/annual/{{ $item->id }}" class="hidden">
-                            @csrf @method('DELETE')
-                        </form>
-                    </div>
+                    @endforeach
+                    @endforeach
+
                 </div>
-                @endforeach
             </div>
-            @empty
-            <div class="bg-card rounded-2xl border border-border p-12 text-center">
-                <div class="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-3">
-                    <svg class="w-8 h-8 text-muted-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                </div>
-                <p class="text-sm text-muted-text">{{ __('app.synaxarium_no_annual') }}</p>
-            </div>
-            @endforelse
+            @endforeach
         </div>
+        @endif
     </div>{{-- /annual --}}
 
     {{-- ── FAB (Monthly Add) ── --}}
