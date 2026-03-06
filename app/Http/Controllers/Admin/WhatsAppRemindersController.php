@@ -8,7 +8,6 @@ use App\Http\Controllers\Controller;
 use App\Models\DailyContent;
 use App\Models\LentSeason;
 use App\Models\Member;
-use App\Models\MemberReminderOpen;
 use App\Services\TelegramAuthService;
 use App\Services\WhatsAppTemplateService;
 use App\Services\UltraMsgService;
@@ -74,20 +73,6 @@ class WhatsAppRemindersController extends Controller
             ->get();
 
         $members = (clone $this->membersWithWhatsAppQuery())
-            ->select('members.*')
-            ->withCount(['reminderLinkOpens as reminder_opened_days_count'])
-            ->selectSub(
-                MemberReminderOpen::query()
-                    ->selectRaw('MAX(last_opened_at)')
-                    ->whereColumn('member_id', 'members.id'),
-                'reminder_last_opened_at'
-            )
-            ->selectSub(
-                MemberReminderOpen::query()
-                    ->selectRaw('MAX(last_authenticated_open_at)')
-                    ->whereColumn('member_id', 'members.id'),
-                'reminder_last_authenticated_open_at'
-            )
             ->orderByRaw("CASE WHEN whatsapp_confirmation_status = 'confirmed' THEN 0 ELSE 1 END")
             ->orderBy('whatsapp_reminder_time')
             ->orderBy('created_at', 'desc')
@@ -101,6 +86,28 @@ class WhatsAppRemindersController extends Controller
             'byTime',
             'members'
         ));
+    }
+
+    public function engagement(Member $member): View
+    {
+        $this->ensureHasWhatsAppSetup($member);
+
+        $latestOpen = $member->reminderLinkOpens()
+            ->latest('last_opened_at')
+            ->first();
+
+        $openedDaysCount = $member->reminderLinkOpens()->count();
+        $reminderOpens = $member->reminderLinkOpens()
+            ->with('dailyContent')
+            ->orderByDesc('last_opened_at')
+            ->paginate(20);
+
+        return view('admin.whatsapp.reminder-engagement', [
+            'member' => $member,
+            'lastOpenedAt' => $latestOpen?->last_opened_at,
+            'openedDaysCount' => $openedDaysCount,
+            'reminderOpens' => $reminderOpens,
+        ]);
     }
 
     /**

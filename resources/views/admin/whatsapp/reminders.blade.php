@@ -47,35 +47,20 @@
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.baptism_name') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_phone') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_reminder_time') }}</th>
-                    <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_last_opened') }}</th>
-                    <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_opened_days') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_last_sent') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.actions') }}</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-border">
                 @forelse($members as $m)
-                    @php
-                        $lastOpenedAt = $m->reminder_last_opened_at ? \Carbon\Carbon::parse($m->reminder_last_opened_at) : null;
-                        $isReminderActive = $lastOpenedAt?->greaterThanOrEqualTo(now()->subDays(7));
-                    @endphp
                     <tr class="hover:bg-muted/40 transition-colors">
-                        <td class="px-5 py-3.5 font-medium text-primary">{{ $m->baptism_name ?: '—' }}</td>
+                        <td class="px-5 py-3.5 font-medium">
+                            <a href="{{ route('admin.whatsapp.reminders.engagement', $m) }}" class="text-accent hover:underline">
+                                {{ $m->baptism_name ?: '—' }}
+                            </a>
+                        </td>
                         <td class="px-5 py-3.5 font-mono text-xs text-secondary">{{ $m->whatsapp_phone ? maskPhone($m->whatsapp_phone) : '—' }}</td>
                         <td class="px-5 py-3.5 text-secondary">{{ $m->whatsapp_reminder_time ? \Carbon\Carbon::parse($m->whatsapp_reminder_time)->format('H:i') : '—' }} {{ __('app.london_time') }}</td>
-                        <td class="px-5 py-3.5 text-secondary">
-                            @if($lastOpenedAt)
-                                <div>{{ $lastOpenedAt->format('Y-m-d H:i') }}</div>
-                                <div class="mt-1">
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium {{ $isReminderActive ? 'bg-success-bg text-success' : 'bg-muted text-muted-text' }}">
-                                        {{ $isReminderActive ? __('app.active') : __('app.inactive') }}
-                                    </span>
-                                </div>
-                            @else
-                                {{ __('app.never') }}
-                            @endif
-                        </td>
-                        <td class="px-5 py-3.5 text-secondary tabular-nums">{{ number_format((int) ($m->reminder_opened_days_count ?? 0)) }}</td>
                         <td class="px-5 py-3.5 text-secondary">{{ $m->whatsapp_last_sent_date ? $m->whatsapp_last_sent_date->format('Y-m-d') : __('app.never') }}</td>
                         <td class="px-5 py-3.5">
                             <div class="flex items-center gap-1.5 flex-wrap">
@@ -92,6 +77,10 @@
                                         class="px-2.5 py-1 rounded-md text-xs font-medium bg-accent/10 text-accent hover:bg-accent/20 transition">
                                     {{ __('app.edit') }}
                                 </button>
+                                <a href="{{ route('admin.whatsapp.reminders.engagement', $m) }}"
+                                   class="px-2.5 py-1 rounded-md text-xs font-medium bg-muted text-secondary hover:bg-muted/80 transition">
+                                    {{ __('app.whatsapp_view_engagement') }}
+                                </a>
                                 <form method="POST" action="{{ route('admin.whatsapp.reminders.disable', $m) }}" class="inline"
                                       x-data @submit.prevent="if (confirm('{{ __('app.reminder_disable_confirm') }}')) $el.submit()">
                                     @csrf
@@ -111,7 +100,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="7" class="px-5 py-12 text-center text-muted-text">{{ __('app.whatsapp_no_opted_in') }}</td></tr>
+                    <tr><td colspan="5" class="px-5 py-12 text-center text-muted-text">{{ __('app.whatsapp_no_opted_in') }}</td></tr>
                 @endforelse
             </tbody>
         </table>

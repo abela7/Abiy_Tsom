@@ -295,6 +295,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::put('/whatsapp/template', [Admin\WhatsAppTemplateController::class, 'update'])->name('whatsapp.template.update');
         Route::post('/whatsapp/template/test', [Admin\WhatsAppTemplateController::class, 'sendTest'])->name('whatsapp.template.test');
         Route::get('/whatsapp/timetable', [Admin\WhatsAppTimetableController::class, 'index'])->name('whatsapp.timetable');
+        Route::get('/whatsapp/reminders/{member}/engagement', [Admin\WhatsAppRemindersController::class, 'engagement'])->name('whatsapp.reminders.engagement');
         Route::put('/whatsapp/reminders/{member}', [Admin\WhatsAppRemindersController::class, 'update'])->name('whatsapp.reminders.update');
         Route::post('/whatsapp/reminders/{member}/send', [Admin\WhatsAppRemindersController::class, 'sendReminder'])->name('whatsapp.reminders.send');
         Route::post('/whatsapp/reminders/{member}/disable', [Admin\WhatsAppRemindersController::class, 'disable'])->name('whatsapp.reminders.disable');

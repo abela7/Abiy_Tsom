@@ -5,7 +5,7 @@
         {{ __('app.whatsapp_settings_tab') }}
     </a>
     <a href="{{ route('admin.whatsapp.reminders') }}"
-       class="px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 {{ request()->routeIs('admin.whatsapp.reminders') ? 'bg-accent text-on-accent shadow-sm' : 'text-secondary hover:text-primary hover:bg-accent-overlay' }}">
+       class="px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 {{ request()->routeIs('admin.whatsapp.reminders*') ? 'bg-accent text-on-accent shadow-sm' : 'text-secondary hover:text-primary hover:bg-accent-overlay' }}">
         {{ __('app.whatsapp_reminders_tab') }}
     </a>
     <a href="{{ route('admin.whatsapp.template') }}"

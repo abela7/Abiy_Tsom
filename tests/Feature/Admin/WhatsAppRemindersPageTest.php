@@ -271,9 +271,71 @@ class WhatsAppRemindersPageTest extends TestCase
         $response->assertOk();
         $this->assertEquals(1, $response->viewData('totalOpenedMembers'));
         $this->assertEquals(1, $response->viewData('activeReminderMembers7d'));
+    }
 
-        $members = $response->viewData('members');
-        $this->assertSame(1, $members->first()->reminder_opened_days_count);
-        $this->assertNotNull($members->first()->reminder_last_opened_at);
+    public function test_admin_can_view_member_engagement_page(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin',
+            'username' => 'admin',
+            'password' => bcrypt('password'),
+            'role' => 'admin',
+            'is_super_admin' => true,
+        ]);
+
+        $member = Member::create([
+            'baptism_name' => 'Tracked Member',
+            'token' => 'tracked123',
+            'whatsapp_reminder_enabled' => true,
+            'whatsapp_confirmation_status' => 'confirmed',
+            'whatsapp_phone' => '+447700900222',
+            'whatsapp_reminder_time' => '18:00:00',
+        ]);
+
+        $season = LentSeason::create([
+            'year' => 2026,
+            'start_date' => '2026-02-15',
+            'end_date' => '2026-04-12',
+            'total_days' => 55,
+            'is_active' => true,
+        ]);
+
+        $theme = WeeklyTheme::create([
+            'lent_season_id' => $season->id,
+            'week_number' => 1,
+            'name_en' => 'Week 1',
+            'meaning' => 'Meaning',
+            'week_start_date' => '2026-02-15',
+            'week_end_date' => '2026-02-21',
+        ]);
+
+        $day = DailyContent::create([
+            'lent_season_id' => $season->id,
+            'weekly_theme_id' => $theme->id,
+            'day_number' => 2,
+            'date' => '2026-02-16',
+            'day_title_en' => 'Tracked Day',
+            'is_published' => true,
+        ]);
+
+        MemberReminderOpen::create([
+            'member_id' => $member->id,
+            'daily_content_id' => $day->id,
+            'first_opened_at' => now()->subDay(),
+            'last_opened_at' => now()->subHours(1),
+            'last_authenticated_open_at' => now()->subHours(1),
+            'open_count' => 1,
+            'authenticated_open_count' => 1,
+            'public_open_count' => 0,
+            'last_open_state' => 'authenticated_session',
+        ]);
+
+        $response = $this->actingAs($admin)
+            ->get(route('admin.whatsapp.reminders.engagement', $member));
+
+        $response->assertOk()
+            ->assertViewIs('admin.whatsapp.reminder-engagement')
+            ->assertSee('Tracked Member')
+            ->assertSee('Reminder Engagement');
     }
 }
