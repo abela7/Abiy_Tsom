@@ -3,66 +3,6 @@
 @php
 $monthAm = $monthNames[$entry->month] ? explode(' / ', $monthNames[$entry->month])[1] : '';
 $monthEn = $monthNames[$entry->month] ? explode(' / ', $monthNames[$entry->month])[0] : '';
-
-// Amharic numerals
-$amharicNumerals = [
-    '0' => '፩', '1' => '፩', '2' => '፪', '3' => '፫', '4' => '፬', '5' => '፭',
-    '6' => '፮', '7' => '፯', '8' => '፰', '9' => '፱', '10' => '፲', '11' => '፲፩',
-    '12' => '፲፪', '13' => '፲፫', '14' => '፲፬', '15' => '፲፭', '16' => '፲፮',
-    '17' => '፲፯', '18' => '፲፰', '19' => '፲፱', '20' => '፲', '100' => '፻'
-];
-
-function toAmharicNumeral($num) {
-    global $amharicNumerals;
-    $num = (int)$num;
-
-    if ($num <= 0) return '';
-    if ($num < 20) return $amharicNumerals[$num] ?? '';
-    if ($num < 100) {
-        $tens = intval($num / 10);
-        $ones = $num % 10;
-        return $amharicNumerals[$tens * 10] . ($ones > 0 ? $amharicNumerals[$ones] : '');
-    }
-    if ($num < 1000) {
-        $hundreds = intval($num / 100);
-        $remainder = $num % 100;
-        $result = str_repeat('፻', $hundreds);
-        if ($remainder > 0) {
-            $result .= toAmharicNumeral($remainder);
-        }
-        return $result;
-    }
-
-    return $num;
-}
-
-// Helper function to parse verses with numbers
-function parseVerses($text) {
-    if (!filled($text)) return [];
-
-    $verses = [];
-    $text = trim($text);
-
-    // Match patterns like "5 verse text" or "5verse text"
-    preg_match_all('/(\d+)\s+(.+?)(?=\d+\s+|\Z)/s', $text, $matches, PREG_SET_ORDER);
-
-    if (!empty($matches)) {
-        foreach ($matches as $match) {
-            $verses[] = [
-                'number' => $match[1],
-                'text' => trim($match[2])
-            ];
-        }
-    } else {
-        // If no verse numbers found, return text as single block
-        $verses[] = [
-            'number' => null,
-            'text' => $text
-        ];
-    }
-
-    return $verses;
-}
 @endphp
 
 <div class="space-y-6 max-w-2xl">
