@@ -132,6 +132,39 @@ $labelClass = 'block text-xs font-medium text-muted-text mb-1';
                     <input type="hidden" name="day"   value="{{ $selectedDay }}">
                 @endunless
 
+                {{-- ── TITLE & DESCRIPTION ── --}}
+                <div class="rounded-xl border border-border overflow-hidden">
+                    <div class="px-4 py-3 bg-surface border-b border-border">
+                        <span class="text-sm font-semibold text-primary">{{ __('app.lectionary_title') }} & {{ __('app.lectionary_description') }}</span>
+                    </div>
+                    <div class="px-4 pb-4 pt-3 space-y-3">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="{{ $labelClass }}">{{ __('app.lectionary_title') }} (አማርኛ)</label>
+                                <input type="text" name="title_am" value="{{ old('title_am', $entry?->title_am) }}"
+                                       placeholder="ለምሳሌ፦ የጌታ ስቅለት" class="{{ $inputClass }}">
+                            </div>
+                            <div>
+                                <label class="{{ $labelClass }}">{{ __('app.lectionary_title') }} (English)</label>
+                                <input type="text" name="title_en" value="{{ old('title_en', $entry?->title_en) }}"
+                                       placeholder="e.g. The Crucifixion of our Lord" class="{{ $inputClass }}">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="{{ $labelClass }}">{{ __('app.lectionary_description') }} (አማርኛ)</label>
+                                <textarea name="description_am" rows="3" placeholder="የዕለቱ ጭብጥ ወይም መግለጫ..."
+                                          class="{{ $inputClass }}">{{ old('description_am', $entry?->description_am) }}</textarea>
+                            </div>
+                            <div>
+                                <label class="{{ $labelClass }}">{{ __('app.lectionary_description') }} (English)</label>
+                                <textarea name="description_en" rows="3" placeholder="Theme or context for the day..."
+                                          class="{{ $inputClass }}">{{ old('description_en', $entry?->description_en) }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 {{-- ── 1. PAULINE EPISTLE ── --}}
                 <div x-data="{ open: true }" class="rounded-xl border border-border overflow-hidden">
                     <button type="button" @click="open = !open"

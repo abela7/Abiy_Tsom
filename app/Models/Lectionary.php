@@ -14,6 +14,11 @@ class Lectionary extends Model
     protected $fillable = [
         'month',
         'day',
+        // Title & Description
+        'title_am',
+        'title_en',
+        'description_am',
+        'description_en',
         // Pauline
         'pauline_book_am',
         'pauline_book_en',

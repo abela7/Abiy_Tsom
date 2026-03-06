@@ -89,6 +89,11 @@ class LectionaryController extends Controller
     private function validated(Request $request, bool $withDate = true): array
     {
         $rules = [
+            // Title & Description
+            'title_am'         => ['nullable', 'string', 'max:500'],
+            'title_en'         => ['nullable', 'string', 'max:500'],
+            'description_am'   => ['nullable', 'string'],
+            'description_en'   => ['nullable', 'string'],
             // Pauline
             'pauline_book_am'  => ['nullable', 'string', 'max:100'],
             'pauline_book_en'  => ['nullable', 'string', 'max:100'],

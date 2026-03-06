@@ -4,164 +4,383 @@
 @section('content')
 @include('admin.whatsapp._nav')
 
-<div class="mb-6">
-    <h1 class="text-2xl font-bold text-primary">{{ __('app.whatsapp_template_title') }}</h1>
-    <p class="text-sm text-muted-text mt-1">{{ __('app.whatsapp_template_help') }}</p>
-</div>
+@php
+    $firstTemplateKey = $templates[0]['key'] ?? '';
+    $templateMeta = [
+        'whatsapp_daily_reminder_header' => [
+            'group' => 'daily',
+            'description' => __('app.whatsapp_template_desc_daily_header'),
+        ],
+        'whatsapp_daily_reminder_content' => [
+            'group' => 'daily',
+            'description' => __('app.whatsapp_template_desc_daily_content'),
+        ],
+        'whatsapp_daily_reminder_yearly_block' => [
+            'group' => 'daily',
+            'description' => __('app.whatsapp_template_desc_daily_yearly_block'),
+        ],
+        'whatsapp_daily_reminder_monthly_block' => [
+            'group' => 'daily',
+            'description' => __('app.whatsapp_template_desc_daily_monthly_block'),
+        ],
+        'whatsapp_confirmation_prompt_message' => [
+            'group' => 'confirmation',
+            'description' => __('app.whatsapp_template_desc_confirm_prompt'),
+        ],
+        'whatsapp_invalid_reply_message' => [
+            'group' => 'confirmation',
+            'description' => __('app.whatsapp_template_desc_invalid_reply'),
+        ],
+        'whatsapp_confirmation_activated_message' => [
+            'group' => 'confirmation',
+            'description' => __('app.whatsapp_template_desc_confirmed_notice'),
+        ],
+        'whatsapp_confirmation_go_back_message' => [
+            'group' => 'confirmation',
+            'description' => __('app.whatsapp_template_desc_go_back'),
+        ],
+        'whatsapp_confirmation_rejected_message' => [
+            'group' => 'confirmation',
+            'description' => __('app.whatsapp_template_desc_rejected_notice'),
+        ],
+    ];
 
-<div class="bg-card rounded-xl p-6 shadow-sm border border-border">
-    <div class="mb-5 rounded-lg border border-amber-300/60 bg-amber-50/70 dark:bg-amber-900/20 px-4 py-3 text-sm text-amber-900 dark:text-amber-200">
-        {{ __('app.whatsapp_template_warning') }}
+    $templateGroups = [
+        'daily' => array_values(array_filter($templates, static fn (array $template): bool => ($templateMeta[$template['key']]['group'] ?? 'confirmation') === 'daily')),
+        'confirmation' => array_values(array_filter($templates, static fn (array $template): bool => ($templateMeta[$template['key']]['group'] ?? 'confirmation') === 'confirmation')),
+    ];
+@endphp
+
+<style>
+    [x-cloak] { display: none !important; }
+</style>
+
+<div x-data="whatsappTemplateEditor(@js($firstTemplateKey))" class="space-y-6">
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+            <h1 class="text-3xl font-bold tracking-tight text-primary">{{ __('app.whatsapp_template_title') }}</h1>
+            <p class="mt-2 max-w-3xl text-sm leading-6 text-muted-text">{{ __('app.whatsapp_template_help') }}</p>
+        </div>
+        <button
+            type="submit"
+            form="whatsapp-template-form"
+            class="inline-flex items-center justify-center rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-on-accent shadow-sm transition hover:bg-accent-hover"
+        >
+            {{ __('app.whatsapp_template_save') }}
+        </button>
     </div>
 
-    <section class="mb-6 rounded-xl border border-border bg-surface p-4">
-        <div class="mb-3">
-            <h2 class="text-base font-semibold text-primary">{{ __('app.whatsapp_template_test_title') }}</h2>
-            <p class="text-sm text-muted-text mt-1">{{ __('app.whatsapp_template_test_help') }}</p>
-        </div>
+    <div class="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
+        <section class="rounded-2xl border border-border bg-card p-5 shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-accent/10 text-accent text-lg font-bold">1</div>
+                <div>
+                    <h2 class="text-base font-semibold text-primary">{{ __('app.whatsapp_template_workflow_title') }}</h2>
+                    <p class="text-sm text-muted-text">{{ __('app.whatsapp_template_warning') }}</p>
+                </div>
+            </div>
+            <div class="mt-5 grid gap-3 md:grid-cols-3">
+                <div class="rounded-2xl border border-border bg-surface px-4 py-4">
+                    <p class="text-sm font-semibold text-primary">{{ __('app.whatsapp_template_workflow_step_1') }}</p>
+                </div>
+                <div class="rounded-2xl border border-border bg-surface px-4 py-4">
+                    <p class="text-sm font-semibold text-primary">{{ __('app.whatsapp_template_workflow_step_2') }}</p>
+                </div>
+                <div class="rounded-2xl border border-border bg-surface px-4 py-4">
+                    <p class="text-sm font-semibold text-primary">{{ __('app.whatsapp_template_workflow_step_3') }}</p>
+                </div>
+            </div>
+        </section>
 
-        <form method="POST" action="{{ route('admin.whatsapp.template.test') }}" class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_220px_auto] gap-3 items-end">
-            @csrf
-            <div>
-                <label for="template-test-member" class="block text-sm font-medium text-secondary mb-1.5">
-                    {{ __('app.whatsapp_template_test_member_label') }}
-                </label>
-                <select
-                    id="template-test-member"
-                    name="member_id"
-                    class="w-full px-3 py-2 border border-border rounded-lg bg-card text-primary focus:ring-2 focus:ring-accent outline-none"
-                    required
-                >
-                    <option value="">{{ __('app.whatsapp_template_test_member_placeholder') }}</option>
-                    @foreach($testMembers as $member)
-                        @php
-                            $memberLabel = trim((string) ($member->baptism_name ?: ''));
-                            if ($memberLabel === '') {
-                                $memberLabel = __('app.whatsapp_template_test_member_fallback');
-                            }
-                            $memberLabel .= ' - '.$member->whatsapp_phone;
-                            if ($member->whatsapp_confirmation_status) {
-                                $memberLabel .= ' - '.$member->whatsapp_confirmation_status;
-                            }
-                            if ($member->whatsapp_language) {
-                                $memberLabel .= ' - '.strtoupper((string) $member->whatsapp_language);
-                            }
-                        @endphp
-                        <option value="{{ $member->id }}" @selected((string) old('template_test_member_id') === (string) $member->id)>
-                            {{ $memberLabel }}
-                        </option>
-                    @endforeach
-                </select>
+        <section class="rounded-2xl border border-border bg-card p-5 shadow-sm">
+            <div class="mb-4">
+                <h2 class="text-base font-semibold text-primary">{{ __('app.whatsapp_template_test_title') }}</h2>
+                <p class="mt-1 text-sm text-muted-text">{{ __('app.whatsapp_template_test_help') }}</p>
             </div>
-            <div>
-                <label for="template-test-language" class="block text-sm font-medium text-secondary mb-1.5">
-                    {{ __('app.whatsapp_template_test_language_label') }}
-                </label>
-                <select
-                    id="template-test-language"
-                    name="test_locale"
-                    class="w-full px-3 py-2 border border-border rounded-lg bg-card text-primary focus:ring-2 focus:ring-accent outline-none"
-                >
-                    <option value="member" @selected((string) old('template_test_locale', 'member') === 'member')>{{ __('app.whatsapp_template_test_language_member') }}</option>
-                    <option value="en" @selected((string) old('template_test_locale') === 'en')>{{ __('app.whatsapp_template_test_language_en') }}</option>
-                    <option value="am" @selected((string) old('template_test_locale') === 'am')>{{ __('app.whatsapp_template_test_language_am') }}</option>
-                </select>
-            </div>
-            <div>
+
+            <form method="POST" action="{{ route('admin.whatsapp.template.test') }}" class="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+                @csrf
+                <div>
+                    <label for="template-test-member" class="mb-1.5 block text-sm font-medium text-secondary">
+                        {{ __('app.whatsapp_template_test_member_label') }}
+                    </label>
+                    <select
+                        id="template-test-member"
+                        name="member_id"
+                        class="w-full rounded-xl border border-border bg-surface px-3 py-3 text-sm text-primary outline-none transition focus:ring-2 focus:ring-accent"
+                        required
+                    >
+                        <option value="">{{ __('app.whatsapp_template_test_member_placeholder') }}</option>
+                        @foreach($testMembers as $member)
+                            @php
+                                $memberLabel = trim((string) ($member->baptism_name ?: ''));
+                                if ($memberLabel === '') {
+                                    $memberLabel = __('app.whatsapp_template_test_member_fallback');
+                                }
+                                $memberLabel .= ' - '.$member->whatsapp_phone;
+                                if ($member->whatsapp_confirmation_status) {
+                                    $memberLabel .= ' - '.$member->whatsapp_confirmation_status;
+                                }
+                                if ($member->whatsapp_language) {
+                                    $memberLabel .= ' - '.strtoupper((string) $member->whatsapp_language);
+                                }
+                            @endphp
+                            <option value="{{ $member->id }}" @selected((string) old('template_test_member_id') === (string) $member->id)>
+                                {{ $memberLabel }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label for="template-test-language" class="mb-1.5 block text-sm font-medium text-secondary">
+                        {{ __('app.whatsapp_template_test_language_label') }}
+                    </label>
+                    <select
+                        id="template-test-language"
+                        name="test_locale"
+                        class="w-full rounded-xl border border-border bg-surface px-3 py-3 text-sm text-primary outline-none transition focus:ring-2 focus:ring-accent"
+                    >
+                        <option value="member" @selected((string) old('template_test_locale', 'member') === 'member')>{{ __('app.whatsapp_template_test_language_member') }}</option>
+                        <option value="en" @selected((string) old('template_test_locale') === 'en')>{{ __('app.whatsapp_template_test_language_en') }}</option>
+                        <option value="am" @selected((string) old('template_test_locale') === 'am')>{{ __('app.whatsapp_template_test_language_am') }}</option>
+                    </select>
+                </div>
+
                 <button
                     type="submit"
-                    class="inline-flex items-center justify-center px-5 py-2.5 rounded-lg bg-primary text-white text-sm font-semibold hover:opacity-90 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                    class="inline-flex items-center justify-center rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                     @disabled($testMembers->isEmpty())
                 >
                     {{ __('app.whatsapp_template_send_test') }}
                 </button>
-            </div>
-        </form>
-    </section>
+            </form>
+        </section>
+    </div>
 
-    <form method="POST" action="{{ route('admin.whatsapp.template.update') }}" class="space-y-6">
-        @csrf
-        @method('PUT')
-
-        @foreach($templates as $template)
-            <section class="rounded-xl border border-border p-4 bg-surface">
-                @php
-                    $placeholderList = array_map(
-                        static fn (string $key): string => ':'.$key,
-                        $template['placeholder_keys']
-                    );
-                @endphp
-                <div class="mb-3">
-                    <h2 class="text-base font-semibold text-primary">{{ $template['title'] }}</h2>
-                    <p class="text-xs text-muted-text mt-1">
-                        <span class="font-medium">{{ __('app.whatsapp_template_placeholders') }}:</span>
-                        <code>{{ $placeholderList !== [] ? implode(', ', $placeholderList) : __('app.whatsapp_template_none') }}</code>
-                    </p>
+    <div class="grid gap-6 xl:grid-cols-[280px_minmax(0,1fr)]">
+        <aside class="space-y-4 xl:sticky xl:top-24 xl:self-start">
+            <section class="rounded-2xl border border-border bg-card p-4 shadow-sm">
+                <div class="mb-4">
+                    <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-muted-text">{{ __('app.whatsapp_template_group_daily') }}</h2>
                 </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-secondary mb-1.5">
-                            {{ __('app.whatsapp_template_en_label') }}
-                        </label>
-                        <textarea
-                            id="tpl-en-{{ $template['key'] }}"
-                            name="templates[{{ $template['key'] }}][en]"
-                            rows="4"
-                            data-preview-target="preview-en-{{ $template['key'] }}"
-                            data-locale="en"
-                            data-allowed-placeholders='@json($template['placeholder_keys'])'
-                            class="w-full px-3 py-2 border border-border rounded-lg bg-card text-primary focus:ring-2 focus:ring-accent outline-none resize-y"
-                        >{{ old("templates.{$template['key']}.en", $template['en']) }}</textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-secondary mb-1.5">
-                            {{ __('app.whatsapp_template_am_label') }}
-                        </label>
-                        <textarea
-                            id="tpl-am-{{ $template['key'] }}"
-                            name="templates[{{ $template['key'] }}][am]"
-                            rows="4"
-                            data-preview-target="preview-am-{{ $template['key'] }}"
-                            data-locale="am"
-                            data-allowed-placeholders='@json($template['placeholder_keys'])'
-                            class="w-full px-3 py-2 border border-border rounded-lg bg-card text-primary focus:ring-2 focus:ring-accent outline-none resize-y"
-                        >{{ old("templates.{$template['key']}.am", $template['am']) }}</textarea>
-                    </div>
-                </div>
-
-                <p class="text-xs text-muted-text mt-3">{{ __('app.whatsapp_template_preview_help') }}</p>
-                <div class="mt-2 grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <div class="rounded-lg border border-border bg-muted/40 p-3">
-                        <p class="text-xs font-semibold text-secondary mb-2">
-                            {{ __('app.whatsapp_template_preview_title') }} ({{ __('app.whatsapp_template_en_label') }})
-                        </p>
-                        <p id="preview-en-{{ $template['key'] }}" class="text-sm text-primary whitespace-pre-wrap break-words"></p>
-                    </div>
-                    <div class="rounded-lg border border-border bg-muted/40 p-3">
-                        <p class="text-xs font-semibold text-secondary mb-2">
-                            {{ __('app.whatsapp_template_preview_title') }} ({{ __('app.whatsapp_template_am_label') }})
-                        </p>
-                        <p id="preview-am-{{ $template['key'] }}" class="text-sm text-primary whitespace-pre-wrap break-words"></p>
-                    </div>
+                <div class="space-y-2">
+                    @foreach($templateGroups['daily'] as $template)
+                        @php($meta = $templateMeta[$template['key']] ?? ['description' => ''])
+                        <button
+                            type="button"
+                            @click="selectTemplate('{{ $template['key'] }}')"
+                            :class="activeTemplate === '{{ $template['key'] }}'
+                                ? 'border-primary/30 bg-primary/10 text-primary shadow-sm'
+                                : 'border-transparent bg-surface text-secondary hover:border-border hover:bg-muted/40'"
+                            class="w-full rounded-2xl border px-4 py-3 text-left transition"
+                        >
+                            <div class="text-sm font-semibold">{{ $template['title'] }}</div>
+                            <div class="mt-1 text-xs leading-5 text-muted-text">{{ $meta['description'] }}</div>
+                        </button>
+                    @endforeach
                 </div>
             </section>
-        @endforeach
 
-        <div class="pt-2">
-            <button
-                type="submit"
-                class="inline-flex items-center px-5 py-2.5 rounded-lg bg-accent text-on-accent text-sm font-semibold hover:bg-accent-hover transition"
-            >
-                {{ __('app.whatsapp_template_save') }}
-            </button>
+            <section class="rounded-2xl border border-border bg-card p-4 shadow-sm">
+                <div class="mb-4">
+                    <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-muted-text">{{ __('app.whatsapp_template_group_confirmation') }}</h2>
+                </div>
+                <div class="space-y-2">
+                    @foreach($templateGroups['confirmation'] as $template)
+                        @php($meta = $templateMeta[$template['key']] ?? ['description' => ''])
+                        <button
+                            type="button"
+                            @click="selectTemplate('{{ $template['key'] }}')"
+                            :class="activeTemplate === '{{ $template['key'] }}'
+                                ? 'border-primary/30 bg-primary/10 text-primary shadow-sm'
+                                : 'border-transparent bg-surface text-secondary hover:border-border hover:bg-muted/40'"
+                            class="w-full rounded-2xl border px-4 py-3 text-left transition"
+                        >
+                            <div class="text-sm font-semibold">{{ $template['title'] }}</div>
+                            <div class="mt-1 text-xs leading-5 text-muted-text">{{ $meta['description'] }}</div>
+                        </button>
+                    @endforeach
+                </div>
+            </section>
+        </aside>
+
+        <div class="space-y-4">
+            <div class="rounded-2xl border border-amber-300/60 bg-amber-50/70 px-4 py-3 text-sm text-amber-900 shadow-sm dark:bg-amber-900/20 dark:text-amber-200">
+                {{ __('app.whatsapp_template_warning') }}
+            </div>
+
+            <form id="whatsapp-template-form" method="POST" action="{{ route('admin.whatsapp.template.update') }}" class="space-y-4">
+                @csrf
+                @method('PUT')
+
+                @foreach($templates as $template)
+                    @php
+                        $meta = $templateMeta[$template['key']] ?? ['group' => 'confirmation', 'description' => ''];
+                        $placeholderList = array_map(
+                            static fn (string $key): string => ':'.$key,
+                            $template['placeholder_keys']
+                        );
+                        $groupLabel = $meta['group'] === 'daily'
+                            ? __('app.whatsapp_template_group_daily')
+                            : __('app.whatsapp_template_group_confirmation');
+                    @endphp
+
+                    <section
+                        x-cloak
+                        x-show="activeTemplate === '{{ $template['key'] }}'"
+                        class="overflow-hidden rounded-3xl border border-border bg-card shadow-sm"
+                    >
+                        <div class="border-b border-border bg-surface/80 px-5 py-5 sm:px-6">
+                            <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                                <div>
+                                    <span class="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+                                        {{ $groupLabel }}
+                                    </span>
+                                    <h2 class="mt-3 text-2xl font-semibold tracking-tight text-primary">{{ $template['title'] }}</h2>
+                                    <p class="mt-2 max-w-3xl text-sm leading-6 text-muted-text">{{ $meta['description'] }}</p>
+                                </div>
+                                <div class="rounded-2xl border border-border bg-card px-4 py-3 text-xs text-muted-text">
+                                    <div class="font-semibold uppercase tracking-[0.18em]">{{ __('app.whatsapp_template_key_label') }}</div>
+                                    <code class="mt-1 block text-primary">{{ $template['key'] }}</code>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-5 p-5 sm:p-6">
+                            <section class="rounded-2xl border border-border bg-surface px-4 py-4">
+                                <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                                    <div>
+                                        <h3 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_template_placeholders') }}</h3>
+                                        <p class="mt-1 text-sm text-muted-text">{{ __('app.whatsapp_template_insert_help') }}</p>
+                                    </div>
+                                </div>
+                                <div class="mt-4 flex flex-wrap gap-2">
+                                    @forelse($placeholderList as $placeholder)
+                                        <button
+                                            type="button"
+                                            @click.prevent="insertPlaceholder('{{ $placeholder }}')"
+                                            class="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-secondary transition hover:border-primary/30 hover:bg-primary/10 hover:text-primary"
+                                        >
+                                            {{ $placeholder }}
+                                        </button>
+                                    @empty
+                                        <span class="text-sm text-muted-text">{{ __('app.whatsapp_template_none') }}</span>
+                                    @endforelse
+                                </div>
+                            </section>
+
+                            <div class="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_320px]">
+                                <section class="rounded-2xl border border-border bg-surface p-4">
+                                    <div class="mb-3 flex items-center justify-between gap-3">
+                                        <label for="tpl-en-{{ $template['key'] }}" class="text-sm font-semibold text-primary">
+                                            {{ __('app.whatsapp_template_en_label') }}
+                                        </label>
+                                    </div>
+                                    <textarea
+                                        id="tpl-en-{{ $template['key'] }}"
+                                        name="templates[{{ $template['key'] }}][en]"
+                                        rows="14"
+                                        data-preview-target="preview-en-{{ $template['key'] }}"
+                                        data-locale="en"
+                                        data-allowed-placeholders='@json($template['placeholder_keys'])'
+                                        @focus="rememberField('tpl-en-{{ $template['key'] }}')"
+                                        class="w-full rounded-2xl border border-border bg-card px-4 py-3 text-sm leading-6 text-primary outline-none transition focus:ring-2 focus:ring-accent"
+                                    >{{ old("templates.{$template['key']}.en", $template['en']) }}</textarea>
+                                </section>
+
+                                <section class="rounded-2xl border border-border bg-surface p-4">
+                                    <div class="mb-3 flex items-center justify-between gap-3">
+                                        <label for="tpl-am-{{ $template['key'] }}" class="text-sm font-semibold text-primary">
+                                            {{ __('app.whatsapp_template_am_label') }}
+                                        </label>
+                                    </div>
+                                    <textarea
+                                        id="tpl-am-{{ $template['key'] }}"
+                                        name="templates[{{ $template['key'] }}][am]"
+                                        rows="14"
+                                        data-preview-target="preview-am-{{ $template['key'] }}"
+                                        data-locale="am"
+                                        data-allowed-placeholders='@json($template['placeholder_keys'])'
+                                        @focus="rememberField('tpl-am-{{ $template['key'] }}')"
+                                        class="w-full rounded-2xl border border-border bg-card px-4 py-3 text-sm leading-6 text-primary outline-none transition focus:ring-2 focus:ring-accent"
+                                    >{{ old("templates.{$template['key']}.am", $template['am']) }}</textarea>
+                                </section>
+
+                                <section class="rounded-2xl border border-border bg-surface p-4 2xl:sticky 2xl:top-28 2xl:self-start">
+                                    <div class="mb-4">
+                                        <h3 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_template_preview_title') }}</h3>
+                                        <p class="mt-1 text-sm text-muted-text">{{ __('app.whatsapp_template_preview_help') }}</p>
+                                    </div>
+                                    <div class="space-y-3">
+                                        <div class="rounded-2xl border border-border bg-card p-3">
+                                            <p class="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.whatsapp_template_en_label') }}</p>
+                                            <p id="preview-en-{{ $template['key'] }}" class="whitespace-pre-wrap break-words text-sm leading-6 text-primary"></p>
+                                        </div>
+                                        <div class="rounded-2xl border border-border bg-card p-3">
+                                            <p class="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.whatsapp_template_am_label') }}</p>
+                                            <p id="preview-am-{{ $template['key'] }}" class="whitespace-pre-wrap break-words text-sm leading-6 text-primary"></p>
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+                        </div>
+                    </section>
+                @endforeach
+
+                <div class="flex justify-end">
+                    <button
+                        type="submit"
+                        class="inline-flex items-center justify-center rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-on-accent shadow-sm transition hover:bg-accent-hover"
+                    >
+                        {{ __('app.whatsapp_template_save') }}
+                    </button>
+                </div>
+            </form>
         </div>
-    </form>
+    </div>
 </div>
 @endsection
 
 @push('scripts')
 <script>
+function whatsappTemplateEditor(initialTemplate) {
+    return {
+        activeTemplate: initialTemplate || '',
+        activeFieldId: initialTemplate ? `tpl-en-${initialTemplate}` : null,
+        selectTemplate(key) {
+            this.activeTemplate = key;
+            this.$nextTick(() => {
+                const input = document.getElementById(`tpl-en-${key}`) || document.getElementById(`tpl-am-${key}`);
+                if (input) {
+                    input.focus();
+                    this.activeFieldId = input.id;
+                }
+            });
+        },
+        rememberField(id) {
+            this.activeFieldId = id;
+        },
+        insertPlaceholder(token) {
+            const fallbackId = this.activeTemplate ? `tpl-en-${this.activeTemplate}` : null;
+            const input = document.getElementById(this.activeFieldId || fallbackId || '');
+            if (!input) {
+                return;
+            }
+
+            const start = input.selectionStart ?? input.value.length;
+            const end = input.selectionEnd ?? input.value.length;
+            const nextValue = `${input.value.slice(0, start)}${token}${input.value.slice(end)}`;
+            input.value = nextValue;
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+            input.focus();
+            const caret = start + token.length;
+            input.setSelectionRange(caret, caret);
+            this.activeFieldId = input.id;
+        },
+    };
+}
+
 (() => {
     const samples = {
         en: {
@@ -170,7 +389,7 @@
             day: '17',
             day_title: 'Day 17',
             date: '2026-03-05',
-            gregorian_date: 'ማርች 5',
+            gregorian_date: 'March 5',
             ethiopian_date: 'Yekatit 26',
             url: 'https://abiytsom.abuneteklehaymanot.org/share/day/15',
             telegram_url: 'https://t.me/AbiyTsomBot',
@@ -190,7 +409,7 @@
             day: '17',
             day_title: 'Qen 17',
             date: '2026-03-05',
-            gregorian_date: 'March 5',
+            gregorian_date: 'ማርች 5',
             ethiopian_date: 'Yekatit 26',
             url: 'https://abiytsom.abuneteklehaymanot.org/share/day/15',
             telegram_url: 'https://t.me/AbiyTsomBot',
