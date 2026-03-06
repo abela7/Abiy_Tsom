@@ -765,135 +765,342 @@
 
     {{-- Lectionary (ግጻዌ) --}}
     @if(isset($lectionary) && $lectionary && $lectionary->hasContent())
+    @php
+    $lecReadings = [
+        ['key'=>'pauline','num'=>1,'label_key'=>'app.lectionary_pauline',
+         'book'   =>$locale==='am'?$lectionary->pauline_book_am:$lectionary->pauline_book_en,
+         'chapter'=>$lectionary->pauline_chapter,'verses'=>$lectionary->pauline_verses,
+         'text'   =>$locale==='am'?$lectionary->pauline_text_am:$lectionary->pauline_text_en,
+         'has'    =>filled($lectionary->pauline_book_am)||filled($lectionary->pauline_chapter)],
+        ['key'=>'catholic','num'=>2,'label_key'=>'app.lectionary_catholic',
+         'book'   =>$locale==='am'?$lectionary->catholic_book_am:$lectionary->catholic_book_en,
+         'chapter'=>$lectionary->catholic_chapter,'verses'=>$lectionary->catholic_verses,
+         'text'   =>$locale==='am'?$lectionary->catholic_text_am:$lectionary->catholic_text_en,
+         'has'    =>filled($lectionary->catholic_book_am)||filled($lectionary->catholic_chapter)],
+        ['key'=>'acts','num'=>3,'label_key'=>'app.lectionary_acts',
+         'book'   =>$locale==='am'?'የሐዋርያት ሥራ':'Acts',
+         'chapter'=>$lectionary->acts_chapter,'verses'=>$lectionary->acts_verses,
+         'text'   =>$locale==='am'?$lectionary->acts_text_am:$lectionary->acts_text_en,
+         'has'    =>filled($lectionary->acts_chapter)],
+        ['key'=>'mesbak','num'=>4,'label_key'=>'app.lectionary_mesbak',
+         'book'   =>$locale==='am'?'መዝሙረ ዳዊት':'Psalm',
+         'chapter'=>$lectionary->mesbak_psalm,'verses'=>$lectionary->mesbak_verses,
+         'text'   =>null,'has'=>filled($lectionary->mesbak_psalm)],
+        ['key'=>'gospel','num'=>5,'label_key'=>'app.lectionary_gospel',
+         'book'   =>$locale==='am'?$lectionary->gospel_book_am:$lectionary->gospel_book_en,
+         'chapter'=>$lectionary->gospel_chapter,'verses'=>$lectionary->gospel_verses,
+         'text'   =>$locale==='am'?$lectionary->gospel_text_am:$lectionary->gospel_text_en,
+         'has'    =>filled($lectionary->gospel_book_am)||filled($lectionary->gospel_chapter)],
+        ['key'=>'qiddase','num'=>6,'label_key'=>'app.lectionary_qiddase',
+         'book'   =>null,'chapter'=>null,'verses'=>null,
+         'text'   =>$locale==='am'?$lectionary->qiddase_am:$lectionary->qiddase_en,
+         'has'    =>filled($lectionary->qiddase_am)||filled($lectionary->qiddase_en)],
+    ];
+    @endphp
     <div class="bg-card rounded-2xl shadow-sm border border-border overflow-hidden"
-         x-data="{ openSection: null }">
+         x-data="{
+            readOpen: false,
+            openSection: null,
+            fontSize: parseInt(localStorage.getItem('lecFontSize') || '16'),
+            readerTheme: localStorage.getItem('lecReaderTheme') || 'default',
+            readerFont: localStorage.getItem('lecReaderFont') || 'default',
+            fullscreen: false,
+            activeShelf: null,
+            shelfTapLock: false,
+            shelfTapLockTimer: null,
+            lockShelfTap(ms=650){ this.shelfTapLock=true; if(this.shelfTapLockTimer) clearTimeout(this.shelfTapLockTimer); this.shelfTapLockTimer=setTimeout(()=>{this.shelfTapLock=false;this.shelfTapLockTimer=null;},ms); },
+            toggleShelf(n){ if(this.shelfTapLock) return; this.activeShelf=this.activeShelf===n?null:n; },
+            pickTheme(t){ this.readerTheme=t; localStorage.setItem('lecReaderTheme',t); this.activeShelf=null; this.lockShelfTap(); },
+            pickFont(f){ this.readerFont=f; localStorage.setItem('lecReaderFont',f); this.activeShelf=null; this.lockShelfTap(); },
+            fontFamily(){ if(this.readerFont==='benaiah') return 'Benaiah,sans-serif'; if(this.readerFont==='kiros') return 'Kiros,sans-serif'; if(this.readerFont==='handwriting') return 'Handwriting,sans-serif'; return 'inherit'; },
+            setFontSize(s){ this.fontSize=Math.min(28,Math.max(12,s)); localStorage.setItem('lecFontSize',this.fontSize); },
+            openFullscreen(){ this.fullscreen=true; document.body.style.overflow='hidden'; const n=document.querySelector('nav.fixed.bottom-0'); if(n) n.style.display='none'; },
+            closeFullscreen(){ this.fullscreen=false; this.activeShelf=null; this.shelfTapLock=false; if(this.shelfTapLockTimer){clearTimeout(this.shelfTapLockTimer);this.shelfTapLockTimer=null;} document.body.style.overflow=''; const n=document.querySelector('nav.fixed.bottom-0'); if(n) n.style.display=''; }
+         }"
+         @keydown.escape.window="if(fullscreen) closeFullscreen()">
 
         {{-- Card header --}}
-        <div class="px-4 py-4 border-b border-border flex items-center justify-between">
-            <div>
-                <h3 class="font-semibold text-sm text-accent">{{ __('app.lectionary') }}</h3>
-                @if(filled($lectionary->title_am) || filled($lectionary->title_en))
-                <p class="font-medium text-primary mt-0.5">
-                    {{ $locale === 'am' ? $lectionary->title_am : $lectionary->title_en }}
-                </p>
-                @endif
-                @if(filled($lectionary->description_am) || filled($lectionary->description_en))
-                <p class="text-xs text-muted-text mt-1 leading-relaxed">
-                    {{ $locale === 'am' ? $lectionary->description_am : $lectionary->description_en }}
-                </p>
-                @endif
-            </div>
-            <svg class="w-5 h-5 text-accent shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-            </svg>
+        <div class="px-4 pt-4 pb-3">
+            <h3 class="font-semibold text-sm text-accent mb-1">{{ __('app.lectionary') }}</h3>
+            @if(filled($lectionary->title_am) || filled($lectionary->title_en))
+            <p class="font-medium text-primary">{{ $locale === 'am' ? $lectionary->title_am : $lectionary->title_en }}</p>
+            @endif
+            @if(filled($lectionary->description_am) || filled($lectionary->description_en))
+            <p class="text-sm text-muted-text mt-1.5 leading-relaxed">{{ $locale === 'am' ? $lectionary->description_am : $lectionary->description_en }}</p>
+            @endif
         </div>
 
-        {{-- Reading sections accordion --}}
-        <div class="divide-y divide-border">
+        {{-- Read button --}}
+        <div class="px-4 pb-4">
+            <button type="button" @click="readOpen = !readOpen"
+                    class="w-full flex items-center justify-between gap-2 py-2.5 px-3 rounded-xl bg-muted/70 hover:bg-muted transition mb-3">
+                <div class="flex items-center gap-1.5 min-w-0">
+                    <svg class="w-4 h-4 shrink-0 transition-transform duration-200" :class="readOpen ? 'rotate-90' : ''" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    <div class="min-w-0">
+                        <span class="text-sm font-semibold text-primary">{{ __('app.read') }}</span>
+                        <p x-show="!readOpen" class="text-[11px] text-muted-text mt-0.5">
+                            {{ $locale === 'am' ? 'ለማንበብ እዚህ ላይ ይንኩ' : 'Click here to read' }}
+                        </p>
+                    </div>
+                </div>
+                <span x-show="readOpen" class="text-[11px] font-semibold text-muted-text uppercase tracking-wider shrink-0">{{ __('app.close') }}</span>
+            </button>
 
-            @php
-            $readings = [
-                ['key' => 'pauline', 'num' => 1, 'label_key' => 'app.lectionary_pauline',
-                 'book'    => $locale === 'am' ? $lectionary->pauline_book_am    : $lectionary->pauline_book_en,
-                 'chapter' => $lectionary->pauline_chapter,
-                 'verses'  => $lectionary->pauline_verses,
-                 'text'    => $locale === 'am' ? $lectionary->pauline_text_am    : $lectionary->pauline_text_en,
-                 'has'     => filled($lectionary->pauline_book_am) || filled($lectionary->pauline_chapter)],
-
-                ['key' => 'catholic', 'num' => 2, 'label_key' => 'app.lectionary_catholic',
-                 'book'    => $locale === 'am' ? $lectionary->catholic_book_am   : $lectionary->catholic_book_en,
-                 'chapter' => $lectionary->catholic_chapter,
-                 'verses'  => $lectionary->catholic_verses,
-                 'text'    => $locale === 'am' ? $lectionary->catholic_text_am   : $lectionary->catholic_text_en,
-                 'has'     => filled($lectionary->catholic_book_am) || filled($lectionary->catholic_chapter)],
-
-                ['key' => 'acts', 'num' => 3, 'label_key' => 'app.lectionary_acts',
-                 'book'    => $locale === 'am' ? 'የሐዋርያት ሥራ' : 'Acts',
-                 'chapter' => $lectionary->acts_chapter,
-                 'verses'  => $lectionary->acts_verses,
-                 'text'    => $locale === 'am' ? $lectionary->acts_text_am       : $lectionary->acts_text_en,
-                 'has'     => filled($lectionary->acts_chapter)],
-
-                ['key' => 'mesbak', 'num' => 4, 'label_key' => 'app.lectionary_mesbak',
-                 'book'    => $locale === 'am' ? 'መዝሙረ ዳዊት' : 'Psalm',
-                 'chapter' => $lectionary->mesbak_psalm,
-                 'verses'  => $lectionary->mesbak_verses,
-                 'text'    => null,
-                 'has'     => filled($lectionary->mesbak_psalm)],
-
-                ['key' => 'gospel', 'num' => 5, 'label_key' => 'app.lectionary_gospel',
-                 'book'    => $locale === 'am' ? $lectionary->gospel_book_am     : $lectionary->gospel_book_en,
-                 'chapter' => $lectionary->gospel_chapter,
-                 'verses'  => $lectionary->gospel_verses,
-                 'text'    => $locale === 'am' ? $lectionary->gospel_text_am     : $lectionary->gospel_text_en,
-                 'has'     => filled($lectionary->gospel_book_am) || filled($lectionary->gospel_chapter)],
-
-                ['key' => 'qiddase', 'num' => 6, 'label_key' => 'app.lectionary_qiddase',
-                 'book'    => null, 'chapter' => null, 'verses' => null,
-                 'text'    => $locale === 'am' ? $lectionary->qiddase_am         : $lectionary->qiddase_en,
-                 'has'     => filled($lectionary->qiddase_am) || filled($lectionary->qiddase_en)],
-            ];
-            @endphp
-
-            @foreach($readings as $reading)
-            @if($reading['has'])
-            <div x-data>
-                {{-- Row toggle --}}
-                <button type="button"
-                        @click="$dispatch('lectionary-toggle', '{{ $reading['key'] }}'); openSection = openSection === '{{ $reading['key'] }}' ? null : '{{ $reading['key'] }}'"
-                        class="w-full flex items-center justify-between px-4 py-3.5 text-left hover:bg-muted/50 active:bg-muted transition-colors">
-                    <div>
-                        <span class="text-sm font-semibold text-primary">{{ $reading['num'] }}. {{ __($reading['label_key']) }}</span>
-                        @if(filled($reading['book']))
-                        <span class="block text-xs text-muted-text mt-0.5">
-                            {{ $reading['book'] }}{{ filled($reading['chapter']) ? ' ' . $reading['chapter'] : '' }}{{ filled($reading['verses']) ? ':' . $reading['verses'] : '' }}
-                        </span>
+            {{-- Summary list (shown when collapsed) --}}
+            <div x-show="!readOpen" class="divide-y divide-border/60 rounded-xl border border-border overflow-hidden">
+                @foreach($lecReadings as $r)
+                @if($r['has'])
+                <div class="flex items-center px-3 py-2.5 gap-2">
+                    <span class="text-xs font-bold text-muted-text w-4 shrink-0">{{ $r['num'] }}</span>
+                    <div class="min-w-0">
+                        <span class="text-xs font-semibold text-primary">{{ __($r['label_key']) }}</span>
+                        @if(filled($r['book']))
+                        <span class="text-[11px] text-muted-text ml-1.5">{{ $r['book'] }}{{ filled($r['chapter']) ? ' '.$r['chapter'] : '' }}{{ filled($r['verses']) ? ':'.$r['verses'] : '' }}</span>
                         @endif
                     </div>
-                    <svg class="w-4 h-4 text-muted-text shrink-0 transition-transform duration-200"
-                         :class="openSection === '{{ $reading['key'] }}' ? 'rotate-180' : ''"
-                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                    </svg>
-                </button>
+                </div>
+                @endif
+                @endforeach
+            </div>
 
-                {{-- Expanded content --}}
-                <div x-show="openSection === '{{ $reading['key'] }}'"
-                     x-transition:enter="transition ease-out duration-150"
-                     x-transition:enter-start="opacity-0 -translate-y-1"
-                     x-transition:enter-end="opacity-100 translate-y-0"
-                     x-cloak
-                     class="px-4 pb-4">
+            {{-- Inline expanded reader --}}
+            <div x-show="readOpen" x-cloak
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 -translate-y-1"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 class="space-y-2">
 
-                    @if($reading['key'] === 'mesbak')
-                        {{-- Ge'ez lines --}}
-                        @if(filled($lectionary->mesbak_geez_1) || filled($lectionary->mesbak_geez_2) || filled($lectionary->mesbak_geez_3))
-                        <div class="mb-3 text-sm text-primary leading-relaxed">
-                            @if(filled($lectionary->mesbak_geez_1))
-                            <p><span class="font-semibold">፩</span> {{ $lectionary->mesbak_geez_1 }}</p>
-                            @endif
-                            @if(filled($lectionary->mesbak_geez_2))
-                            <p><span class="font-semibold">፪</span> {{ $lectionary->mesbak_geez_2 }}</p>
-                            @endif
-                            @if(filled($lectionary->mesbak_geez_3))
-                            <p><span class="font-semibold">፫</span> {{ $lectionary->mesbak_geez_3 }}</p>
+                {{-- Toolbar --}}
+                <div class="flex items-center justify-between gap-2 py-2 px-3 rounded-xl bg-muted/60">
+                    <div class="flex items-center gap-1.5">
+                        <button type="button" @click="setFontSize(fontSize-2)" :disabled="fontSize<=12" :class="fontSize<=12&&'opacity-30 cursor-not-allowed'"
+                                class="w-7 h-7 rounded-lg bg-card border border-border flex items-center justify-center text-secondary hover:bg-muted transition touch-manipulation">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2" d="M5 12h14"/></svg>
+                        </button>
+                        <span class="text-xs font-bold text-primary tabular-nums w-6 text-center" x-text="fontSize"></span>
+                        <button type="button" @click="setFontSize(fontSize+2)" :disabled="fontSize>=28" :class="fontSize>=28&&'opacity-30 cursor-not-allowed'"
+                                class="w-7 h-7 rounded-lg bg-card border border-border flex items-center justify-center text-secondary hover:bg-muted transition touch-manipulation">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2" d="M12 5v14m-7-7h14"/></svg>
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <div class="relative" x-data="{fo:false}" @click.outside="fo=false">
+                            <button type="button" @click="fo=!fo" :class="fo?'bg-accent border-accent text-on-accent':'bg-card border-border text-secondary hover:bg-muted'"
+                                    class="h-7 px-2.5 rounded-lg border transition touch-manipulation flex items-center gap-1">
+                                <span class="text-[13px] font-bold" :style="readerFont==='benaiah'?'font-family:Benaiah,sans-serif':readerFont==='kiros'?'font-family:Kiros,sans-serif':readerFont==='handwriting'?'font-family:Handwriting,sans-serif':''">ሀ</span>
+                                <svg class="w-2.5 h-2.5 opacity-60 transition-transform" :class="fo&&'rotate-90'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                            </button>
+                            <div x-show="fo" x-transition x-cloak class="absolute right-0 top-full mt-1.5 w-44 bg-card border border-border rounded-xl shadow-xl overflow-hidden z-50" style="display:none">
+                                @foreach([['default','Default','inherit'],['benaiah','Benaiah','Benaiah,sans-serif'],['kiros','Kiros','Kiros,sans-serif'],['handwriting','Handwriting','Handwriting,sans-serif']] as [$fv,$fl,$ff])
+                                <button type="button" @click="fo=false;pickFont('{{ $fv }}')" :class="readerFont==='{{ $fv }}'?'bg-accent/10':'hover:bg-muted'"
+                                        class="w-full px-3 py-2.5 text-left flex items-center gap-3 border-b border-border last:border-0 touch-manipulation">
+                                    <span class="text-lg font-bold" style="font-family:{{ $ff }}">ሀ</span>
+                                    <span class="text-sm" :class="readerFont==='{{ $fv }}'?'text-accent font-semibold':'text-primary'">{{ $fl }}</span>
+                                </button>
+                                @endforeach
+                            </div>
+                        </div>
+                        <button type="button" @click="openFullscreen()"
+                                class="h-7 px-2.5 rounded-lg bg-card border border-border text-secondary hover:bg-muted transition touch-manipulation flex items-center">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                {{-- Reading accordion --}}
+                <div class="divide-y divide-border rounded-xl border border-border overflow-hidden">
+                    @foreach($lecReadings as $r)
+                    @if($r['has'])
+                    <div>
+                        <button type="button" @click="openSection = openSection==='{{ $r['key'] }}'?null:'{{ $r['key'] }}'"
+                                class="w-full flex items-center justify-between px-4 py-3.5 text-left hover:bg-muted/40 transition-colors touch-manipulation">
+                            <div>
+                                <span class="text-sm font-semibold text-primary">{{ $r['num'] }}. {{ __($r['label_key']) }}</span>
+                                @if(filled($r['book']))
+                                <span class="block text-xs text-muted-text mt-0.5">{{ $r['book'] }}{{ filled($r['chapter'])?' '.$r['chapter']:'' }}{{ filled($r['verses'])?':'.$r['verses']:'' }}</span>
+                                @endif
+                            </div>
+                            <svg class="w-4 h-4 text-muted-text shrink-0 transition-transform duration-200" :class="openSection==='{{ $r['key'] }}'?'rotate-180':''"
+                                 fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+                        <div x-show="openSection==='{{ $r['key'] }}'" x-cloak
+                             x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                             class="px-4 pb-5 pt-1 text-primary"
+                             :style="'font-size:'+fontSize+'px;line-height:'+(fontSize<20?'1.85':'1.75')+';font-family:'+fontFamily()">
+                            @if($r['key']==='mesbak')
+                                @if(filled($lectionary->mesbak_geez_1)||filled($lectionary->mesbak_geez_2)||filled($lectionary->mesbak_geez_3))
+                                <div class="mb-4">
+                                    @if(filled($lectionary->mesbak_geez_1))<p class="mb-1"><span class="font-semibold">፩</span> {{ $lectionary->mesbak_geez_1 }}</p>@endif
+                                    @if(filled($lectionary->mesbak_geez_2))<p class="mb-1"><span class="font-semibold">፪</span> {{ $lectionary->mesbak_geez_2 }}</p>@endif
+                                    @if(filled($lectionary->mesbak_geez_3))<p><span class="font-semibold">፫</span> {{ $lectionary->mesbak_geez_3 }}</p>@endif
+                                </div>
+                                @endif
+                                @php $mt=$locale==='am'?$lectionary->mesbak_text_am:$lectionary->mesbak_text_en; @endphp
+                                @if(filled($mt))<div class="whitespace-pre-wrap">{{ $mt }}</div>@endif
+                            @elseif(filled($r['text']))
+                                <div class="whitespace-pre-wrap">{{ $r['text'] }}</div>
                             @endif
                         </div>
-                        @endif
-                        @php $mesbakText = $locale === 'am' ? $lectionary->mesbak_text_am : $lectionary->mesbak_text_en; @endphp
-                        @if(filled($mesbakText))
-                        <div class="text-sm text-primary leading-loose whitespace-pre-wrap">{{ $mesbakText }}</div>
-                        @endif
-                    @elseif(filled($reading['text']))
-                        <div class="text-sm text-primary leading-loose whitespace-pre-wrap">{{ $reading['text'] }}</div>
+                    </div>
                     @endif
+                    @endforeach
                 </div>
             </div>
-            @endif
-            @endforeach
-
         </div>
+
+        {{-- Fullscreen reader --}}
+        <template x-if="fullscreen">
+            <div class="fixed inset-0 z-[100] flex flex-col"
+                 :style="readerTheme==='sepia'?'background-color:#f4ecd8':readerTheme==='dark'?'background-color:#0f0f1e':'background-color:#ffffff'">
+
+                <div class="flex-1 overflow-y-auto">
+                    {{-- Sticky header --}}
+                    <div class="sticky top-0 z-10 px-4 py-3 border-b flex items-center gap-3"
+                         :style="readerTheme==='default'?'background-color:#ffffff;border-color:#e5e7eb':readerTheme==='sepia'?'background-color:#ede3cc;border-color:#d4c5a9':'background-color:#16162a;border-color:#2a2a4a'">
+                        <button type="button" @click="closeFullscreen()" class="w-8 h-8 rounded-lg flex items-center justify-center touch-manipulation"
+                                :style="readerTheme==='dark'?'color:#7b9fff':readerTheme==='sepia'?'color:#8b5e3c':'color:var(--color-accent)'">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-wider"
+                               :style="readerTheme==='dark'?'color:#7b9fff':readerTheme==='sepia'?'color:#8b5e3c':'color:var(--color-accent)'">{{ __('app.lectionary') }}</p>
+                            @if(filled($lectionary->title_am)||filled($lectionary->title_en))
+                            <p class="text-sm font-semibold mt-0.5"
+                               :style="readerTheme==='dark'?'color:#f0f0f0':readerTheme==='sepia'?'color:#3e2c1c':'color:var(--color-primary)'">
+                                {{ $locale==='am'?$lectionary->title_am:$lectionary->title_en }}
+                            </p>
+                            @endif
+                        </div>
+                    </div>
+
+                    {{-- Sections --}}
+                    <div class="max-w-2xl mx-auto px-1 py-2 pb-8">
+                        @foreach($lecReadings as $r)
+                        @if($r['has'])
+                        <div class="border-b last:border-0"
+                             :style="readerTheme==='dark'?'border-color:#2a2a4a':readerTheme==='sepia'?'border-color:#d4c5a9':'border-color:#e5e7eb'">
+                            <button type="button" @click="openSection=openSection==='{{ $r['key'] }}_fs'?null:'{{ $r['key'] }}_fs'"
+                                    class="w-full flex items-center justify-between px-4 py-4 text-left touch-manipulation">
+                                <div>
+                                    <span class="text-sm font-bold"
+                                          :style="readerTheme==='dark'?'color:#f0f0f0':readerTheme==='sepia'?'color:#3e2c1c':'color:var(--color-primary)'">
+                                        {{ $r['num'] }}. {{ __($r['label_key']) }}
+                                    </span>
+                                    @if(filled($r['book']))
+                                    <span class="block text-xs mt-0.5"
+                                          :style="readerTheme==='dark'?'color:#8888aa':readerTheme==='sepia'?'color:#8b7355':'color:var(--color-muted-text)'">
+                                        {{ $r['book'] }}{{ filled($r['chapter'])?' '.$r['chapter']:'' }}{{ filled($r['verses'])?':'.$r['verses']:'' }}
+                                    </span>
+                                    @endif
+                                </div>
+                                <svg class="w-5 h-5 shrink-0 transition-transform duration-200" :class="openSection==='{{ $r['key'] }}_fs'?'rotate-180':''"
+                                     :style="readerTheme==='dark'?'color:#8888aa':readerTheme==='sepia'?'color:#8b7355':'color:var(--color-muted-text)'"
+                                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+                            <div x-show="openSection==='{{ $r['key'] }}_fs'" x-cloak
+                                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                                 class="px-4 pb-6"
+                                 :style="'font-size:'+fontSize+'px;line-height:'+(fontSize<20?'1.9':'1.8')+';font-family:'+fontFamily()+';color:'+(readerTheme==='dark'?'#d4d4e8':readerTheme==='sepia'?'#3e2c1c':'var(--color-primary)')">
+                                @if($r['key']==='mesbak')
+                                    @if(filled($lectionary->mesbak_geez_1)||filled($lectionary->mesbak_geez_2)||filled($lectionary->mesbak_geez_3))
+                                    <div class="mb-5">
+                                        @if(filled($lectionary->mesbak_geez_1))<p class="mb-1"><span class="font-semibold">፩</span> {{ $lectionary->mesbak_geez_1 }}</p>@endif
+                                        @if(filled($lectionary->mesbak_geez_2))<p class="mb-1"><span class="font-semibold">፪</span> {{ $lectionary->mesbak_geez_2 }}</p>@endif
+                                        @if(filled($lectionary->mesbak_geez_3))<p><span class="font-semibold">፫</span> {{ $lectionary->mesbak_geez_3 }}</p>@endif
+                                    </div>
+                                    @endif
+                                    @php $mt=$locale==='am'?$lectionary->mesbak_text_am:$lectionary->mesbak_text_en; @endphp
+                                    @if(filled($mt))<div class="whitespace-pre-wrap">{{ $mt }}</div>@endif
+                                @elseif(filled($r['text']))
+                                    <div class="whitespace-pre-wrap">{{ $r['text'] }}</div>
+                                @endif
+                            </div>
+                        </div>
+                        @endif
+                        @endforeach
+                    </div>
+                </div>
+
+                {{-- Font shelf --}}
+                <template x-if="activeShelf==='font'">
+                    <div class="absolute bottom-16 left-0 right-0 border-t px-4 py-4 z-[101]"
+                         :style="readerTheme==='default'?'background-color:#ffffff;border-color:#e5e7eb':readerTheme==='sepia'?'background-color:#e8dcc6;border-color:#d4c5a9':'background-color:#12122a;border-color:#2a2a4a'">
+                        <div class="flex items-center justify-center gap-5 max-w-xs mx-auto">
+                            @foreach([['default','Default','inherit'],['benaiah','Benaiah','Benaiah,sans-serif'],['kiros','Kiros','Kiros,sans-serif'],['handwriting','Writing','Handwriting,sans-serif']] as [$fv,$fl,$ff])
+                            <button type="button" @pointerup.stop.prevent="pickFont('{{ $fv }}')" class="flex flex-col items-center gap-1.5 touch-manipulation">
+                                <span class="w-12 h-12 rounded-xl flex items-center justify-center text-xl font-bold transition-all" style="font-family:{{ $ff }}"
+                                      :style="readerFont==='{{ $fv }}'?'border:3px solid var(--color-accent);transform:scale(1.1)':'border:2px solid '+(readerTheme==='dark'?'#4a4a6a':readerTheme==='sepia'?'#c4a87c':'#d1d5db')+';background:'+(readerTheme==='dark'?'#1a1a2e':readerTheme==='sepia'?'#f4ecd8':'#fff')">ሀ</span>
+                                <span class="text-[10px] font-semibold" :style="readerFont==='{{ $fv }}'?'color:var(--color-accent)':readerTheme==='sepia'?'color:#5b4636':readerTheme==='dark'?'color:#8888aa':'color:#6b7280'">{{ $fl }}</span>
+                            </button>
+                            @endforeach
+                        </div>
+                    </div>
+                </template>
+
+                {{-- Theme shelf --}}
+                <template x-if="activeShelf==='theme'">
+                    <div class="absolute bottom-16 left-0 right-0 border-t px-4 py-4 z-[101]"
+                         :style="readerTheme==='default'?'background-color:#ffffff;border-color:#e5e7eb':readerTheme==='sepia'?'background-color:#e8dcc6;border-color:#d4c5a9':'background-color:#12122a;border-color:#2a2a4a'">
+                        <div class="flex items-center justify-center gap-5 max-w-xs mx-auto">
+                            @foreach([['default','A','#ffffff','#3e3e3e'],['sepia','A','#f4ecd8','#5b4636'],['dark','A','#1a1a2e','#e0e0e0']] as [$tv,$tl,$tbg,$tc])
+                            <button type="button" @pointerup.stop.prevent="pickTheme('{{ $tv }}')" class="flex flex-col items-center gap-1.5 touch-manipulation">
+                                <span class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold transition-all"
+                                      style="background-color:{{ $tbg }};color:{{ $tc }}"
+                                      :style="readerTheme==='{{ $tv }}'?'border:3px solid var(--color-accent);transform:scale(1.1)':'border:2px solid #d1d5db'">{{ $tl }}</span>
+                                <span class="text-[10px] font-semibold capitalize" :style="readerTheme==='{{ $tv }}'?'color:var(--color-accent)':readerTheme==='dark'?'color:#8888aa':'color:#6b7280'">{{ $tv }}</span>
+                            </button>
+                            @endforeach
+                        </div>
+                    </div>
+                </template>
+
+                {{-- Bottom toolbar --}}
+                <div class="shrink-0 border-t safe-area-bottom" :class="{'pointer-events-none':shelfTapLock}"
+                     :style="readerTheme==='default'?'background-color:#ffffff;border-color:#e5e7eb':readerTheme==='sepia'?'background-color:#ede3cc;border-color:#d4c5a9':'background-color:#16162a;border-color:#2a2a4a'">
+                    <div class="flex items-center justify-around h-16 max-w-lg mx-auto px-2">
+                        <button type="button" @click="closeFullscreen()" class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition touch-manipulation"
+                                :style="readerTheme==='sepia'?'color:#8b5e3c':readerTheme==='dark'?'color:#7b9fff':'color:var(--color-accent)'">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            <span class="text-[9px] font-semibold uppercase tracking-wider">{{ __('app.close') }}</span>
+                        </button>
+                        <button type="button" @click="setFontSize(fontSize-2)" :disabled="fontSize<=12" :class="fontSize<=12?'opacity-30 cursor-not-allowed':''"
+                                class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition touch-manipulation"
+                                :style="fontSize>12?(readerTheme==='sepia'?'color:#5b4636':readerTheme==='dark'?'color:#c0c0d0':''):''">>
+                            <span class="text-base font-bold leading-none">A</span>
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2.5" d="M5 12h14"/></svg>
+                        </button>
+                        <div class="flex flex-col items-center gap-0.5 px-1">
+                            <span class="text-sm font-bold tabular-nums" x-text="fontSize"
+                                  :style="readerTheme==='sepia'?'color:#3e2c1c':readerTheme==='dark'?'color:#f0f0f0':'color:var(--color-primary)'"></span>
+                            <span class="text-[8px] font-semibold uppercase tracking-wider"
+                                  :style="readerTheme==='sepia'?'color:#8b7355':readerTheme==='dark'?'color:#8888aa':'color:var(--color-muted-text)'">{{ __('app.font_size') }}</span>
+                        </div>
+                        <button type="button" @click="setFontSize(fontSize+2)" :disabled="fontSize>=28" :class="fontSize>=28?'opacity-30 cursor-not-allowed':''"
+                                class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition touch-manipulation"
+                                :style="fontSize<28?(readerTheme==='sepia'?'color:#5b4636':readerTheme==='dark'?'color:#c0c0d0':''):''">>
+                            <span class="text-xl font-bold leading-none">A</span>
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2.5" d="M12 5v14m-7-7h14"/></svg>
+                        </button>
+                        <button type="button" @pointerup.stop.prevent="toggleShelf('theme')"
+                                class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition touch-manipulation"
+                                :style="readerTheme==='sepia'?(activeShelf==='theme'?'color:#8b5e3c;background-color:#d4c5a9':'color:#5b4636'):readerTheme==='dark'?(activeShelf==='theme'?'color:#7b9fff;background-color:#2a2a4a':'color:#c0c0d0'):(activeShelf==='theme'?'color:var(--color-accent)':'')">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
+                            <span class="text-[9px] font-semibold uppercase tracking-wider">{{ __('app.reader_theme') }}</span>
+                        </button>
+                        <button type="button" @pointerup.stop.prevent="toggleShelf('font')"
+                                class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition touch-manipulation"
+                                :style="readerTheme==='sepia'?(activeShelf==='font'?'color:#8b5e3c;background-color:#d4c5a9':'color:#5b4636'):readerTheme==='dark'?(activeShelf==='font'?'color:#7b9fff;background-color:#2a2a4a':'color:#c0c0d0'):(activeShelf==='font'?'color:var(--color-accent)':'')">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg>
+                            <span class="text-[9px] font-semibold uppercase tracking-wider">Font</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
     </div>
     @endif
 
