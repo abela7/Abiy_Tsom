@@ -106,6 +106,16 @@ class TelegramAuthController extends Controller
         }
 
         $purpose = $this->detectPurpose($request->query('purpose'));
+        if ($purpose === null) {
+            $peekedToken = $telegramAuthService->peekCode($code);
+
+            if (! $peekedToken || ! $this->isDirectAuthPurpose($peekedToken->purpose)) {
+                return redirect($fallback ?? route('home'));
+            }
+
+            $purpose = $peekedToken->purpose;
+        }
+
         $token = $telegramAuthService->consumeCode($code, $purpose);
 
         if (! $token) {
@@ -510,6 +520,14 @@ class TelegramAuthController extends Controller
             TelegramAuthService::PURPOSE_MEMBER_ACCESS, TelegramAuthService::PURPOSE_ADMIN_ACCESS => $purposeHint,
             default => null,
         };
+    }
+
+    private function isDirectAuthPurpose(?string $purpose): bool
+    {
+        return in_array($purpose, [
+            TelegramAuthService::PURPOSE_MEMBER_ACCESS,
+            TelegramAuthService::PURPOSE_ADMIN_ACCESS,
+        ], true);
     }
 
     private function extractStartPayload(string $startParam): array

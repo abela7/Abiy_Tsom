@@ -25,7 +25,7 @@ class ShareDayReminderLinkTest extends TestCase
         $daily = $this->createPublishedDay();
         $code = app(TelegramAuthService::class)->createCode(
             $member,
-            TelegramAuthService::PURPOSE_MEMBER_ACCESS,
+            TelegramAuthService::PURPOSE_SHARE_DAY_ACCESS,
             route('member.day', ['daily' => $daily], false)
         );
 
@@ -47,7 +47,7 @@ class ShareDayReminderLinkTest extends TestCase
         $daily = $this->createPublishedDay();
         $code = app(TelegramAuthService::class)->createCode(
             $member,
-            TelegramAuthService::PURPOSE_MEMBER_ACCESS,
+            TelegramAuthService::PURPOSE_SHARE_DAY_ACCESS,
             route('member.day', ['daily' => $daily], false)
         );
 
@@ -72,7 +72,7 @@ class ShareDayReminderLinkTest extends TestCase
         $daily = $this->createPublishedDay();
         $code = app(TelegramAuthService::class)->createCode(
             $intendedMember,
-            TelegramAuthService::PURPOSE_MEMBER_ACCESS,
+            TelegramAuthService::PURPOSE_SHARE_DAY_ACCESS,
             route('member.day', ['daily' => $daily], false)
         );
 
@@ -89,6 +89,47 @@ class ShareDayReminderLinkTest extends TestCase
             ->assertSee(route('share.day.public', ['daily' => $daily]), false);
 
         $this->assertDatabaseCount('member_sessions', 1);
+        $this->assertNull($this->findAccessToken($code)?->consumed_at);
+    }
+
+    public function test_share_day_code_cannot_be_used_on_auth_access_route(): void
+    {
+        $member = $this->createMember('e');
+        $daily = $this->createPublishedDay();
+        $code = app(TelegramAuthService::class)->createCode(
+            $member,
+            TelegramAuthService::PURPOSE_SHARE_DAY_ACCESS,
+            route('member.day', ['daily' => $daily], false)
+        );
+
+        $response = $this->get(route('auth.access', ['code' => $code]), [
+            'User-Agent' => 'Mozilla/5.0 Test Browser',
+        ]);
+
+        $response->assertRedirect(route('home'));
+
+        $this->assertDatabaseCount('member_sessions', 0);
+        $this->assertNull($this->findAccessToken($code)?->consumed_at);
+    }
+
+    public function test_share_day_code_cannot_be_used_on_auth_go_route(): void
+    {
+        $member = $this->createMember('f');
+        $daily = $this->createPublishedDay();
+        $code = app(TelegramAuthService::class)->createCode(
+            $member,
+            TelegramAuthService::PURPOSE_SHARE_DAY_ACCESS,
+            route('member.day', ['daily' => $daily], false)
+        );
+
+        $response = $this->get(route('auth.go', ['code' => $code]), [
+            'User-Agent' => 'Mozilla/5.0 Test Browser',
+        ]);
+
+        $response->assertOk()
+            ->assertViewIs('auth.go');
+
+        $this->assertDatabaseCount('member_sessions', 0);
         $this->assertNull($this->findAccessToken($code)?->consumed_at);
     }
 

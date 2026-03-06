@@ -77,7 +77,7 @@ class ShareController extends Controller
         if ($code !== '' && preg_match('/^[A-Za-z0-9]{20,128}$/', $code)) {
             $token = $telegramAuthService->peekCode(
                 $code,
-                TelegramAuthService::PURPOSE_MEMBER_ACCESS
+                TelegramAuthService::PURPOSE_SHARE_DAY_ACCESS
             );
 
             if ($token
@@ -88,7 +88,7 @@ class ShareController extends Controller
             ) {
                 $consumedToken = $telegramAuthService->consumeCode(
                     $code,
-                    TelegramAuthService::PURPOSE_MEMBER_ACCESS
+                    TelegramAuthService::PURPOSE_SHARE_DAY_ACCESS
                 );
                 $member = $consumedToken?->actor;
 

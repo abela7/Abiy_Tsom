@@ -15,12 +15,14 @@ use Illuminate\Support\Str;
 final class TelegramAuthService
 {
     public const PURPOSE_MEMBER_ACCESS = 'member_access';
+    public const PURPOSE_SHARE_DAY_ACCESS = 'share_day_access';
     public const PURPOSE_ADMIN_ACCESS = 'admin_access';
     private const CODE_LENGTH = 32;
     private const WEB_APP_AUTH_MAX_AGE_SECONDS = 86400;
 
     private const DEFAULT_TTL_MINUTES = [
         self::PURPOSE_MEMBER_ACCESS => 1440, // 24h
+        self::PURPOSE_SHARE_DAY_ACCESS => 1440, // 24h
         self::PURPOSE_ADMIN_ACCESS => 15, // 15 minutes
     ];
 
@@ -350,7 +352,11 @@ final class TelegramAuthService
 
     private function isValidPurpose(string $purpose): bool
     {
-        return in_array($purpose, [self::PURPOSE_MEMBER_ACCESS, self::PURPOSE_ADMIN_ACCESS], true);
+        return in_array($purpose, [
+            self::PURPOSE_MEMBER_ACCESS,
+            self::PURPOSE_SHARE_DAY_ACCESS,
+            self::PURPOSE_ADMIN_ACCESS,
+        ], true);
     }
 
     private function isPotentialAbsoluteUrl(string $path): bool

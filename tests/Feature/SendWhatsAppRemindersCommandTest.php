@@ -111,8 +111,9 @@ class SendWhatsAppRemindersCommandTest extends TestCase
                 && $request['token'] === 'token-123'
                 && is_string($request['body'])
                 && str_contains($request['body'], 'Day '.$daily->day_number)
-                && str_contains($request['body'], '/member/day/'.$daily->id)
-                && str_contains($request['body'], 'token='.$dueMember->token);
+                && str_contains($request['body'], '/share/day/'.$daily->id.'?code=')
+                && ! str_contains($request['body'], '/member/day/'.$daily->id)
+                && ! str_contains($request['body'], $dueMember->token);
         });
 
         $this->assertDatabaseHas('members', [
