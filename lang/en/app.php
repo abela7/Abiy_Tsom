@@ -874,6 +874,7 @@ return [
     'passcode_enabled' => 'Passcode is enabled.',
 
     // Lectionary (ግጻዌ)
+    'lectionary'               => 'Lectionary (ግጻዌ)',
     'lectionary_admin_title'   => 'Lectionary (ግጻዌ)',
     'lectionary_nav'           => 'Lectionary',
     'lectionary_progress'      => ':count / 365 days filled',

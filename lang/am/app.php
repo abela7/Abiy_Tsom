@@ -872,6 +872,7 @@ return [
     'passcode_enabled' => 'ይለፍ ቃል አስብቆ ተቀምጧል።',
 
     // Lectionary (ግጻዌ)
+    'lectionary'               => 'ግጻዌ',
     'lectionary_admin_title'   => 'ግጻዌ',
     'lectionary_nav'           => 'ግጻዌ',
     'lectionary_progress'      => ':count / 365 ቀናት ተሞልተዋል',

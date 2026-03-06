@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Member;
 use App\Http\Concerns\DetectsPreviewBots;
 use App\Http\Controllers\Controller;
 use App\Models\DailyContent;
+use App\Models\Lectionary;
 use App\Models\Member;
 use App\Services\EthiopianCalendarService;
 use App\Services\MemberSessionService;
@@ -142,6 +143,10 @@ class ShareController extends Controller
             ->where('is_published', true)
             ->first();
 
+        $lectionary = Lectionary::where('month', $ethDateInfo['month'])
+            ->where('day', $ethDateInfo['day'])
+            ->first();
+
         return view('member.day', compact(
             'member',
             'daily',
@@ -153,6 +158,7 @@ class ShareController extends Controller
             'ethDateInfo',
             'prevDay',
             'nextDay',
+            'lectionary',
         ));
     }
 }

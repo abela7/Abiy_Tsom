@@ -9,6 +9,7 @@ use App\Models\Activity;
 use App\Models\Announcement;
 use App\Models\Banner;
 use App\Models\DailyContent;
+use App\Models\Lectionary;
 use App\Models\LentSeason;
 use App\Models\MemberChecklist;
 use App\Models\MemberCustomChecklist;
@@ -228,7 +229,11 @@ class HomeController extends Controller
             ->where('is_published', true)
             ->first();
 
-        return view('member.day', compact('member', 'daily', 'activities', 'checklist', 'customActivities', 'customChecklist', 'ethDateInfo', 'prevDay', 'nextDay'));
+        $lectionary = Lectionary::where('month', $ethDateInfo['month'])
+            ->where('day', $ethDateInfo['day'])
+            ->first();
+
+        return view('member.day', compact('member', 'daily', 'activities', 'checklist', 'customActivities', 'customChecklist', 'ethDateInfo', 'prevDay', 'nextDay', 'lectionary'));
     }
 
     /**

@@ -763,6 +763,140 @@
     </div>
     @endif
 
+    {{-- Lectionary (ግጻዌ) --}}
+    @if(isset($lectionary) && $lectionary && $lectionary->hasContent())
+    <div class="bg-card rounded-2xl shadow-sm border border-border overflow-hidden"
+         x-data="{ openSection: null }">
+
+        {{-- Card header --}}
+        <div class="px-4 py-4 border-b border-border flex items-center justify-between">
+            <div>
+                <h3 class="font-semibold text-sm text-accent">{{ __('app.lectionary') }}</h3>
+                @if(filled($lectionary->title_am) || filled($lectionary->title_en))
+                <p class="font-medium text-primary mt-0.5">
+                    {{ $locale === 'am' ? $lectionary->title_am : $lectionary->title_en }}
+                </p>
+                @endif
+                @if(filled($lectionary->description_am) || filled($lectionary->description_en))
+                <p class="text-xs text-muted-text mt-1 leading-relaxed">
+                    {{ $locale === 'am' ? $lectionary->description_am : $lectionary->description_en }}
+                </p>
+                @endif
+            </div>
+            <svg class="w-5 h-5 text-accent shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+            </svg>
+        </div>
+
+        {{-- Reading sections accordion --}}
+        <div class="divide-y divide-border">
+
+            @php
+            $readings = [
+                ['key' => 'pauline', 'num' => 1, 'label_key' => 'app.lectionary_pauline',
+                 'book'    => $locale === 'am' ? $lectionary->pauline_book_am    : $lectionary->pauline_book_en,
+                 'chapter' => $lectionary->pauline_chapter,
+                 'verses'  => $lectionary->pauline_verses,
+                 'text'    => $locale === 'am' ? $lectionary->pauline_text_am    : $lectionary->pauline_text_en,
+                 'has'     => filled($lectionary->pauline_book_am) || filled($lectionary->pauline_chapter)],
+
+                ['key' => 'catholic', 'num' => 2, 'label_key' => 'app.lectionary_catholic',
+                 'book'    => $locale === 'am' ? $lectionary->catholic_book_am   : $lectionary->catholic_book_en,
+                 'chapter' => $lectionary->catholic_chapter,
+                 'verses'  => $lectionary->catholic_verses,
+                 'text'    => $locale === 'am' ? $lectionary->catholic_text_am   : $lectionary->catholic_text_en,
+                 'has'     => filled($lectionary->catholic_book_am) || filled($lectionary->catholic_chapter)],
+
+                ['key' => 'acts', 'num' => 3, 'label_key' => 'app.lectionary_acts',
+                 'book'    => $locale === 'am' ? 'የሐዋርያት ሥራ' : 'Acts',
+                 'chapter' => $lectionary->acts_chapter,
+                 'verses'  => $lectionary->acts_verses,
+                 'text'    => $locale === 'am' ? $lectionary->acts_text_am       : $lectionary->acts_text_en,
+                 'has'     => filled($lectionary->acts_chapter)],
+
+                ['key' => 'mesbak', 'num' => 4, 'label_key' => 'app.lectionary_mesbak',
+                 'book'    => $locale === 'am' ? 'መዝሙረ ዳዊት' : 'Psalm',
+                 'chapter' => $lectionary->mesbak_psalm,
+                 'verses'  => $lectionary->mesbak_verses,
+                 'text'    => null,
+                 'has'     => filled($lectionary->mesbak_psalm)],
+
+                ['key' => 'gospel', 'num' => 5, 'label_key' => 'app.lectionary_gospel',
+                 'book'    => $locale === 'am' ? $lectionary->gospel_book_am     : $lectionary->gospel_book_en,
+                 'chapter' => $lectionary->gospel_chapter,
+                 'verses'  => $lectionary->gospel_verses,
+                 'text'    => $locale === 'am' ? $lectionary->gospel_text_am     : $lectionary->gospel_text_en,
+                 'has'     => filled($lectionary->gospel_book_am) || filled($lectionary->gospel_chapter)],
+
+                ['key' => 'qiddase', 'num' => 6, 'label_key' => 'app.lectionary_qiddase',
+                 'book'    => null, 'chapter' => null, 'verses' => null,
+                 'text'    => $locale === 'am' ? $lectionary->qiddase_am         : $lectionary->qiddase_en,
+                 'has'     => filled($lectionary->qiddase_am) || filled($lectionary->qiddase_en)],
+            ];
+            @endphp
+
+            @foreach($readings as $reading)
+            @if($reading['has'])
+            <div x-data>
+                {{-- Row toggle --}}
+                <button type="button"
+                        @click="$dispatch('lectionary-toggle', '{{ $reading['key'] }}'); openSection = openSection === '{{ $reading['key'] }}' ? null : '{{ $reading['key'] }}'"
+                        class="w-full flex items-center justify-between px-4 py-3.5 text-left hover:bg-muted/50 active:bg-muted transition-colors">
+                    <div>
+                        <span class="text-sm font-semibold text-primary">{{ $reading['num'] }}. {{ __($reading['label_key']) }}</span>
+                        @if(filled($reading['book']))
+                        <span class="block text-xs text-muted-text mt-0.5">
+                            {{ $reading['book'] }}{{ filled($reading['chapter']) ? ' ' . $reading['chapter'] : '' }}{{ filled($reading['verses']) ? ':' . $reading['verses'] : '' }}
+                        </span>
+                        @endif
+                    </div>
+                    <svg class="w-4 h-4 text-muted-text shrink-0 transition-transform duration-200"
+                         :class="openSection === '{{ $reading['key'] }}' ? 'rotate-180' : ''"
+                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+
+                {{-- Expanded content --}}
+                <div x-show="openSection === '{{ $reading['key'] }}'"
+                     x-transition:enter="transition ease-out duration-150"
+                     x-transition:enter-start="opacity-0 -translate-y-1"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-cloak
+                     class="px-4 pb-4">
+
+                    @if($reading['key'] === 'mesbak')
+                        {{-- Ge'ez lines --}}
+                        @if(filled($lectionary->mesbak_geez_1) || filled($lectionary->mesbak_geez_2) || filled($lectionary->mesbak_geez_3))
+                        <div class="mb-3 text-sm text-primary leading-relaxed">
+                            @if(filled($lectionary->mesbak_geez_1))
+                            <p><span class="font-semibold">፩</span> {{ $lectionary->mesbak_geez_1 }}</p>
+                            @endif
+                            @if(filled($lectionary->mesbak_geez_2))
+                            <p><span class="font-semibold">፪</span> {{ $lectionary->mesbak_geez_2 }}</p>
+                            @endif
+                            @if(filled($lectionary->mesbak_geez_3))
+                            <p><span class="font-semibold">፫</span> {{ $lectionary->mesbak_geez_3 }}</p>
+                            @endif
+                        </div>
+                        @endif
+                        @php $mesbakText = $locale === 'am' ? $lectionary->mesbak_text_am : $lectionary->mesbak_text_en; @endphp
+                        @if(filled($mesbakText))
+                        <div class="text-sm text-primary leading-loose whitespace-pre-wrap">{{ $mesbakText }}</div>
+                        @endif
+                    @elseif(filled($reading['text']))
+                        <div class="text-sm text-primary leading-loose whitespace-pre-wrap">{{ $reading['text'] }}</div>
+                    @endif
+                </div>
+            </div>
+            @endif
+            @endforeach
+
+        </div>
+    </div>
+    @endif
+
     {{-- Spiritual books (multiple per day) --}}
     @if($daily->books && $daily->books->isNotEmpty())
     <div data-tour="day-book" class="space-y-3">
