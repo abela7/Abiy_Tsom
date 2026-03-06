@@ -820,10 +820,10 @@
                 } else {
                     if (this.allExpanded) { this.openSections.push(key); }
                     else { this.openSections = [key]; }
-                    this.$nextTick(() => {
+                    setTimeout(() => {
                         const el = this.$refs['sec_' + key];
-                        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                    });
+                        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 220);
                 }
             },
             toggleAll() {
@@ -838,10 +838,10 @@
                 } else {
                     if (this.fsAllExpanded) { this.fsOpenSections.push(key); }
                     else { this.fsOpenSections = [key]; }
-                    this.$nextTick(() => {
+                    setTimeout(() => {
                         const el = this.$refs['fssec_' + key];
-                        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                    });
+                        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 220);
                 }
             },
             toggleFsAll() {
