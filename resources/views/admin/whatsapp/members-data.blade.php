@@ -32,13 +32,10 @@
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">ID</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.baptism_name') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_phone') }}</th>
-                    <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_reminder_enabled') }}</th>
-                    <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.status') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_reminder_time') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.language') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_last_sent') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_activity') }}</th>
-                    <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.registered') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.actions') }}</th>
                 </tr>
             </thead>
@@ -53,24 +50,6 @@
                             @endif
                         </td>
                         <td class="px-5 py-3.5 font-mono text-xs text-secondary">{{ $m->whatsapp_phone }}</td>
-                        <td class="px-5 py-3.5">
-                            @if($m->whatsapp_reminder_enabled)
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-success-bg text-success">{{ __('app.yes') }}</span>
-                            @else
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-error-bg text-error">{{ __('app.no') }}</span>
-                            @endif
-                        </td>
-                        <td class="px-5 py-3.5">
-                            @if($m->whatsapp_confirmation_status === 'confirmed')
-                                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-success-bg text-success">{{ __('app.settings_whatsapp_enabled') }}</span>
-                            @elseif($m->whatsapp_confirmation_status === 'pending')
-                                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300">{{ __('app.settings_whatsapp_pending') }}</span>
-                            @elseif($m->whatsapp_confirmation_status === 'rejected')
-                                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-error-bg text-error">{{ __('app.rejected') }}</span>
-                            @else
-                                <span class="text-muted-text text-xs">{{ $m->whatsapp_confirmation_status }}</span>
-                            @endif
-                        </td>
                         <td class="px-5 py-3.5 text-secondary">
                             {{ $m->whatsapp_reminder_time ? \Carbon\Carbon::parse($m->whatsapp_reminder_time)->format('H:i') : '—' }}
                         </td>
@@ -79,7 +58,6 @@
                         <td class="px-5 py-3.5 text-secondary tabular-nums text-xs">
                             {{ $m->sessions_count }} {{ __('app.whatsapp_sessions') }}
                         </td>
-                        <td class="px-5 py-3.5 text-muted-text">{{ $m->created_at->format('M d, Y H:i') }}</td>
                         <td class="px-5 py-3.5">
                             <form method="POST" action="{{ route('admin.whatsapp.members-data.destroy', $m) }}"
                                   x-data @submit.prevent="if (confirm('{{ __('app.member_delete_confirm') }}')) $el.submit()">
@@ -92,7 +70,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="11" class="px-5 py-12 text-center text-muted-text">{{ __('app.whatsapp_no_members_data') }}</td></tr>
+                    <tr><td colspan="8" class="px-5 py-12 text-center text-muted-text">{{ __('app.whatsapp_no_members_data') }}</td></tr>
                 @endforelse
             </tbody>
         </table>
