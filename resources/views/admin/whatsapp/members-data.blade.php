@@ -52,7 +52,6 @@
                         <td class="px-5 py-3.5 text-secondary">
                             {{ $m->whatsapp_reminder_time ? \Carbon\Carbon::parse($m->whatsapp_reminder_time)->format('H:i') : '—' }}
                         </td>
-                        <td class="px-5 py-3.5 text-secondary">{{ $m->whatsapp_language ?? '—' }}</td>
                         <td class="px-5 py-3.5 text-secondary">{{ $m->whatsapp_last_sent_date ? $m->whatsapp_last_sent_date->format('Y-m-d') : '—' }}</td>
                         <td class="px-5 py-3.5 text-secondary tabular-nums text-xs">
                             {{ $m->sessions_count }} {{ __('app.whatsapp_sessions') }}
