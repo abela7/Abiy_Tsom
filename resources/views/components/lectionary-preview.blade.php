@@ -94,12 +94,6 @@ function parseVerses($text) {
     </div>
     @endif
 
-    {{-- Helper component for scripture section --}}
-    @php
-    $renderScriptureSection = function($title, $titleEn, $bookAm, $bookEn, $chapter, $verses, $textAm, $textEn) {
-        if (!filled($bookAm) && !filled($chapter)) return;
-    @endphp
-
     {{-- 1. Pauline Epistle --}}
     @if(filled($entry->pauline_book_am) || filled($entry->pauline_chapter))
     <div class="border-t border-border pt-5">

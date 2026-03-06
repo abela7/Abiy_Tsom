@@ -35,7 +35,7 @@ class WhatsAppTemplateController extends Controller
                 'key' => 'whatsapp_daily_reminder_header',
                 'group' => 'whatsapp_member',
                 'title' => __('app.whatsapp_template_daily_header'),
-                'placeholder_keys' => WhatsAppTemplateService::DAILY_REMINDER_PLACEHOLDERS,
+                'placeholder_keys' => WhatsAppTemplateService::DAILY_REMINDER_SECTION_PLACEHOLDERS,
             ],
             [
                 'key' => 'whatsapp_daily_reminder_yearly_block',
@@ -59,7 +59,7 @@ class WhatsAppTemplateController extends Controller
                 'key' => 'whatsapp_daily_reminder_content',
                 'group' => 'whatsapp_member',
                 'title' => __('app.whatsapp_template_daily_content'),
-                'placeholder_keys' => WhatsAppTemplateService::DAILY_REMINDER_PLACEHOLDERS,
+                'placeholder_keys' => WhatsAppTemplateService::DAILY_REMINDER_FINAL_PLACEHOLDERS,
             ],
             [
                 'key' => 'whatsapp_confirmation_prompt_message',

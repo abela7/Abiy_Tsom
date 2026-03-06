@@ -72,11 +72,30 @@ final class WhatsAppTemplateService
         'yearly_commemorations_bullets',
         'monthly_commemorations',
         'monthly_commemorations_bullets',
+        'header_en',
+        'commemorations_block_en',
+        'footer_en',
+        'header_am',
+        'commemorations_block_am',
+        'footer_am',
         'header',
         'commemorations_block',
         'footer',
         'bible_reference',
         'url',
+    ];
+
+    /** @var list<string> */
+    public const DAILY_REMINDER_FINAL_PLACEHOLDERS = [
+        'header_en',
+        'commemorations_block_en',
+        'footer_en',
+        'header_am',
+        'commemorations_block_am',
+        'footer_am',
+        'header',
+        'commemorations_block',
+        'footer',
     ];
 
     /** @var list<string> */
@@ -117,17 +136,26 @@ final class WhatsAppTemplateService
         ?string $locale = null
     ): array {
         $resolvedLocale = $this->normalizeLocale($locale ?? (string) ($member->whatsapp_language ?? $member->locale ?? 'en'));
-        $variables = $this->dailyReminderVariables($member, $dailyContent, $url, $resolvedLocale);
-        $header = $this->normalizeRenderedText(
-            $this->translate('app.whatsapp_daily_reminder_header', $variables, $resolvedLocale)
-        );
-        $footer = $this->normalizeRenderedText(
-            $this->translate('app.whatsapp_daily_reminder_footer', $variables, $resolvedLocale)
-        );
+        $englishVariables = $this->dailyReminderVariables($member, $dailyContent, $url, 'en');
+        $amharicVariables = $this->dailyReminderVariables($member, $dailyContent, $url, 'am');
 
-        $variables['header'] = $header;
-        $variables['commemorations_block'] = $this->renderCommemorationsBlock($variables, $resolvedLocale);
-        $variables['footer'] = $footer;
+        $headerEn = $this->renderReminderSection('app.whatsapp_daily_reminder_header', $englishVariables, 'en');
+        $headerAm = $this->renderReminderSection('app.whatsapp_daily_reminder_header', $amharicVariables, 'am');
+        $footerEn = $this->renderReminderSection('app.whatsapp_daily_reminder_footer', $englishVariables, 'en');
+        $footerAm = $this->renderReminderSection('app.whatsapp_daily_reminder_footer', $amharicVariables, 'am');
+        $commemorationsBlockEn = $this->renderCommemorationsBlock($englishVariables, 'en');
+        $commemorationsBlockAm = $this->renderCommemorationsBlock($amharicVariables, 'am');
+
+        $variables = $resolvedLocale === 'am' ? $amharicVariables : $englishVariables;
+        $variables['header_en'] = $headerEn;
+        $variables['commemorations_block_en'] = $commemorationsBlockEn;
+        $variables['footer_en'] = $footerEn;
+        $variables['header_am'] = $headerAm;
+        $variables['commemorations_block_am'] = $commemorationsBlockAm;
+        $variables['footer_am'] = $footerAm;
+        $variables['header'] = $resolvedLocale === 'am' ? $headerAm : $headerEn;
+        $variables['commemorations_block'] = $resolvedLocale === 'am' ? $commemorationsBlockAm : $commemorationsBlockEn;
+        $variables['footer'] = $resolvedLocale === 'am' ? $footerAm : $footerEn;
 
         $content = $this->normalizeRenderedText(
             $this->translate('app.whatsapp_daily_reminder_content', $variables, $resolvedLocale)
@@ -136,9 +164,9 @@ final class WhatsAppTemplateService
         if ($content === '') {
             $content = $this->normalizeRenderedText(
                 implode("\n\n", array_values(array_filter([
-                    $header,
+                    $variables['header'],
                     $variables['commemorations_block'],
-                    $footer,
+                    $variables['footer'],
                 ], static fn (string $value): bool => $value !== '')))
             );
         }
@@ -146,8 +174,8 @@ final class WhatsAppTemplateService
         return [
             'locale' => $resolvedLocale,
             'variables' => $variables,
-            'header' => $header,
-            'footer' => $footer,
+            'header' => $variables['header'],
+            'footer' => $variables['footer'],
             'content' => $content,
             'message' => $content,
         ];
@@ -271,6 +299,16 @@ final class WhatsAppTemplateService
         }
 
         return $this->normalizeRenderedText(implode("\n\n", array_filter($blocks, static fn (string $value): bool => $value !== '')));
+    }
+
+    /**
+     * @param  array<string, string>  $variables
+     */
+    private function renderReminderSection(string $translationKey, array $variables, string $locale): string
+    {
+        return $this->normalizeRenderedText(
+            $this->translate($translationKey, $variables, $locale)
+        );
     }
 
     /**
