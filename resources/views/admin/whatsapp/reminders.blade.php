@@ -10,7 +10,7 @@
 </div>
 
 {{-- Stats --}}
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 mb-8">
     <div class="bg-card rounded-xl p-5 shadow-sm border border-border">
         <p class="text-xs font-semibold text-muted-text uppercase tracking-wider">{{ __('app.whatsapp_opted_in_total') }}</p>
         <p class="text-2xl font-bold text-accent mt-2 tabular-nums">{{ number_format($totalOptedIn) }}</p>
@@ -18,6 +18,14 @@
     <div class="bg-card rounded-xl p-5 shadow-sm border border-border">
         <p class="text-xs font-semibold text-muted-text uppercase tracking-wider">{{ __('app.settings_whatsapp_pending') }}</p>
         <p class="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-2 tabular-nums">{{ number_format($totalPending) }}</p>
+    </div>
+    <div class="bg-card rounded-xl p-5 shadow-sm border border-border">
+        <p class="text-xs font-semibold text-muted-text uppercase tracking-wider">{{ __('app.whatsapp_opened_any') }}</p>
+        <p class="text-2xl font-bold text-primary mt-2 tabular-nums">{{ number_format($totalOpenedMembers) }}</p>
+    </div>
+    <div class="bg-card rounded-xl p-5 shadow-sm border border-border">
+        <p class="text-xs font-semibold text-muted-text uppercase tracking-wider">{{ __('app.whatsapp_active_last_7_days') }}</p>
+        <p class="text-2xl font-bold text-success mt-2 tabular-nums">{{ number_format($activeReminderMembers7d) }}</p>
     </div>
     <div class="bg-card rounded-xl p-5 shadow-sm border border-border">
         <p class="text-xs font-semibold text-muted-text uppercase tracking-wider">{{ __('app.whatsapp_time_slots') }}</p>
@@ -40,6 +48,8 @@
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_phone') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_reminder_time') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.status') }}</th>
+                    <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_last_opened') }}</th>
+                    <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_opened_days') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_last_sent') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.registered') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.actions') }}</th>
@@ -47,6 +57,10 @@
             </thead>
             <tbody class="divide-y divide-border">
                 @forelse($members as $m)
+                    @php
+                        $lastOpenedAt = $m->reminder_last_opened_at ? \Carbon\Carbon::parse($m->reminder_last_opened_at) : null;
+                        $isReminderActive = $lastOpenedAt?->greaterThanOrEqualTo(now()->subDays(7));
+                    @endphp
                     <tr class="hover:bg-muted/40 transition-colors">
                         <td class="px-5 py-3.5 font-medium text-primary">{{ $m->baptism_name ?: '—' }}</td>
                         <td class="px-5 py-3.5 font-mono text-xs text-secondary">{{ $m->whatsapp_phone ? maskPhone($m->whatsapp_phone) : '—' }}</td>
@@ -62,6 +76,19 @@
                                 </span>
                             @endif
                         </td>
+                        <td class="px-5 py-3.5 text-secondary">
+                            @if($lastOpenedAt)
+                                <div>{{ $lastOpenedAt->format('Y-m-d H:i') }}</div>
+                                <div class="mt-1">
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium {{ $isReminderActive ? 'bg-success-bg text-success' : 'bg-muted text-muted-text' }}">
+                                        {{ $isReminderActive ? __('app.active') : __('app.inactive') }}
+                                    </span>
+                                </div>
+                            @else
+                                {{ __('app.never') }}
+                            @endif
+                        </td>
+                        <td class="px-5 py-3.5 text-secondary tabular-nums">{{ number_format((int) ($m->reminder_opened_days_count ?? 0)) }}</td>
                         <td class="px-5 py-3.5 text-secondary">{{ $m->whatsapp_last_sent_date ? $m->whatsapp_last_sent_date->format('Y-m-d') : __('app.never') }}</td>
                         <td class="px-5 py-3.5 text-muted-text">{{ $m->created_at->format('M d, Y') }}</td>
                         <td class="px-5 py-3.5">
@@ -98,7 +125,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="7" class="px-5 py-12 text-center text-muted-text">{{ __('app.whatsapp_no_opted_in') }}</td></tr>
+                    <tr><td colspan="9" class="px-5 py-12 text-center text-muted-text">{{ __('app.whatsapp_no_opted_in') }}</td></tr>
                 @endforelse
             </tbody>
         </table>

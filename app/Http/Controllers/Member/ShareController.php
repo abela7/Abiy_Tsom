@@ -9,12 +9,14 @@ use App\Http\Controllers\Controller;
 use App\Models\DailyContent;
 use App\Models\Lectionary;
 use App\Models\Member;
+use App\Models\MemberReminderOpen;
 use App\Services\EthiopianCalendarService;
 use App\Services\MemberSessionService;
 use App\Services\TelegramAuthService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 /**
@@ -80,27 +82,30 @@ class ShareController extends Controller
                 TelegramAuthService::PURPOSE_SHARE_DAY_ACCESS
             );
 
-            if ($token
-                && $telegramAuthService->isMemberToken($token)
-                && $currentMember instanceof Member
-                && $token->actor instanceof Member
-                && $currentMember->is($token->actor)
-            ) {
-                $consumedToken = $telegramAuthService->consumeCode(
-                    $code,
-                    TelegramAuthService::PURPOSE_SHARE_DAY_ACCESS
-                );
-                $member = $consumedToken?->actor;
+            if ($token && $telegramAuthService->isMemberToken($token) && $token->actor instanceof Member) {
+                $intendedMember = $token->actor;
 
-                if ($member instanceof Member) {
-                    $redirectUrl = $member->passcode_enabled
-                        ? route('member.passcode')
-                        : $telegramAuthService->sanitizeRedirectPath(
-                            $consumedToken->redirect_to,
-                            route('member.day', ['daily' => $daily], false)
-                        );
+                if ($currentMember instanceof Member && $currentMember->is($intendedMember)) {
+                    $consumedToken = $telegramAuthService->consumeCode(
+                        $code,
+                        TelegramAuthService::PURPOSE_SHARE_DAY_ACCESS
+                    );
+                    $member = $consumedToken?->actor;
 
-                    return redirect($redirectUrl);
+                    if ($member instanceof Member) {
+                        $this->trackReminderOpen($request, $intendedMember, $daily, authenticatedSession: true);
+
+                        $redirectUrl = $member->passcode_enabled
+                            ? route('member.passcode')
+                            : $telegramAuthService->sanitizeRedirectPath(
+                                $consumedToken->redirect_to,
+                                route('member.day', ['daily' => $daily], false)
+                            );
+
+                        return redirect($redirectUrl);
+                    }
+                } else {
+                    $this->trackReminderOpen($request, $intendedMember, $daily, authenticatedSession: false);
                 }
             }
         }
@@ -113,6 +118,51 @@ class ShareController extends Controller
             'ogDescription',
             'publicDayUrl',
         ));
+    }
+
+    private function trackReminderOpen(
+        Request $request,
+        Member $member,
+        DailyContent $daily,
+        bool $authenticatedSession
+    ): void {
+        $now = now();
+        $open = MemberReminderOpen::query()->firstOrNew([
+            'member_id' => $member->getKey(),
+            'daily_content_id' => $daily->getKey(),
+        ]);
+
+        if (! $open->exists) {
+            $open->forceFill([
+                'first_opened_at' => $now,
+                'open_count' => 0,
+                'authenticated_open_count' => 0,
+                'public_open_count' => 0,
+            ]);
+        }
+
+        $open->forceFill([
+            'last_opened_at' => $now,
+            'last_open_state' => $authenticatedSession ? 'authenticated_session' : 'link_only',
+            'last_ip_address' => $request->ip(),
+            'last_user_agent' => $this->truncateUserAgent($request),
+            'open_count' => $open->open_count + 1,
+            'authenticated_open_count' => $open->authenticated_open_count + ($authenticatedSession ? 1 : 0),
+            'public_open_count' => $open->public_open_count + ($authenticatedSession ? 0 : 1),
+            'last_authenticated_open_at' => $authenticatedSession
+                ? $now
+                : $open->last_authenticated_open_at,
+        ]);
+        $open->save();
+    }
+
+    private function truncateUserAgent(Request $request): ?string
+    {
+        $userAgent = trim((string) $request->userAgent());
+
+        return $userAgent === ''
+            ? null
+            : Str::limit($userAgent, 512, '');
     }
 
     /**

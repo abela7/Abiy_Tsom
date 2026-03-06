@@ -87,6 +87,11 @@ class Member extends Model
         return $this->hasMany(MemberSession::class);
     }
 
+    public function reminderLinkOpens(): HasMany
+    {
+        return $this->hasMany(MemberReminderOpen::class);
+    }
+
     public function referrer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'referred_by');

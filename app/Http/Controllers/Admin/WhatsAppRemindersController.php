@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\DailyContent;
 use App\Models\LentSeason;
 use App\Models\Member;
+use App\Models\MemberReminderOpen;
 use App\Services\TelegramAuthService;
 use App\Services\WhatsAppTemplateService;
 use App\Services\UltraMsgService;
@@ -52,9 +53,18 @@ class WhatsAppRemindersController extends Controller
      */
     public function index(): View
     {
+        $activityThreshold = now()->subDays(7);
         $totalOptedIn = (clone $this->optedInQuery())->count();
         $totalPending = (clone $this->membersWithWhatsAppQuery())
             ->where('whatsapp_confirmation_status', 'pending')
+            ->count();
+        $totalOpenedMembers = (clone $this->optedInQuery())
+            ->whereHas('reminderLinkOpens')
+            ->count();
+        $activeReminderMembers7d = (clone $this->optedInQuery())
+            ->whereHas('reminderLinkOpens', function ($query) use ($activityThreshold): void {
+                $query->where('last_opened_at', '>=', $activityThreshold);
+            })
             ->count();
 
         $byTime = (clone $this->optedInQuery())
@@ -64,6 +74,20 @@ class WhatsAppRemindersController extends Controller
             ->get();
 
         $members = (clone $this->membersWithWhatsAppQuery())
+            ->select('members.*')
+            ->withCount(['reminderLinkOpens as reminder_opened_days_count'])
+            ->selectSub(
+                MemberReminderOpen::query()
+                    ->selectRaw('MAX(last_opened_at)')
+                    ->whereColumn('member_id', 'members.id'),
+                'reminder_last_opened_at'
+            )
+            ->selectSub(
+                MemberReminderOpen::query()
+                    ->selectRaw('MAX(last_authenticated_open_at)')
+                    ->whereColumn('member_id', 'members.id'),
+                'reminder_last_authenticated_open_at'
+            )
             ->orderByRaw("CASE WHEN whatsapp_confirmation_status = 'confirmed' THEN 0 ELSE 1 END")
             ->orderBy('whatsapp_reminder_time')
             ->orderBy('created_at', 'desc')
@@ -72,6 +96,8 @@ class WhatsAppRemindersController extends Controller
         return view('admin.whatsapp.reminders', compact(
             'totalOptedIn',
             'totalPending',
+            'totalOpenedMembers',
+            'activeReminderMembers7d',
             'byTime',
             'members'
         ));

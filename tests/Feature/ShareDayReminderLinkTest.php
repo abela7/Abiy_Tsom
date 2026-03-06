@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Models\DailyContent;
 use App\Models\LentSeason;
 use App\Models\Member;
+use App\Models\MemberReminderOpen;
 use App\Models\MemberSession;
 use App\Models\TelegramAccessToken;
 use App\Models\WeeklyTheme;
@@ -41,6 +42,30 @@ class ShareDayReminderLinkTest extends TestCase
         $this->assertNull($this->findAccessToken($code)?->consumed_at);
     }
 
+    public function test_share_day_public_open_is_tracked_for_member(): void
+    {
+        $member = $this->createMember('a1');
+        $daily = $this->createPublishedDay();
+        $code = app(TelegramAuthService::class)->createCode(
+            $member,
+            TelegramAuthService::PURPOSE_SHARE_DAY_ACCESS,
+            route('member.day', ['daily' => $daily], false)
+        );
+
+        $this->get(route('share.day', ['daily' => $daily, 'code' => $code]), [
+            'User-Agent' => 'Mozilla/5.0 Test Browser',
+        ])->assertOk();
+
+        $this->assertDatabaseHas('member_reminder_opens', [
+            'member_id' => $member->id,
+            'daily_content_id' => $daily->id,
+            'open_count' => 1,
+            'authenticated_open_count' => 0,
+            'public_open_count' => 1,
+            'last_open_state' => 'link_only',
+        ]);
+    }
+
     public function test_share_day_code_with_matching_member_session_redirects_to_member_day(): void
     {
         $member = $this->createMember('b');
@@ -63,6 +88,38 @@ class ShareDayReminderLinkTest extends TestCase
 
         $this->assertDatabaseCount('member_sessions', 1);
         $this->assertNotNull($this->findAccessToken($code)?->consumed_at);
+    }
+
+    public function test_share_day_authenticated_open_is_tracked(): void
+    {
+        $member = $this->createMember('b1');
+        $daily = $this->createPublishedDay();
+        $code = app(TelegramAuthService::class)->createCode(
+            $member,
+            TelegramAuthService::PURPOSE_SHARE_DAY_ACCESS,
+            route('member.day', ['daily' => $daily], false)
+        );
+
+        [$sessionToken, $deviceId] = $this->createMemberSession($member);
+
+        $this->withCookie(MemberSessionService::SESSION_COOKIE, $sessionToken)
+            ->withCookie(MemberSessionService::DEVICE_COOKIE, $deviceId)
+            ->get(route('share.day', ['daily' => $daily, 'code' => $code]), [
+                'User-Agent' => 'Mozilla/5.0 Test Browser',
+            ])
+            ->assertRedirect(route('member.day', ['daily' => $daily]));
+
+        $open = MemberReminderOpen::query()
+            ->where('member_id', $member->id)
+            ->where('daily_content_id', $daily->id)
+            ->first();
+
+        $this->assertNotNull($open);
+        $this->assertSame(1, $open->open_count);
+        $this->assertSame(1, $open->authenticated_open_count);
+        $this->assertSame(0, $open->public_open_count);
+        $this->assertSame('authenticated_session', $open->last_open_state);
+        $this->assertNotNull($open->last_authenticated_open_at);
     }
 
     public function test_share_day_code_with_different_member_session_stays_public(): void
@@ -90,6 +147,23 @@ class ShareDayReminderLinkTest extends TestCase
 
         $this->assertDatabaseCount('member_sessions', 1);
         $this->assertNull($this->findAccessToken($code)?->consumed_at);
+    }
+
+    public function test_preview_bot_open_does_not_track_reminder_open(): void
+    {
+        $member = $this->createMember('d1');
+        $daily = $this->createPublishedDay();
+        $code = app(TelegramAuthService::class)->createCode(
+            $member,
+            TelegramAuthService::PURPOSE_SHARE_DAY_ACCESS,
+            route('member.day', ['daily' => $daily], false)
+        );
+
+        $this->get(route('share.day', ['daily' => $daily, 'code' => $code]), [
+            'User-Agent' => 'WhatsApp/2.24.10 A',
+        ])->assertOk();
+
+        $this->assertDatabaseCount('member_reminder_opens', 0);
     }
 
     public function test_share_day_code_cannot_be_used_on_auth_access_route(): void
