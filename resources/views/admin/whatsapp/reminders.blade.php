@@ -47,11 +47,9 @@
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.baptism_name') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_phone') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_reminder_time') }}</th>
-                    <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.status') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_last_opened') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_opened_days') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_last_sent') }}</th>
-                    <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.registered') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.actions') }}</th>
                 </tr>
             </thead>
@@ -65,17 +63,6 @@
                         <td class="px-5 py-3.5 font-medium text-primary">{{ $m->baptism_name ?: '—' }}</td>
                         <td class="px-5 py-3.5 font-mono text-xs text-secondary">{{ $m->whatsapp_phone ? maskPhone($m->whatsapp_phone) : '—' }}</td>
                         <td class="px-5 py-3.5 text-secondary">{{ $m->whatsapp_reminder_time ? \Carbon\Carbon::parse($m->whatsapp_reminder_time)->format('H:i') : '—' }} {{ __('app.london_time') }}</td>
-                        <td class="px-5 py-3.5">
-                            @if($m->whatsapp_confirmation_status === 'confirmed')
-                                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-success-bg text-success">
-                                    {{ __('app.settings_whatsapp_enabled') }}
-                                </span>
-                            @else
-                                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300">
-                                    {{ __('app.settings_whatsapp_pending') }}
-                                </span>
-                            @endif
-                        </td>
                         <td class="px-5 py-3.5 text-secondary">
                             @if($lastOpenedAt)
                                 <div>{{ $lastOpenedAt->format('Y-m-d H:i') }}</div>
@@ -90,7 +77,6 @@
                         </td>
                         <td class="px-5 py-3.5 text-secondary tabular-nums">{{ number_format((int) ($m->reminder_opened_days_count ?? 0)) }}</td>
                         <td class="px-5 py-3.5 text-secondary">{{ $m->whatsapp_last_sent_date ? $m->whatsapp_last_sent_date->format('Y-m-d') : __('app.never') }}</td>
-                        <td class="px-5 py-3.5 text-muted-text">{{ $m->created_at->format('M d, Y') }}</td>
                         <td class="px-5 py-3.5">
                             <div class="flex items-center gap-1.5 flex-wrap">
                                 @if($m->whatsapp_confirmation_status === 'pending')
@@ -125,7 +111,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="9" class="px-5 py-12 text-center text-muted-text">{{ __('app.whatsapp_no_opted_in') }}</td></tr>
+                    <tr><td colspan="7" class="px-5 py-12 text-center text-muted-text">{{ __('app.whatsapp_no_opted_in') }}</td></tr>
                 @endforelse
             </tbody>
         </table>
