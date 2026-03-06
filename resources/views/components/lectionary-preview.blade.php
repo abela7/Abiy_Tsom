@@ -4,6 +4,38 @@
 $monthAm = $monthNames[$entry->month] ? explode(' / ', $monthNames[$entry->month])[1] : '';
 $monthEn = $monthNames[$entry->month] ? explode(' / ', $monthNames[$entry->month])[0] : '';
 
+// Amharic numerals
+$amharicNumerals = [
+    '0' => '፩', '1' => '፩', '2' => '፪', '3' => '፫', '4' => '፬', '5' => '፭',
+    '6' => '፮', '7' => '፯', '8' => '፰', '9' => '፱', '10' => '፲', '11' => '፲፩',
+    '12' => '፲፪', '13' => '፲፫', '14' => '፲፬', '15' => '፲፭', '16' => '፲፮',
+    '17' => '፲፯', '18' => '፲፰', '19' => '፲፱', '20' => '፲', '100' => '፻'
+];
+
+function toAmharicNumeral($num) {
+    global $amharicNumerals;
+    $num = (int)$num;
+
+    if ($num <= 0) return '';
+    if ($num < 20) return $amharicNumerals[$num] ?? '';
+    if ($num < 100) {
+        $tens = intval($num / 10);
+        $ones = $num % 10;
+        return $amharicNumerals[$tens * 10] . ($ones > 0 ? $amharicNumerals[$ones] : '');
+    }
+    if ($num < 1000) {
+        $hundreds = intval($num / 100);
+        $remainder = $num % 100;
+        $result = str_repeat('፻', $hundreds);
+        if ($remainder > 0) {
+            $result .= toAmharicNumeral($remainder);
+        }
+        return $result;
+    }
+
+    return $num;
+}
+
 // Helper function to parse verses with numbers
 function parseVerses($text) {
     if (!filled($text)) return [];
@@ -81,41 +113,17 @@ function parseVerses($text) {
             </p>
         </div>
 
-        {{-- Amharic Text with Verse Numbers --}}
+        {{-- Amharic Text --}}
         @if(filled($entry->pauline_text_am))
-        <div class="mb-4">
-            @php $amVerses = parseVerses($entry->pauline_text_am); @endphp
-            <div class="space-y-1 text-sm text-primary leading-relaxed">
-                @foreach($amVerses as $verse)
-                <div class="flex gap-3">
-                    @if($verse['number'])
-                    <span class="text-accent font-bold min-w-fit shrink-0">{{ $verse['number'] }}</span>
-                    <span>{{ $verse['text'] }}</span>
-                    @else
-                    <span>{{ $verse['text'] }}</span>
-                    @endif
-                </div>
-                @endforeach
-            </div>
+        <div class="mb-4 text-sm text-primary leading-loose whitespace-pre-wrap">
+            {{ $entry->pauline_text_am }}
         </div>
         @endif
 
-        {{-- English Text with Verse Numbers --}}
+        {{-- English Text --}}
         @if(filled($entry->pauline_text_en))
-        <div>
-            @php $enVerses = parseVerses($entry->pauline_text_en); @endphp
-            <div class="space-y-1 text-sm text-primary/75 leading-relaxed italic">
-                @foreach($enVerses as $verse)
-                <div class="flex gap-3">
-                    @if($verse['number'])
-                    <span class="text-accent font-bold min-w-fit shrink-0">{{ $verse['number'] }}</span>
-                    <span>{{ $verse['text'] }}</span>
-                    @else
-                    <span>{{ $verse['text'] }}</span>
-                    @endif
-                </div>
-                @endforeach
-            </div>
+        <div class="text-sm text-primary/75 leading-loose italic whitespace-pre-wrap">
+            {{ $entry->pauline_text_en }}
         </div>
         @endif
     </div>
@@ -135,38 +143,14 @@ function parseVerses($text) {
         </div>
 
         @if(filled($entry->catholic_text_am))
-        <div class="mb-4">
-            @php $amVerses = parseVerses($entry->catholic_text_am); @endphp
-            <div class="space-y-1 text-sm text-primary leading-relaxed">
-                @foreach($amVerses as $verse)
-                <div class="flex gap-3">
-                    @if($verse['number'])
-                    <span class="text-accent font-bold min-w-fit shrink-0">{{ $verse['number'] }}</span>
-                    <span>{{ $verse['text'] }}</span>
-                    @else
-                    <span>{{ $verse['text'] }}</span>
-                    @endif
-                </div>
-                @endforeach
-            </div>
+        <div class="mb-4 text-sm text-primary leading-loose whitespace-pre-wrap">
+            {{ $entry->catholic_text_am }}
         </div>
         @endif
 
         @if(filled($entry->catholic_text_en))
-        <div>
-            @php $enVerses = parseVerses($entry->catholic_text_en); @endphp
-            <div class="space-y-1 text-sm text-primary/75 leading-relaxed italic">
-                @foreach($enVerses as $verse)
-                <div class="flex gap-3">
-                    @if($verse['number'])
-                    <span class="text-accent font-bold min-w-fit shrink-0">{{ $verse['number'] }}</span>
-                    <span>{{ $verse['text'] }}</span>
-                    @else
-                    <span>{{ $verse['text'] }}</span>
-                    @endif
-                </div>
-                @endforeach
-            </div>
+        <div class="text-sm text-primary/75 leading-loose italic whitespace-pre-wrap">
+            {{ $entry->catholic_text_en }}
         </div>
         @endif
     </div>
@@ -183,38 +167,14 @@ function parseVerses($text) {
         </div>
 
         @if(filled($entry->acts_text_am))
-        <div class="mb-4">
-            @php $amVerses = parseVerses($entry->acts_text_am); @endphp
-            <div class="space-y-1 text-sm text-primary leading-relaxed">
-                @foreach($amVerses as $verse)
-                <div class="flex gap-3">
-                    @if($verse['number'])
-                    <span class="text-accent font-bold min-w-fit shrink-0">{{ $verse['number'] }}</span>
-                    <span>{{ $verse['text'] }}</span>
-                    @else
-                    <span>{{ $verse['text'] }}</span>
-                    @endif
-                </div>
-                @endforeach
-            </div>
+        <div class="mb-4 text-sm text-primary leading-loose whitespace-pre-wrap">
+            {{ $entry->acts_text_am }}
         </div>
         @endif
 
         @if(filled($entry->acts_text_en))
-        <div>
-            @php $enVerses = parseVerses($entry->acts_text_en); @endphp
-            <div class="space-y-1 text-sm text-primary/75 leading-relaxed italic">
-                @foreach($enVerses as $verse)
-                <div class="flex gap-3">
-                    @if($verse['number'])
-                    <span class="text-accent font-bold min-w-fit shrink-0">{{ $verse['number'] }}</span>
-                    <span>{{ $verse['text'] }}</span>
-                    @else
-                    <span>{{ $verse['text'] }}</span>
-                    @endif
-                </div>
-                @endforeach
-            </div>
+        <div class="text-sm text-primary/75 leading-loose italic whitespace-pre-wrap">
+            {{ $entry->acts_text_en }}
         </div>
         @endif
     </div>
@@ -232,24 +192,15 @@ function parseVerses($text) {
 
         {{-- Ge'ez lines with verse numbers --}}
         @if(filled($entry->mesbak_geez_1) || filled($entry->mesbak_geez_2) || filled($entry->mesbak_geez_3))
-        <div class="mb-4 space-y-1 text-sm text-primary leading-relaxed font-mono">
+        <div class="mb-4 text-sm text-primary leading-relaxed">
             @if(filled($entry->mesbak_geez_1))
-            <div class="flex gap-2">
-                <span class="text-accent font-bold min-w-4">1</span>
-                <span>{{ $entry->mesbak_geez_1 }}</span>
-            </div>
+            <p class="m-0"><span class="font-semibold">፩</span> {{ $entry->mesbak_geez_1 }}</p>
             @endif
             @if(filled($entry->mesbak_geez_2))
-            <div class="flex gap-2">
-                <span class="text-accent font-bold min-w-4">2</span>
-                <span>{{ $entry->mesbak_geez_2 }}</span>
-            </div>
+            <p class="m-0"><span class="font-semibold">፪</span> {{ $entry->mesbak_geez_2 }}</p>
             @endif
             @if(filled($entry->mesbak_geez_3))
-            <div class="flex gap-2">
-                <span class="text-accent font-bold min-w-4">3</span>
-                <span>{{ $entry->mesbak_geez_3 }}</span>
-            </div>
+            <p class="m-0"><span class="font-semibold">፫</span> {{ $entry->mesbak_geez_3 }}</p>
             @endif
         </div>
         @endif
@@ -298,38 +249,14 @@ function parseVerses($text) {
         </div>
 
         @if(filled($entry->gospel_text_am))
-        <div class="mb-4">
-            @php $amVerses = parseVerses($entry->gospel_text_am); @endphp
-            <div class="space-y-1 text-sm text-primary leading-relaxed">
-                @foreach($amVerses as $verse)
-                <div class="flex gap-3">
-                    @if($verse['number'])
-                    <span class="text-accent font-bold min-w-fit shrink-0">{{ $verse['number'] }}</span>
-                    <span>{{ $verse['text'] }}</span>
-                    @else
-                    <span>{{ $verse['text'] }}</span>
-                    @endif
-                </div>
-                @endforeach
-            </div>
+        <div class="mb-4 text-sm text-primary leading-loose whitespace-pre-wrap">
+            {{ $entry->gospel_text_am }}
         </div>
         @endif
 
         @if(filled($entry->gospel_text_en))
-        <div>
-            @php $enVerses = parseVerses($entry->gospel_text_en); @endphp
-            <div class="space-y-1 text-sm text-primary/75 leading-relaxed italic">
-                @foreach($enVerses as $verse)
-                <div class="flex gap-3">
-                    @if($verse['number'])
-                    <span class="text-accent font-bold min-w-fit shrink-0">{{ $verse['number'] }}</span>
-                    <span>{{ $verse['text'] }}</span>
-                    @else
-                    <span>{{ $verse['text'] }}</span>
-                    @endif
-                </div>
-                @endforeach
-            </div>
+        <div class="text-sm text-primary/75 leading-loose italic whitespace-pre-wrap">
+            {{ $entry->gospel_text_en }}
         </div>
         @endif
     </div>
