@@ -12,6 +12,7 @@ use App\Models\Member;
 use App\Services\EthiopianCalendarService;
 use App\Services\MemberSessionService;
 use App\Services\TelegramAuthService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\View\View;
@@ -37,7 +38,7 @@ class ShareController extends Controller
         DailyContent $daily,
         TelegramAuthService $telegramAuthService,
         MemberSessionService $memberSessionService
-    ): View|Response {
+    ): View|Response|RedirectResponse {
         if (! $daily->is_published) {
             abort(404);
         }
