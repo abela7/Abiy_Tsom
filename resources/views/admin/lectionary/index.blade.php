@@ -61,24 +61,42 @@ $labelClass = 'block text-xs font-medium text-muted-text mb-1';
         </p>
         <div class="grid grid-cols-6 gap-2">
             @for($d = 1; $d <= $maxDay; $d++)
-            @php $filled = in_array($d, $filledDays); @endphp
+            @php
+                $complete = in_array($d, $completeDays);
+                $draft    = in_array($d, $filledDays) && !$complete;
+            @endphp
             <a href="{{ route('admin.lectionary.index', ['month' => $selectedMonth, 'day' => $d]) }}"
                class="relative h-11 flex flex-col items-center justify-center rounded-xl text-sm font-semibold transition-all duration-150 border
                       {{ $selectedDay === $d
                          ? 'bg-accent text-on-accent border-accent shadow-md scale-105'
-                         : ($filled
+                         : ($complete
                             ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800 hover:border-green-400'
-                            : 'bg-surface text-primary hover:bg-muted border-border') }}">
+                            : ($draft
+                               ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800 hover:border-amber-400'
+                               : 'bg-surface text-primary hover:bg-muted border-border')) }}">
                 {{ $d }}
-                @if($filled && $selectedDay !== $d)
-                    <span class="w-1.5 h-1.5 rounded-full bg-green-500 mt-0.5"></span>
+                @if($selectedDay !== $d)
+                    @if($complete)
+                        <span class="w-1.5 h-1.5 rounded-full bg-green-500 mt-0.5"></span>
+                    @elseif($draft)
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-400 mt-0.5"></span>
+                    @endif
                 @endif
             </a>
             @endfor
         </div>
-        <p class="text-[11px] text-muted-text mt-3">
-            {{ count($filledDays) }} / {{ $maxDay }} {{ __('app.lectionary_day') }}
-        </p>
+        {{-- Legend --}}
+        <div class="flex items-center gap-4 mt-3">
+            <span class="flex items-center gap-1.5 text-[11px] text-muted-text">
+                <span class="w-2 h-2 rounded-full bg-green-500"></span> {{ count($completeDays) }} complete
+            </span>
+            <span class="flex items-center gap-1.5 text-[11px] text-muted-text">
+                <span class="w-2 h-2 rounded-full bg-amber-400"></span> {{ count($filledDays) - count($completeDays) }} draft
+            </span>
+            <span class="flex items-center gap-1.5 text-[11px] text-muted-text">
+                <span class="w-2 h-2 rounded-full bg-border"></span> {{ $maxDay - count($filledDays) }} empty
+            </span>
+        </div>
     </div>
 
     {{-- Entry area --}}
@@ -98,9 +116,15 @@ $labelClass = 'block text-xs font-medium text-muted-text mb-1';
                     </svg>
                     {{ $monthAm }} {{ $selectedDay }}
                     @if($entry)
-                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                            ✓ {{ __('app.lectionary_edit') }}
-                        </span>
+                        @if($entry->hasContent())
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                                ✓ Complete
+                            </span>
+                        @else
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                                Draft
+                            </span>
+                        @endif
                     @else
                         <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
                             {{ __('app.lectionary_no_entry') }}

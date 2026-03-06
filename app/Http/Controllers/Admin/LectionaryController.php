@@ -26,10 +26,16 @@ class LectionaryController extends Controller
         $selectedMonth = max(1, min(13, (int) $request->query('month', 6)));
         $selectedDay   = max(0, min(30, (int) $request->query('day', 0)));
 
-        // Which days in the selected month already have entries
-        $filledDays = Lectionary::where('month', $selectedMonth)
-            ->pluck('day')
-            ->toArray();
+        // Which days in the selected month have entries, and whether they are complete
+        $monthEntries = Lectionary::where('month', $selectedMonth)
+            ->get(['day', 'pauline_book_am', 'catholic_book_am', 'acts_chapter', 'mesbak_psalm', 'gospel_book_am', 'qiddase_am']);
+
+        $filledDays    = $monthEntries->pluck('day')->toArray();
+        $completeDays  = $monthEntries->filter(fn ($e) =>
+            filled($e->pauline_book_am) && filled($e->catholic_book_am) &&
+            filled($e->acts_chapter)    && filled($e->mesbak_psalm) &&
+            filled($e->gospel_book_am)  && filled($e->qiddase_am)
+        )->pluck('day')->toArray();
 
         // Total entries across all months
         $totalCount = Lectionary::count();
@@ -48,6 +54,7 @@ class LectionaryController extends Controller
             'selectedMonth' => $selectedMonth,
             'selectedDay'   => $selectedDay,
             'filledDays'    => $filledDays,
+            'completeDays'  => $completeDays,
             'totalCount'    => $totalCount,
             'entry'         => $entry,
             'monthNames'    => self::MONTH_NAMES,
@@ -61,7 +68,7 @@ class LectionaryController extends Controller
 
         Lectionary::create($data);
 
-        return redirect($this->redirectUrl($data['month'], $data['day']))
+        return redirect($this->redirectUrl((int) $data['month'], (int) $data['day']))
             ->with('success', __('app.lectionary_saved'));
     }
 
