@@ -827,7 +827,6 @@
                 if (this.isFsSectionOpen(key)) { this.fsOpenSections = []; this.fsAllExpanded = false; }
                 else if (this.fsAllExpanded) { this.fsOpenSections.push(key); }
                 else { this.fsOpenSections = [key]; }
-                }
             },
             toggleFsAll() {
                 if (this.fsAllExpanded) { this.fsOpenSections = []; this.fsAllExpanded = false; }
