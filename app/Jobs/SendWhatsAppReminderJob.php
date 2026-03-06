@@ -55,7 +55,9 @@ final class SendWhatsAppReminderJob implements ShouldQueue
             return;
         }
 
-        if ($member->whatsapp_last_sent_date?->toDateString() === $this->today) {
+        if (config('services.ultramsg.reminder_once_only', true)
+            && $member->whatsapp_last_sent_date?->toDateString() === $this->today
+        ) {
             return;
         }
 

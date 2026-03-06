@@ -999,7 +999,8 @@
         {{-- Fullscreen reader --}}
         <template x-if="fullscreen">
             <div class="fixed inset-0 z-[100] flex flex-col bg-surface"
-                 :class="readerTheme==='sepia'?'theme-sepia':readerTheme==='dark'?'dark':'theme-light'">
+                 :class="readerTheme==='sepia'?'theme-sepia':readerTheme==='dark'?'dark':'theme-light'"
+                 :style="readerTheme==='sepia'?'--color-accent:#78560D;--color-accent-hover:#614409;--app-accent:#78560D;--app-accent-hover:#614409':''">
 
                 <div class="flex-1 overflow-y-auto">
                     {{-- Sticky header --}}

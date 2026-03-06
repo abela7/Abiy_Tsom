@@ -166,9 +166,9 @@
     /* Borders — subtle warm tint */
     --app-border: #d6c9b0;
     --app-border-muted: #e8dfc8;
-    /* Accent — warm amber to suit parchment */
-    --app-accent: #78560D;
-    --app-accent-hover: #614409;
+    /* Accent — SAME as light mode */
+    --app-accent: #0a6286;
+    --app-accent-hover: #075985;
     --app-accent-secondary: #d4af37;
     --app-on-accent: #ffffff;
     /* Status — SAME as light mode */
