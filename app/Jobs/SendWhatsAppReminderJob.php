@@ -11,6 +11,9 @@ use App\Services\UltraMsgService;
 use App\Services\WhatsAppTemplateService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Log;
+use RuntimeException;
+use Throwable;
 
 final class SendWhatsAppReminderJob implements ShouldQueue
 {
@@ -18,9 +21,14 @@ final class SendWhatsAppReminderJob implements ShouldQueue
 
     public const QUEUE_NAME = 'whatsapp-reminders';
 
-    public int $tries = 1;
+    public int $tries = 3;
 
     public int $timeout = 45;
+
+    /**
+     * @var array<int>
+     */
+    public array $backoff = [10, 30];
 
     public function __construct(
         public readonly int $memberId,
@@ -75,12 +83,25 @@ final class SendWhatsAppReminderJob implements ShouldQueue
             ->renderDailyReminder($member, $dailyContent, $this->ensureHttpsUrl($dayUrl))['message'];
 
         if (! $ultraMsgService->sendTextMessage((string) $member->whatsapp_phone, $message)) {
-            return;
+            throw new RuntimeException(sprintf(
+                'UltraMsg did not confirm reminder delivery for member %d.',
+                $member->id
+            ));
         }
 
         $member->forceFill([
             'whatsapp_last_sent_date' => $this->today,
         ])->save();
+    }
+
+    public function failed(Throwable $exception): void
+    {
+        Log::warning('Queued WhatsApp reminder failed.', [
+            'member_id' => $this->memberId,
+            'daily_content_id' => $this->dailyContentId,
+            'today' => $this->today,
+            'error' => $exception->getMessage(),
+        ]);
     }
 
     private function ensureHttpsUrl(string $url): string

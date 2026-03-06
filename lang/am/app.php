@@ -702,7 +702,7 @@ return [
     'whatsapp_cron_reminders_job' => '1. WhatsApp reminder dispatcher (every minute):',
     'whatsapp_cron_queue_worker_job' => '2. WhatsApp queue worker (every minute):',
     'whatsapp_cron_scheduler_job' => '3. Laravel scheduler (every minute, for writer reminders):',
-    'whatsapp_cron_queue_requirements' => 'Queued reminders require QUEUE_CONNECTION=database and the jobs / failed_jobs tables to be migrated before enabling the worker.',
+    'whatsapp_cron_queue_requirements' => 'Queued reminders require QUEUE_CONNECTION=database, the jobs / failed_jobs tables, and a worker configured with retries (the example uses --tries=3).',
     'whatsapp_cron_php_path_note' => 'On cPanel, PHP path may be /usr/local/bin/ea-php82 (or ea-php81, ea-php74). Check MultiPHP Manager for your version.',
     'whatsapp_cron_path_note' => 'Replace the artisan path with your actual server path (e.g. /home/username/public_html/Abiy_Tsom/artisan).',
     'whatsapp_cron_frequency' => 'Frequency',
