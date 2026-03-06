@@ -221,9 +221,6 @@
                             static fn (string $key): string => ':'.$key,
                             $template['placeholder_keys']
                         );
-                        $groupLabel = $meta['group'] === 'daily'
-                            ? __('app.whatsapp_template_group_daily')
-                            : __('app.whatsapp_template_group_confirmation');
                     @endphp
 
                     <section
@@ -235,7 +232,7 @@
                             <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                                 <div>
                                     <span class="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-                                        {{ $groupLabel }}
+                                        {{ $meta['group'] === 'daily' ? __('app.whatsapp_template_group_daily') : __('app.whatsapp_template_group_confirmation') }}
                                     </span>
                                     <h2 class="mt-3 text-2xl font-semibold tracking-tight text-primary">{{ $template['title'] }}</h2>
                                     <p class="mt-2 max-w-3xl text-sm leading-6 text-muted-text">{{ $meta['description'] }}</p>

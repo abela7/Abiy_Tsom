@@ -29,27 +29,25 @@
 
     {{-- Yearly Commemorations --}}
     @if($hasAnnuals)
-    <div class="rounded-2xl bg-card border border-border shadow-sm overflow-hidden">
-        <div class="px-4 pt-4 pb-2 text-center">
-            <h2 class="text-base font-black text-primary">{{ __('app.synaxarium_yearly_commemorations') }}</h2>
-        </div>
+    <div class="space-y-3">
+        <h2 class="text-base font-black text-primary text-center">{{ __('app.synaxarium_yearly_commemorations') }}</h2>
 
-        <div class="pb-3 space-y-0 divide-y divide-border">
-            @foreach($annualCelebrations as $saint)
-            @php $hasImage = (bool) $saint->imageUrl(); $hasDesc = (bool) localized($saint, 'description'); @endphp
-            <div class="px-4 py-3">
-                {{-- Image as a contained hero banner --}}
-                @if($hasImage)
-                <div class="relative rounded-xl overflow-hidden mb-3 cursor-pointer"
-                     @click="showImageModal = true; modalImage = '{{ $saint->imageUrl() }}'">
-                    <img src="{{ $saint->imageUrl() }}" alt="" class="w-full max-h-64 object-contain">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
-                    <div class="absolute bottom-0 left-0 right-0 px-3 pb-2.5">
-                        <span class="inline-block px-1.5 py-0.5 rounded bg-accent-secondary/90 text-[9px] font-bold text-white uppercase tracking-wider">{{ __('app.synaxarium_annual_feast') }}</span>
-                    </div>
+        @foreach($annualCelebrations as $saint)
+        @php $hasImage = (bool) $saint->imageUrl(); $hasDesc = (bool) localized($saint, 'description'); @endphp
+        <div class="rounded-2xl bg-card border border-border shadow-sm overflow-hidden">
+            {{-- Image as a contained hero banner --}}
+            @if($hasImage)
+            <div class="relative cursor-pointer"
+                 @click="showImageModal = true; modalImage = '{{ $saint->imageUrl() }}'">
+                <img src="{{ $saint->imageUrl() }}" alt="" class="w-full max-h-64 object-contain">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+                <div class="absolute bottom-0 left-0 right-0 px-3 pb-2.5">
+                    <span class="inline-block px-1.5 py-0.5 rounded bg-accent-secondary/90 text-[9px] font-bold text-white uppercase tracking-wider">{{ __('app.synaxarium_annual_feast') }}</span>
                 </div>
-                @endif
+            </div>
+            @endif
 
+            <div class="px-4 py-3">
                 {{-- Name --}}
                 <div class="flex items-center gap-2.5">
                     @if(!$hasImage)
@@ -69,7 +67,7 @@
 
                 {{-- Description --}}
                 @if($hasDesc)
-                <div class="mt-2" x-data="{ expanded: false }">
+                <div class="mt-2.5" x-data="{ expanded: false }">
                     <p class="text-sm text-secondary leading-relaxed whitespace-pre-line"
                        :class="expanded ? '' : 'line-clamp-2'">{{ localized($saint, 'description') }}</p>
                     <button @click="expanded = !expanded"
@@ -80,8 +78,8 @@
                 </div>
                 @endif
             </div>
-            @endforeach
         </div>
+        @endforeach
     </div>
     @endif
 
