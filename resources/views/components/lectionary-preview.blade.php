@@ -56,13 +56,13 @@ $monthEn = $monthNames[$entry->month] ? explode(' / ', $monthNames[$entry->month
 
         @if(filled($entry->pauline_text_am))
         <div class="mb-4 text-sm text-primary leading-loose whitespace-pre-wrap">
-            {{ $entry->pauline_text_am }}
+            {{ trim($entry->pauline_text_am) }}
         </div>
         @endif
 
         @if(filled($entry->pauline_text_en))
         <div class="text-sm text-primary/75 leading-loose italic whitespace-pre-wrap">
-            {{ $entry->pauline_text_en }}
+            {{ trim($entry->pauline_text_en) }}
         </div>
         @endif
     </div>
@@ -92,13 +92,13 @@ $monthEn = $monthNames[$entry->month] ? explode(' / ', $monthNames[$entry->month
 
         @if(filled($entry->catholic_text_am))
         <div class="mb-4 text-sm text-primary leading-loose whitespace-pre-wrap">
-            {{ $entry->catholic_text_am }}
+            {{ trim($entry->catholic_text_am) }}
         </div>
         @endif
 
         @if(filled($entry->catholic_text_en))
         <div class="text-sm text-primary/75 leading-loose italic whitespace-pre-wrap">
-            {{ $entry->catholic_text_en }}
+            {{ trim($entry->catholic_text_en) }}
         </div>
         @endif
     </div>
@@ -116,13 +116,13 @@ $monthEn = $monthNames[$entry->month] ? explode(' / ', $monthNames[$entry->month
 
         @if(filled($entry->acts_text_am))
         <div class="mb-4 text-sm text-primary leading-loose whitespace-pre-wrap">
-            {{ $entry->acts_text_am }}
+            {{ trim($entry->acts_text_am) }}
         </div>
         @endif
 
         @if(filled($entry->acts_text_en))
         <div class="text-sm text-primary/75 leading-loose italic whitespace-pre-wrap">
-            {{ $entry->acts_text_en }}
+            {{ trim($entry->acts_text_en) }}
         </div>
         @endif
     </div>
@@ -204,13 +204,13 @@ $monthEn = $monthNames[$entry->month] ? explode(' / ', $monthNames[$entry->month
 
         @if(filled($entry->gospel_text_am))
         <div class="mb-4 text-sm text-primary leading-loose whitespace-pre-wrap">
-            {{ $entry->gospel_text_am }}
+            {{ trim($entry->gospel_text_am) }}
         </div>
         @endif
 
         @if(filled($entry->gospel_text_en))
         <div class="text-sm text-primary/75 leading-loose italic whitespace-pre-wrap">
-            {{ $entry->gospel_text_en }}
+            {{ trim($entry->gospel_text_en) }}
         </div>
         @endif
     </div>
