@@ -289,12 +289,12 @@
                 <template x-if="activeShelf==='theme'">
                     <div class="absolute bottom-16 left-0 right-0 border-t border-border bg-card px-4 py-4 z-[101]">
                         <div class="flex items-center justify-center gap-5 max-w-xs mx-auto">
-                            @foreach([['light','A','#f9fafb','#111827'],['sepia','A','#f5edd8','#1c1008'],['dark','A','#030712','#f9fafb']] as [$tv,$tl,$tbg,$tc])
+                            @foreach([['light','A','#f9fafb','#111827','Light'],['sepia','A','#f5edd8','#1c1008','ብራና'],['dark','A','#030712','#f9fafb','Dark']] as [$tv,$tl,$tbg,$tc,$tlabel])
                             <button type="button" @pointerup.stop.prevent="pickTheme('{{ $tv }}')" class="flex flex-col items-center gap-1.5 touch-manipulation">
                                 <span class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold transition-all border-2 border-border"
                                       style="background-color:{{ $tbg }};color:{{ $tc }}"
                                       :class="readerTheme==='{{ $tv }}'&&'!border-accent !border-3 scale-110'">{{ $tl }}</span>
-                                <span class="text-[10px] font-semibold capitalize text-muted-text" :class="readerTheme==='{{ $tv }}'&&'!text-accent'">{{ $tv }}</span>
+                                <span class="text-[10px] font-semibold text-muted-text" :class="readerTheme==='{{ $tv }}'&&'!text-accent'">{{ $tlabel }}</span>
                             </button>
                             @endforeach
                         </div>
@@ -1272,12 +1272,12 @@
                 <template x-if="activeShelf==='theme'">
                     <div class="absolute bottom-16 left-0 right-0 border-t border-border bg-card px-4 py-4 z-[101]">
                         <div class="flex items-center justify-center gap-5 max-w-xs mx-auto">
-                            @foreach([['light','A','#f9fafb','#111827'],['sepia','A','#f5edd8','#1c1008'],['dark','A','#030712','#f9fafb']] as [$tv,$tl,$tbg,$tc])
+                            @foreach([['light','A','#f9fafb','#111827','Light'],['sepia','A','#f5edd8','#1c1008','ብራና'],['dark','A','#030712','#f9fafb','Dark']] as [$tv,$tl,$tbg,$tc,$tlabel])
                             <button type="button" @pointerup.stop.prevent="pickTheme('{{ $tv }}')" class="flex flex-col items-center gap-1.5 touch-manipulation">
                                 <span class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold transition-all border-2 border-border"
                                       style="background-color:{{ $tbg }};color:{{ $tc }}"
                                       :class="readerTheme==='{{ $tv }}'&&'!border-accent !border-3 scale-110'">{{ $tl }}</span>
-                                <span class="text-[10px] font-semibold capitalize text-muted-text" :class="readerTheme==='{{ $tv }}'&&'!text-accent'">{{ $tv }}</span>
+                                <span class="text-[10px] font-semibold text-muted-text" :class="readerTheme==='{{ $tv }}'&&'!text-accent'">{{ $tlabel }}</span>
                             </button>
                             @endforeach
                         </div>
