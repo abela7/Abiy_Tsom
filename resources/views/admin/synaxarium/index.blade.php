@@ -237,7 +237,7 @@ elseif (old('_form') === 'add_annual') $autoSheet = 'add-annual';
         </div>
         @else
         <div class="space-y-2">
-            @foreach($monthNames as $m => $mFull)
+            @foreach($monthNamesFull as $m => $mFull)
             @if(!isset($byMonth[$m])) @continue @endif
             @php
                 $monthSaints  = $byMonth[$m];
