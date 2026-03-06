@@ -4,12 +4,32 @@
 $monthAm = $monthNames[$entry->month] ? explode(' / ', $monthNames[$entry->month])[1] : '';
 $monthEn = $monthNames[$entry->month] ? explode(' / ', $monthNames[$entry->month])[0] : '';
 
-// Helper function to format bible text with verse numbers
-function formatBibleText($text) {
-    if (!filled($text)) return null;
-    // Split by verse patterns like "1 ", "2 ", etc.
-    $lines = preg_split('/\n+/', trim($text));
-    return $lines;
+// Helper function to parse verses with numbers
+function parseVerses($text) {
+    if (!filled($text)) return [];
+
+    $verses = [];
+    $text = trim($text);
+
+    // Match patterns like "5 verse text" or "5verse text"
+    preg_match_all('/(\d+)\s+(.+?)(?=\d+\s+|\Z)/s', $text, $matches, PREG_SET_ORDER);
+
+    if (!empty($matches)) {
+        foreach ($matches as $match) {
+            $verses[] = [
+                'number' => $match[1],
+                'text' => trim($match[2])
+            ];
+        }
+    } else {
+        // If no verse numbers found, return text as single block
+        $verses[] = [
+            'number' => null,
+            'text' => $text
+        ];
+    }
+
+    return $verses;
 }
 @endphp
 
@@ -51,7 +71,7 @@ function formatBibleText($text) {
     {{-- 1. Pauline Epistle --}}
     @if(filled($entry->pauline_book_am) || filled($entry->pauline_chapter))
     <div class="border-t border-border pt-5">
-        <div class="mb-3 pb-2 border-b border-border/50">
+        <div class="mb-4 pb-2 border-b border-border/50">
             <h3 class="text-base font-bold text-primary">1. {{ __('app.lectionary_pauline') }}</h3>
             <p class="text-xs text-muted-text mt-1">
                 @if(filled($entry->pauline_book_am))<span class="font-semibold">{{ $entry->pauline_book_am }}</span>@endif
@@ -61,27 +81,39 @@ function formatBibleText($text) {
             </p>
         </div>
 
-        {{-- Amharic Text --}}
+        {{-- Amharic Text with Verse Numbers --}}
         @if(filled($entry->pauline_text_am))
-        <div class="prose prose-invert max-w-none mb-4">
-            <div class="space-y-2 text-sm text-primary leading-relaxed">
-                @foreach(preg_split('/\n+/', trim($entry->pauline_text_am)) as $line)
-                    @if(filled(trim($line)))
-                    <p class="m-0">{{ trim($line) }}</p>
+        <div class="mb-4">
+            @php $amVerses = parseVerses($entry->pauline_text_am); @endphp
+            <div class="space-y-1 text-sm text-primary leading-relaxed">
+                @foreach($amVerses as $verse)
+                <div class="flex gap-3">
+                    @if($verse['number'])
+                    <span class="text-accent font-bold min-w-fit shrink-0">{{ $verse['number'] }}</span>
+                    <span>{{ $verse['text'] }}</span>
+                    @else
+                    <span>{{ $verse['text'] }}</span>
                     @endif
+                </div>
                 @endforeach
             </div>
         </div>
         @endif
 
-        {{-- English Text --}}
+        {{-- English Text with Verse Numbers --}}
         @if(filled($entry->pauline_text_en))
-        <div class="prose prose-invert max-w-none">
-            <div class="space-y-2 text-sm text-primary/75 leading-relaxed italic">
-                @foreach(preg_split('/\n+/', trim($entry->pauline_text_en)) as $line)
-                    @if(filled(trim($line)))
-                    <p class="m-0">{{ trim($line) }}</p>
+        <div>
+            @php $enVerses = parseVerses($entry->pauline_text_en); @endphp
+            <div class="space-y-1 text-sm text-primary/75 leading-relaxed italic">
+                @foreach($enVerses as $verse)
+                <div class="flex gap-3">
+                    @if($verse['number'])
+                    <span class="text-accent font-bold min-w-fit shrink-0">{{ $verse['number'] }}</span>
+                    <span>{{ $verse['text'] }}</span>
+                    @else
+                    <span>{{ $verse['text'] }}</span>
                     @endif
+                </div>
                 @endforeach
             </div>
         </div>
@@ -92,7 +124,7 @@ function formatBibleText($text) {
     {{-- 2. Catholic Epistle --}}
     @if(filled($entry->catholic_book_am) || filled($entry->catholic_chapter))
     <div class="border-t border-border pt-5">
-        <div class="mb-3 pb-2 border-b border-border/50">
+        <div class="mb-4 pb-2 border-b border-border/50">
             <h3 class="text-base font-bold text-primary">2. {{ __('app.lectionary_catholic') }}</h3>
             <p class="text-xs text-muted-text mt-1">
                 @if(filled($entry->catholic_book_am))<span class="font-semibold">{{ $entry->catholic_book_am }}</span>@endif
@@ -103,22 +135,38 @@ function formatBibleText($text) {
         </div>
 
         @if(filled($entry->catholic_text_am))
-        <div class="space-y-2 text-sm text-primary leading-relaxed mb-4">
-            @foreach(preg_split('/\n+/', trim($entry->catholic_text_am)) as $line)
-                @if(filled(trim($line)))
-                <p class="m-0">{{ trim($line) }}</p>
-                @endif
-            @endforeach
+        <div class="mb-4">
+            @php $amVerses = parseVerses($entry->catholic_text_am); @endphp
+            <div class="space-y-1 text-sm text-primary leading-relaxed">
+                @foreach($amVerses as $verse)
+                <div class="flex gap-3">
+                    @if($verse['number'])
+                    <span class="text-accent font-bold min-w-fit shrink-0">{{ $verse['number'] }}</span>
+                    <span>{{ $verse['text'] }}</span>
+                    @else
+                    <span>{{ $verse['text'] }}</span>
+                    @endif
+                </div>
+                @endforeach
+            </div>
         </div>
         @endif
 
         @if(filled($entry->catholic_text_en))
-        <div class="space-y-2 text-sm text-primary/75 leading-relaxed italic">
-            @foreach(preg_split('/\n+/', trim($entry->catholic_text_en)) as $line)
-                @if(filled(trim($line)))
-                <p class="m-0">{{ trim($line) }}</p>
-                @endif
-            @endforeach
+        <div>
+            @php $enVerses = parseVerses($entry->catholic_text_en); @endphp
+            <div class="space-y-1 text-sm text-primary/75 leading-relaxed italic">
+                @foreach($enVerses as $verse)
+                <div class="flex gap-3">
+                    @if($verse['number'])
+                    <span class="text-accent font-bold min-w-fit shrink-0">{{ $verse['number'] }}</span>
+                    <span>{{ $verse['text'] }}</span>
+                    @else
+                    <span>{{ $verse['text'] }}</span>
+                    @endif
+                </div>
+                @endforeach
+            </div>
         </div>
         @endif
     </div>
@@ -127,7 +175,7 @@ function formatBibleText($text) {
     {{-- 3. Acts --}}
     @if(filled($entry->acts_chapter))
     <div class="border-t border-border pt-5">
-        <div class="mb-3 pb-2 border-b border-border/50">
+        <div class="mb-4 pb-2 border-b border-border/50">
             <h3 class="text-base font-bold text-primary">3. {{ __('app.lectionary_acts') }}</h3>
             <p class="text-xs text-muted-text mt-1">
                 Acts {{ $entry->acts_chapter }}@if(filled($entry->acts_verses)): {{ $entry->acts_verses }}@endif
@@ -135,22 +183,38 @@ function formatBibleText($text) {
         </div>
 
         @if(filled($entry->acts_text_am))
-        <div class="space-y-2 text-sm text-primary leading-relaxed mb-4">
-            @foreach(preg_split('/\n+/', trim($entry->acts_text_am)) as $line)
-                @if(filled(trim($line)))
-                <p class="m-0">{{ trim($line) }}</p>
-                @endif
-            @endforeach
+        <div class="mb-4">
+            @php $amVerses = parseVerses($entry->acts_text_am); @endphp
+            <div class="space-y-1 text-sm text-primary leading-relaxed">
+                @foreach($amVerses as $verse)
+                <div class="flex gap-3">
+                    @if($verse['number'])
+                    <span class="text-accent font-bold min-w-fit shrink-0">{{ $verse['number'] }}</span>
+                    <span>{{ $verse['text'] }}</span>
+                    @else
+                    <span>{{ $verse['text'] }}</span>
+                    @endif
+                </div>
+                @endforeach
+            </div>
         </div>
         @endif
 
         @if(filled($entry->acts_text_en))
-        <div class="space-y-2 text-sm text-primary/75 leading-relaxed italic">
-            @foreach(preg_split('/\n+/', trim($entry->acts_text_en)) as $line)
-                @if(filled(trim($line)))
-                <p class="m-0">{{ trim($line) }}</p>
-                @endif
-            @endforeach
+        <div>
+            @php $enVerses = parseVerses($entry->acts_text_en); @endphp
+            <div class="space-y-1 text-sm text-primary/75 leading-relaxed italic">
+                @foreach($enVerses as $verse)
+                <div class="flex gap-3">
+                    @if($verse['number'])
+                    <span class="text-accent font-bold min-w-fit shrink-0">{{ $verse['number'] }}</span>
+                    <span>{{ $verse['text'] }}</span>
+                    @else
+                    <span>{{ $verse['text'] }}</span>
+                    @endif
+                </div>
+                @endforeach
+            </div>
         </div>
         @endif
     </div>
@@ -223,7 +287,7 @@ function formatBibleText($text) {
     {{-- 5. Gospel --}}
     @if(filled($entry->gospel_book_am) || filled($entry->gospel_chapter))
     <div class="border-t border-border pt-5">
-        <div class="mb-3 pb-2 border-b border-border/50">
+        <div class="mb-4 pb-2 border-b border-border/50">
             <h3 class="text-base font-bold text-primary">5. {{ __('app.lectionary_gospel') }}</h3>
             <p class="text-xs text-muted-text mt-1">
                 @if(filled($entry->gospel_book_am))<span class="font-semibold">{{ $entry->gospel_book_am }}</span>@endif
@@ -234,22 +298,38 @@ function formatBibleText($text) {
         </div>
 
         @if(filled($entry->gospel_text_am))
-        <div class="space-y-2 text-sm text-primary leading-relaxed mb-4">
-            @foreach(preg_split('/\n+/', trim($entry->gospel_text_am)) as $line)
-                @if(filled(trim($line)))
-                <p class="m-0">{{ trim($line) }}</p>
-                @endif
-            @endforeach
+        <div class="mb-4">
+            @php $amVerses = parseVerses($entry->gospel_text_am); @endphp
+            <div class="space-y-1 text-sm text-primary leading-relaxed">
+                @foreach($amVerses as $verse)
+                <div class="flex gap-3">
+                    @if($verse['number'])
+                    <span class="text-accent font-bold min-w-fit shrink-0">{{ $verse['number'] }}</span>
+                    <span>{{ $verse['text'] }}</span>
+                    @else
+                    <span>{{ $verse['text'] }}</span>
+                    @endif
+                </div>
+                @endforeach
+            </div>
         </div>
         @endif
 
         @if(filled($entry->gospel_text_en))
-        <div class="space-y-2 text-sm text-primary/75 leading-relaxed italic">
-            @foreach(preg_split('/\n+/', trim($entry->gospel_text_en)) as $line)
-                @if(filled(trim($line)))
-                <p class="m-0">{{ trim($line) }}</p>
-                @endif
-            @endforeach
+        <div>
+            @php $enVerses = parseVerses($entry->gospel_text_en); @endphp
+            <div class="space-y-1 text-sm text-primary/75 leading-relaxed italic">
+                @foreach($enVerses as $verse)
+                <div class="flex gap-3">
+                    @if($verse['number'])
+                    <span class="text-accent font-bold min-w-fit shrink-0">{{ $verse['number'] }}</span>
+                    <span>{{ $verse['text'] }}</span>
+                    @else
+                    <span>{{ $verse['text'] }}</span>
+                    @endif
+                </div>
+                @endforeach
+            </div>
         </div>
         @endif
     </div>
