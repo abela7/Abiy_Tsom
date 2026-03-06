@@ -806,7 +806,7 @@
             fsAllExpanded: false,
             availableKeys: {{ Js::from(collect($lecReadings)->where('has', true)->pluck('key')->values()) }},
             fontSize: parseInt(localStorage.getItem('lecFontSize') || '16'),
-            readerTheme: localStorage.getItem('lecReaderTheme') || 'default',
+            readerTheme: localStorage.getItem('lecReaderTheme') || 'sepia',
             readerFont: localStorage.getItem('lecReaderFont') || 'default',
             fullscreen: false,
             activeShelf: null,
@@ -999,7 +999,7 @@
         {{-- Fullscreen reader --}}
         <template x-if="fullscreen">
             <div class="fixed inset-0 z-[100] flex flex-col bg-surface"
-                 :class="readerTheme==='sepia'?'theme-sepia':readerTheme==='dark'?'dark':''">
+                 :class="readerTheme==='sepia'?'theme-sepia':readerTheme==='dark'?'dark':'theme-light'">
 
                 <div class="flex-1 overflow-y-auto">
                     {{-- Sticky header --}}
@@ -1109,7 +1109,7 @@
                 <template x-if="activeShelf==='theme'">
                     <div class="absolute bottom-16 left-0 right-0 border-t border-border bg-card px-4 py-4 z-[101]">
                         <div class="flex items-center justify-center gap-5 max-w-xs mx-auto">
-                            @foreach([['default','A','#ffffff','#3e3e3e'],['sepia','A','#f5edd8','#1c1008'],['dark','A','#030712','#f9fafb']] as [$tv,$tl,$tbg,$tc])
+                            @foreach([['light','A','#f9fafb','#111827'],['sepia','A','#f5edd8','#1c1008'],['dark','A','#030712','#f9fafb']] as [$tv,$tl,$tbg,$tc])
                             <button type="button" @pointerup.stop.prevent="pickTheme('{{ $tv }}')" class="flex flex-col items-center gap-1.5 touch-manipulation">
                                 <span class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold transition-all border-2 border-border"
                                       style="background-color:{{ $tbg }};color:{{ $tc }}"

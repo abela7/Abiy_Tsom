@@ -48,6 +48,48 @@
     --app-cal-upcoming-text: #64748b;
 }
 
+/* ─── Explicit light theme for nested scopes (e.g. fullscreen reader) ───── */
+.theme-light {
+    color-scheme: light;
+    --app-surface: #f9fafb;
+    --app-card: #ffffff;
+    --app-muted: #f3f4f6;
+    --app-primary: #111827;
+    --app-secondary: #4b5563;
+    --app-muted-text: #6b7280;
+    --app-border: #e5e7eb;
+    --app-border-muted: #f3f4f6;
+    --app-accent: #0a6286;
+    --app-accent-hover: #075985;
+    --app-accent-secondary: #d4af37;
+    --app-on-accent: #ffffff;
+    --app-success: #16a34a;
+    --app-success-bg: #dcfce7;
+    --app-error: #dc2626;
+    --app-error-bg: #fee2e2;
+    --app-on-error: #ffffff;
+    --app-overlay: rgba(0, 0, 0, 0.5);
+    /* Re-bind Tailwind color tokens */
+    --color-surface: var(--app-surface);
+    --color-card: var(--app-card);
+    --color-muted: var(--app-muted);
+    --color-primary: var(--app-primary);
+    --color-secondary: var(--app-secondary);
+    --color-muted-text: var(--app-muted-text);
+    --color-border: var(--app-border);
+    --color-border-muted: var(--app-border-muted);
+    --color-accent: var(--app-accent);
+    --color-accent-hover: var(--app-accent-hover);
+    --color-accent-secondary: var(--app-accent-secondary);
+    --color-on-accent: var(--app-on-accent);
+    --color-success: var(--app-success);
+    --color-success-bg: var(--app-success-bg);
+    --color-error: var(--app-error);
+    --color-error-bg: var(--app-error-bg);
+    --color-on-error: var(--app-on-error);
+    --color-overlay: var(--app-overlay);
+}
+
 /* ─── Semantic theme variables (dark) ────────────────────────────────────── */
 .dark {
     color-scheme: dark;
