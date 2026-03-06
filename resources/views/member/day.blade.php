@@ -998,23 +998,19 @@
 
         {{-- Fullscreen reader --}}
         <template x-if="fullscreen">
-            <div class="fixed inset-0 z-[100] flex flex-col"
-                 :style="readerTheme==='sepia'?'background-color:#f4ecd8':readerTheme==='dark'?'background-color:#0f0f1e':'background-color:#ffffff'">
+            <div class="fixed inset-0 z-[100] flex flex-col bg-surface"
+                 :class="readerTheme==='sepia'?'theme-sepia':readerTheme==='dark'?'dark':''">
 
                 <div class="flex-1 overflow-y-auto">
                     {{-- Sticky header --}}
-                    <div class="sticky top-0 z-10 px-4 py-3 border-b flex items-center gap-3"
-                         :style="readerTheme==='default'?'background-color:#ffffff;border-color:#e5e7eb':readerTheme==='sepia'?'background-color:#ede3cc;border-color:#d4c5a9':'background-color:#16162a;border-color:#2a2a4a'">
-                        <button type="button" @click="closeFullscreen()" class="w-8 h-8 rounded-lg flex items-center justify-center touch-manipulation"
-                                :style="readerTheme==='dark'?'color:#7b9fff':readerTheme==='sepia'?'color:#8b5e3c':'color:var(--color-accent)'">
+                    <div class="sticky top-0 z-10 px-4 py-3 border-b border-border bg-card flex items-center gap-3">
+                        <button type="button" @click="closeFullscreen()" class="w-8 h-8 rounded-lg flex items-center justify-center text-accent touch-manipulation">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                         </button>
                         <div>
-                            <p class="text-xs font-bold uppercase tracking-wider"
-                               :style="readerTheme==='dark'?'color:#7b9fff':readerTheme==='sepia'?'color:#8b5e3c':'color:var(--color-accent)'">{{ __('app.lectionary') }}</p>
+                            <p class="text-xs font-bold uppercase tracking-wider text-accent">{{ __('app.lectionary') }}</p>
                             @if(filled($lectionary->title_am)||filled($lectionary->title_en))
-                            <p class="text-sm font-semibold mt-0.5"
-                               :style="readerTheme==='dark'?'color:#f0f0f0':readerTheme==='sepia'?'color:#3e2c1c':'color:var(--color-primary)'">
+                            <p class="text-sm font-semibold mt-0.5 text-primary">
                                 {{ $locale==='am'?$lectionary->title_am:$lectionary->title_en }}
                             </p>
                             @endif
@@ -1025,7 +1021,7 @@
                     <div class="px-4 py-2 flex justify-end">
                         <button type="button" @click="toggleFsAll()"
                                 class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition touch-manipulation"
-                                :style="readerTheme==='dark'?(fsAllExpanded?'color:#7b9fff;background-color:#2a2a4a':'color:#8888aa'):readerTheme==='sepia'?(fsAllExpanded?'color:#8b5e3c;background-color:#d4c5a9':'color:#8b7355'):(fsAllExpanded?'color:var(--color-accent);background-color:rgba(var(--color-accent-rgb,99,102,241),0.1)':'color:var(--color-muted-text)')">
+                                :class="fsAllExpanded?'text-accent bg-accent/10':'text-muted-text'">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                             <span x-text="fsAllExpanded ? '{{ $locale === 'am' ? 'ዝጋ ሁሉንም' : 'Collapse All' }}' : '{{ $locale === 'am' ? 'ሁሉንም ክፈት' : 'Expand All' }}'"></span>
                         </button>
@@ -1035,40 +1031,27 @@
                     <div class="max-w-2xl mx-auto px-3 pb-8 space-y-2.5">
                         @foreach($lecReadings as $r)
                         @if($r['has'])
-                        <div x-ref="fssec_{{ $r['key'] }}" class="rounded-xl overflow-hidden transition-all duration-200"
-                             :style="'border:1px solid '+(isFsSectionOpen('{{ $r['key'] }}')
-                                 ? (readerTheme==='dark'?'rgba(123,159,255,0.3)':readerTheme==='sepia'?'rgba(139,94,60,0.3)':'rgba(var(--color-accent-rgb,99,102,241),0.3)')
-                                 : (readerTheme==='dark'?'#2a2a4a':readerTheme==='sepia'?'#d4c5a9':'#e5e7eb'))
-                                 + ';background-color:'+(isFsSectionOpen('{{ $r['key'] }}')
-                                 ? (readerTheme==='dark'?'rgba(123,159,255,0.04)':readerTheme==='sepia'?'rgba(139,94,60,0.04)':'rgba(var(--color-accent-rgb,99,102,241),0.03)')
-                                 : (readerTheme==='dark'?'rgba(255,255,255,0.02)':readerTheme==='sepia'?'rgba(139,94,60,0.02)':'rgba(0,0,0,0.01)'))">
+                        <div x-ref="fssec_{{ $r['key'] }}" class="rounded-xl overflow-hidden transition-all duration-200 border"
+                             :class="isFsSectionOpen('{{ $r['key'] }}') ? 'border-accent/30 bg-accent/[0.03] shadow-sm' : 'border-border bg-card'">
                             <button type="button" @click="toggleFsSection('{{ $r['key'] }}')"
                                     class="w-full flex items-center justify-between px-4 py-3.5 text-left touch-manipulation">
                                 <div class="flex items-center gap-3">
                                     <span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition-all duration-200"
-                                          :style="isFsSectionOpen('{{ $r['key'] }}')
-                                              ? 'background-color:'+(readerTheme==='dark'?'#7b9fff':readerTheme==='sepia'?'#8b5e3c':'var(--color-accent)')+';color:#fff'
-                                              : 'background-color:'+(readerTheme==='dark'?'#2a2a4a':readerTheme==='sepia'?'#d4c5a9':'var(--color-muted,#f1f5f9)')+';color:'+(readerTheme==='dark'?'#8888aa':readerTheme==='sepia'?'#8b7355':'var(--color-muted-text)')">{{ $r['num'] }}</span>
+                                          :class="isFsSectionOpen('{{ $r['key'] }}') ? 'bg-accent text-on-accent' : 'bg-muted text-muted-text'">{{ $r['num'] }}</span>
                                     <div>
                                         <span class="text-sm font-bold transition-colors duration-200"
-                                              :style="isFsSectionOpen('{{ $r['key'] }}')
-                                                  ? 'color:'+(readerTheme==='dark'?'#7b9fff':readerTheme==='sepia'?'#8b5e3c':'var(--color-accent)')
-                                                  : 'color:'+(readerTheme==='dark'?'#f0f0f0':readerTheme==='sepia'?'#3e2c1c':'var(--color-primary)')">
+                                              :class="isFsSectionOpen('{{ $r['key'] }}') ? 'text-accent' : 'text-primary'">
                                             {{ __($r['label_key']) }}
                                         </span>
                                         @if(filled($r['book']))
-                                        <span class="block text-xs mt-0.5"
-                                              :style="readerTheme==='dark'?'color:#8888aa':readerTheme==='sepia'?'color:#8b7355':'color:var(--color-muted-text)'">
+                                        <span class="block text-xs mt-0.5 text-muted-text">
                                             {{ $r['book'] }}{{ filled($r['chapter'])?' '.$r['chapter']:'' }}{{ filled($r['verses'])?':'.$r['verses']:'' }}
                                         </span>
                                         @endif
                                     </div>
                                 </div>
-                                <svg class="w-5 h-5 shrink-0 transition-transform duration-300"
-                                     :class="isFsSectionOpen('{{ $r['key'] }}')&&'rotate-180'"
-                                     :style="isFsSectionOpen('{{ $r['key'] }}')
-                                         ? 'color:'+(readerTheme==='dark'?'#7b9fff':readerTheme==='sepia'?'#8b5e3c':'var(--color-accent)')
-                                         : 'color:'+(readerTheme==='dark'?'#8888aa':readerTheme==='sepia'?'#8b7355':'var(--color-muted-text)')"
+                                <svg class="w-5 h-5 shrink-0 transition-transform duration-300 text-muted-text"
+                                     :class="isFsSectionOpen('{{ $r['key'] }}')&&'rotate-180 !text-accent'"
                                      fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                                 </svg>
@@ -1076,8 +1059,8 @@
                             <div x-show="isFsSectionOpen('{{ $r['key'] }}')" x-cloak
                                  x-transition:enter="transition-all ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
                                  x-transition:leave="transition-all ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
-                                <div class="px-4 pb-4 pt-1"
-                                     :style="'font-size:'+fontSize+'px;line-height:'+(fontSize<20?'1.9':'1.8')+';font-family:'+fontFamily()+';color:'+(readerTheme==='dark'?'#d4d4e8':readerTheme==='sepia'?'#3e2c1c':'var(--color-primary)')">
+                                <div class="px-4 pb-4 pt-1 text-primary"
+                                     :style="'font-size:'+fontSize+'px;line-height:'+(fontSize<20?'1.9':'1.8')+';font-family:'+fontFamily()">
                                     @if($r['key']==='mesbak')
                                         @if(filled($lectionary->mesbak_geez_1)||filled($lectionary->mesbak_geez_2)||filled($lectionary->mesbak_geez_3))
                                         <div class="mb-5">
@@ -1109,14 +1092,13 @@
 
                 {{-- Font shelf --}}
                 <template x-if="activeShelf==='font'">
-                    <div class="absolute bottom-16 left-0 right-0 border-t px-4 py-4 z-[101]"
-                         :style="readerTheme==='default'?'background-color:#ffffff;border-color:#e5e7eb':readerTheme==='sepia'?'background-color:#e8dcc6;border-color:#d4c5a9':'background-color:#12122a;border-color:#2a2a4a'">
+                    <div class="absolute bottom-16 left-0 right-0 border-t border-border bg-card px-4 py-4 z-[101]">
                         <div class="flex items-center justify-center gap-5 max-w-xs mx-auto">
                             @foreach([['default','Default','inherit'],['benaiah','Benaiah','Benaiah,sans-serif'],['kiros','Kiros','Kiros,sans-serif'],['handwriting','Writing','Handwriting,sans-serif']] as [$fv,$fl,$ff])
                             <button type="button" @pointerup.stop.prevent="pickFont('{{ $fv }}')" class="flex flex-col items-center gap-1.5 touch-manipulation">
-                                <span class="w-12 h-12 rounded-xl flex items-center justify-center text-xl font-bold transition-all" style="font-family:{{ $ff }}"
-                                      :style="readerFont==='{{ $fv }}'?'border:3px solid var(--color-accent);transform:scale(1.1)':'border:2px solid '+(readerTheme==='dark'?'#4a4a6a':readerTheme==='sepia'?'#c4a87c':'#d1d5db')+';background:'+(readerTheme==='dark'?'#1a1a2e':readerTheme==='sepia'?'#f4ecd8':'#fff')">ሀ</span>
-                                <span class="text-[10px] font-semibold" :style="readerFont==='{{ $fv }}'?'color:var(--color-accent)':readerTheme==='sepia'?'color:#5b4636':readerTheme==='dark'?'color:#8888aa':'color:#6b7280'">{{ $fl }}</span>
+                                <span class="w-12 h-12 rounded-xl flex items-center justify-center text-xl font-bold text-primary transition-all border-2 border-border bg-card" style="font-family:{{ $ff }}"
+                                      :class="readerFont==='{{ $fv }}'&&'!border-accent !border-3 scale-110'">ሀ</span>
+                                <span class="text-[10px] font-semibold text-muted-text" :class="readerFont==='{{ $fv }}'&&'!text-accent'">{{ $fl }}</span>
                             </button>
                             @endforeach
                         </div>
@@ -1125,15 +1107,14 @@
 
                 {{-- Theme shelf --}}
                 <template x-if="activeShelf==='theme'">
-                    <div class="absolute bottom-16 left-0 right-0 border-t px-4 py-4 z-[101]"
-                         :style="readerTheme==='default'?'background-color:#ffffff;border-color:#e5e7eb':readerTheme==='sepia'?'background-color:#e8dcc6;border-color:#d4c5a9':'background-color:#12122a;border-color:#2a2a4a'">
+                    <div class="absolute bottom-16 left-0 right-0 border-t border-border bg-card px-4 py-4 z-[101]">
                         <div class="flex items-center justify-center gap-5 max-w-xs mx-auto">
-                            @foreach([['default','A','#ffffff','#3e3e3e'],['sepia','A','#f4ecd8','#5b4636'],['dark','A','#1a1a2e','#e0e0e0']] as [$tv,$tl,$tbg,$tc])
+                            @foreach([['default','A','#ffffff','#3e3e3e'],['sepia','A','#f5edd8','#1c1008'],['dark','A','#030712','#f9fafb']] as [$tv,$tl,$tbg,$tc])
                             <button type="button" @pointerup.stop.prevent="pickTheme('{{ $tv }}')" class="flex flex-col items-center gap-1.5 touch-manipulation">
-                                <span class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold transition-all"
+                                <span class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold transition-all border-2 border-border"
                                       style="background-color:{{ $tbg }};color:{{ $tc }}"
-                                      :style="readerTheme==='{{ $tv }}'?'border:3px solid var(--color-accent);transform:scale(1.1)':'border:2px solid #d1d5db'">{{ $tl }}</span>
-                                <span class="text-[10px] font-semibold capitalize" :style="readerTheme==='{{ $tv }}'?'color:var(--color-accent)':readerTheme==='dark'?'color:#8888aa':'color:#6b7280'">{{ $tv }}</span>
+                                      :class="readerTheme==='{{ $tv }}'&&'!border-accent !border-3 scale-110'">{{ $tl }}</span>
+                                <span class="text-[10px] font-semibold capitalize text-muted-text" :class="readerTheme==='{{ $tv }}'&&'!text-accent'">{{ $tv }}</span>
                             </button>
                             @endforeach
                         </div>
@@ -1141,41 +1122,35 @@
                 </template>
 
                 {{-- Bottom toolbar --}}
-                <div class="shrink-0 border-t safe-area-bottom" :class="{'pointer-events-none':shelfTapLock}"
-                     :style="readerTheme==='default'?'background-color:#ffffff;border-color:#e5e7eb':readerTheme==='sepia'?'background-color:#ede3cc;border-color:#d4c5a9':'background-color:#16162a;border-color:#2a2a4a'">
+                <div class="shrink-0 border-t border-border bg-card safe-area-bottom" :class="{'pointer-events-none':shelfTapLock}">
                     <div class="flex items-center justify-around h-16 max-w-lg mx-auto px-2">
-                        <button type="button" @click="closeFullscreen()" class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition touch-manipulation"
-                                :style="readerTheme==='sepia'?'color:#8b5e3c':readerTheme==='dark'?'color:#7b9fff':'color:var(--color-accent)'">
+                        <button type="button" @click="closeFullscreen()" class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition touch-manipulation text-accent">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                             <span class="text-[9px] font-semibold uppercase tracking-wider">{{ __('app.close') }}</span>
                         </button>
                         <button type="button" @click="setFontSize(fontSize-2)" :disabled="fontSize<=12" :class="fontSize<=12?'opacity-30 cursor-not-allowed':''"
-                                class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition touch-manipulation"
-                                :style="fontSize>12?(readerTheme==='sepia'?'color:#5b4636':readerTheme==='dark'?'color:#c0c0d0':''):''">
+                                class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition touch-manipulation text-secondary">
                             <span class="text-base font-bold leading-none">A</span>
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2.5" d="M5 12h14"/></svg>
                         </button>
                         <div class="flex flex-col items-center gap-0.5 px-1">
-                            <span class="text-sm font-bold tabular-nums" x-text="fontSize"
-                                  :style="readerTheme==='sepia'?'color:#3e2c1c':readerTheme==='dark'?'color:#f0f0f0':'color:var(--color-primary)'"></span>
-                            <span class="text-[8px] font-semibold uppercase tracking-wider"
-                                  :style="readerTheme==='sepia'?'color:#8b7355':readerTheme==='dark'?'color:#8888aa':'color:var(--color-muted-text)'">{{ __('app.font_size') }}</span>
+                            <span class="text-sm font-bold tabular-nums text-primary" x-text="fontSize"></span>
+                            <span class="text-[8px] font-semibold uppercase tracking-wider text-muted-text">{{ __('app.font_size') }}</span>
                         </div>
                         <button type="button" @click="setFontSize(fontSize+2)" :disabled="fontSize>=28" :class="fontSize>=28?'opacity-30 cursor-not-allowed':''"
-                                class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition touch-manipulation"
-                                :style="fontSize<28?(readerTheme==='sepia'?'color:#5b4636':readerTheme==='dark'?'color:#c0c0d0':''):''">
+                                class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition touch-manipulation text-secondary">
                             <span class="text-xl font-bold leading-none">A</span>
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2.5" d="M12 5v14m-7-7h14"/></svg>
                         </button>
                         <button type="button" @pointerup.stop.prevent="toggleShelf('theme')"
-                                class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition touch-manipulation"
-                                :style="readerTheme==='sepia'?(activeShelf==='theme'?'color:#8b5e3c;background-color:#d4c5a9':'color:#5b4636'):readerTheme==='dark'?(activeShelf==='theme'?'color:#7b9fff;background-color:#2a2a4a':'color:#c0c0d0'):(activeShelf==='theme'?'color:var(--color-accent)':'')">
+                                class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition touch-manipulation text-secondary"
+                                :class="activeShelf==='theme'&&'!text-accent bg-muted'">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
                             <span class="text-[9px] font-semibold uppercase tracking-wider">{{ __('app.reader_theme') }}</span>
                         </button>
                         <button type="button" @pointerup.stop.prevent="toggleShelf('font')"
-                                class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition touch-manipulation"
-                                :style="readerTheme==='sepia'?(activeShelf==='font'?'color:#8b5e3c;background-color:#d4c5a9':'color:#5b4636'):readerTheme==='dark'?(activeShelf==='font'?'color:#7b9fff;background-color:#2a2a4a':'color:#c0c0d0'):(activeShelf==='font'?'color:var(--color-accent)':'')">
+                                class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition touch-manipulation text-secondary"
+                                :class="activeShelf==='font'&&'!text-accent bg-muted'">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg>
                             <span class="text-[9px] font-semibold uppercase tracking-wider">Font</span>
                         </button>
