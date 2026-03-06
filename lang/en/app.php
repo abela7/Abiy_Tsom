@@ -404,6 +404,8 @@ return [
     'whatsapp_confirmation_go_back_message' => "You can now go back to the website using the following link:\n:url\n\nAlternatively, you can access all the contents easily through our Telegram bot:\n:telegram_url",
     'whatsapp_confirmation_rejected_message' => 'Okay, WhatsApp reminders are not activated. You can enable them anytime from Settings.',
     'whatsapp_daily_reminder_header' => 'Hello :baptism_name. Today is day :day of the 55 great lent days.',
+    'whatsapp_daily_reminder_yearly_block' => "Today, on :gregorian_date or :ethiopian_date, the following yearly feasts are:\n\n:yearly_commemorations_bullets",
+    'whatsapp_daily_reminder_monthly_block' => "Also, the following monthly feasts are:\n\n:monthly_commemorations_bullets",
     'whatsapp_daily_reminder_content' => "Open today's content:\n:url",
 
     // WhatsApp Settings (Admin)
@@ -591,6 +593,8 @@ return [
     'whatsapp_template_saved' => 'WhatsApp templates saved successfully.',
     'whatsapp_template_daily_header' => 'Daily Reminder Header',
     'whatsapp_template_daily_content' => 'Daily Reminder Content',
+    'whatsapp_template_daily_yearly_block' => 'Daily Yearly Commemorations Block',
+    'whatsapp_template_daily_monthly_block' => 'Daily Monthly Commemorations Block',
     'whatsapp_template_confirm_prompt' => 'Confirmation Prompt',
     'whatsapp_template_invalid_reply' => 'Invalid Reply Prompt',
     'whatsapp_template_confirmed_notice' => 'Confirmed Notice',
@@ -846,7 +850,7 @@ return [
     // Lectionary (ግጻዌ)
     'lectionary_admin_title'   => 'Lectionary (ግጻዌ)',
     'lectionary_nav'           => 'Lectionary',
-    'lectionary_progress'      => ':count / 390 days filled',
+    'lectionary_progress'      => ':count / 365 days filled',
     'lectionary_select_prompt' => 'Select a month and day to view or enter readings.',
     'lectionary_no_entry'      => 'No readings entered for this day yet.',
     'lectionary_add'           => 'Add Readings',

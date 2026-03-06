@@ -22,9 +22,9 @@ $labelClass = 'block text-xs font-medium text-muted-text mb-1';
         <div class="w-28 text-right">
             <div class="h-2 rounded-full bg-muted overflow-hidden mt-1">
                 <div class="h-full bg-accent rounded-full transition-all duration-500"
-                     style="width: {{ min(100, round($totalCount / 390 * 100)) }}%"></div>
+                     style="width: {{ min(100, round($totalCount / 365 * 100)) }}%"></div>
             </div>
-            <p class="text-[11px] text-muted-text mt-1">{{ round($totalCount / 390 * 100) }}%</p>
+            <p class="text-[11px] text-muted-text mt-1">{{ round($totalCount / 365 * 100) }}%</p>
         </div>
     </div>
 

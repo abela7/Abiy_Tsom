@@ -181,6 +181,7 @@
             yearly_commemorations_bullets: "- St. Abba A\n- St. Martyr B",
             monthly_commemorations: 'St. Monthly A, St. Monthly B, St. Monthly C',
             monthly_commemorations_bullets: "- St. Monthly A\n- St. Monthly B\n- St. Monthly C",
+            commemorations_block: "Today, on March 5 or Yekatit 26, the following yearly feasts are:\n\n- St. Abba A\n- St. Martyr B\n\nAlso, the following monthly feasts are:\n\n- St. Monthly A\n- St. Monthly B\n- St. Monthly C",
             bible_reference: 'Acts 25:13-end',
         },
         am: {
@@ -200,6 +201,7 @@
             yearly_commemorations_bullets: "- Kidus A\n- Kidus B",
             monthly_commemorations: 'Werhawi Kidusan A, Werhawi Kidusan B, Werhawi Kidusan C',
             monthly_commemorations_bullets: "- Werhawi Kidusan A\n- Werhawi Kidusan B\n- Werhawi Kidusan C",
+            commemorations_block: "Zare March 5 weyim Yekatit 26 qen yemikeberu ametawi bealat:\n\n- Kidus A\n- Kidus B\n\nEndihum werhawi bealat:\n\n- Werhawi Kidusan A\n- Werhawi Kidusan B\n- Werhawi Kidusan C",
             bible_reference: 'Hawaryat Sira 25:13-f.m.',
         }
     };
