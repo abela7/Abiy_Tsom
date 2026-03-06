@@ -407,10 +407,25 @@
                         <div class="grid gap-4 md:grid-cols-2">
                             {{-- English editor --}}
                             <div>
-                                <label for="tpl-en-{{ $template['key'] }}" class="flex items-center gap-2 mb-2 text-sm font-semibold text-primary">
-                                    <span class="flex h-5 w-5 items-center justify-center rounded bg-blue-500/10 text-[10px] font-bold text-blue-600 dark:text-blue-400">EN</span>
-                                    {{ __('app.whatsapp_template_en_label') }}
-                                </label>
+                                <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+                                    <label for="tpl-en-{{ $template['key'] }}" class="flex items-center gap-2 text-sm font-semibold text-primary">
+                                        <span class="flex h-5 w-5 items-center justify-center rounded bg-blue-500/10 text-[10px] font-bold text-blue-600 dark:text-blue-400">EN</span>
+                                        {{ __('app.whatsapp_template_en_label') }}
+                                    </label>
+                                    @if($template['key'] === 'whatsapp_daily_reminder_content')
+                                        <div class="flex flex-wrap gap-1.5">
+                                            @foreach([':header_en', ':commemorations_block_en', ':footer_en'] as $placeholder)
+                                                <button
+                                                    type="button"
+                                                    @click.prevent="insertPlaceholder('{{ $placeholder }}')"
+                                                    class="inline-flex items-center rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-mono font-medium text-primary transition hover:border-accent hover:bg-accent/10 hover:text-accent"
+                                                >
+                                                    {{ $placeholder }}
+                                                </button>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                </div>
                                 <textarea
                                     id="tpl-en-{{ $template['key'] }}"
                                     name="templates[{{ $template['key'] }}][en]"
@@ -425,10 +440,25 @@
 
                             {{-- Amharic editor --}}
                             <div>
-                                <label for="tpl-am-{{ $template['key'] }}" class="flex items-center gap-2 mb-2 text-sm font-semibold text-primary">
-                                    <span class="flex h-5 w-5 items-center justify-center rounded bg-emerald-500/10 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">AM</span>
-                                    {{ __('app.whatsapp_template_am_label') }}
-                                </label>
+                                <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+                                    <label for="tpl-am-{{ $template['key'] }}" class="flex items-center gap-2 text-sm font-semibold text-primary">
+                                        <span class="flex h-5 w-5 items-center justify-center rounded bg-emerald-500/10 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">AM</span>
+                                        {{ __('app.whatsapp_template_am_label') }}
+                                    </label>
+                                    @if($template['key'] === 'whatsapp_daily_reminder_content')
+                                        <div class="flex flex-wrap gap-1.5">
+                                            @foreach([':header_am', ':commemorations_block_am', ':footer_am'] as $placeholder)
+                                                <button
+                                                    type="button"
+                                                    @click.prevent="insertPlaceholder('{{ $placeholder }}')"
+                                                    class="inline-flex items-center rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-mono font-medium text-primary transition hover:border-accent hover:bg-accent/10 hover:text-accent"
+                                                >
+                                                    {{ $placeholder }}
+                                                </button>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                </div>
                                 <textarea
                                     id="tpl-am-{{ $template['key'] }}"
                                     name="templates[{{ $template['key'] }}][am]"
