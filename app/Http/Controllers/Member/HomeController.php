@@ -229,8 +229,8 @@ class HomeController extends Controller
             ->where('is_published', true)
             ->first();
 
-        $lectionary = Lectionary::where('month', $ethDateInfo['month'])
-            ->where('day', $ethDateInfo['day'])
+        $lectionary = Lectionary::where('month', $ethDateInfo['ethiopian_date']['month'])
+            ->where('day', $ethDateInfo['ethiopian_date']['day'])
             ->first();
 
         return view('member.day', compact('member', 'daily', 'activities', 'checklist', 'customActivities', 'customChecklist', 'ethDateInfo', 'prevDay', 'nextDay', 'lectionary'));
