@@ -818,8 +818,8 @@
                     this.openSections = this.openSections.filter(k => k !== key);
                     this.allExpanded = false;
                 } else {
-                    this.openSections.push(key);
-                    if (this.openSections.length === this.availableKeys.length) this.allExpanded = true;
+                    if (this.allExpanded) { this.openSections.push(key); }
+                    else { this.openSections = [key]; }
                     this.$nextTick(() => {
                         const el = this.$refs['sec_' + key];
                         if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -836,8 +836,8 @@
                     this.fsOpenSections = this.fsOpenSections.filter(k => k !== key);
                     this.fsAllExpanded = false;
                 } else {
-                    this.fsOpenSections.push(key);
-                    if (this.fsOpenSections.length === this.availableKeys.length) this.fsAllExpanded = true;
+                    if (this.fsAllExpanded) { this.fsOpenSections.push(key); }
+                    else { this.fsOpenSections = [key]; }
                     this.$nextTick(() => {
                         const el = this.$refs['fssec_' + key];
                         if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
