@@ -87,6 +87,8 @@ class DailyContentController extends Controller
         $customChecklist = collect();
         $publicPreview = true;
         $backUrl = route('admin.daily.index');
+        $prevDay = null;
+        $nextDay = null;
 
         return view('member.day', compact(
             'member',
@@ -98,6 +100,8 @@ class DailyContentController extends Controller
             'publicPreview',
             'backUrl',
             'ethDateInfo',
+            'prevDay',
+            'nextDay',
         ));
     }
 
