@@ -307,8 +307,8 @@ $monthEmpty    = $maxDay - count($filledDays);
                         @endif
                     </span>
                     <div>
-                        <span class="text-sm font-semibold text-primary">{{ __('app.lectionary_pauline') }}</span>
-                        <span class="text-xs text-muted-text ml-1.5">{{ __('app.lectionary_pauline_am') }}</span>
+                        <span class="text-sm font-semibold text-primary">መልእክት አንድ</span>
+                        <span class="text-xs text-muted-text ml-1.5">የጳውሎስ መልእክት</span>
                     </div>
                 </div>
                 <svg class="w-4 h-4 text-muted-text transition-transform duration-200 shrink-0" :class="open ? 'rotate-180' : ''"
@@ -389,8 +389,8 @@ $monthEmpty    = $maxDay - count($filledDays);
                         @endif
                     </span>
                     <div>
-                        <span class="text-sm font-semibold text-primary">{{ __('app.lectionary_catholic') }}</span>
-                        <span class="text-xs text-muted-text ml-1.5">{{ __('app.lectionary_catholic_am') }}</span>
+                        <span class="text-sm font-semibold text-primary">መልእክት ሁለት</span>
+                        <span class="text-xs text-muted-text ml-1.5">ካቶሊካዊ መልእክት</span>
                     </div>
                 </div>
                 <svg class="w-4 h-4 text-muted-text transition-transform duration-200 shrink-0" :class="open ? 'rotate-180' : ''"
