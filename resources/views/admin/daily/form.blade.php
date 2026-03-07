@@ -374,14 +374,8 @@
                         </button>
                         <div x-show="open" x-transition class="divide-y divide-border/50">
                             @foreach($recentMezmurs as $rm)
-                            @php
-                                $rmTitle = $locale === 'en'
-                                    ? (($rm['title_en'] ?? '') ?: ($rm['title_am'] ?? '-'))
-                                    : (($rm['title_am'] ?? '') ?: ($rm['title_en'] ?? '-'));
-                                $rmUrl = $locale === 'en'
-                                    ? (($rm['url_en'] ?? '') ?: ($rm['url_am'] ?? '') ?: ($rm['url'] ?? ''))
-                                    : (($rm['url_am'] ?? '') ?: ($rm['url_en'] ?? '') ?: ($rm['url'] ?? ''));
-                            @endphp
+                            @php($rmTitle = $locale === 'en' ? (($rm['title_en'] ?? '') ?: ($rm['title_am'] ?? '-')) : (($rm['title_am'] ?? '') ?: ($rm['title_en'] ?? '-')))
+                            @php($rmUrl = $locale === 'en' ? (($rm['url_en'] ?? '') ?: ($rm['url_am'] ?? '') ?: ($rm['url'] ?? '')) : (($rm['url_am'] ?? '') ?: ($rm['url_en'] ?? '') ?: ($rm['url'] ?? '')))
                             <div class="flex items-center gap-3 px-4 py-3 bg-card hover:bg-muted/40 transition">
                                 <div class="flex-1 min-w-0">
                                     <p class="text-sm font-medium text-primary truncate">{{ $rmTitle }}</p>
