@@ -476,23 +476,24 @@
         {{-- Saint images carousel --}}
         @if($hasSinksarImages)
         <div class="px-4 pb-3"
-             x-data="{
+             x-data='{
                 imgCurrent: 0,
                 imgTotal: {{ $sinksarImages->count() }},
                 _touchX: 0, _touchY: 0,
                 _autoTimer: null,
                 imgNext() { this.imgCurrent = (this.imgCurrent + 1) % this.imgTotal; },
                 imgPrev() { this.imgCurrent = (this.imgCurrent - 1 + this.imgTotal) % this.imgTotal; },
-                startAuto() { this._autoTimer = setInterval(() => this.imgNext(), 3000); },
+                startAuto() { this.stopAuto(); this._autoTimer = setInterval(() => this.imgNext(), 3000); },
                 stopAuto() { if (this._autoTimer) { clearInterval(this._autoTimer); this._autoTimer = null; } },
                 imgTouchStart(e) { this.stopAuto(); this._touchX = e.touches[0].clientX; this._touchY = e.touches[0].clientY; },
                 imgTouchEnd(e) {
                     var dx = e.changedTouches[0].clientX - this._touchX;
                     var dy = e.changedTouches[0].clientY - this._touchY;
-                    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) { dx < 0 ? this.imgNext() : this.imgPrev(); }
+                    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) { dx > 0 ? this.imgPrev() : this.imgNext(); }
+                    this.startAuto();
                 },
                 init() { if (this.imgTotal > 1) this.startAuto(); }
-             }">
+             }'>
 
             <div class="relative rounded-xl overflow-hidden"
                  style="aspect-ratio:4/3;background:#1a1a2e"
@@ -526,18 +527,18 @@
 
             @if($sinksarImages->count() > 1)
             <div class="flex items-center justify-center gap-2 mt-2">
-                <button type="button" @click="stopAuto(); imgPrev()" class="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-muted-text hover:text-primary transition touch-manipulation">
+                <button type="button" @click="imgPrev(); startAuto()" class="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-muted-text hover:text-primary transition touch-manipulation">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
                 </button>
                 <div class="flex items-center gap-1">
                     @foreach($sinksarImages as $idx => $img)
-                    <button type="button" @click="stopAuto(); imgCurrent = {{ $idx }}"
+                    <button type="button" @click="imgCurrent = {{ $idx }}; startAuto()"
                             class="transition-all duration-300 touch-manipulation"
                             :class="imgCurrent === {{ $idx }} ? 'w-4 h-1.5 rounded-full bg-sinksar' : 'w-1.5 h-1.5 rounded-full bg-border hover:bg-muted-text'">
                     </button>
                     @endforeach
                 </div>
-                <button type="button" @click="stopAuto(); imgNext()" class="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-muted-text hover:text-primary transition touch-manipulation">
+                <button type="button" @click="imgNext(); startAuto()" class="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-muted-text hover:text-primary transition touch-manipulation">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
                 </button>
             </div>
@@ -1433,11 +1434,43 @@
     </div>
     @endif
 
-    {{-- Reflection --}}
+    {{-- Daily Message --}}
     @if(localized($daily, 'reflection'))
-    <div class="bg-reflection-bg border border-reflection-border rounded-2xl p-4">
-        <h3 class="font-semibold text-sm text-primary mb-2">{{ __('app.reflection') }}</h3>
-        <p class="text-sm text-secondary leading-relaxed">{{ localized($daily, 'reflection') }}</p>
+    @php
+        $msgTitle = localized($daily, 'reflection_title');
+        $msgText  = localized($daily, 'reflection');
+    @endphp
+    <div class="relative bg-reflection-bg border border-reflection-border rounded-2xl overflow-hidden">
+        {{-- Top accent bar --}}
+        <div class="h-1 w-full bg-gradient-to-r from-accent-secondary/60 via-accent-secondary to-accent-secondary/60"></div>
+
+        <div class="px-5 pt-4 pb-5">
+            {{-- Label row --}}
+            <div class="flex items-center gap-2 mb-3">
+                <svg class="w-3.5 h-3.5 text-accent-secondary shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm0 3a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm0 5a1 1 0 011 1v6a1 1 0 11-2 0v-6a1 1 0 011-1z"/>
+                </svg>
+                <span class="text-[11px] font-bold tracking-widest uppercase text-accent-secondary">{{ __('app.daily_message') }}</span>
+            </div>
+
+            {{-- Large decorative opening quote --}}
+            <div class="relative">
+                <span class="absolute -top-2 -left-1 text-6xl leading-none text-accent-secondary/20 font-serif select-none" aria-hidden="true">"</span>
+
+                {{-- Title (optional) --}}
+                @if(filled($msgTitle))
+                <h3 class="text-base font-bold text-primary mb-2 pl-5">{{ $msgTitle }}</h3>
+                @endif
+
+                {{-- Message body --}}
+                <div class="pl-5 pr-2">
+                    <p class="text-sm text-secondary leading-relaxed whitespace-pre-line">{{ $msgText }}</p>
+                </div>
+
+                {{-- Closing quote --}}
+                <span class="block text-right text-6xl leading-none text-accent-secondary/20 font-serif select-none -mt-4 -mr-1" aria-hidden="true">"</span>
+            </div>
+        </div>
     </div>
     @endif
 

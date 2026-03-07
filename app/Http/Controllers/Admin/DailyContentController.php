@@ -241,6 +241,8 @@ class DailyContentController extends Controller
                 'sinksar_description_am' => $source->sinksar_description_am ?? '',
                 'reflection_en' => $source->reflection_en ?? '',
                 'reflection_am' => $source->reflection_am ?? '',
+                'reflection_title_en' => $source->reflection_title_en ?? '',
+                'reflection_title_am' => $source->reflection_title_am ?? '',
                 'mezmurs' => $mezmurs,
                 'references' => $references,
                 'books' => $books,
@@ -422,6 +424,8 @@ class DailyContentController extends Controller
                 $request->validate([
                     'reflection_en' => ['nullable', 'string'],
                     'reflection_am' => ['nullable', 'string'],
+                    'reflection_title_en' => ['nullable', 'string', 'max:255'],
+                    'reflection_title_am' => ['nullable', 'string', 'max:255'],
                     'references' => ['nullable', 'array'],
                     'references.*.name_en' => ['nullable', 'string', 'max:255'],
                     'references.*.name_am' => ['nullable', 'string', 'max:255'],
@@ -432,6 +436,8 @@ class DailyContentController extends Controller
                 $updates = [
                     'reflection_en' => $request->input('reflection_en'),
                     'reflection_am' => $request->input('reflection_am'),
+                    'reflection_title_en' => $request->input('reflection_title_en'),
+                    'reflection_title_am' => $request->input('reflection_title_am'),
                 ];
                 $this->syncReferences($daily, $this->parseReferences($request));
                 break;
@@ -689,6 +695,8 @@ class DailyContentController extends Controller
             'books.*.description_am' => ['nullable', 'string'],
             'reflection_en' => ['nullable', 'string'],
             'reflection_am' => ['nullable', 'string'],
+            'reflection_title_en' => ['nullable', 'string', 'max:255'],
+            'reflection_title_am' => ['nullable', 'string', 'max:255'],
             'references' => ['nullable', 'array'],
             'references.*.name_en' => ['nullable', 'string', 'max:255'],
             'references.*.name_am' => ['nullable', 'string', 'max:255'],

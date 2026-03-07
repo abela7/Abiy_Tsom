@@ -128,6 +128,7 @@ return [
     'download' => 'አውርድ',
     'get_book' => 'መጽሐፉን ያግኙ',
     'reflection' => 'ዕለታዊ ነጸብራቅ',
+    'daily_message' => 'ዕለታዊ መልእክት',
     'listen' => 'አዳምጥ',
     'watch' => 'ይመልከቱ',
     'open_in_youtube' => 'በዩቲዩብ ይክፈሉ',

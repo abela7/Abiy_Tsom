@@ -38,6 +38,8 @@ class DailyContent extends Model
         'sinksar_description_am',
         'reflection_en',
         'reflection_am',
+        'reflection_title_en',
+        'reflection_title_am',
         'is_published',
         'created_by_id',
         'updated_by_id',

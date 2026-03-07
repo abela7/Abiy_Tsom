@@ -119,6 +119,7 @@ return [
     'spiritual_book' => 'Spiritual Book',
     'read_now' => 'Read Now',
     'reflection' => 'Daily Reflection',
+    'daily_message' => 'Daily Message',
     'listen' => 'Listen',
     'watch' => 'Watch',
     'open_in_youtube' => 'Open in YouTube',

@@ -107,6 +107,8 @@
         'books' => $initialBooks,
         'reflection_am' => old('reflection_am', $daily->reflection_am ?? ''),
         'reflection_en' => old('reflection_en', $daily->reflection_en ?? ''),
+        'reflection_title_am' => old('reflection_title_am', $daily->reflection_title_am ?? ''),
+        'reflection_title_en' => old('reflection_title_en', $daily->reflection_title_en ?? ''),
         'is_published' => (bool) old('is_published', $daily->is_published ?? false),
         'mezmurs' => $initialMezmurs,
         'references' => $initialReferences,
@@ -587,12 +589,16 @@
                         <p class="text-xs font-semibold text-muted-text">{{ __('app.reflection_label') }}</p>
                         <div class="space-y-2 rounded-lg bg-muted border border-border p-3">
                             <p class="text-xs font-semibold text-accent-secondary">{{ __('app.amharic') }}</p>
-                            <label class="block text-sm font-medium text-secondary">{{ __('app.reflection_label') }}</label>
+                            <label class="block text-sm font-medium text-secondary">{{ __('app.reflection_title_label') ?? 'Title (optional)' }}</label>
+                            <input type="text" x-model="form.reflection_title_am" placeholder="e.g. ስለ ጸሎት" class="w-full px-4 py-2.5 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                            <label class="block text-sm font-medium text-secondary mt-2">{{ __('app.reflection_label') }}</label>
                             <textarea x-model="form.reflection_am" rows="4" placeholder="{{ __('app.amharic_default') }}" class="w-full min-h-[6rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
                         </div>
                         <div class="space-y-2 rounded-lg bg-muted border border-border p-3">
                             <p class="text-xs font-semibold text-accent-secondary">{{ __('app.english') }}</p>
-                            <label class="block text-sm font-medium text-secondary">{{ __('app.reflection_label') }}</label>
+                            <label class="block text-sm font-medium text-secondary">{{ __('app.reflection_title_label') ?? 'Title (optional)' }}</label>
+                            <input type="text" x-model="form.reflection_title_en" placeholder="e.g. About Prayer" class="w-full px-4 py-2.5 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                            <label class="block text-sm font-medium text-secondary mt-2">{{ __('app.reflection_label') }}</label>
                             <textarea x-model="form.reflection_en" rows="4" placeholder="{{ __('app.english_fallback') }}" class="w-full min-h-[6rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
                         </div>
                     </div>
@@ -1034,6 +1040,8 @@
                             this.form.sinksar_description_am = data.sinksar_description_am ?? '';
                             this.form.reflection_en = data.reflection_en ?? '';
                             this.form.reflection_am = data.reflection_am ?? '';
+                            this.form.reflection_title_en = data.reflection_title_en ?? '';
+                            this.form.reflection_title_am = data.reflection_title_am ?? '';
                             this.form.mezmurs = Array.isArray(data.mezmurs) && data.mezmurs.length > 0
                                 ? data.mezmurs.map((m) => ({
                                     title_en: m.title_en ?? '',
@@ -1229,6 +1237,8 @@
                         } else if (step === 6) {
                             payload.reflection_am = this.form.reflection_am;
                             payload.reflection_en = this.form.reflection_en;
+                            payload.reflection_title_am = this.form.reflection_title_am;
+                            payload.reflection_title_en = this.form.reflection_title_en;
                             payload.references = (this.form.references || []).map((item) => ({
                                 name_en: item.name_en || '',
                                 name_am: item.name_am || '',
