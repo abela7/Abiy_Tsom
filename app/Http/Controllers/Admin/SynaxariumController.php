@@ -168,6 +168,8 @@ class SynaxariumController extends Controller
     public function updateAnnual(Request $request, EthiopianSynaxariumAnnual $annual): RedirectResponse
     {
         $data = $request->validate([
+            'month' => ['required', 'integer', 'min:1', 'max:13'],
+            'day' => ['required', 'integer', 'min:1', 'max:30'],
             'celebration_en' => ['required', 'string', 'max:500'],
             'celebration_am' => ['nullable', 'string', 'max:500'],
             'description_en' => ['nullable', 'string', 'max:5000'],
@@ -181,8 +183,8 @@ class SynaxariumController extends Controller
         $data['sort_order'] = $data['sort_order'] ?? $annual->sort_order;
 
         if ($data['is_main']) {
-            EthiopianSynaxariumAnnual::where('month', $annual->month)
-                ->where('day', $annual->day)
+            EthiopianSynaxariumAnnual::where('month', $data['month'])
+                ->where('day', $data['day'])
                 ->where('id', '!=', $annual->id)
                 ->where('is_main', true)
                 ->update(['is_main' => false]);
