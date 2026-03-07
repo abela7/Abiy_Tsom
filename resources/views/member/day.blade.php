@@ -1440,22 +1440,30 @@
         $msgTitle = localized($daily, 'reflection_title');
         $msgText  = localized($daily, 'reflection');
     @endphp
-    <div class="bg-card rounded-2xl shadow-sm border border-border p-4" x-data="{ expanded: false }">
-        <div class="flex items-center gap-2 mb-2">
-            <svg class="w-4 h-4 text-accent-secondary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            <span class="text-[11px] font-semibold tracking-wide uppercase text-accent-secondary">{{ __('app.daily_message') }}</span>
-        </div>
+    <div class="bg-card rounded-2xl shadow-sm border border-border p-4 text-center" x-data="{ expanded: false }">
+        {{-- Label --}}
+        <span class="text-[10px] font-semibold tracking-widest uppercase text-accent-secondary">{{ __('app.daily_message') }}</span>
 
+        {{-- Title --}}
         @if(filled($msgTitle))
-        <h3 class="text-[15px] font-bold text-primary mb-1.5">{{ $msgTitle }}</h3>
+        <h3 class="text-base font-bold text-primary mt-1">{{ $msgTitle }}</h3>
         @endif
 
-        <div class="relative" :class="!expanded && 'max-h-24 overflow-hidden'">
-            <p class="text-[13px] text-secondary leading-relaxed whitespace-pre-line">{{ $msgText }}</p>
-            <div x-show="!expanded" class="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-card to-transparent pointer-events-none"></div>
+        {{-- Divider --}}
+        <div class="flex items-center justify-center gap-2 my-2.5">
+            <span class="block w-8 h-px bg-accent-secondary/30"></span>
+            <svg class="w-3.5 h-3.5 text-accent-secondary/50" viewBox="0 0 24 24" fill="currentColor"><path d="M6 17h3l2-4V7H5v6h3zm8 0h3l2-4V7h-6v6h3z"/></svg>
+            <span class="block w-8 h-px bg-accent-secondary/30"></span>
         </div>
 
-        <button @click="expanded = !expanded" class="mt-2 text-[12px] font-medium text-accent-secondary hover:underline">
+        {{-- Message body --}}
+        <div class="relative text-left" :class="!expanded && 'max-h-24 overflow-hidden'">
+            <p class="text-[13px] text-secondary leading-relaxed whitespace-pre-line italic">{{ $msgText }}</p>
+            <div x-show="!expanded" class="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-card to-transparent pointer-events-none"></div>
+        </div>
+
+        {{-- Read more --}}
+        <button @click="expanded = !expanded" class="mt-2 text-[12px] font-medium text-accent-secondary">
             <span x-text="expanded ? '{{ __('app.show_less') }}' : '{{ __('app.read_more') }}'"></span>
         </button>
     </div>
