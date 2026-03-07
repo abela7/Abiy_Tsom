@@ -499,7 +499,7 @@
                  @touchstart.passive="imgTouchStart($event)"
                  @touchend.passive="imgTouchEnd($event)">
                 @foreach($sinksarImages as $idx => $img)
-                <div class="absolute inset-0 relative overflow-hidden flex items-center justify-center transition-all duration-500 ease-out"
+                <div class="absolute inset-0 overflow-hidden flex items-center justify-center transition-all duration-500 ease-out"
                      :style="imgCurrent === {{ $idx }}
                          ? 'opacity:1;transform:translateX(0);z-index:10'
                          : {{ $idx }} > imgCurrent
@@ -741,7 +741,7 @@
                              @touchstart.passive="fsTouchStart($event)"
                              @touchend.passive="fsTouchEnd($event)">
                             @foreach($sinksarImages as $idx => $img)
-                            <div class="absolute inset-0 relative overflow-hidden flex items-center justify-center transition-all duration-500 ease-out"
+                            <div class="absolute inset-0 overflow-hidden flex items-center justify-center transition-all duration-500 ease-out"
                                  :style="fsCurrent === {{ $idx }}
                                      ? 'opacity:1;transform:translateX(0);z-index:10'
                                      : {{ $idx }} > fsCurrent
