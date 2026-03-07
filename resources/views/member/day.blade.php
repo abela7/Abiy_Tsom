@@ -967,11 +967,17 @@
          'chapter'=>$lectionary->mesbak_psalm,'verses'=>$lectionary->mesbak_verses,
          'text'   =>null,'has'=>filled($lectionary->mesbak_psalm)],
         ['key'=>'gospel','num'=>5,'label_key'=>'app.lectionary_gospel',
+         'label'  =>$locale==='am'
+             ? (filled($lectionary->gospel_book_am) ? 'የ'.$lectionary->gospel_book_am.' ወንጌል' : __('app.lectionary_gospel'))
+             : (filled($lectionary->gospel_book_en) ? $lectionary->gospel_book_en.' Gospel'    : __('app.lectionary_gospel')),
          'book'   =>$locale==='am'?$lectionary->gospel_book_am:$lectionary->gospel_book_en,
          'chapter'=>$lectionary->gospel_chapter,'verses'=>$lectionary->gospel_verses,
          'text'   =>$locale==='am'?$lectionary->gospel_text_am:$lectionary->gospel_text_en,
          'has'    =>filled($lectionary->gospel_book_am)||filled($lectionary->gospel_chapter)],
         ['key'=>'qiddase','num'=>6,'label_key'=>'app.lectionary_qiddase',
+         'label'  =>$locale==='am'
+             ? (filled($lectionary->qiddase_am) ? $lectionary->qiddase_am : __('app.lectionary_qiddase'))
+             : (filled($lectionary->qiddase_en) ? $lectionary->qiddase_en : __('app.lectionary_qiddase')),
          'book'   =>null,'chapter'=>null,'verses'=>null,
          'text'   =>$locale==='am'?$lectionary->qiddase_am:$lectionary->qiddase_en,
          'has'    =>filled($lectionary->qiddase_am)||filled($lectionary->qiddase_en)],
@@ -1059,7 +1065,7 @@
                 <div class="flex items-center px-3 py-2.5 gap-2">
                     <span class="text-xs font-bold text-muted-text w-4 shrink-0">{{ $r['num'] }}</span>
                     <div class="min-w-0">
-                        <span class="text-xs font-semibold text-primary">{{ __($r['label_key']) }}</span>
+                        <span class="text-xs font-semibold text-primary">{{ $r['label'] ?? __($r['label_key']) }}</span>
                         @if(filled($r['book']))
                         <span class="text-[11px] text-muted-text ml-1.5">{{ $r['book'] }}{{ filled($r['chapter']) ? ' '.$r['chapter'] : '' }}{{ filled($r['verses']) ? ':'.$r['verses'] : '' }}</span>
                         @endif
@@ -1132,7 +1138,7 @@
                                       :class="isSectionOpen('{{ $r['key'] }}') ? 'bg-accent text-on-accent' : 'bg-muted text-muted-text'">{{ $r['num'] }}</span>
                                 <div>
                                     <span class="text-sm font-semibold transition-colors duration-200"
-                                          :class="isSectionOpen('{{ $r['key'] }}') ? 'text-accent' : 'text-primary'">{{ __($r['label_key']) }}</span>
+                                          :class="isSectionOpen('{{ $r['key'] }}') ? 'text-accent' : 'text-primary'">{{ $r['label'] ?? __($r['label_key']) }}</span>
                                     @if(filled($r['book']))
                                     <span class="block text-xs text-muted-text mt-0.5">{{ $r['book'] }}{{ filled($r['chapter'])?' '.$r['chapter']:'' }}{{ filled($r['verses'])?':'.$r['verses']:'' }}</span>
                                     @endif
@@ -1222,7 +1228,7 @@
                                     <div>
                                         <span class="text-sm font-bold transition-colors duration-200"
                                               :class="isFsSectionOpen('{{ $r['key'] }}') ? 'text-accent' : 'text-primary'">
-                                            {{ __($r['label_key']) }}
+                                            {{ $r['label'] ?? __($r['label_key']) }}
                                         </span>
                                         @if(filled($r['book']))
                                         <span class="block text-xs mt-0.5 text-muted-text">
