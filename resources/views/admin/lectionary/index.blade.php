@@ -294,8 +294,23 @@ $monthEmpty    = $maxDay - count($filledDays);
         </div>
 
         {{-- ── 1. PAULINE ── --}}
+        @php
+            $paulBookAm = old('pauline_book_am', $entry?->pauline_book_am ?? 'ሮሜ');
+            $paulBookEn = old('pauline_book_en', $entry?->pauline_book_en ?? 'Romans');
+        @endphp
         <div class="bg-card rounded-2xl border border-border shadow-sm overflow-hidden"
-             x-data="{ open: {{ $paulineFilled ? 'false' : 'true' }} }">
+             x-data="{
+                 open: {{ $paulineFilled ? 'false' : 'true' }},
+                 books: @json($paulineBooks),
+                 selAm: @js($paulBookAm),
+                 selEn: @js($paulBookEn),
+                 syncBook(am) {
+                     this.selAm = am;
+                     this.selEn = this.books[am] ?? '';
+                     this.$refs.bookAm.value = am;
+                     this.$refs.bookEn.value = this.books[am] ?? '';
+                 }
+             }">
             <button type="button" @click="open = !open"
                     class="w-full flex items-center justify-between px-4 py-3.5 active:bg-muted/30 transition text-left select-none">
                 <div class="flex items-center gap-3">
@@ -307,8 +322,8 @@ $monthEmpty    = $maxDay - count($filledDays);
                         @endif
                     </span>
                     <div>
-                        <span class="text-sm font-semibold text-primary">{{ __('app.lectionary_pauline') }}</span>
-                        <span class="text-xs text-muted-text ml-1.5">{{ __('app.lectionary_pauline_am') }}</span>
+                        <span class="text-sm font-semibold text-primary" x-text="selEn + ' Epistle'"></span>
+                        <span class="text-xs text-muted-text ml-1.5" x-text="selAm + ' መልእክት'"></span>
                     </div>
                 </div>
                 <svg class="w-4 h-4 text-muted-text transition-transform duration-200 shrink-0" :class="open ? 'rotate-180' : ''"
@@ -319,14 +334,7 @@ $monthEmpty    = $maxDay - count($filledDays);
                  x-transition:leave="transition duration-150 ease-in" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
                  class="border-t border-border px-4 pb-4 pt-3 space-y-3">
                 {{-- Book selector --}}
-                @php $paulBookAm = old('pauline_book_am', $entry?->pauline_book_am ?? ''); @endphp
-                <div x-data="{
-                        books: @json($paulineBooks),
-                        syncBook(am) {
-                            this.$refs.bookAm.value = am;
-                            this.$refs.bookEn.value = this.books[am] ?? '';
-                        }
-                     }">
+                <div>
                     <label class="{{ $labelClass }}">{{ __('app.lectionary_book_am') }}</label>
                     <select @change="syncBook($event.target.value)" class="{{ $inputClass }}">
                         <option value="">— መፅሐፍ ምረጥ —</option>
@@ -335,7 +343,7 @@ $monthEmpty    = $maxDay - count($filledDays);
                         @endforeach
                     </select>
                     <input type="hidden" name="pauline_book_am" x-ref="bookAm" value="{{ $paulBookAm }}">
-                    <input type="hidden" name="pauline_book_en" x-ref="bookEn" value="{{ old('pauline_book_en', $entry?->pauline_book_en ?? '') }}">
+                    <input type="hidden" name="pauline_book_en" x-ref="bookEn" value="{{ $paulBookEn }}">
                 </div>
                 {{-- Smart Chapter:Verses reference --}}
                 @php $paulCh = old('pauline_chapter', $entry?->pauline_chapter ?? ''); $paulVs = old('pauline_verses', $entry?->pauline_verses ?? ''); @endphp
@@ -376,8 +384,23 @@ $monthEmpty    = $maxDay - count($filledDays);
         </div>
 
         {{-- ── 2. CATHOLIC ── --}}
+        @php
+            $cathBookAm = old('catholic_book_am', $entry?->catholic_book_am ?? 'ያዕቆብ');
+            $cathBookEn = old('catholic_book_en', $entry?->catholic_book_en ?? 'James');
+        @endphp
         <div class="bg-card rounded-2xl border border-border shadow-sm overflow-hidden"
-             x-data="{ open: {{ $catholicFilled ? 'false' : 'true' }} }">
+             x-data="{
+                 open: {{ $catholicFilled ? 'false' : 'true' }},
+                 books: @json($catholicBooks),
+                 selAm: @js($cathBookAm),
+                 selEn: @js($cathBookEn),
+                 syncBook(am) {
+                     this.selAm = am;
+                     this.selEn = this.books[am] ?? '';
+                     this.$refs.bookAm.value = am;
+                     this.$refs.bookEn.value = this.books[am] ?? '';
+                 }
+             }">
             <button type="button" @click="open = !open"
                     class="w-full flex items-center justify-between px-4 py-3.5 active:bg-muted/30 transition text-left select-none">
                 <div class="flex items-center gap-3">
@@ -389,8 +412,8 @@ $monthEmpty    = $maxDay - count($filledDays);
                         @endif
                     </span>
                     <div>
-                        <span class="text-sm font-semibold text-primary">{{ __('app.lectionary_catholic') }}</span>
-                        <span class="text-xs text-muted-text ml-1.5">{{ __('app.lectionary_catholic_am') }}</span>
+                        <span class="text-sm font-semibold text-primary" x-text="selEn + ' Epistle'"></span>
+                        <span class="text-xs text-muted-text ml-1.5" x-text="selAm + ' መልእክት'"></span>
                     </div>
                 </div>
                 <svg class="w-4 h-4 text-muted-text transition-transform duration-200 shrink-0" :class="open ? 'rotate-180' : ''"
@@ -401,14 +424,7 @@ $monthEmpty    = $maxDay - count($filledDays);
                  x-transition:leave="transition duration-150 ease-in" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
                  class="border-t border-border px-4 pb-4 pt-3 space-y-3">
                 {{-- Book selector --}}
-                @php $cathBookAm = old('catholic_book_am', $entry?->catholic_book_am ?? ''); @endphp
-                <div x-data="{
-                        books: @json($catholicBooks),
-                        syncBook(am) {
-                            this.$refs.bookAm.value = am;
-                            this.$refs.bookEn.value = this.books[am] ?? '';
-                        }
-                     }">
+                <div>
                     <label class="{{ $labelClass }}">{{ __('app.lectionary_book_am') }}</label>
                     <select @change="syncBook($event.target.value)" class="{{ $inputClass }}">
                         <option value="">— መፅሐፍ ምረጥ —</option>
@@ -417,7 +433,7 @@ $monthEmpty    = $maxDay - count($filledDays);
                         @endforeach
                     </select>
                     <input type="hidden" name="catholic_book_am" x-ref="bookAm" value="{{ $cathBookAm }}">
-                    <input type="hidden" name="catholic_book_en" x-ref="bookEn" value="{{ old('catholic_book_en', $entry?->catholic_book_en ?? '') }}">
+                    <input type="hidden" name="catholic_book_en" x-ref="bookEn" value="{{ $cathBookEn }}">
                 </div>
                 {{-- Smart Chapter:Verses reference --}}
                 @php $cathCh = old('catholic_chapter', $entry?->catholic_chapter ?? ''); $cathVs = old('catholic_verses', $entry?->catholic_verses ?? ''); @endphp
