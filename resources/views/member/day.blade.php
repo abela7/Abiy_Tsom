@@ -499,18 +499,24 @@
                  @touchstart.passive="imgTouchStart($event)"
                  @touchend.passive="imgTouchEnd($event)">
                 @foreach($sinksarImages as $idx => $img)
-                <div class="absolute inset-0 flex items-center justify-center transition-all duration-500 ease-out"
+                <div class="absolute inset-0 relative overflow-hidden flex items-center justify-center transition-all duration-500 ease-out"
                      :style="imgCurrent === {{ $idx }}
                          ? 'opacity:1;transform:translateX(0);z-index:10'
                          : {{ $idx }} > imgCurrent
                              ? 'opacity:0;transform:translateX(100%);z-index:1;pointer-events:none'
                              : 'opacity:0;transform:translateX(-100%);z-index:1;pointer-events:none'">
+                    {{-- Blurred ambient background --}}
+                    <img src="{{ $img->imageUrl() }}" alt=""
+                         class="absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-70 select-none pointer-events-none"
+                         loading="{{ $idx === 0 ? 'eager' : 'lazy' }}">
+                    <div class="absolute inset-0 bg-gradient-to-br from-amber-900/25 via-transparent to-black/35 pointer-events-none"></div>
+                    {{-- Main image --}}
                     <img src="{{ $img->imageUrl() }}"
                          alt="{{ localized($img, 'caption') ?? '' }}"
-                         class="w-full h-full object-contain"
+                         class="relative z-10 w-full h-full object-contain drop-shadow-[0_4px_20px_rgba(0,0,0,0.55)]"
                          loading="{{ $idx === 0 ? 'eager' : 'lazy' }}">
                     @if(localized($img, 'caption'))
-                    <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent px-3 py-2">
+                    <div class="absolute bottom-0 inset-x-0 z-20 bg-gradient-to-t from-black/70 to-transparent px-3 py-2">
                         <p class="text-white text-xs font-medium">{{ localized($img, 'caption') }}</p>
                     </div>
                     @endif
@@ -735,16 +741,21 @@
                              @touchstart.passive="fsTouchStart($event)"
                              @touchend.passive="fsTouchEnd($event)">
                             @foreach($sinksarImages as $idx => $img)
-                            <div class="absolute inset-0 flex items-center justify-center transition-all duration-500 ease-out"
+                            <div class="absolute inset-0 relative overflow-hidden flex items-center justify-center transition-all duration-500 ease-out"
                                  :style="fsCurrent === {{ $idx }}
                                      ? 'opacity:1;transform:translateX(0);z-index:10'
                                      : {{ $idx }} > fsCurrent
                                          ? 'opacity:0;transform:translateX(100%);z-index:1'
                                          : 'opacity:0;transform:translateX(-100%);z-index:1'">
+                                {{-- Blurred ambient background --}}
+                                <img src="{{ $img->imageUrl() }}" alt=""
+                                     class="absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-70 select-none pointer-events-none" loading="lazy">
+                                <div class="absolute inset-0 bg-gradient-to-br from-amber-900/25 via-transparent to-black/35 pointer-events-none"></div>
+                                {{-- Main image --}}
                                 <img src="{{ $img->imageUrl() }}" alt="{{ localized($img, 'caption') ?? '' }}"
-                                     class="w-full h-full object-contain" loading="lazy">
+                                     class="relative z-10 w-full h-full object-contain drop-shadow-[0_4px_20px_rgba(0,0,0,0.55)]" loading="lazy">
                                 @if(localized($img, 'caption'))
-                                <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent px-3 py-2">
+                                <div class="absolute bottom-0 inset-x-0 z-20 bg-gradient-to-t from-black/70 to-transparent px-3 py-2">
                                     <p class="text-white text-xs font-medium">{{ localized($img, 'caption') }}</p>
                                 </div>
                                 @endif

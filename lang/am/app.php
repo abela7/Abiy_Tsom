@@ -939,7 +939,7 @@ return [
     'synaxarium_deleted' => 'የስንክሳር በዓል ተሰርዟል።',
     'synaxarium_annual_exists' => 'ለዚህ ወር እና ቀን በዓል ቀድሞ ተመዝግቧል።',
     'synaxarium_daily_saint' => 'የዕለቱ ቅዱስ',
-    'synaxarium_annual_feast' => 'ዓመታዊ የበዓል ቀን',
+    'synaxarium_annual_feast' => 'ዓመታዊ በዓል',
     'synaxarium_delete_confirm' => 'እርግጠኛ ነዎት ይህን በዓል ለማጥፋት ይፈልጋሉ?',
     'synaxarium_no_monthly' => 'ገና ወርሃዊ በዓል አልተጨመረም። ከላይ የመጀመሪያውን ጨምር።',
     'synaxarium_no_annual' => 'ገና ዓመታዊ ልዩ በዓል አልተጨመረም። ከላይ የመጀመሪያውን ጨምር።',
