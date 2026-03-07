@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Activity;
 use App\Models\DailyContent;
 use App\Models\DailyContentBook;
+use App\Models\DailyContentMezmur;
 use App\Models\DailyContentSinksarImage;
 use App\Models\LentSeason;
 use App\Services\AbiyTsomStructure;
@@ -113,9 +114,10 @@ class DailyContentController extends Controller
         $daily = new DailyContent;
         $initialStep = max(1, min(7, $this->normalizeStep(request())));
         $recentBooks = $this->getRecentBooks(null);
+        $recentMezmurs = $this->getRecentMezmurs(null);
         $daysWithContent = $this->getDaysWithContent(null);
 
-        return view('admin.daily.form', compact('season', 'themes', 'dayRangesByWeek', 'daily', 'initialStep', 'recentBooks', 'daysWithContent'));
+        return view('admin.daily.form', compact('season', 'themes', 'dayRangesByWeek', 'daily', 'initialStep', 'recentBooks', 'recentMezmurs', 'daysWithContent'));
     }
 
     /**
@@ -255,9 +257,10 @@ class DailyContentController extends Controller
         $dayRangesByWeek = $this->getDayRangesByWeek();
         $initialStep = max(1, min(7, $this->normalizeStep(request())));
         $recentBooks = $this->getRecentBooks($daily->id);
+        $recentMezmurs = $this->getRecentMezmurs($daily->id);
         $daysWithContent = $this->getDaysWithContent($daily->id);
 
-        return view('admin.daily.form', compact('season', 'themes', 'daily', 'dayRangesByWeek', 'initialStep', 'recentBooks', 'daysWithContent'));
+        return view('admin.daily.form', compact('season', 'themes', 'daily', 'dayRangesByWeek', 'initialStep', 'recentBooks', 'recentMezmurs', 'daysWithContent'));
     }
 
     public function update(Request $request, DailyContent $daily): RedirectResponse
@@ -533,6 +536,42 @@ class DailyContentController extends Controller
                 'date' => $row->date instanceof \DateTimeInterface ? $row->date->format('Y-m-d') : (string) $row->date,
             ];
         })->unique(fn (array $b) => trim(($b['title_en'] ?? '').'|'.($b['title_am'] ?? '')).'|'.($b['url'] ?? ''))->values()->toArray();
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function getRecentMezmurs(?int $excludeDailyId): array
+    {
+        $query = DailyContentMezmur::query()
+            ->join('daily_contents', 'daily_content_mezmurs.daily_content_id', '=', 'daily_contents.id')
+            ->select(
+                'daily_content_mezmurs.title_en',
+                'daily_content_mezmurs.title_am',
+                'daily_content_mezmurs.url',
+                'daily_content_mezmurs.url_en',
+                'daily_content_mezmurs.url_am',
+                'daily_content_mezmurs.description_en',
+                'daily_content_mezmurs.description_am',
+                'daily_contents.day_number',
+                'daily_contents.date'
+            )
+            ->orderByDesc('daily_contents.date')
+            ->limit(80);
+
+        if ($excludeDailyId !== null) {
+            $query->where('daily_content_mezmurs.daily_content_id', '!=', $excludeDailyId);
+        }
+
+        return $query->get()->map(fn ($row) => [
+            'title_en'       => $row->title_en,
+            'title_am'       => $row->title_am,
+            'url'            => $row->url ?? null,
+            'url_en'         => $row->url_en ?? null,
+            'url_am'         => $row->url_am ?? null,
+            'description_en' => $row->description_en,
+            'description_am' => $row->description_am,
+            'day_number'     => (int) $row->day_number,
+            'date'           => $row->date instanceof \DateTimeInterface ? $row->date->format('Y-m-d') : (string) $row->date,
+        ])->unique(fn (array $m) => trim(($m['title_am'] ?? '').'|'.($m['url_am'] ?? '').($m['url_en'] ?? '')))->values()->toArray();
     }
 
     /**

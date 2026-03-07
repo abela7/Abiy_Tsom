@@ -71,7 +71,8 @@
             : []
     );
 
-    $recentBooks = $recentBooks ?? [];
+    $recentBooks   = $recentBooks ?? [];
+    $recentMezmurs = $recentMezmurs ?? [];
 
     $themesByWeek = $themes
         ->keyBy('week_number')
@@ -156,6 +157,7 @@
                 locale: @js($locale),
                 stepLabels: @js($stepLabels),
                 recentBooks: @js($recentBooks),
+                recentMezmurs: @js($recentMezmurs),
                 state: @js($wizardState),
                 urls: {
                     create: @js(route('admin.daily.store')),
@@ -356,6 +358,49 @@
                 {{-- Step 3: Mezmur --}}
                 <section x-show="step === 3" x-cloak class="space-y-4">
                     <p class="text-xs text-muted-text px-1">{{ __('app.add_mezmur_hint') }}</p>
+
+                    {{-- Previous mezmurs accordion --}}
+                    @if(!empty($recentMezmurs))
+                    <div x-data="{ open: false }" class="rounded-xl border border-accent-secondary/30 overflow-hidden">
+                        <button type="button" @click="open = !open"
+                                class="w-full flex items-center justify-between px-4 py-3 bg-accent-secondary/5 hover:bg-accent-secondary/10 transition touch-manipulation select-none">
+                            <span class="text-sm font-semibold text-accent-secondary">
+                                {{ __('app.recommend_from_previous') }}
+                                <span class="ml-1.5 text-xs font-normal opacity-70">({{ count($recentMezmurs) }})</span>
+                            </span>
+                            <svg :class="open ? 'rotate-180' : ''" class="w-4 h-4 text-accent-secondary transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                        <div x-show="open" x-transition class="divide-y divide-border/50">
+                            @foreach($recentMezmurs as $rm)
+                            @php
+                                $rmTitle = $locale === 'en'
+                                    ? (($rm['title_en'] ?? '') ?: ($rm['title_am'] ?? '-'))
+                                    : (($rm['title_am'] ?? '') ?: ($rm['title_en'] ?? '-'));
+                                $rmUrl = $locale === 'en'
+                                    ? (($rm['url_en'] ?? '') ?: ($rm['url_am'] ?? '') ?: ($rm['url'] ?? ''))
+                                    : (($rm['url_am'] ?? '') ?: ($rm['url_en'] ?? '') ?: ($rm['url'] ?? ''));
+                            @endphp
+                            <div class="flex items-center gap-3 px-4 py-3 bg-card hover:bg-muted/40 transition">
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-primary truncate">{{ $rmTitle }}</p>
+                                    @if($rmUrl)
+                                    <p class="text-xs text-muted-text truncate mt-0.5">{{ $rmUrl }}</p>
+                                    @endif
+                                    <p class="text-xs text-muted-text/60 mt-0.5">{{ __('app.day_label') }} {{ $rm['day_number'] ?? '-' }}</p>
+                                </div>
+                                <button type="button"
+                                        @click="addMezmurFromRecommendation(@js($rm))"
+                                        class="shrink-0 px-3 py-1.5 text-xs font-semibold text-accent-secondary border border-accent-secondary/40 rounded-lg hover:bg-accent-secondary/10 transition touch-manipulation">
+                                    + Use
+                                </button>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
+
                     <template x-for="(mezmur, index) in form.mezmurs" :key="'mezmur-' + index">
                         <div class="p-4 rounded-xl bg-accent-secondary/5 border border-accent-secondary/20 space-y-3">
                             <div class="flex items-center justify-between gap-2">
@@ -685,6 +730,7 @@
                     themesByWeek: config.themesByWeek || {},
                     stepLabels: config.stepLabels || {},
                     recentBooks: Array.isArray(config.recentBooks) ? config.recentBooks : [],
+                    recentMezmurs: Array.isArray(config.recentMezmurs) ? config.recentMezmurs : [],
                     urls: config.urls || {},
                     messages: config.messages || {},
                     daysWithContent: Array.isArray(config.daysWithContent) ? config.daysWithContent : [],
@@ -818,6 +864,25 @@
                             description_am: bookData.description_am || '',
                             uploadingPdf: false,
                         });
+                    },
+
+                    addMezmurFromRecommendation(m) {
+                        const blank = this.form.mezmurs.length === 1 &&
+                            !this.form.mezmurs[0].title_am && !this.form.mezmurs[0].title_en &&
+                            !this.form.mezmurs[0].url_am && !this.form.mezmurs[0].url_en;
+                        const entry = {
+                            title_en: m.title_en || '',
+                            title_am: m.title_am || '',
+                            url_en: m.url_en || m.url || '',
+                            url_am: m.url_am || m.url || '',
+                            description_en: m.description_en || '',
+                            description_am: m.description_am || '',
+                        };
+                        if (blank) {
+                            this.form.mezmurs[0] = entry;
+                        } else {
+                            this.form.mezmurs.push(entry);
+                        }
                     },
 
                     async uploadBookPdf(index, event) {
