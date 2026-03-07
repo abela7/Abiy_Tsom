@@ -86,11 +86,11 @@
 
         {{-- Ethiopian Calendar row --}}
         @if($hasEthDate)
-        <div class="flex items-center gap-3.5 px-4 py-3.5 bg-muted/30">
-            <img src="{{ asset('images/EOTC_Logo.jpg') }}" alt="" class="w-12 h-12 rounded-xl object-cover shrink-0 shadow-sm">
+        <div class="flex items-center gap-3 px-4 py-3 bg-muted/30">
+            <img src="{{ asset('images/EOTC_Logo.jpg') }}" alt="" class="w-10 h-10 rounded-lg object-cover shrink-0 shadow-sm">
             <div class="flex-1 min-w-0">
-                <span class="block text-[11px] font-semibold text-muted-text uppercase tracking-wider">{{ __('app.ethiopian_calendar_title') }}</span>
-                <span class="block text-xl font-bold text-primary mt-0.5">{{ $ethDateInfo['ethiopian_date_formatted'] }}</span>
+                <span class="block text-[10px] font-semibold text-muted-text uppercase tracking-wider">{{ __('app.ethiopian_calendar_title') }}</span>
+                <span class="block text-lg font-bold text-primary mt-0.5">{{ $ethDateInfo['ethiopian_date_formatted'] }}</span>
             </div>
         </div>
         @endif
@@ -98,13 +98,13 @@
         {{-- Commemorations carousel row --}}
         @if($slides->isNotEmpty())
         <a href="{{ route('member.commemorations', $daily) }}"
-           class="flex items-center gap-4 px-4 py-5 bg-accent/5 hover:bg-accent/10 active:scale-[0.98] transition-all group"
+           class="flex items-center gap-3 px-4 py-3 bg-accent/5 hover:bg-accent/10 active:scale-[0.98] transition-all group"
            x-data="{ current: 0, total: {{ $slides->count() }}, images: {{ $slides->map(fn($s) => $s['image'] ?? null)->toJson() }}, fallback: '{{ asset('images/Saints.png') }}' }"
            x-init="setInterval(() => current = (current + 1) % total, 3000)">
-            <div class="shrink-0 w-16 h-16 rounded-2xl overflow-hidden shadow-md relative ring-1 ring-border">
+            <div class="shrink-0 w-12 h-12 rounded-xl overflow-hidden shadow-sm relative ring-1 ring-border">
                 <img :src="images[current] || fallback" alt="" class="w-full h-full object-cover">
             </div>
-            <div class="flex-1 min-w-0 relative h-16 overflow-hidden">
+            <div class="flex-1 min-w-0 relative h-11 overflow-hidden">
                 @foreach($slides as $i => $slide)
                 <div x-show="current === {{ $i }}"
                      x-transition:enter="transition ease-out duration-300"
@@ -115,29 +115,29 @@
                      x-transition:leave-end="opacity-0 -translate-y-2"
                      class="absolute inset-0 flex flex-col justify-center"
                      x-cloak>
-                    <span class="text-[11px] font-semibold text-muted-text uppercase tracking-wider leading-none">{{ $slide['type'] }}</span>
-                    <span class="text-lg font-bold text-accent mt-1.5 truncate leading-tight">{{ $slide['name'] }}</span>
+                    <span class="text-[10px] font-semibold text-muted-text uppercase tracking-wider leading-none">{{ $slide['type'] }}</span>
+                    <span class="text-base font-bold text-accent mt-1 truncate leading-tight">{{ $slide['name'] }}</span>
                 </div>
                 @endforeach
             </div>
-            <svg class="w-6 h-6 text-accent group-hover:translate-x-0.5 transition-all shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <svg class="w-5 h-5 text-accent group-hover:translate-x-0.5 transition-all shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </a>
-        <div class="px-4 pb-2.5 bg-accent/5">
-            <span class="text-[11px] text-muted-text">{{ __('app.synaxarium_tap_more_detail') }}</span>
+        <div class="px-4 pb-2 bg-accent/5">
+            <span class="text-[10px] text-muted-text">{{ __('app.synaxarium_tap_more_detail') }}</span>
         </div>
         @endif
 
         {{-- Weekly theme link --}}
         @if($daily->weeklyTheme)
-        <a href="{{ route('member.week', $daily->weeklyTheme) }}" class="flex items-center gap-4 px-4 py-4 bg-accent/5 hover:bg-accent/10 active:scale-[0.98] transition-all group">
-            <div class="shrink-0 w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center">
-                <i class="bi bi-calendar-week text-accent text-base"></i>
+        <a href="{{ route('member.week', $daily->weeklyTheme) }}" class="flex items-center gap-3 px-4 py-3 bg-accent/5 hover:bg-accent/10 active:scale-[0.98] transition-all group">
+            <div class="shrink-0 w-9 h-9 rounded-lg bg-accent/15 flex items-center justify-center">
+                <i class="bi bi-calendar-week text-accent text-sm"></i>
             </div>
             <div class="flex-1 min-w-0">
-                <span class="block text-base font-bold text-accent">{{ __('app.week', ['number' => $daily->weeklyTheme->week_number]) }} &mdash; {{ localized($daily->weeklyTheme, 'name') ?? $daily->weeklyTheme->name_en ?? $daily->weeklyTheme->name_geez ?? '-' }}</span>
-                <span class="block text-xs text-muted-text mt-0.5">{{ __('app.week_tap_to_read') }}</span>
+                <span class="block text-sm font-bold text-accent">{{ __('app.week', ['number' => $daily->weeklyTheme->week_number]) }} &mdash; {{ localized($daily->weeklyTheme, 'name') ?? $daily->weeklyTheme->name_en ?? $daily->weeklyTheme->name_geez ?? '-' }}</span>
+                <span class="block text-[11px] text-muted-text mt-0.5">{{ __('app.week_tap_to_read') }}</span>
             </div>
-            <svg class="w-6 h-6 text-accent group-hover:translate-x-0.5 transition-all shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <svg class="w-5 h-5 text-accent group-hover:translate-x-0.5 transition-all shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </a>
         @endif
     </div>
