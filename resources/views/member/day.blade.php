@@ -1442,7 +1442,7 @@
     @endphp
     <div class="bg-card rounded-2xl shadow-sm border border-border p-4 text-center" x-data="{ expanded: false }">
         {{-- Label --}}
-        <span class="text-[10px] font-semibold tracking-widest uppercase text-accent-secondary">{{ __('app.daily_message') }}</span>
+        <span class="text-[10px] font-semibold tracking-widest uppercase text-accent">{{ __('app.daily_message') }}</span>
 
         {{-- Title --}}
         @if(filled($msgTitle))
@@ -1451,19 +1451,19 @@
 
         {{-- Divider --}}
         <div class="flex items-center justify-center gap-2 my-2.5">
-            <span class="block w-8 h-px bg-accent-secondary/30"></span>
-            <svg class="w-3.5 h-3.5 text-accent-secondary/50" viewBox="0 0 24 24" fill="currentColor"><path d="M6 17h3l2-4V7H5v6h3zm8 0h3l2-4V7h-6v6h3z"/></svg>
-            <span class="block w-8 h-px bg-accent-secondary/30"></span>
+            <span class="block w-8 h-px bg-accent/30"></span>
+            <svg class="w-3.5 h-3.5 text-accent/50" viewBox="0 0 24 24" fill="currentColor"><path d="M6 17h3l2-4V7H5v6h3zm8 0h3l2-4V7h-6v6h3z"/></svg>
+            <span class="block w-8 h-px bg-accent/30"></span>
         </div>
 
         {{-- Message body --}}
         <div class="relative text-left" :class="!expanded && 'max-h-24 overflow-hidden'">
-            <p class="text-[13px] text-secondary leading-relaxed whitespace-pre-line">{{ $msgText }}</p>
+            <p class="text-sm text-secondary leading-relaxed whitespace-pre-line">{{ $msgText }}</p>
             <div x-show="!expanded" class="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-card to-transparent pointer-events-none"></div>
         </div>
 
         {{-- Read more --}}
-        <button @click="expanded = !expanded" class="mt-3 inline-flex items-center gap-1 px-4 py-1.5 text-[11px] font-semibold text-accent-secondary bg-accent-secondary/10 rounded-full transition-colors hover:bg-accent-secondary/20">
+        <button @click="expanded = !expanded" class="mt-3 inline-flex items-center gap-1 px-4 py-1.5 text-[11px] font-semibold text-accent bg-accent/10 rounded-full transition-colors hover:bg-accent/20">
             <span x-text="expanded ? '{{ __('app.show_less') }}' : '{{ __('app.read_more') }}'"></span>
             <svg class="w-3 h-3 transition-transform" :class="expanded && 'rotate-180'" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
         </button>
