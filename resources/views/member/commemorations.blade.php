@@ -37,11 +37,19 @@
         <div class="rounded-2xl bg-card border border-border shadow-sm overflow-hidden">
             {{-- Image as a contained hero banner --}}
             @if($hasImage)
-            <div class="relative cursor-pointer"
+            <div class="relative h-64 overflow-hidden cursor-pointer"
                  @click="showImageModal = true; modalImage = '{{ $saint->imageUrl() }}'">
-                <img src="{{ $saint->imageUrl() }}" alt="" class="w-full max-h-64 object-contain">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
-                <div class="absolute bottom-0 left-0 right-0 px-3 pb-2.5">
+                {{-- Blurred ambient background --}}
+                <img src="{{ $saint->imageUrl() }}" alt=""
+                     class="absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-70 select-none pointer-events-none">
+                {{-- Warm golden veil to match Orthodox iconography tones --}}
+                <div class="absolute inset-0 bg-gradient-to-br from-amber-900/30 via-transparent to-black/40"></div>
+                {{-- Main image, sharp and centred --}}
+                <img src="{{ $saint->imageUrl() }}" alt=""
+                     class="relative z-10 h-full w-full object-contain drop-shadow-[0_4px_24px_rgba(0,0,0,0.6)]">
+                {{-- Bottom gradient for badge legibility --}}
+                <div class="absolute inset-0 z-20 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none"></div>
+                <div class="absolute bottom-0 left-0 right-0 px-3 pb-2.5 z-30">
                     <span class="inline-block px-1.5 py-0.5 rounded bg-accent-secondary/90 text-[9px] font-bold text-white uppercase tracking-wider">{{ __('app.synaxarium_annual_feast') }}</span>
                 </div>
             </div>
@@ -116,9 +124,16 @@
             @if($hasMonthlyDetail)
             <div x-show="open" x-collapse x-cloak class="px-4 pb-3 space-y-2.5">
                 @if($monthlyImage)
-                <div class="rounded-xl overflow-hidden cursor-pointer"
+                <div class="relative h-52 rounded-xl overflow-hidden cursor-pointer"
                      @click.stop="showImageModal = true; modalImage = '{{ $monthlyImage }}'">
-                    <img src="{{ $monthlyImage }}" alt="" class="w-full max-h-52 object-contain">
+                    {{-- Blurred ambient background --}}
+                    <img src="{{ $monthlyImage }}" alt=""
+                         class="absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-70 select-none pointer-events-none">
+                    <div class="absolute inset-0 bg-gradient-to-br from-amber-900/25 via-transparent to-black/35"></div>
+                    {{-- Main image --}}
+                    <img src="{{ $monthlyImage }}" alt=""
+                         class="relative z-10 h-full w-full object-contain drop-shadow-[0_4px_20px_rgba(0,0,0,0.55)]">
+                    <div class="absolute inset-0 z-20 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none"></div>
                 </div>
                 @endif
                 @if($monthlyDesc)
