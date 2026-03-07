@@ -68,9 +68,10 @@
 <body class="min-h-screen bg-surface text-primary font-sans">
 
     {{-- Top nav: Welcome + theme toggle (member pages only) --}}
-    @if(isset($currentMember) && request()->routeIs('member.*'))
+    @if((isset($currentMember) && request()->routeIs('member.*')) || ($publicPreview ?? false))
     <header class="sticky top-0 z-40 bg-card border-b border-border safe-area-top overflow-visible">
         <div class="max-w-lg mx-auto px-4 py-3 flex items-center justify-between overflow-visible">
+            @if(isset($currentMember))
             @php $baptismName = trim((string) ($currentMember->baptism_name ?? '')); @endphp
             <h1 class="flex-1 min-w-0 pr-2 font-bold text-primary leading-tight whitespace-nowrap overflow-hidden text-ellipsis"
                 style="font-size: clamp(0.95rem, 4.6vw, 1.125rem);">
@@ -88,8 +89,11 @@
                     @endif
                 @endif
             </h1>
+            @else
+            <div class="flex-1"></div>
+            @endif
             <div class="flex items-center gap-1.5 shrink-0">
-                @if($currentMember->passcode_enabled ?? false)
+                @if(isset($currentMember) && ($currentMember->passcode_enabled ?? false))
                 <a href="{{ route('member.passcode.lock') }}"
                    class="w-9 h-9 rounded-full bg-muted/70 border border-border/50 flex items-center justify-center hover:bg-muted transition active:scale-95"
                    aria-label="{{ __('app.lock_app') }}">
