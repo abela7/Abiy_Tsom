@@ -329,18 +329,30 @@ $monthEmpty    = $maxDay - count($filledDays);
                                placeholder="Romans" class="{{ $inputClass }}">
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="{{ $labelClass }}">{{ __('app.lectionary_chapter') }}</label>
-                        <input type="number" name="pauline_chapter" min="1" max="150"
-                               value="{{ old('pauline_chapter', $entry?->pauline_chapter) }}"
-                               placeholder="6" class="{{ $smallInput }}">
+                {{-- Smart Chapter:Verses reference --}}
+                @php $paulCh = old('pauline_chapter', $entry?->pauline_chapter ?? ''); $paulVs = old('pauline_verses', $entry?->pauline_verses ?? ''); @endphp
+                <div x-data="{
+                        ref: '{{ $paulCh }}{{ $paulVs ? ':'.$paulVs : '' }}',
+                        sync() {
+                            const [ch, vs = ''] = this.ref.split(':');
+                            this.$refs.ch.value = ch.trim();
+                            this.$refs.vs.value = vs.trim();
+                        }
+                     }">
+                    <label class="{{ $labelClass }}">{{ __('app.lectionary_chapter') }} : {{ __('app.lectionary_verses') }}</label>
+                    <div class="relative">
+                        <input type="text" x-model="ref" @input="sync()" @blur="sync()"
+                               placeholder="6:5-12"
+                               class="w-full px-4 py-4 rounded-2xl border border-border bg-surface text-primary text-2xl font-mono text-center tracking-widest focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition">
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] text-muted-text font-bold uppercase tracking-wider pointer-events-none leading-tight text-right">ch<br>:v</span>
                     </div>
-                    <div>
-                        <label class="{{ $labelClass }}">{{ __('app.lectionary_verses') }}</label>
-                        <input type="text" name="pauline_verses" value="{{ old('pauline_verses', $entry?->pauline_verses) }}"
-                               placeholder="5-12" class="{{ $inputClass }}">
+                    <div class="flex items-center gap-3 mt-1.5 px-1" x-show="ref" x-cloak>
+                        <span class="text-[11px] text-muted-text">Chapter <span class="font-bold text-accent" x-text="ref.split(':')[0] || '—'"></span></span>
+                        <span class="text-muted-text/40">·</span>
+                        <span class="text-[11px] text-muted-text">Verses <span class="font-bold text-accent" x-text="ref.split(':')[1] || '—'"></span></span>
                     </div>
+                    <input type="hidden" name="pauline_chapter" x-ref="ch" value="{{ $paulCh }}">
+                    <input type="hidden" name="pauline_verses" x-ref="vs" value="{{ $paulVs }}">
                 </div>
                 <div>
                     <label class="{{ $labelClass }}">{{ __('app.lectionary_text_am') }}</label>
@@ -392,18 +404,30 @@ $monthEmpty    = $maxDay - count($filledDays);
                                placeholder="1 Peter" class="{{ $inputClass }}">
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="{{ $labelClass }}">{{ __('app.lectionary_chapter') }}</label>
-                        <input type="number" name="catholic_chapter" min="1" max="150"
-                               value="{{ old('catholic_chapter', $entry?->catholic_chapter) }}"
-                               placeholder="2" class="{{ $smallInput }}">
+                {{-- Smart Chapter:Verses reference --}}
+                @php $cathCh = old('catholic_chapter', $entry?->catholic_chapter ?? ''); $cathVs = old('catholic_verses', $entry?->catholic_verses ?? ''); @endphp
+                <div x-data="{
+                        ref: '{{ $cathCh }}{{ $cathVs ? ':'.$cathVs : '' }}',
+                        sync() {
+                            const [ch, vs = ''] = this.ref.split(':');
+                            this.$refs.ch.value = ch.trim();
+                            this.$refs.vs.value = vs.trim();
+                        }
+                     }">
+                    <label class="{{ $labelClass }}">{{ __('app.lectionary_chapter') }} : {{ __('app.lectionary_verses') }}</label>
+                    <div class="relative">
+                        <input type="text" x-model="ref" @input="sync()" @blur="sync()"
+                               placeholder="2:21-25"
+                               class="w-full px-4 py-4 rounded-2xl border border-border bg-surface text-primary text-2xl font-mono text-center tracking-widest focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition">
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] text-muted-text font-bold uppercase tracking-wider pointer-events-none leading-tight text-right">ch<br>:v</span>
                     </div>
-                    <div>
-                        <label class="{{ $labelClass }}">{{ __('app.lectionary_verses') }}</label>
-                        <input type="text" name="catholic_verses" value="{{ old('catholic_verses', $entry?->catholic_verses) }}"
-                               placeholder="21-25" class="{{ $inputClass }}">
+                    <div class="flex items-center gap-3 mt-1.5 px-1" x-show="ref" x-cloak>
+                        <span class="text-[11px] text-muted-text">Chapter <span class="font-bold text-accent" x-text="ref.split(':')[0] || '—'"></span></span>
+                        <span class="text-muted-text/40">·</span>
+                        <span class="text-[11px] text-muted-text">Verses <span class="font-bold text-accent" x-text="ref.split(':')[1] || '—'"></span></span>
                     </div>
+                    <input type="hidden" name="catholic_chapter" x-ref="ch" value="{{ $cathCh }}">
+                    <input type="hidden" name="catholic_verses" x-ref="vs" value="{{ $cathVs }}">
                 </div>
                 <div>
                     <label class="{{ $labelClass }}">{{ __('app.lectionary_text_am') }}</label>
@@ -443,18 +467,30 @@ $monthEmpty    = $maxDay - count($filledDays);
                  x-transition:enter="transition duration-200 ease-out" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
                  x-transition:leave="transition duration-150 ease-in" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
                  class="border-t border-border px-4 pb-4 pt-3 space-y-3">
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="{{ $labelClass }}">{{ __('app.lectionary_chapter') }}</label>
-                        <input type="number" name="acts_chapter" min="1" max="28"
-                               value="{{ old('acts_chapter', $entry?->acts_chapter) }}"
-                               placeholder="10" class="{{ $smallInput }}">
+                {{-- Smart Chapter:Verses reference --}}
+                @php $actsCh = old('acts_chapter', $entry?->acts_chapter ?? ''); $actsVs = old('acts_verses', $entry?->acts_verses ?? ''); @endphp
+                <div x-data="{
+                        ref: '{{ $actsCh }}{{ $actsVs ? ':'.$actsVs : '' }}',
+                        sync() {
+                            const [ch, vs = ''] = this.ref.split(':');
+                            this.$refs.ch.value = ch.trim();
+                            this.$refs.vs.value = vs.trim();
+                        }
+                     }">
+                    <label class="{{ $labelClass }}">{{ __('app.lectionary_chapter') }} : {{ __('app.lectionary_verses') }}</label>
+                    <div class="relative">
+                        <input type="text" x-model="ref" @input="sync()" @blur="sync()"
+                               placeholder="10:36-44"
+                               class="w-full px-4 py-4 rounded-2xl border border-border bg-surface text-primary text-2xl font-mono text-center tracking-widest focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition">
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] text-muted-text font-bold uppercase tracking-wider pointer-events-none leading-tight text-right">ch<br>:v</span>
                     </div>
-                    <div>
-                        <label class="{{ $labelClass }}">{{ __('app.lectionary_verses') }}</label>
-                        <input type="text" name="acts_verses" value="{{ old('acts_verses', $entry?->acts_verses) }}"
-                               placeholder="36-44" class="{{ $inputClass }}">
+                    <div class="flex items-center gap-3 mt-1.5 px-1" x-show="ref" x-cloak>
+                        <span class="text-[11px] text-muted-text">Chapter <span class="font-bold text-accent" x-text="ref.split(':')[0] || '—'"></span></span>
+                        <span class="text-muted-text/40">·</span>
+                        <span class="text-[11px] text-muted-text">Verses <span class="font-bold text-accent" x-text="ref.split(':')[1] || '—'"></span></span>
                     </div>
+                    <input type="hidden" name="acts_chapter" x-ref="ch" value="{{ $actsCh }}">
+                    <input type="hidden" name="acts_verses" x-ref="vs" value="{{ $actsVs }}">
                 </div>
                 <div>
                     <label class="{{ $labelClass }}">{{ __('app.lectionary_text_am') }}</label>
@@ -494,18 +530,30 @@ $monthEmpty    = $maxDay - count($filledDays);
                  x-transition:enter="transition duration-200 ease-out" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
                  x-transition:leave="transition duration-150 ease-in" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
                  class="border-t border-border px-4 pb-4 pt-3 space-y-3">
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="{{ $labelClass }}">{{ __('app.lectionary_psalm') }}</label>
-                        <input type="number" name="mesbak_psalm" min="1" max="151"
-                               value="{{ old('mesbak_psalm', $entry?->mesbak_psalm) }}"
-                               placeholder="73" class="{{ $smallInput }}">
+                {{-- Smart Psalm:Verses reference --}}
+                @php $mesbPsalm = old('mesbak_psalm', $entry?->mesbak_psalm ?? ''); $mesbVs = old('mesbak_verses', $entry?->mesbak_verses ?? ''); @endphp
+                <div x-data="{
+                        ref: '{{ $mesbPsalm }}{{ $mesbVs ? ':'.$mesbVs : '' }}',
+                        sync() {
+                            const [ps, vs = ''] = this.ref.split(':');
+                            this.$refs.ps.value = ps.trim();
+                            this.$refs.vs.value = vs.trim();
+                        }
+                     }">
+                    <label class="{{ $labelClass }}">{{ __('app.lectionary_psalm') }} : {{ __('app.lectionary_verses') }}</label>
+                    <div class="relative">
+                        <input type="text" x-model="ref" @input="sync()" @blur="sync()"
+                               placeholder="73:12-13"
+                               class="w-full px-4 py-4 rounded-2xl border border-border bg-surface text-primary text-2xl font-mono text-center tracking-widest focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition">
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] text-muted-text font-bold uppercase tracking-wider pointer-events-none leading-tight text-right">ps<br>:v</span>
                     </div>
-                    <div>
-                        <label class="{{ $labelClass }}">{{ __('app.lectionary_verses') }}</label>
-                        <input type="text" name="mesbak_verses" value="{{ old('mesbak_verses', $entry?->mesbak_verses) }}"
-                               placeholder="12-13" class="{{ $inputClass }}">
+                    <div class="flex items-center gap-3 mt-1.5 px-1" x-show="ref" x-cloak>
+                        <span class="text-[11px] text-muted-text">Psalm <span class="font-bold text-accent" x-text="ref.split(':')[0] || '—'"></span></span>
+                        <span class="text-muted-text/40">·</span>
+                        <span class="text-[11px] text-muted-text">Verses <span class="font-bold text-accent" x-text="ref.split(':')[1] || '—'"></span></span>
                     </div>
+                    <input type="hidden" name="mesbak_psalm" x-ref="ps" value="{{ $mesbPsalm }}">
+                    <input type="hidden" name="mesbak_verses" x-ref="vs" value="{{ $mesbVs }}">
                 </div>
                 <div>
                     <label class="{{ $labelClass }}">{{ __('app.lectionary_geez') }}</label>
@@ -570,18 +618,30 @@ $monthEmpty    = $maxDay - count($filledDays);
                                placeholder="John" class="{{ $inputClass }}">
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="{{ $labelClass }}">{{ __('app.lectionary_chapter') }}</label>
-                        <input type="number" name="gospel_chapter" min="1" max="28"
-                               value="{{ old('gospel_chapter', $entry?->gospel_chapter) }}"
-                               placeholder="19" class="{{ $smallInput }}">
+                {{-- Smart Chapter:Verses reference --}}
+                @php $gospCh = old('gospel_chapter', $entry?->gospel_chapter ?? ''); $gospVs = old('gospel_verses', $entry?->gospel_verses ?? ''); @endphp
+                <div x-data="{
+                        ref: '{{ $gospCh }}{{ $gospVs ? ':'.$gospVs : '' }}',
+                        sync() {
+                            const [ch, vs = ''] = this.ref.split(':');
+                            this.$refs.ch.value = ch.trim();
+                            this.$refs.vs.value = vs.trim();
+                        }
+                     }">
+                    <label class="{{ $labelClass }}">{{ __('app.lectionary_chapter') }} : {{ __('app.lectionary_verses') }}</label>
+                    <div class="relative">
+                        <input type="text" x-model="ref" @input="sync()" @blur="sync()"
+                               placeholder="19:16-24"
+                               class="w-full px-4 py-4 rounded-2xl border border-border bg-surface text-primary text-2xl font-mono text-center tracking-widest focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition">
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] text-muted-text font-bold uppercase tracking-wider pointer-events-none leading-tight text-right">ch<br>:v</span>
                     </div>
-                    <div>
-                        <label class="{{ $labelClass }}">{{ __('app.lectionary_verses') }}</label>
-                        <input type="text" name="gospel_verses" value="{{ old('gospel_verses', $entry?->gospel_verses) }}"
-                               placeholder="16-24" class="{{ $inputClass }}">
+                    <div class="flex items-center gap-3 mt-1.5 px-1" x-show="ref" x-cloak>
+                        <span class="text-[11px] text-muted-text">Chapter <span class="font-bold text-accent" x-text="ref.split(':')[0] || '—'"></span></span>
+                        <span class="text-muted-text/40">·</span>
+                        <span class="text-[11px] text-muted-text">Verses <span class="font-bold text-accent" x-text="ref.split(':')[1] || '—'"></span></span>
                     </div>
+                    <input type="hidden" name="gospel_chapter" x-ref="ch" value="{{ $gospCh }}">
+                    <input type="hidden" name="gospel_verses" x-ref="vs" value="{{ $gospVs }}">
                 </div>
                 <div>
                     <label class="{{ $labelClass }}">{{ __('app.lectionary_text_am') }}</label>
@@ -728,4 +788,27 @@ $monthEmpty    = $maxDay - count($filledDays);
     @endif
 
 </div>
+
+<script>
+// Auto-grow all textareas on this page
+document.addEventListener('DOMContentLoaded', function () {
+    function autoGrow(el) {
+        el.style.height = 'auto';
+        el.style.height = el.scrollHeight + 'px';
+    }
+    document.querySelectorAll('textarea').forEach(function (ta) {
+        ta.style.overflow = 'hidden';
+        autoGrow(ta);
+        ta.addEventListener('input', function () { autoGrow(this); });
+    });
+    // Re-run when accordion sections open (Alpine reveals hidden textareas)
+    document.addEventListener('alpine:initialized', function () {
+        document.querySelectorAll('[x-show]').forEach(function (el) {
+            new MutationObserver(function () {
+                el.querySelectorAll('textarea').forEach(autoGrow);
+            }).observe(el, { attributes: true, attributeFilter: ['style'] });
+        });
+    });
+});
+</script>
 @endsection
