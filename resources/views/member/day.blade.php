@@ -1458,13 +1458,14 @@
 
         {{-- Message body --}}
         <div class="relative text-left" :class="!expanded && 'max-h-24 overflow-hidden'">
-            <p class="text-[13px] text-secondary leading-relaxed whitespace-pre-line italic">{{ $msgText }}</p>
+            <p class="text-[13px] text-secondary leading-relaxed whitespace-pre-line">{{ $msgText }}</p>
             <div x-show="!expanded" class="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-card to-transparent pointer-events-none"></div>
         </div>
 
         {{-- Read more --}}
-        <button @click="expanded = !expanded" class="mt-2 text-[12px] font-medium text-accent-secondary">
+        <button @click="expanded = !expanded" class="mt-3 inline-flex items-center gap-1 px-4 py-1.5 text-[11px] font-semibold text-accent-secondary bg-accent-secondary/10 rounded-full transition-colors hover:bg-accent-secondary/20">
             <span x-text="expanded ? '{{ __('app.show_less') }}' : '{{ __('app.read_more') }}'"></span>
+            <svg class="w-3 h-3 transition-transform" :class="expanded && 'rotate-180'" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
         </button>
     </div>
     @endif
