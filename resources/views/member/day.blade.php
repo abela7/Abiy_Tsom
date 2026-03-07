@@ -1442,7 +1442,7 @@
     @endphp
     <div class="bg-card rounded-2xl shadow-sm border border-border p-4 text-center" x-data="{ expanded: false }">
         {{-- Label --}}
-        <span class="text-[10px] font-semibold tracking-widest uppercase text-accent">{{ __('app.daily_message') }}</span>
+        <span class="text-xs font-bold tracking-wider uppercase text-accent">{{ __('app.daily_message') }}</span>
 
         {{-- Title --}}
         @if(filled($msgTitle))
