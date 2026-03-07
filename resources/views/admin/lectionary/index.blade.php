@@ -302,8 +302,8 @@ $monthEmpty    = $maxDay - count($filledDays);
              x-data="{
                  open: {{ $paulineFilled ? 'false' : 'true' }},
                  books: @json($paulineBooks),
-                 selAm: @js($paulBookAm),
-                 selEn: @js($paulBookEn),
+                 selAm: '{{ $paulBookAm }}',
+                 selEn: '{{ $paulBookEn }}',
                  syncBook(am) {
                      this.selAm = am;
                      this.selEn = this.books[am] ?? '';
@@ -392,8 +392,8 @@ $monthEmpty    = $maxDay - count($filledDays);
              x-data="{
                  open: {{ $catholicFilled ? 'false' : 'true' }},
                  books: @json($catholicBooks),
-                 selAm: @js($cathBookAm),
-                 selEn: @js($cathBookEn),
+                 selAm: '{{ $cathBookAm }}',
+                 selEn: '{{ $cathBookEn }}',
                  syncBook(am) {
                      this.selAm = am;
                      this.selEn = this.books[am] ?? '';
