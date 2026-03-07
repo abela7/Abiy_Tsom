@@ -299,18 +299,18 @@ $monthEmpty    = $maxDay - count($filledDays);
             $paulBookEn = old('pauline_book_en', $entry?->pauline_book_en ?? 'Romans');
         @endphp
         <div class="bg-card rounded-2xl border border-border shadow-sm overflow-hidden"
-             x-data="{
-                 open: {{ $paulineFilled ? 'false' : 'true' }},
+             x-data='{
+                 open: {{ $paulineFilled ? "false" : "true" }},
                  books: @json($paulineBooks),
-                 selAm: '{{ $paulBookAm }}',
-                 selEn: '{{ $paulBookEn }}',
+                 selAm: "{{ $paulBookAm }}",
+                 selEn: "{{ $paulBookEn }}",
                  syncBook(am) {
                      this.selAm = am;
-                     this.selEn = this.books[am] ?? '';
+                     this.selEn = this.books[am] ?? "";
                      this.$refs.bookAm.value = am;
-                     this.$refs.bookEn.value = this.books[am] ?? '';
+                     this.$refs.bookEn.value = this.books[am] ?? "";
                  }
-             }">
+             }'>
             <button type="button" @click="open = !open"
                     class="w-full flex items-center justify-between px-4 py-3.5 active:bg-muted/30 transition text-left select-none">
                 <div class="flex items-center gap-3">
@@ -389,18 +389,18 @@ $monthEmpty    = $maxDay - count($filledDays);
             $cathBookEn = old('catholic_book_en', $entry?->catholic_book_en ?? 'James');
         @endphp
         <div class="bg-card rounded-2xl border border-border shadow-sm overflow-hidden"
-             x-data="{
-                 open: {{ $catholicFilled ? 'false' : 'true' }},
+             x-data='{
+                 open: {{ $catholicFilled ? "false" : "true" }},
                  books: @json($catholicBooks),
-                 selAm: '{{ $cathBookAm }}',
-                 selEn: '{{ $cathBookEn }}',
+                 selAm: "{{ $cathBookAm }}",
+                 selEn: "{{ $cathBookEn }}",
                  syncBook(am) {
                      this.selAm = am;
-                     this.selEn = this.books[am] ?? '';
+                     this.selEn = this.books[am] ?? "";
                      this.$refs.bookAm.value = am;
-                     this.$refs.bookEn.value = this.books[am] ?? '';
+                     this.$refs.bookEn.value = this.books[am] ?? "";
                  }
-             }">
+             }'>
             <button type="button" @click="open = !open"
                     class="w-full flex items-center justify-between px-4 py-3.5 active:bg-muted/30 transition text-left select-none">
                 <div class="flex items-center gap-3">
@@ -639,13 +639,13 @@ $monthEmpty    = $maxDay - count($filledDays);
                  class="border-t border-border px-4 pb-4 pt-3 space-y-3">
                 {{-- Book selector --}}
                 @php $gospBookAm = old('gospel_book_am', $entry?->gospel_book_am ?? ''); @endphp
-                <div x-data="{
+                <div x-data='{
                         books: @json($gospelBooks),
                         syncBook(am) {
                             this.$refs.bookAm.value = am;
-                            this.$refs.bookEn.value = this.books[am] ?? '';
+                            this.$refs.bookEn.value = this.books[am] ?? "";
                         }
-                     }">
+                     }'>
                     <label class="{{ $labelClass }}">{{ __('app.lectionary_book_am') }}</label>
                     <select @change="syncBook($event.target.value)" class="{{ $inputClass }}">
                         <option value="">— መፅሐፍ ምረጥ —</option>
