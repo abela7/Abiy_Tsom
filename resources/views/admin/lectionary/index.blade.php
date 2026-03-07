@@ -8,6 +8,7 @@ $inputClass  = 'w-full px-4 py-3.5 rounded-2xl border border-border bg-surface t
 $smallInput  = 'w-full px-3 py-3 rounded-xl border border-border bg-surface text-primary text-base focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition text-center';
 $labelClass  = 'block text-xs font-bold text-muted-text uppercase tracking-wider mb-2';
 $taClass     = $inputClass . ' resize-none';
+$scriptTa    = $inputClass . ' resize-y min-h-[14rem]';
 
 // Section fill status for badge indicators
 $paulineFilled  = $entry && filled($entry->pauline_book_am)  && filled($entry->pauline_chapter);
@@ -356,13 +357,13 @@ $monthEmpty    = $maxDay - count($filledDays);
                 </div>
                 <div>
                     <label class="{{ $labelClass }}">{{ __('app.lectionary_text_am') }}</label>
-                    <textarea name="pauline_text_am" rows="5" placeholder="ሞቱንም በሚመስል..."
-                              class="{{ $taClass }}">{{ old('pauline_text_am', $entry?->pauline_text_am) }}</textarea>
+                    <textarea name="pauline_text_am" placeholder="ሞቱንም በሚመስል..."
+                              class="{{ $scriptTa }}">{{ old('pauline_text_am', $entry?->pauline_text_am) }}</textarea>
                 </div>
                 <div>
                     <label class="{{ $labelClass }}">{{ __('app.lectionary_text_en') }}</label>
-                    <textarea name="pauline_text_en" rows="5" placeholder="For if we have been..."
-                              class="{{ $taClass }}">{{ old('pauline_text_en', $entry?->pauline_text_en) }}</textarea>
+                    <textarea name="pauline_text_en" placeholder="For if we have been..."
+                              class="{{ $scriptTa }}">{{ old('pauline_text_en', $entry?->pauline_text_en) }}</textarea>
                 </div>
             </div>
         </div>
@@ -431,13 +432,13 @@ $monthEmpty    = $maxDay - count($filledDays);
                 </div>
                 <div>
                     <label class="{{ $labelClass }}">{{ __('app.lectionary_text_am') }}</label>
-                    <textarea name="catholic_text_am" rows="5" placeholder="የተጠራችሁለት..."
-                              class="{{ $taClass }}">{{ old('catholic_text_am', $entry?->catholic_text_am) }}</textarea>
+                    <textarea name="catholic_text_am" placeholder="የተጠራችሁለት..."
+                              class="{{ $scriptTa }}">{{ old('catholic_text_am', $entry?->catholic_text_am) }}</textarea>
                 </div>
                 <div>
                     <label class="{{ $labelClass }}">{{ __('app.lectionary_text_en') }}</label>
-                    <textarea name="catholic_text_en" rows="5" placeholder="For to this you were called..."
-                              class="{{ $taClass }}">{{ old('catholic_text_en', $entry?->catholic_text_en) }}</textarea>
+                    <textarea name="catholic_text_en" placeholder="For to this you were called..."
+                              class="{{ $scriptTa }}">{{ old('catholic_text_en', $entry?->catholic_text_en) }}</textarea>
                 </div>
             </div>
         </div>
@@ -494,13 +495,13 @@ $monthEmpty    = $maxDay - count($filledDays);
                 </div>
                 <div>
                     <label class="{{ $labelClass }}">{{ __('app.lectionary_text_am') }}</label>
-                    <textarea name="acts_text_am" rows="5" placeholder="የሁሉ ጌታ..."
-                              class="{{ $taClass }}">{{ old('acts_text_am', $entry?->acts_text_am) }}</textarea>
+                    <textarea name="acts_text_am" placeholder="የሁሉ ጌታ..."
+                              class="{{ $scriptTa }}">{{ old('acts_text_am', $entry?->acts_text_am) }}</textarea>
                 </div>
                 <div>
                     <label class="{{ $labelClass }}">{{ __('app.lectionary_text_en') }}</label>
-                    <textarea name="acts_text_en" rows="5" placeholder="The word that God sent..."
-                              class="{{ $taClass }}">{{ old('acts_text_en', $entry?->acts_text_en) }}</textarea>
+                    <textarea name="acts_text_en" placeholder="The word that God sent..."
+                              class="{{ $scriptTa }}">{{ old('acts_text_en', $entry?->acts_text_en) }}</textarea>
                 </div>
             </div>
         </div>
@@ -568,15 +569,15 @@ $monthEmpty    = $maxDay - count($filledDays);
                 </div>
                 <div>
                     <label class="{{ $labelClass }}">{{ __('app.lectionary_text_am') }}</label>
-                    <textarea name="mesbak_text_am" rows="4"
+                    <textarea name="mesbak_text_am"
                               placeholder="እግዚአብሔር ግን ከዓለም አስቀድሞ ንጉሥ ነው..."
-                              class="{{ $taClass }}">{{ old('mesbak_text_am', $entry?->mesbak_text_am) }}</textarea>
+                              class="{{ $scriptTa }}">{{ old('mesbak_text_am', $entry?->mesbak_text_am) }}</textarea>
                 </div>
                 <div>
                     <label class="{{ $labelClass }}">{{ __('app.lectionary_text_en') }}</label>
-                    <textarea name="mesbak_text_en" rows="4"
+                    <textarea name="mesbak_text_en"
                               placeholder="Yet God is my king from of old..."
-                              class="{{ $taClass }}">{{ old('mesbak_text_en', $entry?->mesbak_text_en) }}</textarea>
+                              class="{{ $scriptTa }}">{{ old('mesbak_text_en', $entry?->mesbak_text_en) }}</textarea>
                 </div>
             </div>
         </div>
@@ -645,13 +646,13 @@ $monthEmpty    = $maxDay - count($filledDays);
                 </div>
                 <div>
                     <label class="{{ $labelClass }}">{{ __('app.lectionary_text_am') }}</label>
-                    <textarea name="gospel_text_am" rows="5" placeholder="ስለዚህ በዚያን ጊዜ..."
-                              class="{{ $taClass }}">{{ old('gospel_text_am', $entry?->gospel_text_am) }}</textarea>
+                    <textarea name="gospel_text_am" placeholder="ስለዚህ በዚያን ጊዜ..."
+                              class="{{ $scriptTa }}">{{ old('gospel_text_am', $entry?->gospel_text_am) }}</textarea>
                 </div>
                 <div>
                     <label class="{{ $labelClass }}">{{ __('app.lectionary_text_en') }}</label>
-                    <textarea name="gospel_text_en" rows="5" placeholder="So he delivered him..."
-                              class="{{ $taClass }}">{{ old('gospel_text_en', $entry?->gospel_text_en) }}</textarea>
+                    <textarea name="gospel_text_en" placeholder="So he delivered him..."
+                              class="{{ $scriptTa }}">{{ old('gospel_text_en', $entry?->gospel_text_en) }}</textarea>
                 </div>
             </div>
         </div>
@@ -790,25 +791,35 @@ $monthEmpty    = $maxDay - count($filledDays);
 </div>
 
 <script>
-// Auto-grow all textareas on this page
-document.addEventListener('DOMContentLoaded', function () {
-    function autoGrow(el) {
-        el.style.height = 'auto';
-        el.style.height = el.scrollHeight + 'px';
+(function () {
+    function autoGrow(ta) {
+        // Only grow if actually rendered (not display:none)
+        if (ta.offsetParent === null) return;
+        ta.style.height = 'auto';
+        ta.style.height = ta.scrollHeight + 'px';
     }
-    document.querySelectorAll('textarea').forEach(function (ta) {
+
+    function initTextarea(ta) {
         ta.style.overflow = 'hidden';
         autoGrow(ta);
         ta.addEventListener('input', function () { autoGrow(this); });
+    }
+
+    // Grow visible textareas on load
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('textarea').forEach(initTextarea);
     });
-    // Re-run when accordion sections open (Alpine reveals hidden textareas)
+
+    // Re-grow when Alpine x-show reveals a section (style attribute changes)
     document.addEventListener('alpine:initialized', function () {
         document.querySelectorAll('[x-show]').forEach(function (el) {
             new MutationObserver(function () {
-                el.querySelectorAll('textarea').forEach(autoGrow);
+                if (el.style.display !== 'none') {
+                    el.querySelectorAll('textarea').forEach(autoGrow);
+                }
             }).observe(el, { attributes: true, attributeFilter: ['style'] });
         });
     });
-});
+}());
 </script>
 @endsection
