@@ -702,6 +702,25 @@ elseif (old('_form') === 'add_annual') $autoSheet = 'add-annual';
             <form method="POST" action="/admin/synaxarium/annual/{{ $editingAnnual->id }}" enctype="multipart/form-data">
                 @csrf @method('PUT')
 
+                <div class="grid grid-cols-3 gap-3 mb-4">
+                    <div class="col-span-2">
+                        <label class="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2">{{ __('app.synaxarium_month_number') }}</label>
+                        <select name="month" required
+                                class="w-full px-4 py-3.5 rounded-2xl border border-border bg-surface text-primary text-base focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent">
+                            @for($m = 1; $m <= 13; $m++)
+                                <option value="{{ $m }}" {{ (int) old('month', $editingAnnual->month) === $m ? 'selected' : '' }}>{{ $m }} - {{ $monthNamesFull[$m] }}</option>
+                            @endfor
+                        </select>
+                        @error('month') <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2">Day</label>
+                        <input type="number" name="day" min="1" max="30" value="{{ old('day', $editingAnnual->day) }}" required
+                               class="w-full px-4 py-3.5 rounded-2xl border border-border bg-surface text-primary text-base text-center focus:outline-none focus:ring-2 focus:ring-accent/50">
+                        @error('day') <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
                 <div class="mb-4">
                     <label class="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2">{{ __('app.synaxarium_celebration') }} (English) <span class="text-red-400 normal-case font-normal">*</span></label>
                     <input type="text" name="celebration_en" value="{{ old('celebration_en', $editingAnnual->celebration_en) }}" required
