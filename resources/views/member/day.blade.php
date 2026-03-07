@@ -1440,35 +1440,25 @@
         $msgTitle = localized($daily, 'reflection_title');
         $msgText  = localized($daily, 'reflection');
     @endphp
-    <div class="relative bg-reflection-bg border border-reflection-border rounded-2xl overflow-hidden">
-        {{-- Top accent bar --}}
-        <div class="h-1 w-full bg-gradient-to-r from-accent-secondary/60 via-accent-secondary to-accent-secondary/60"></div>
+    <div class="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
+        <div class="flex">
+            {{-- Left accent strip --}}
+            <div class="w-1 shrink-0 bg-accent-secondary"></div>
 
-        <div class="px-5 pt-4 pb-5">
-            {{-- Label row --}}
-            <div class="flex items-center gap-2 mb-3">
-                <svg class="w-3.5 h-3.5 text-accent-secondary shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm0 3a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm0 5a1 1 0 011 1v6a1 1 0 11-2 0v-6a1 1 0 011-1z"/>
-                </svg>
-                <span class="text-[11px] font-bold tracking-widest uppercase text-accent-secondary">{{ __('app.daily_message') }}</span>
-            </div>
-
-            {{-- Large decorative opening quote --}}
-            <div class="relative">
-                <span class="absolute -top-2 -left-1 text-6xl leading-none text-accent-secondary/20 font-serif select-none" aria-hidden="true">"</span>
+            <div class="flex-1 min-w-0 px-4 py-4">
+                {{-- Label --}}
+                <span class="inline-block text-[10px] font-bold tracking-widest uppercase text-accent-secondary/80 mb-2.5">{{ __('app.daily_message') }}</span>
 
                 {{-- Title (optional) --}}
                 @if(filled($msgTitle))
-                <h3 class="text-base font-bold text-primary mb-2 pl-5">{{ $msgTitle }}</h3>
+                <h3 class="text-[15px] font-bold text-primary mb-2">{{ $msgTitle }}</h3>
                 @endif
 
-                {{-- Message body --}}
-                <div class="pl-5 pr-2">
-                    <p class="text-sm text-secondary leading-relaxed whitespace-pre-line">{{ $msgText }}</p>
+                {{-- Quote body --}}
+                <div class="relative pl-3.5 border-l-2 border-accent-secondary/25">
+                    <svg class="absolute -left-1.5 -top-0.5 w-3 h-3 text-accent-secondary/40" viewBox="0 0 24 24" fill="currentColor"><path d="M6 17h3l2-4V7H5v6h3zm8 0h3l2-4V7h-6v6h3z"/></svg>
+                    <p class="text-[13px] text-secondary leading-relaxed whitespace-pre-line">{{ $msgText }}</p>
                 </div>
-
-                {{-- Closing quote --}}
-                <span class="block text-right text-6xl leading-none text-accent-secondary/20 font-serif select-none -mt-4 -mr-1" aria-hidden="true">"</span>
             </div>
         </div>
     </div>
