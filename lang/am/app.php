@@ -410,7 +410,7 @@ return [
     'whatsapp_daily_reminder_header' => 'Hello :baptism_name. Today is day :day of the 55 great lent days.',
     'whatsapp_daily_reminder_footer' => "You can find the day’s Bible reading, Mezmur, Gitsawe, Synaxarium, and other spiritual content at this link:\n:url",
     'whatsapp_daily_reminder_yearly_block' => "ዛሬ :gregorian_date ወይንም :ethiopian_date ቀን የሚከበሩ ዓመታዊ በዓላት፦\n\n:yearly_commemorations_bullets",
-    'whatsapp_daily_reminder_monthly_block' => "እንዲሁም ወርኃዊ በዓላት፦\n\n:monthly_commemorations_bullets",
+    'whatsapp_daily_reminder_monthly_block' => "እንዲሁም ወርኀዊ በዓላት፦\n\n:monthly_commemorations_bullets",
     'whatsapp_daily_reminder_content' => ":header_am\n\n:commemorations_block_am\n\n:footer_am",
 
     // WhatsApp Settings (Admin) - placeholders in English for now
@@ -924,10 +924,10 @@ return [
 
     // Ethiopian Calendar & Synaxarium
     'synaxarium_admin_title' => 'የስንክሳር በዓላት',
-    'synaxarium_monthly_tab' => 'ወርሃዊ (ተደጋጋሚ)',
+    'synaxarium_monthly_tab' => 'ወርኀዊ (ተደጋጋሚ)',
     'synaxarium_annual_tab' => 'ዓመታዊ (ልዩ)',
-    'synaxarium_add_monthly' => 'ወርሃዊ በዓል ጨምር',
-    'synaxarium_edit_monthly' => 'ወርሃዊ በዓል አርትዕ',
+    'synaxarium_add_monthly' => 'ወርኀዊ በዓል ጨምር',
+    'synaxarium_edit_monthly' => 'ወርኀዊ በዓል አርትዕ',
     'synaxarium_add_annual' => 'ዓመታዊ በዓል ጨምር',
     'synaxarium_edit_annual' => 'ዓመታዊ በዓል አርትዕ',
     'synaxarium_day_number' => 'የወሩ ቀን (1-30)',
@@ -941,7 +941,7 @@ return [
     'synaxarium_daily_saint' => 'የዕለቱ ቅዱስ',
     'synaxarium_annual_feast' => 'ዓመታዊ በዓል',
     'synaxarium_delete_confirm' => 'እርግጠኛ ነዎት ይህን በዓል ለማጥፋት ይፈልጋሉ?',
-    'synaxarium_no_monthly' => 'ገና ወርሃዊ በዓል አልተጨመረም። ከላይ የመጀመሪያውን ጨምር።',
+    'synaxarium_no_monthly' => 'ገና ወርኀዊ በዓል አልተጨመረም። ከላይ የመጀመሪያውን ጨምር።',
     'synaxarium_no_annual' => 'ገና ዓመታዊ ልዩ በዓል አልተጨመረም። ከላይ የመጀመሪያውን ጨምር።',
     'synaxarium_is_main' => 'ዋና በዓል',
     'synaxarium_sort_order' => 'ደረጃ',
@@ -951,7 +951,7 @@ return [
     'synaxarium_no_saints_for_day' => 'ለዚህ ቀን ገና ቅዱሳን አልተጨመሩም።',
     'synaxarium_yearly_commemorations' => 'ዓመታዊ በዓላት',
     'synaxarium_monthly_commemorations' => 'ወርኀዊ በዓላት',
-    'synaxarium_tap_to_view' => 'በዛሬው እለት የሚውሉትን እለታዊ እና ወርሃዊ በዓላትን ለመመልከት ይሄንን ይንኩ',
+    'synaxarium_tap_to_view' => 'በዛሬው እለት የሚውሉትን እለታዊ እና ወርኀዊ በዓላትን ለመመልከት ይሄንን ይንኩ',
     'synaxarium_tap_more_detail' => 'ተጨማሪ መረጃ ለማግኘት ይሄንን ይንኩ',
 
     // Admin members tracking (anonymous stats only)
