@@ -21,6 +21,31 @@ class LectionaryController extends Controller
         13 => 'Pagumen / ጳጉሜን',
     ];
 
+    /** @var array<string, string> Amharic => English */
+    private const PAULINE_BOOKS = [
+        'ሮሜ'          => 'Romans',          '1ኛ ቆሮንቶስ'  => '1 Corinthians',
+        '2ኛ ቆሮንቶስ'   => '2 Corinthians',   'ገላትያ'       => 'Galatians',
+        'ኤፌሶን'        => 'Ephesians',       'ፊልጵስዩስ'     => 'Philippians',
+        'ቈሎስይስ'       => 'Colossians',      '1ኛ ተሰሎንቄ'  => '1 Thessalonians',
+        '2ኛ ተሰሎንቄ'   => '2 Thessalonians', '1ኛ ጢሞቴዎስ'  => '1 Timothy',
+        '2ኛ ጢሞቴዎስ'   => '2 Timothy',       'ቲቶ'          => 'Titus',
+        'ፊልሞና'        => 'Philemon',        'ዕብራውያን'     => 'Hebrews',
+    ];
+
+    /** @var array<string, string> Amharic => English */
+    private const CATHOLIC_BOOKS = [
+        'ያዕቆብ'     => 'James',   '1ኛ ጴጥሮስ' => '1 Peter',
+        '2ኛ ጴጥሮስ' => '2 Peter', '1ኛ ዮሐንስ'  => '1 John',
+        '2ኛ ዮሐንስ' => '2 John',  '3ኛ ዮሐንስ'  => '3 John',
+        'ይሁዳ'      => 'Jude',
+    ];
+
+    /** @var array<string, string> Amharic => English */
+    private const GOSPEL_BOOKS = [
+        'ማቴዎስ' => 'Matthew', 'ማርቆስ' => 'Mark',
+        'ሉቃስ'  => 'Luke',    'ዮሐንስ' => 'John',
+    ];
+
     public function index(Request $request): View
     {
         $selectedMonth = max(1, min(13, (int) $request->query('month', 6)));
@@ -59,6 +84,9 @@ class LectionaryController extends Controller
             'entry'         => $entry,
             'monthNames'    => self::MONTH_NAMES,
             'maxDay'        => $maxDay,
+            'paulineBooks'  => self::PAULINE_BOOKS,
+            'catholicBooks' => self::CATHOLIC_BOOKS,
+            'gospelBooks'   => self::GOSPEL_BOOKS,
         ]);
     }
 

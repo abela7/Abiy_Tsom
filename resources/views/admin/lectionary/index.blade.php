@@ -318,17 +318,24 @@ $monthEmpty    = $maxDay - count($filledDays);
                  x-transition:enter="transition duration-200 ease-out" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
                  x-transition:leave="transition duration-150 ease-in" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
                  class="border-t border-border px-4 pb-4 pt-3 space-y-3">
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="{{ $labelClass }}">{{ __('app.lectionary_book_am') }}</label>
-                        <input type="text" name="pauline_book_am" value="{{ old('pauline_book_am', $entry?->pauline_book_am) }}"
-                               placeholder="ሮሜ" class="{{ $inputClass }}">
-                    </div>
-                    <div>
-                        <label class="{{ $labelClass }}">{{ __('app.lectionary_book_en') }}</label>
-                        <input type="text" name="pauline_book_en" value="{{ old('pauline_book_en', $entry?->pauline_book_en) }}"
-                               placeholder="Romans" class="{{ $inputClass }}">
-                    </div>
+                {{-- Book selector --}}
+                @php $paulBookAm = old('pauline_book_am', $entry?->pauline_book_am ?? ''); @endphp
+                <div x-data="{
+                        books: @json($paulineBooks),
+                        syncBook(am) {
+                            this.$refs.bookAm.value = am;
+                            this.$refs.bookEn.value = this.books[am] ?? '';
+                        }
+                     }">
+                    <label class="{{ $labelClass }}">{{ __('app.lectionary_book_am') }}</label>
+                    <select @change="syncBook($event.target.value)" class="{{ $inputClass }}">
+                        <option value="">— መፅሐፍ ምረጥ —</option>
+                        @foreach($paulineBooks as $bkAm => $bkEn)
+                        <option value="{{ $bkAm }}" @if($paulBookAm === $bkAm) selected @endif>{{ $bkAm }} / {{ $bkEn }}</option>
+                        @endforeach
+                    </select>
+                    <input type="hidden" name="pauline_book_am" x-ref="bookAm" value="{{ $paulBookAm }}">
+                    <input type="hidden" name="pauline_book_en" x-ref="bookEn" value="{{ old('pauline_book_en', $entry?->pauline_book_en ?? '') }}">
                 </div>
                 {{-- Smart Chapter:Verses reference --}}
                 @php $paulCh = old('pauline_chapter', $entry?->pauline_chapter ?? ''); $paulVs = old('pauline_verses', $entry?->pauline_verses ?? ''); @endphp
@@ -393,17 +400,24 @@ $monthEmpty    = $maxDay - count($filledDays);
                  x-transition:enter="transition duration-200 ease-out" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
                  x-transition:leave="transition duration-150 ease-in" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
                  class="border-t border-border px-4 pb-4 pt-3 space-y-3">
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="{{ $labelClass }}">{{ __('app.lectionary_book_am') }}</label>
-                        <input type="text" name="catholic_book_am" value="{{ old('catholic_book_am', $entry?->catholic_book_am) }}"
-                               placeholder="1ኛ ጴጥሮስ" class="{{ $inputClass }}">
-                    </div>
-                    <div>
-                        <label class="{{ $labelClass }}">{{ __('app.lectionary_book_en') }}</label>
-                        <input type="text" name="catholic_book_en" value="{{ old('catholic_book_en', $entry?->catholic_book_en) }}"
-                               placeholder="1 Peter" class="{{ $inputClass }}">
-                    </div>
+                {{-- Book selector --}}
+                @php $cathBookAm = old('catholic_book_am', $entry?->catholic_book_am ?? ''); @endphp
+                <div x-data="{
+                        books: @json($catholicBooks),
+                        syncBook(am) {
+                            this.$refs.bookAm.value = am;
+                            this.$refs.bookEn.value = this.books[am] ?? '';
+                        }
+                     }">
+                    <label class="{{ $labelClass }}">{{ __('app.lectionary_book_am') }}</label>
+                    <select @change="syncBook($event.target.value)" class="{{ $inputClass }}">
+                        <option value="">— መፅሐፍ ምረጥ —</option>
+                        @foreach($catholicBooks as $bkAm => $bkEn)
+                        <option value="{{ $bkAm }}" @if($cathBookAm === $bkAm) selected @endif>{{ $bkAm }} / {{ $bkEn }}</option>
+                        @endforeach
+                    </select>
+                    <input type="hidden" name="catholic_book_am" x-ref="bookAm" value="{{ $cathBookAm }}">
+                    <input type="hidden" name="catholic_book_en" x-ref="bookEn" value="{{ old('catholic_book_en', $entry?->catholic_book_en ?? '') }}">
                 </div>
                 {{-- Smart Chapter:Verses reference --}}
                 @php $cathCh = old('catholic_chapter', $entry?->catholic_chapter ?? ''); $cathVs = old('catholic_verses', $entry?->catholic_verses ?? ''); @endphp
@@ -607,17 +621,24 @@ $monthEmpty    = $maxDay - count($filledDays);
                  x-transition:enter="transition duration-200 ease-out" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
                  x-transition:leave="transition duration-150 ease-in" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
                  class="border-t border-border px-4 pb-4 pt-3 space-y-3">
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="{{ $labelClass }}">{{ __('app.lectionary_book_am') }}</label>
-                        <input type="text" name="gospel_book_am" value="{{ old('gospel_book_am', $entry?->gospel_book_am) }}"
-                               placeholder="ዮሐንስ" class="{{ $inputClass }}">
-                    </div>
-                    <div>
-                        <label class="{{ $labelClass }}">{{ __('app.lectionary_book_en') }}</label>
-                        <input type="text" name="gospel_book_en" value="{{ old('gospel_book_en', $entry?->gospel_book_en) }}"
-                               placeholder="John" class="{{ $inputClass }}">
-                    </div>
+                {{-- Book selector --}}
+                @php $gospBookAm = old('gospel_book_am', $entry?->gospel_book_am ?? ''); @endphp
+                <div x-data="{
+                        books: @json($gospelBooks),
+                        syncBook(am) {
+                            this.$refs.bookAm.value = am;
+                            this.$refs.bookEn.value = this.books[am] ?? '';
+                        }
+                     }">
+                    <label class="{{ $labelClass }}">{{ __('app.lectionary_book_am') }}</label>
+                    <select @change="syncBook($event.target.value)" class="{{ $inputClass }}">
+                        <option value="">— መፅሐፍ ምረጥ —</option>
+                        @foreach($gospelBooks as $bkAm => $bkEn)
+                        <option value="{{ $bkAm }}" @if($gospBookAm === $bkAm) selected @endif>{{ $bkAm }} / {{ $bkEn }}</option>
+                        @endforeach
+                    </select>
+                    <input type="hidden" name="gospel_book_am" x-ref="bookAm" value="{{ $gospBookAm }}">
+                    <input type="hidden" name="gospel_book_en" x-ref="bookEn" value="{{ old('gospel_book_en', $entry?->gospel_book_en ?? '') }}">
                 </div>
                 {{-- Smart Chapter:Verses reference --}}
                 @php $gospCh = old('gospel_chapter', $entry?->gospel_chapter ?? ''); $gospVs = old('gospel_verses', $entry?->gospel_verses ?? ''); @endphp
