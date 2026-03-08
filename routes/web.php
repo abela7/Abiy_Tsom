@@ -239,6 +239,8 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::post('/synaxarium/annual', [Admin\SynaxariumController::class, 'storeAnnual'])->name('synaxarium.annual.store');
         Route::put('/synaxarium/annual/{annual}', [Admin\SynaxariumController::class, 'updateAnnual'])->name('synaxarium.annual.update');
         Route::delete('/synaxarium/annual/{annual}', [Admin\SynaxariumController::class, 'destroyAnnual'])->name('synaxarium.annual.destroy');
+        Route::post('/synaxarium/monthly/{monthly}/convert-to-annual', [Admin\SynaxariumController::class, 'convertMonthlyToAnnual'])->name('synaxarium.monthly.convert');
+        Route::post('/synaxarium/annual/{annual}/convert-to-monthly', [Admin\SynaxariumController::class, 'convertAnnualToMonthly'])->name('synaxarium.annual.convert');
     });
 
     // Available to all authenticated admin roles (writer, editor, admin, super admin)

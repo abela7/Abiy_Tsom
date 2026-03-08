@@ -184,13 +184,38 @@ elseif (old('_form') === 'add_annual') $autoSheet = 'add-annual';
                         @endif
                     </div>
                     {{-- Actions — always visible, 44px touch targets --}}
-                    <div class="flex items-center gap-1.5 shrink-0">
+                    <div class="flex items-center gap-1.5 shrink-0" x-data="{ showConvert: false }">
                         <a href="/admin/synaxarium?edit_monthly={{ $item->id }}&day={{ $item->day }}"
-                           class="w-10 h-10 rounded-xl flex items-center justify-center text-accent bg-accent/10 active:scale-90 transition">
+                           class="w-10 h-10 rounded-xl flex items-center justify-center text-accent bg-accent/10 active:scale-90 transition"
+                           title="{{ __('app.edit') }}">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                         </a>
+                        <div class="relative">
+                            <button type="button" @click="showConvert = !showConvert"
+                                    class="w-10 h-10 rounded-xl flex items-center justify-center text-amber-600 bg-amber-50 dark:bg-amber-900/20 active:scale-90 transition"
+                                    title="{{ __('app.synaxarium_convert_to_annual') }}">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <div x-show="showConvert" x-cloak @click.away="showConvert = false"
+                                 x-transition
+                                 class="absolute right-0 top-12 z-30 bg-card border border-border rounded-xl shadow-xl p-3 w-56">
+                                <p class="text-xs font-semibold text-muted-text mb-2">{{ __('app.synaxarium_convert_select_month') }}</p>
+                                <form method="POST" action="{{ route('admin.synaxarium.monthly.convert', $item) }}">
+                                    @csrf
+                                    <select name="month" class="w-full px-3 py-2 rounded-lg border border-border bg-surface text-primary text-sm mb-2">
+                                        @foreach($monthNamesFull as $m => $mFull)
+                                            <option value="{{ $m }}">{{ $mFull }}</option>
+                                        @endforeach
+                                    </select>
+                                    <button type="submit" class="w-full py-2 bg-amber-500 text-white text-xs font-bold rounded-lg hover:bg-amber-600 transition">
+                                        {{ __('app.synaxarium_convert_to_annual') }}
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                         <button type="button" @click="confirmDelete('del-m-{{ $item->id }}')"
-                                class="w-10 h-10 rounded-xl flex items-center justify-center text-red-500 bg-red-50 dark:bg-red-900/20 active:scale-90 transition">
+                                class="w-10 h-10 rounded-xl flex items-center justify-center text-red-500 bg-red-50 dark:bg-red-900/20 active:scale-90 transition"
+                                title="{{ __('app.delete') }}">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                         </button>
                         <form id="del-m-{{ $item->id }}" method="POST" action="/admin/synaxarium/monthly/{{ $item->id }}" class="hidden">
@@ -311,11 +336,22 @@ elseif (old('_form') === 'add_annual') $autoSheet = 'add-annual';
                         </div>
                         <div class="flex items-center gap-1.5 shrink-0">
                             <a href="/admin/synaxarium?edit_annual={{ $item->id }}"
-                               class="w-10 h-10 rounded-xl flex items-center justify-center text-accent bg-accent/10 active:scale-90 transition">
+                               class="w-10 h-10 rounded-xl flex items-center justify-center text-accent bg-accent/10 active:scale-90 transition"
+                               title="{{ __('app.edit') }}">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                             </a>
+                            <form method="POST" action="{{ route('admin.synaxarium.annual.convert', $item) }}" class="inline"
+                                  onsubmit="return confirm('{{ __('app.synaxarium_convert_to_monthly') }}?')">
+                                @csrf
+                                <button type="submit"
+                                        class="w-10 h-10 rounded-xl flex items-center justify-center text-amber-600 bg-amber-50 dark:bg-amber-900/20 active:scale-90 transition"
+                                        title="{{ __('app.synaxarium_convert_to_monthly') }}">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                                </button>
+                            </form>
                             <button type="button" @click="confirmDelete('del-a-{{ $item->id }}')"
-                                    class="w-10 h-10 rounded-xl flex items-center justify-center text-red-500 bg-red-50 dark:bg-red-900/20 active:scale-90 transition">
+                                    class="w-10 h-10 rounded-xl flex items-center justify-center text-red-500 bg-red-50 dark:bg-red-900/20 active:scale-90 transition"
+                                    title="{{ __('app.delete') }}">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                             </button>
                             <form id="del-a-{{ $item->id }}" method="POST" action="/admin/synaxarium/annual/{{ $item->id }}" class="hidden">

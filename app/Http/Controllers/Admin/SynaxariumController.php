@@ -217,4 +217,47 @@ class SynaxariumController extends Controller
 
         return redirect('/admin/synaxarium')->with('success', __('app.synaxarium_deleted'));
     }
+
+    public function convertMonthlyToAnnual(Request $request, EthiopianSynaxariumMonthly $monthly): RedirectResponse
+    {
+        $data = $request->validate([
+            'month' => ['required', 'integer', 'min:1', 'max:13'],
+        ]);
+
+        EthiopianSynaxariumAnnual::create([
+            'month' => $data['month'],
+            'day' => $monthly->day,
+            'celebration_en' => $monthly->celebration_en,
+            'celebration_am' => $monthly->celebration_am,
+            'description_en' => $monthly->description_en,
+            'description_am' => $monthly->description_am,
+            'image_path' => $monthly->image_path,
+            'is_main' => $monthly->is_main,
+            'sort_order' => $monthly->sort_order,
+        ]);
+
+        $monthly->update(['image_path' => null]);
+        $monthly->delete();
+
+        return redirect('/admin/synaxarium')->with('success', __('app.synaxarium_converted_to_annual'));
+    }
+
+    public function convertAnnualToMonthly(EthiopianSynaxariumAnnual $annual): RedirectResponse
+    {
+        EthiopianSynaxariumMonthly::create([
+            'day' => $annual->day,
+            'celebration_en' => $annual->celebration_en,
+            'celebration_am' => $annual->celebration_am,
+            'description_en' => $annual->description_en,
+            'description_am' => $annual->description_am,
+            'image_path' => $annual->image_path,
+            'is_main' => $annual->is_main,
+            'sort_order' => $annual->sort_order,
+        ]);
+
+        $annual->update(['image_path' => null]);
+        $annual->delete();
+
+        return redirect('/admin/synaxarium?day=' . $annual->day)->with('success', __('app.synaxarium_converted_to_monthly'));
+    }
 }
