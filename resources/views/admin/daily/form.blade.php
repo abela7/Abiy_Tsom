@@ -147,7 +147,7 @@
         </div>
     @else
         <div
-            class="max-w-2xl mx-auto space-y-3 -mx-4 sm:mx-auto pb-4"
+            class="max-w-2xl lg:max-w-5xl mx-auto space-y-3 -mx-4 sm:mx-auto pb-4"
             x-data="dailyWizard({
                 currentStep: @js($currentStep),
                 totalSteps: @js($totalSteps),
@@ -187,7 +187,7 @@
                     copySuccess: @js(__('app.copy_day_success'))
                 }
             })"
-            x-init="init()"
+            x-init="init()" @keydown.ctrl.enter.prevent="nextStep()" @keydown.meta.enter.prevent="nextStep()"
         >
             {{-- Wizard header --}}
             <div class="bg-card sm:rounded-2xl shadow-sm border-b sm:border border-border px-4 py-4 sm:p-5">
@@ -238,29 +238,29 @@
                 <section x-show="step === 1" x-cloak class="space-y-5">
                     <input type="hidden" x-model="form.lent_season_id">
 
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-secondary mb-1.5">{{ __('app.day_number_label') }}</label>
-                            <input
-                                type="number"
-                                inputmode="numeric"
-                                min="1"
-                                max="55"
-                                x-model="form.day_number"
-                                @input="syncFromDayNumber()"
-                                class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"
-                            >
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-secondary mb-1.5">{{ __('app.date_label') }}</label>
-                            <input
-                                type="date"
-                                x-model="form.date"
-                                class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"
-                            >
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-secondary mb-1.5">{{ __('app.weekly_theme_label') }}</label>
+                    <div class="lg:grid lg:grid-cols-3 lg:gap-4 space-y-4 lg:space-y-0">
+                            <div>
+                                <label class="block text-sm font-medium text-secondary mb-1.5">{{ __('app.day_number_label') }}</label>
+                                <input
+                                    type="number"
+                                    inputmode="numeric"
+                                    min="1"
+                                    max="55"
+                                    x-model="form.day_number"
+                                    @input="syncFromDayNumber()"
+                                    class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"
+                                >
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-secondary mb-1.5">{{ __('app.date_label') }}</label>
+                                <input
+                                    type="date"
+                                    x-model="form.date"
+                                    class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"
+                                >
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-secondary mb-1.5">{{ __('app.weekly_theme_label') }}</label>
                             <select
                                 x-model="form.weekly_theme_id"
                                 class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"
@@ -317,18 +317,20 @@
 
                     <div class="space-y-3">
                         <label class="block text-sm font-medium text-secondary">{{ __('app.day_title_optional') }}</label>
-                        <input
-                            type="text"
-                            x-model="form.day_title_am"
-                            placeholder="{{ __('app.amharic_default') }}"
-                            class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"
-                        >
-                        <input
-                            type="text"
-                            x-model="form.day_title_en"
-                            placeholder="{{ __('app.english_fallback') }}"
-                            class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"
-                        >
+                        <div class="lg:grid lg:grid-cols-2 lg:gap-3 space-y-3 lg:space-y-0">
+                            <input
+                                type="text"
+                                x-model="form.day_title_am"
+                                placeholder="{{ __('app.amharic_default') }}"
+                                class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"
+                            >
+                            <input
+                                type="text"
+                                x-model="form.day_title_en"
+                                placeholder="{{ __('app.english_fallback') }}"
+                                class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"
+                            >
+                        </div>
                     </div>
                 </section>
 
@@ -336,24 +338,30 @@
                 <section x-show="step === 2" x-cloak class="space-y-5">
                     <div class="space-y-3">
                         <label class="block text-sm font-medium text-secondary">{{ __('app.reference_placeholder') }}</label>
-                        <input type="text" x-model="form.bible_reference_am" placeholder="{{ __('app.amharic') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
-                        <input type="text" x-model="form.bible_reference_en" placeholder="{{ __('app.english') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                        <div class="lg:grid lg:grid-cols-2 lg:gap-3 space-y-3 lg:space-y-0">
+                            <input type="text" x-model="form.bible_reference_am" placeholder="{{ __('app.amharic') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                            <input type="text" x-model="form.bible_reference_en" placeholder="{{ __('app.english') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                        </div>
                     </div>
 
                     <div class="space-y-3">
                         <label class="block text-sm font-medium text-secondary">{{ __('app.summary_label') }}</label>
-                        <textarea x-model="form.bible_summary_am" rows="3" placeholder="{{ __('app.amharic') }}" class="w-full min-h-[5rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
-                        <textarea x-model="form.bible_summary_en" rows="3" placeholder="{{ __('app.english') }}" class="w-full min-h-[5rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
+                        <div class="lg:grid lg:grid-cols-2 lg:gap-3 space-y-3 lg:space-y-0">
+                            <textarea x-model="form.bible_summary_am" rows="3" placeholder="{{ __('app.amharic') }}" class="w-full min-h-[5rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
+                            <textarea x-model="form.bible_summary_en" rows="3" placeholder="{{ __('app.english') }}" class="w-full min-h-[5rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
+                        </div>
                     </div>
 
-                    <div class="space-y-3">
-                        <label class="block text-sm font-medium text-secondary">{{ __('app.bible_text_am_label') }}</label>
-                        <textarea x-model="form.bible_text_am" rows="6" placeholder="{{ __('app.bible_text_am_placeholder') }}" class="w-full min-h-[8rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
-                    </div>
+                    <div class="lg:grid lg:grid-cols-2 lg:gap-4 space-y-5 lg:space-y-0">
+                        <div class="space-y-3">
+                            <label class="block text-sm font-medium text-secondary">{{ __('app.bible_text_am_label') }}</label>
+                            <textarea x-model="form.bible_text_am" rows="6" placeholder="{{ __('app.bible_text_am_placeholder') }}" class="w-full min-h-[8rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
+                        </div>
 
-                    <div class="space-y-3">
-                        <label class="block text-sm font-medium text-secondary">{{ __('app.bible_text_en_label') }}</label>
-                        <textarea x-model="form.bible_text_en" rows="6" placeholder="{{ __('app.bible_text_en_placeholder') }}" class="w-full min-h-[8rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
+                        <div class="space-y-3">
+                            <label class="block text-sm font-medium text-secondary">{{ __('app.bible_text_en_label') }}</label>
+                            <textarea x-model="form.bible_text_en" rows="6" placeholder="{{ __('app.bible_text_en_placeholder') }}" class="w-full min-h-[8rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
+                        </div>
                     </div>
                 </section>
 
@@ -411,18 +419,20 @@
                                 </button>
                             </div>
 
-                            <div class="space-y-2 rounded-lg bg-white/40 border border-accent-secondary/20 p-3">
-                                <p class="text-xs font-semibold text-accent-secondary">{{ __('app.amharic') }}</p>
-                                <input type="text" x-model="mezmur.title_am" placeholder="{{ __('app.name_amharic_label') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
-                                <textarea x-model="mezmur.description_am" rows="2" placeholder="{{ __('app.description_label') }} ({{ __('app.amharic') }})" class="w-full min-h-[4rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
-                                <input type="url" x-model="mezmur.url_am" placeholder="{{ __('app.url_placeholder') }} ({{ __('app.amharic') }})" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
-                            </div>
+                            <div class="lg:grid lg:grid-cols-2 lg:gap-3 space-y-3 lg:space-y-0">
+                                <div class="space-y-2 rounded-lg bg-white/40 border border-accent-secondary/20 p-3">
+                                    <p class="text-xs font-semibold text-accent-secondary">{{ __('app.amharic') }}</p>
+                                    <input type="text" x-model="mezmur.title_am" placeholder="{{ __('app.name_amharic_label') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                                    <textarea x-model="mezmur.description_am" rows="2" placeholder="{{ __('app.description_label') }} ({{ __('app.amharic') }})" class="w-full min-h-[4rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
+                                    <input type="url" x-model="mezmur.url_am" placeholder="{{ __('app.url_placeholder') }} ({{ __('app.amharic') }})" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                                </div>
 
-                            <div class="space-y-2 rounded-lg bg-white/40 border border-accent-secondary/20 p-3">
-                                <p class="text-xs font-semibold text-accent-secondary">{{ __('app.english') }}</p>
-                                <input type="text" x-model="mezmur.title_en" placeholder="{{ __('app.name_english_label') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
-                                <textarea x-model="mezmur.description_en" rows="2" placeholder="{{ __('app.description_label') }} ({{ __('app.english') }})" class="w-full min-h-[4rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
-                                <input type="url" x-model="mezmur.url_en" placeholder="{{ __('app.url_placeholder') }} ({{ __('app.english') }})" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                                <div class="space-y-2 rounded-lg bg-white/40 border border-accent-secondary/20 p-3">
+                                    <p class="text-xs font-semibold text-accent-secondary">{{ __('app.english') }}</p>
+                                    <input type="text" x-model="mezmur.title_en" placeholder="{{ __('app.name_english_label') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                                    <textarea x-model="mezmur.description_en" rows="2" placeholder="{{ __('app.description_label') }} ({{ __('app.english') }})" class="w-full min-h-[4rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
+                                    <input type="url" x-model="mezmur.url_en" placeholder="{{ __('app.url_placeholder') }} ({{ __('app.english') }})" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                                </div>
                             </div>
                         </div>
                     </template>
@@ -433,28 +443,30 @@
 
                 {{-- Step 4: Sinksar --}}
                 <section x-show="step === 4" x-cloak class="space-y-5">
-                    <div class="space-y-4 rounded-xl border border-sinksar/30 bg-sinksar/5 p-3">
-                        <p class="text-xs font-semibold text-sinksar mb-2">{{ __('app.amharic') }}</p>
-                        <label class="block text-sm font-medium text-secondary mb-1.5">{{ __('app.title_label') }}</label>
-                        <input type="text" x-model="form.sinksar_title_am" placeholder="{{ __('app.name_amharic_label') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
-                        <label class="block text-sm font-medium text-secondary mt-3 mb-1.5">{{ __('app.url_video_label') }}</label>
-                        <input type="url" x-model="form.sinksar_url_am" placeholder="{{ __('app.youtube_url_placeholder') }} ({{ __('app.amharic') }})" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
-                        <label class="block text-sm font-medium text-secondary mt-3 mb-1.5">{{ __('app.sinksar_text_label') }}</label>
-                        <textarea x-model="form.sinksar_text_am" rows="6" placeholder="{{ __('app.sinksar_text_label') }} ({{ __('app.amharic') }})" class="w-full min-h-[10rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
-                        <label class="block text-sm font-medium text-secondary mt-3 mb-1.5">{{ __('app.sinksar_description_label') }}</label>
-                        <textarea x-model="form.sinksar_description_am" rows="3" placeholder="{{ __('app.sinksar_description_label') }} ({{ __('app.amharic') }})" class="w-full min-h-[5rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
-                    </div>
+                    <div class="lg:grid lg:grid-cols-2 lg:gap-4 space-y-5 lg:space-y-0">
+                        <div class="space-y-4 rounded-xl border border-sinksar/30 bg-sinksar/5 p-3">
+                            <p class="text-xs font-semibold text-sinksar mb-2">{{ __('app.amharic') }}</p>
+                            <label class="block text-sm font-medium text-secondary mb-1.5">{{ __('app.title_label') }}</label>
+                            <input type="text" x-model="form.sinksar_title_am" placeholder="{{ __('app.name_amharic_label') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                            <label class="block text-sm font-medium text-secondary mt-3 mb-1.5">{{ __('app.url_video_label') }}</label>
+                            <input type="url" x-model="form.sinksar_url_am" placeholder="{{ __('app.youtube_url_placeholder') }} ({{ __('app.amharic') }})" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                            <label class="block text-sm font-medium text-secondary mt-3 mb-1.5">{{ __('app.sinksar_text_label') }}</label>
+                            <textarea x-model="form.sinksar_text_am" rows="6" placeholder="{{ __('app.sinksar_text_label') }} ({{ __('app.amharic') }})" class="w-full min-h-[10rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
+                            <label class="block text-sm font-medium text-secondary mt-3 mb-1.5">{{ __('app.sinksar_description_label') }}</label>
+                            <textarea x-model="form.sinksar_description_am" rows="3" placeholder="{{ __('app.sinksar_description_label') }} ({{ __('app.amharic') }})" class="w-full min-h-[5rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
+                        </div>
 
-                    <div class="space-y-4 rounded-xl border border-sinksar/30 bg-sinksar/5 p-3">
-                        <p class="text-xs font-semibold text-sinksar mb-2">{{ __('app.english') }}</p>
-                        <label class="block text-sm font-medium text-secondary mb-1.5">{{ __('app.title_label') }}</label>
-                        <input type="text" x-model="form.sinksar_title_en" placeholder="{{ __('app.name_english_label') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
-                        <label class="block text-sm font-medium text-secondary mt-3 mb-1.5">{{ __('app.url_video_label') }}</label>
-                        <input type="url" x-model="form.sinksar_url_en" placeholder="{{ __('app.youtube_url_placeholder') }} ({{ __('app.english') }})" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
-                        <label class="block text-sm font-medium text-secondary mt-3 mb-1.5">{{ __('app.sinksar_text_label') }}</label>
-                        <textarea x-model="form.sinksar_text_en" rows="6" placeholder="{{ __('app.sinksar_text_label') }} ({{ __('app.english') }})" class="w-full min-h-[10rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
-                        <label class="block text-sm font-medium text-secondary mt-3 mb-1.5">{{ __('app.sinksar_description_label') }}</label>
-                        <textarea x-model="form.sinksar_description_en" rows="3" placeholder="{{ __('app.sinksar_description_label') }} ({{ __('app.english') }})" class="w-full min-h-[5rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
+                        <div class="space-y-4 rounded-xl border border-sinksar/30 bg-sinksar/5 p-3">
+                            <p class="text-xs font-semibold text-sinksar mb-2">{{ __('app.english') }}</p>
+                            <label class="block text-sm font-medium text-secondary mb-1.5">{{ __('app.title_label') }}</label>
+                            <input type="text" x-model="form.sinksar_title_en" placeholder="{{ __('app.name_english_label') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                            <label class="block text-sm font-medium text-secondary mt-3 mb-1.5">{{ __('app.url_video_label') }}</label>
+                            <input type="url" x-model="form.sinksar_url_en" placeholder="{{ __('app.youtube_url_placeholder') }} ({{ __('app.english') }})" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                            <label class="block text-sm font-medium text-secondary mt-3 mb-1.5">{{ __('app.sinksar_text_label') }}</label>
+                            <textarea x-model="form.sinksar_text_en" rows="6" placeholder="{{ __('app.sinksar_text_label') }} ({{ __('app.english') }})" class="w-full min-h-[10rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
+                            <label class="block text-sm font-medium text-secondary mt-3 mb-1.5">{{ __('app.sinksar_description_label') }}</label>
+                            <textarea x-model="form.sinksar_description_en" rows="3" placeholder="{{ __('app.sinksar_description_label') }} ({{ __('app.english') }})" class="w-full min-h-[5rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
+                        </div>
                     </div>
 
                     {{-- Saint Images Upload --}}
@@ -546,18 +558,19 @@
                                         {{ __('app.remove') }}
                                     </button>
                                 </div>
-                                <div class="space-y-2 rounded-lg bg-white/40 border border-book/20 p-3">
-                                    <p class="text-xs font-semibold text-book">{{ __('app.amharic') }}</p>
-                                    <input type="text" x-model="book.title_am" placeholder="{{ __('app.name_amharic_label') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
-                                    <textarea x-model="book.description_am" rows="2" placeholder="{{ __('app.description_label') }} ({{ __('app.amharic') }})" class="w-full min-h-[4rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
-                                    <input type="url" x-model="book.url_am" placeholder="{{ __('app.url_placeholder') }} ({{ __('app.amharic') }})" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
-                                </div>
+                                <div class="lg:grid lg:grid-cols-2 lg:gap-3 space-y-3 lg:space-y-0">
+                                    <div class="space-y-2 rounded-lg bg-white/40 border border-book/20 p-3">
+                                        <p class="text-xs font-semibold text-book">{{ __('app.amharic') }}</p>
+                                        <input type="text" x-model="book.title_am" placeholder="{{ __('app.name_amharic_label') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                                        <textarea x-model="book.description_am" rows="2" placeholder="{{ __('app.description_label') }} ({{ __('app.amharic') }})" class="w-full min-h-[4rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
+                                        <input type="url" x-model="book.url_am" placeholder="{{ __('app.url_placeholder') }} ({{ __('app.amharic') }})" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                                    </div>
 
-                                 <div class="space-y-2 rounded-lg bg-white/40 border border-book/20 p-3">
-                                    <p class="text-xs font-semibold text-book">{{ __('app.english') }}</p>
-                                    <input type="text" x-model="book.title_en" placeholder="{{ __('app.name_english_label') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
-                                    <textarea x-model="book.description_en" rows="2" placeholder="{{ __('app.description_label') }} ({{ __('app.english') }})" class="w-full min-h-[4rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
-                                    <input type="url" x-model="book.url_en" placeholder="{{ __('app.url_placeholder') }} ({{ __('app.english') }})" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                                    <div class="space-y-2 rounded-lg bg-white/40 border border-book/20 p-3">
+                                        <p class="text-xs font-semibold text-book">{{ __('app.english') }}</p>
+                                        <input type="text" x-model="book.title_en" placeholder="{{ __('app.name_english_label') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                                        <textarea x-model="book.description_en" rows="2" placeholder="{{ __('app.description_label') }} ({{ __('app.english') }})" class="w-full min-h-[4rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
+                                        <input type="url" x-model="book.url_en" placeholder="{{ __('app.url_placeholder') }} ({{ __('app.english') }})" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
                                     <div class="space-y-2">
                                         <label class="text-xs font-semibold text-book">{{ __('app.upload_book_pdf') }}</label>
                                         <div class="flex flex-col sm:flex-row gap-2 sm:items-center">
@@ -576,6 +589,7 @@
                                         </div>
                                     </div>
                                 </div>
+                            </div>
                             </template>
                             <button type="button" @click="addBook()" class="w-full min-h-12 py-3 border-2 border-dashed border-book/40 rounded-xl text-sm font-medium text-book hover:bg-book/10 transition touch-manipulation">
                             + {{ __('app.add_spiritual_book') }}
@@ -587,19 +601,21 @@
                 <section x-show="step === 6" x-cloak class="space-y-5">
                     <div class="space-y-3">
                         <p class="text-xs font-semibold text-muted-text">{{ __('app.reflection_label') }}</p>
-                        <div class="space-y-2 rounded-lg bg-muted border border-border p-3">
-                            <p class="text-xs font-semibold text-accent-secondary">{{ __('app.amharic') }}</p>
-                            <label class="block text-sm font-medium text-secondary">{{ __('app.reflection_title_label') ?? 'Title (optional)' }}</label>
-                            <input type="text" x-model="form.reflection_title_am" placeholder="e.g. ስለ ጸሎት" class="w-full px-4 py-2.5 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
-                            <label class="block text-sm font-medium text-secondary mt-2">{{ __('app.reflection_label') }}</label>
-                            <textarea x-model="form.reflection_am" rows="4" placeholder="{{ __('app.amharic_default') }}" class="w-full min-h-[6rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
-                        </div>
-                        <div class="space-y-2 rounded-lg bg-muted border border-border p-3">
-                            <p class="text-xs font-semibold text-accent-secondary">{{ __('app.english') }}</p>
-                            <label class="block text-sm font-medium text-secondary">{{ __('app.reflection_title_label') ?? 'Title (optional)' }}</label>
-                            <input type="text" x-model="form.reflection_title_en" placeholder="e.g. About Prayer" class="w-full px-4 py-2.5 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
-                            <label class="block text-sm font-medium text-secondary mt-2">{{ __('app.reflection_label') }}</label>
-                            <textarea x-model="form.reflection_en" rows="4" placeholder="{{ __('app.english_fallback') }}" class="w-full min-h-[6rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
+                        <div class="lg:grid lg:grid-cols-2 lg:gap-3 space-y-3 lg:space-y-0">
+                            <div class="space-y-2 rounded-lg bg-muted border border-border p-3">
+                                <p class="text-xs font-semibold text-accent-secondary">{{ __('app.amharic') }}</p>
+                                <label class="block text-sm font-medium text-secondary">{{ __('app.reflection_title_label') ?? 'Title (optional)' }}</label>
+                                <input type="text" x-model="form.reflection_title_am" placeholder="e.g. ስለ ጸሎት" class="w-full px-4 py-2.5 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                                <label class="block text-sm font-medium text-secondary mt-2">{{ __('app.reflection_label') }}</label>
+                                <textarea x-model="form.reflection_am" rows="4" placeholder="{{ __('app.amharic_default') }}" class="w-full min-h-[6rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
+                            </div>
+                            <div class="space-y-2 rounded-lg bg-muted border border-border p-3">
+                                <p class="text-xs font-semibold text-accent-secondary">{{ __('app.english') }}</p>
+                                <label class="block text-sm font-medium text-secondary">{{ __('app.reflection_title_label') ?? 'Title (optional)' }}</label>
+                                <input type="text" x-model="form.reflection_title_en" placeholder="e.g. About Prayer" class="w-full px-4 py-2.5 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                                <label class="block text-sm font-medium text-secondary mt-2">{{ __('app.reflection_label') }}</label>
+                                <textarea x-model="form.reflection_en" rows="4" placeholder="{{ __('app.english_fallback') }}" class="w-full min-h-[6rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
+                            </div>
                         </div>
                     </div>
 
@@ -618,15 +634,17 @@
                                         {{ __('app.remove') }}
                                     </button>
                                 </div>
-                                <div class="space-y-2 rounded-lg bg-muted border border-border p-3">
-                                    <p class="text-xs font-semibold text-muted-text">{{ __('app.amharic') }}</p>
-                                    <input type="text" x-model="reference.name_am" placeholder="{{ __('app.name_amharic_label') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
-                                    <input type="url" x-model="reference.url_am" placeholder="{{ __('app.url_placeholder') }} ({{ __('app.amharic') }})" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
-                                </div>
-                                <div class="space-y-2 rounded-lg bg-muted border border-border p-3">
-                                    <p class="text-xs font-semibold text-muted-text">{{ __('app.english') }}</p>
-                                    <input type="text" x-model="reference.name_en" placeholder="{{ __('app.name_english_label') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
-                                    <input type="url" x-model="reference.url_en" placeholder="{{ __('app.url_placeholder') }} ({{ __('app.english') }})" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                                <div class="lg:grid lg:grid-cols-2 lg:gap-3 space-y-3 lg:space-y-0">
+                                    <div class="space-y-2 rounded-lg bg-muted border border-border p-3">
+                                        <p class="text-xs font-semibold text-muted-text">{{ __('app.amharic') }}</p>
+                                        <input type="text" x-model="reference.name_am" placeholder="{{ __('app.name_amharic_label') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                                        <input type="url" x-model="reference.url_am" placeholder="{{ __('app.url_placeholder') }} ({{ __('app.amharic') }})" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                                    </div>
+                                    <div class="space-y-2 rounded-lg bg-muted border border-border p-3">
+                                        <p class="text-xs font-semibold text-muted-text">{{ __('app.english') }}</p>
+                                        <input type="text" x-model="reference.name_en" placeholder="{{ __('app.name_english_label') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                                        <input type="url" x-model="reference.url_en" placeholder="{{ __('app.url_placeholder') }} ({{ __('app.english') }})" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                                    </div>
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-secondary mb-1">{{ __('app.reference_type_label') }}</label>
@@ -648,7 +666,7 @@
                 <section x-show="step === 7" x-cloak class="space-y-5">
                     <h2 class="text-base sm:text-lg font-semibold text-primary">{{ __('app.review_and_publish') }}</h2>
 
-                    <div class="space-y-3">
+                    <div class="grid grid-cols-2 lg:grid-cols-3 gap-3">
                         <div class="p-4 rounded-xl border border-border bg-muted/40">
                             <p class="text-xs text-muted-text mb-1">{{ __('app.day_label') }}</p>
                             <p class="text-base font-medium text-primary" x-text="form.day_number || '-'"></p>
