@@ -376,11 +376,19 @@ class HomeController extends Controller
         return view('member.week', compact('member', 'weeklyTheme'));
     }
 
-    private function resolveWeekThemeForDate(int $seasonId, Carbon $date): ?WeeklyTheme
+    private function resolveWeekThemeForDate(int|string|null $seasonId, Carbon|string|null $date): ?WeeklyTheme
     {
-        return WeeklyTheme::where('lent_season_id', $seasonId)
-            ->whereDate('week_start_date', '<=', $date)
-            ->whereDate('week_end_date', '>=', $date)
+        if ($seasonId === null || ! is_numeric((string) $seasonId) || $date === null) {
+            return null;
+        }
+
+        $resolvedDate = $date instanceof Carbon
+            ? $date->copy()
+            : Carbon::parse($date);
+
+        return WeeklyTheme::where('lent_season_id', (int) $seasonId)
+            ->whereDate('week_start_date', '<=', $resolvedDate)
+            ->whereDate('week_end_date', '>=', $resolvedDate)
             ->first();
     }
 }
