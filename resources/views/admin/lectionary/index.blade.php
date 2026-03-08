@@ -27,7 +27,7 @@ $monthEmpty    = $maxDay - count($filledDays);
 
 <style>[x-cloak]{display:none!important}</style>
 
-<div class="max-w-2xl pb-28"
+<div class="max-w-2xl lg:max-w-[90rem] pb-28"
      x-data="{
          monthOpen: {{ $selectedDay > 0 ? 'false' : 'true' }},
          dayOpen:   {{ $selectedDay > 0 ? 'false' : 'true' }},
@@ -64,6 +64,8 @@ $monthEmpty    = $maxDay - count($filledDays);
     </div>
     @endif
 
+    <div class="lg:grid lg:grid-cols-[300px_1fr] lg:gap-6 lg:items-start">
+    <div class="space-y-3 mb-4 lg:mb-0 lg:sticky lg:top-4">
     {{-- ════════════ MONTH ACCORDION ════════════ --}}
     @php
         [$curMonthEn, $curMonthAm] = explode(' / ', $monthNames[$selectedMonth]);
@@ -186,6 +188,8 @@ $monthEmpty    = $maxDay - count($filledDays);
             </div>
         </div>
     </div>
+    </div>{{-- /sidebar --}}
+    <div>{{-- main column --}}
 
     {{-- ════════════ ENTRY FORM ════════════ --}}
     @if($selectedDay > 0)
@@ -270,25 +274,29 @@ $monthEmpty    = $maxDay - count($filledDays);
                  x-transition:leave-start="opacity-100"
                  x-transition:leave-end="opacity-0"
                  class="border-t border-border px-4 pb-4 pt-3 space-y-3">
-                <div>
-                    <label class="{{ $labelClass }}">{{ __('app.lectionary_title') }} (አማርኛ)</label>
-                    <input type="text" name="title_am" value="{{ old('title_am', $entry?->title_am) }}"
-                           placeholder="ለምሳሌ፦ የጌታ ስቅለት" class="{{ $inputClass }}">
+                <div class="lg:grid lg:grid-cols-2 lg:gap-3 space-y-3 lg:space-y-0">
+                    <div>
+                        <label class="{{ $labelClass }}">{{ __('app.lectionary_title') }} (አማርኛ)</label>
+                        <input type="text" name="title_am" value="{{ old('title_am', $entry?->title_am) }}"
+                               placeholder="ለምሳሌ፦ የጌታ ስቅለት" class="{{ $inputClass }}">
+                    </div>
+                    <div>
+                        <label class="{{ $labelClass }}">{{ __('app.lectionary_title') }} (English)</label>
+                        <input type="text" name="title_en" value="{{ old('title_en', $entry?->title_en) }}"
+                               placeholder="e.g. The Crucifixion of our Lord" class="{{ $inputClass }}">
+                    </div>
                 </div>
-                <div>
-                    <label class="{{ $labelClass }}">{{ __('app.lectionary_title') }} (English)</label>
-                    <input type="text" name="title_en" value="{{ old('title_en', $entry?->title_en) }}"
-                           placeholder="e.g. The Crucifixion of our Lord" class="{{ $inputClass }}">
-                </div>
-                <div>
-                    <label class="{{ $labelClass }}">{{ __('app.lectionary_description') }} (አማርኛ)</label>
-                    <textarea name="description_am" rows="3" placeholder="የዕለቱ ጭብጥ ወይም መግለጫ..."
-                              class="{{ $taClass }}">{{ old('description_am', $entry?->description_am) }}</textarea>
-                </div>
-                <div>
-                    <label class="{{ $labelClass }}">{{ __('app.lectionary_description') }} (English)</label>
-                    <textarea name="description_en" rows="3" placeholder="Theme or context for the day..."
-                              class="{{ $taClass }}">{{ old('description_en', $entry?->description_en) }}</textarea>
+                <div class="lg:grid lg:grid-cols-2 lg:gap-3 space-y-3 lg:space-y-0">
+                    <div>
+                        <label class="{{ $labelClass }}">{{ __('app.lectionary_description') }} (አማርኛ)</label>
+                        <textarea name="description_am" rows="3" placeholder="የዕለቱ ጭብጥ ወይም መግለጫ..."
+                                  class="{{ $taClass }}">{{ old('description_am', $entry?->description_am) }}</textarea>
+                    </div>
+                    <div>
+                        <label class="{{ $labelClass }}">{{ __('app.lectionary_description') }} (English)</label>
+                        <textarea name="description_en" rows="3" placeholder="Theme or context for the day..."
+                                  class="{{ $taClass }}">{{ old('description_en', $entry?->description_en) }}</textarea>
+                    </div>
                 </div>
             </div>
         </div>
@@ -370,15 +378,17 @@ $monthEmpty    = $maxDay - count($filledDays);
                     <input type="hidden" name="pauline_chapter" x-ref="ch" value="{{ $paulCh }}">
                     <input type="hidden" name="pauline_verses" x-ref="vs" value="{{ $paulVs }}">
                 </div>
-                <div>
-                    <label class="{{ $labelClass }}">{{ __('app.lectionary_text_am') }}</label>
-                    <textarea name="pauline_text_am" placeholder="ሞቱንም በሚመስል..."
-                              class="{{ $scriptTa }}">{{ old('pauline_text_am', $entry?->pauline_text_am) }}</textarea>
-                </div>
-                <div>
-                    <label class="{{ $labelClass }}">{{ __('app.lectionary_text_en') }}</label>
-                    <textarea name="pauline_text_en" placeholder="For if we have been..."
-                              class="{{ $scriptTa }}">{{ old('pauline_text_en', $entry?->pauline_text_en) }}</textarea>
+                <div class="lg:grid lg:grid-cols-2 lg:gap-3 space-y-3 lg:space-y-0">
+                    <div>
+                        <label class="{{ $labelClass }}">{{ __('app.lectionary_text_am') }}</label>
+                        <textarea name="pauline_text_am" placeholder="ሞቱንም በሚመስል..."
+                                  class="{{ $scriptTa }}">{{ old('pauline_text_am', $entry?->pauline_text_am) }}</textarea>
+                    </div>
+                    <div>
+                        <label class="{{ $labelClass }}">{{ __('app.lectionary_text_en') }}</label>
+                        <textarea name="pauline_text_en" placeholder="For if we have been..."
+                                  class="{{ $scriptTa }}">{{ old('pauline_text_en', $entry?->pauline_text_en) }}</textarea>
+                    </div>
                 </div>
             </div>
         </div>
@@ -460,15 +470,17 @@ $monthEmpty    = $maxDay - count($filledDays);
                     <input type="hidden" name="catholic_chapter" x-ref="ch" value="{{ $cathCh }}">
                     <input type="hidden" name="catholic_verses" x-ref="vs" value="{{ $cathVs }}">
                 </div>
-                <div>
-                    <label class="{{ $labelClass }}">{{ __('app.lectionary_text_am') }}</label>
-                    <textarea name="catholic_text_am" placeholder="የተጠራችሁለት..."
-                              class="{{ $scriptTa }}">{{ old('catholic_text_am', $entry?->catholic_text_am) }}</textarea>
-                </div>
-                <div>
-                    <label class="{{ $labelClass }}">{{ __('app.lectionary_text_en') }}</label>
-                    <textarea name="catholic_text_en" placeholder="For to this you were called..."
-                              class="{{ $scriptTa }}">{{ old('catholic_text_en', $entry?->catholic_text_en) }}</textarea>
+                <div class="lg:grid lg:grid-cols-2 lg:gap-3 space-y-3 lg:space-y-0">
+                    <div>
+                        <label class="{{ $labelClass }}">{{ __('app.lectionary_text_am') }}</label>
+                        <textarea name="catholic_text_am" placeholder="የተጠራችሁለት..."
+                                  class="{{ $scriptTa }}">{{ old('catholic_text_am', $entry?->catholic_text_am) }}</textarea>
+                    </div>
+                    <div>
+                        <label class="{{ $labelClass }}">{{ __('app.lectionary_text_en') }}</label>
+                        <textarea name="catholic_text_en" placeholder="For to this you were called..."
+                                  class="{{ $scriptTa }}">{{ old('catholic_text_en', $entry?->catholic_text_en) }}</textarea>
+                    </div>
                 </div>
             </div>
         </div>
@@ -523,15 +535,17 @@ $monthEmpty    = $maxDay - count($filledDays);
                     <input type="hidden" name="acts_chapter" x-ref="ch" value="{{ $actsCh }}">
                     <input type="hidden" name="acts_verses" x-ref="vs" value="{{ $actsVs }}">
                 </div>
-                <div>
-                    <label class="{{ $labelClass }}">{{ __('app.lectionary_text_am') }}</label>
-                    <textarea name="acts_text_am" placeholder="የሁሉ ጌታ..."
-                              class="{{ $scriptTa }}">{{ old('acts_text_am', $entry?->acts_text_am) }}</textarea>
-                </div>
-                <div>
-                    <label class="{{ $labelClass }}">{{ __('app.lectionary_text_en') }}</label>
-                    <textarea name="acts_text_en" placeholder="The word that God sent..."
-                              class="{{ $scriptTa }}">{{ old('acts_text_en', $entry?->acts_text_en) }}</textarea>
+                <div class="lg:grid lg:grid-cols-2 lg:gap-3 space-y-3 lg:space-y-0">
+                    <div>
+                        <label class="{{ $labelClass }}">{{ __('app.lectionary_text_am') }}</label>
+                        <textarea name="acts_text_am" placeholder="የሁሉ ጌታ..."
+                                  class="{{ $scriptTa }}">{{ old('acts_text_am', $entry?->acts_text_am) }}</textarea>
+                    </div>
+                    <div>
+                        <label class="{{ $labelClass }}">{{ __('app.lectionary_text_en') }}</label>
+                        <textarea name="acts_text_en" placeholder="The word that God sent..."
+                                  class="{{ $scriptTa }}">{{ old('acts_text_en', $entry?->acts_text_en) }}</textarea>
+                    </div>
                 </div>
             </div>
         </div>
@@ -597,17 +611,19 @@ $monthEmpty    = $maxDay - count($filledDays);
                         @endforeach
                     </div>
                 </div>
-                <div>
-                    <label class="{{ $labelClass }}">{{ __('app.lectionary_text_am') }}</label>
-                    <textarea name="mesbak_text_am"
-                              placeholder="እግዚአብሔር ግን ከዓለም አስቀድሞ ንጉሥ ነው..."
-                              class="{{ $scriptTa }}">{{ old('mesbak_text_am', $entry?->mesbak_text_am) }}</textarea>
-                </div>
-                <div>
-                    <label class="{{ $labelClass }}">{{ __('app.lectionary_text_en') }}</label>
-                    <textarea name="mesbak_text_en"
-                              placeholder="Yet God is my king from of old..."
-                              class="{{ $scriptTa }}">{{ old('mesbak_text_en', $entry?->mesbak_text_en) }}</textarea>
+                <div class="lg:grid lg:grid-cols-2 lg:gap-3 space-y-3 lg:space-y-0">
+                    <div>
+                        <label class="{{ $labelClass }}">{{ __('app.lectionary_text_am') }}</label>
+                        <textarea name="mesbak_text_am"
+                                  placeholder="እግዚአብሔር ግን ከዓለም አስቀድሞ ንጉሥ ነው..."
+                                  class="{{ $scriptTa }}">{{ old('mesbak_text_am', $entry?->mesbak_text_am) }}</textarea>
+                    </div>
+                    <div>
+                        <label class="{{ $labelClass }}">{{ __('app.lectionary_text_en') }}</label>
+                        <textarea name="mesbak_text_en"
+                                  placeholder="Yet God is my king from of old..."
+                                  class="{{ $scriptTa }}">{{ old('mesbak_text_en', $entry?->mesbak_text_en) }}</textarea>
+                    </div>
                 </div>
             </div>
         </div>
@@ -681,15 +697,17 @@ $monthEmpty    = $maxDay - count($filledDays);
                     <input type="hidden" name="gospel_chapter" x-ref="ch" value="{{ $gospCh }}">
                     <input type="hidden" name="gospel_verses" x-ref="vs" value="{{ $gospVs }}">
                 </div>
-                <div>
-                    <label class="{{ $labelClass }}">{{ __('app.lectionary_text_am') }}</label>
-                    <textarea name="gospel_text_am" placeholder="ስለዚህ በዚያን ጊዜ..."
-                              class="{{ $scriptTa }}">{{ old('gospel_text_am', $entry?->gospel_text_am) }}</textarea>
-                </div>
-                <div>
-                    <label class="{{ $labelClass }}">{{ __('app.lectionary_text_en') }}</label>
-                    <textarea name="gospel_text_en" placeholder="So he delivered him..."
-                              class="{{ $scriptTa }}">{{ old('gospel_text_en', $entry?->gospel_text_en) }}</textarea>
+                <div class="lg:grid lg:grid-cols-2 lg:gap-3 space-y-3 lg:space-y-0">
+                    <div>
+                        <label class="{{ $labelClass }}">{{ __('app.lectionary_text_am') }}</label>
+                        <textarea name="gospel_text_am" placeholder="ስለዚህ በዚያን ጊዜ..."
+                                  class="{{ $scriptTa }}">{{ old('gospel_text_am', $entry?->gospel_text_am) }}</textarea>
+                    </div>
+                    <div>
+                        <label class="{{ $labelClass }}">{{ __('app.lectionary_text_en') }}</label>
+                        <textarea name="gospel_text_en" placeholder="So he delivered him..."
+                                  class="{{ $scriptTa }}">{{ old('gospel_text_en', $entry?->gospel_text_en) }}</textarea>
+                    </div>
                 </div>
             </div>
         </div>
@@ -719,15 +737,17 @@ $monthEmpty    = $maxDay - count($filledDays);
                  x-transition:enter="transition duration-200 ease-out" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
                  x-transition:leave="transition duration-150 ease-in" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
                  class="border-t border-border px-4 pb-4 pt-3 space-y-3">
-                <div>
-                    <label class="{{ $labelClass }}">{{ __('app.lectionary_qiddase_am') }}</label>
-                    <input type="text" name="qiddase_am" value="{{ old('qiddase_am', $entry?->qiddase_am) }}"
-                           placeholder="የቅዱስ ዮሐንስ አፈወርቅ ቅዳሴ" class="{{ $inputClass }}">
-                </div>
-                <div>
-                    <label class="{{ $labelClass }}">{{ __('app.lectionary_qiddase_en') ?? 'Qiddase (English)' }}</label>
-                    <input type="text" name="qiddase_en" value="{{ old('qiddase_en', $entry?->qiddase_en) }}"
-                           placeholder="Anaphora of St. John Chrysostom" class="{{ $inputClass }}">
+                <div class="lg:grid lg:grid-cols-2 lg:gap-3 space-y-3 lg:space-y-0">
+                    <div>
+                        <label class="{{ $labelClass }}">{{ __('app.lectionary_qiddase_am') }}</label>
+                        <input type="text" name="qiddase_am" value="{{ old('qiddase_am', $entry?->qiddase_am) }}"
+                               placeholder="የቅዱስ ዮሐንስ አፈወርቅ ቅዳሴ" class="{{ $inputClass }}">
+                    </div>
+                    <div>
+                        <label class="{{ $labelClass }}">{{ __('app.lectionary_qiddase_en') ?? 'Qiddase (English)' }}</label>
+                        <input type="text" name="qiddase_en" value="{{ old('qiddase_en', $entry?->qiddase_en) }}"
+                               placeholder="Anaphora of St. John Chrysostom" class="{{ $inputClass }}">
+                    </div>
                 </div>
             </div>
         </div>
@@ -736,10 +756,10 @@ $monthEmpty    = $maxDay - count($filledDays);
         <div class="h-2"></div>
 
         {{-- ── Sticky Save Bar ── --}}
-        <div class="fixed bottom-0 left-0 right-0 z-20 bg-card/95 backdrop-blur-sm border-t border-border px-4 py-3"
+        <div class="fixed bottom-0 left-0 right-0 z-20 bg-card/95 backdrop-blur-sm border-t border-border px-4 py-3 lg:sticky lg:bottom-4 lg:left-auto lg:right-auto lg:px-0 lg:border-t-0 lg:bg-transparent lg:backdrop-blur-none lg:z-auto"
              style="padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0.75rem))">
             <button type="submit"
-                    class="w-full py-4 bg-accent text-on-accent text-base font-bold rounded-2xl shadow-lg shadow-accent/20 hover:opacity-90 active:scale-[0.98] transition">
+                    class="w-full py-4 lg:py-3 bg-accent text-on-accent text-base font-bold rounded-2xl shadow-lg shadow-accent/20 hover:opacity-90 active:scale-[0.98] transition lg:max-w-md">
                 {{ $entry ? __('app.save_changes') : __('app.lectionary_add') }}
             </button>
         </div>
@@ -761,6 +781,9 @@ $monthEmpty    = $maxDay - count($filledDays);
         </button>
     </div>
     @endif
+
+    </div>{{-- /main column --}}
+    </div>{{-- /grid --}}
 
     {{-- ═══════════ BOTTOM SHEETS ═══════════ --}}
 
