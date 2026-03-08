@@ -7,7 +7,7 @@
     @include('partials.favicon')
     <title>@yield('title', __('app.admin')) - {{ __('app.app_name') }}</title>
     <script>
-        (function(){var t=localStorage.getItem('admin_theme');if(t!=='light')document.documentElement.classList.add('dark');})();
+        (function(){var t=localStorage.getItem('admin_theme');if(t==='dark')document.documentElement.classList.add('dark');else if(t==='sepia')document.documentElement.classList.add('theme-sepia');})();
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,11 +20,19 @@
       x-data="{
         sidebarOpen: false,
         desktopSidebar: localStorage.getItem('admin_sidebar') !== 'closed',
-        darkMode: localStorage.getItem('admin_theme') !== 'light',
+        theme: (function(){var t=localStorage.getItem('admin_theme');return (t==='light'||t==='sepia'||t==='dark')?t:'light';})(),
         locale: '{{ app()->getLocale() }}',
         toggleDesktopSidebar() {
           this.desktopSidebar = !this.desktopSidebar;
           localStorage.setItem('admin_sidebar', this.desktopSidebar ? 'open' : 'closed');
+        },
+        toggleTheme() {
+          const order = ['light', 'sepia', 'dark'];
+          const i = order.indexOf(this.theme);
+          this.theme = order[(i + 1) % 3];
+          localStorage.setItem('admin_theme', this.theme);
+          document.documentElement.classList.toggle('dark', this.theme === 'dark');
+          document.documentElement.classList.toggle('theme-sepia', this.theme === 'sepia');
         },
         setLocale(lang) {
           this.locale = lang;
@@ -33,7 +41,7 @@
           window.location.href = url.toString();
         }
       }"
-      x-effect="document.documentElement.classList.toggle('dark', darkMode)">
+      x-effect="document.documentElement.classList.toggle('dark', theme === 'dark'); document.documentElement.classList.toggle('theme-sepia', theme === 'sepia')">
     @php
         $currentAdmin = auth()->user();
         $adminHomeUrl = $currentAdmin?->isWriter() ? route('admin.daily.index') : route('admin.dashboard');
@@ -55,11 +63,15 @@
                 <a href="{{ $adminHomeUrl }}" class="font-bold text-lg">{{ __('app.app_name') }} <span class="text-accent-secondary">{{ __('app.admin') }}</span></a>
             </div>
             <div class="flex items-center gap-1">
-                <button type="button" @click="darkMode = !darkMode; localStorage.setItem('admin_theme', darkMode ? 'dark' : 'light')"
+                <button type="button" @click="toggleTheme()"
                         class="p-1.5 rounded-lg hover:bg-accent-overlay transition" aria-label="{{ __('app.toggle_theme') }}"
-                        title="{{ __('app.theme') }}">
-                    <svg x-show="!darkMode" class="w-5 h-5 text-accent-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
-                    <svg x-show="darkMode" class="w-5 h-5 text-accent-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24" x-cloak><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                        :title="theme === 'light' ? '{{ __('app.theme_light') }}' : (theme === 'sepia' ? '{{ __('app.theme_sepia') }}' : '{{ __('app.theme_dark') }}')">
+                    {{-- Sun: light theme --}}
+                    <svg x-show="theme === 'light'" class="w-5 h-5 text-accent-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    {{-- Sepia: warm book-like icon --}}
+                    <svg x-show="theme === 'sepia'" class="w-5 h-5 text-accent-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24" x-cloak><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
+                    {{-- Moon: dark theme --}}
+                    <svg x-show="theme === 'dark'" class="w-5 h-5 text-accent-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24" x-cloak><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
                 </button>
                 <div class="relative" x-data="{ open: false }" @click.away="open = false">
                     <button type="button"
