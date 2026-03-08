@@ -4,11 +4,11 @@
 
 @section('content')
 @php
-$inputClass  = 'w-full px-4 py-3.5 rounded-2xl border border-border bg-surface text-primary text-base focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition';
-$smallInput  = 'w-full px-3 py-3 rounded-xl border border-border bg-surface text-primary text-base focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition text-center';
-$labelClass  = 'block text-xs font-bold text-muted-text uppercase tracking-wider mb-2';
+$inputClass  = 'w-full px-4 py-3.5 lg:px-3 lg:py-2.5 rounded-2xl lg:rounded-xl border border-border bg-surface text-primary text-base lg:text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition';
+$smallInput  = 'w-full px-3 py-3 lg:py-2 rounded-xl border border-border bg-surface text-primary text-base lg:text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition text-center';
+$labelClass  = 'block text-xs font-bold text-muted-text uppercase tracking-wider mb-2 lg:mb-1';
 $taClass     = $inputClass . ' resize-none';
-$scriptTa    = $inputClass . ' resize-y min-h-[14rem]';
+$scriptTa    = $inputClass . ' resize-y min-h-[14rem] lg:min-h-[6rem]';
 
 // Section fill status for badge indicators
 $paulineFilled  = $entry && filled($entry->pauline_book_am)  && filled($entry->pauline_chapter);
@@ -27,7 +27,7 @@ $monthEmpty    = $maxDay - count($filledDays);
 
 <style>[x-cloak]{display:none!important}</style>
 
-<div class="max-w-2xl lg:max-w-[90rem] pb-28"
+<div class="max-w-2xl lg:max-w-full pb-28 lg:pb-6"
      x-data="{
          monthOpen: {{ $selectedDay > 0 ? 'false' : 'true' }},
          dayOpen:   {{ $selectedDay > 0 ? 'false' : 'true' }},
@@ -197,8 +197,8 @@ $monthEmpty    = $maxDay - count($filledDays);
     @php $monthAm = explode(' / ', $monthNames[$selectedMonth])[1]; @endphp
 
     {{-- Day card header --}}
-    <div class="bg-card rounded-2xl border border-border shadow-sm overflow-hidden mb-3">
-        <div class="px-4 py-3.5 bg-gradient-to-r from-accent/10 to-transparent flex items-center justify-between">
+    <div class="bg-card rounded-2xl lg:rounded-xl border border-border shadow-sm overflow-hidden mb-3 lg:mb-2">
+        <div class="px-4 py-3.5 lg:px-3 lg:py-2.5 bg-gradient-to-r from-accent/10 to-transparent flex items-center justify-between">
             <div class="flex items-center gap-2.5">
                 <svg class="w-5 h-5 text-accent shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
                 <div>
@@ -237,7 +237,7 @@ $monthEmpty    = $maxDay - count($filledDays);
     {{-- Form --}}
     <form method="POST"
           action="{{ $entry ? route('admin.lectionary.update', $entry) : route('admin.lectionary.store') }}"
-          class="space-y-3">
+          class="space-y-3 lg:space-y-2">
         @csrf
         @if($entry) @method('PUT') @endif
         @unless($entry)
@@ -246,10 +246,10 @@ $monthEmpty    = $maxDay - count($filledDays);
         @endunless
 
         {{-- ── Title & Description (flat) ── --}}
-        <div class="bg-card rounded-2xl border border-border shadow-sm overflow-hidden"
+        <div class="bg-card rounded-2xl lg:rounded-xl border border-border shadow-sm overflow-hidden"
              x-data="{ open: {{ $titleFilled ? 'true' : 'true' }} }">
             <button type="button" @click="open = !open"
-                    class="w-full flex items-center justify-between px-4 py-3.5 active:bg-muted/30 transition text-left select-none">
+                    class="w-full flex items-center justify-between px-4 py-3.5 lg:px-3 lg:py-2.5 active:bg-muted/30 transition text-left select-none">
                 <div class="flex items-center gap-3">
                     <span class="w-7 h-7 rounded-xl {{ $titleFilled ? 'bg-green-500' : 'bg-muted' }} text-white text-xs font-bold flex items-center justify-center shrink-0">
                         @if($titleFilled)
@@ -273,7 +273,7 @@ $monthEmpty    = $maxDay - count($filledDays);
                  x-transition:leave="transition duration-150 ease-in"
                  x-transition:leave-start="opacity-100"
                  x-transition:leave-end="opacity-0"
-                 class="border-t border-border px-4 pb-4 pt-3 space-y-3">
+                 class="border-t border-border px-4 pb-4 pt-3 space-y-3 lg:px-3 lg:pb-3 lg:pt-2 lg:space-y-2">
                 <div class="lg:grid lg:grid-cols-2 lg:gap-3 space-y-3 lg:space-y-0">
                     <div>
                         <label class="{{ $labelClass }}">{{ __('app.lectionary_title') }} (አማርኛ)</label>
@@ -306,9 +306,9 @@ $monthEmpty    = $maxDay - count($filledDays);
             $paulBookAm = old('pauline_book_am', $entry?->pauline_book_am ?? 'ሮሜ');
             $paulBookEn = old('pauline_book_en', $entry?->pauline_book_en ?? 'Romans');
         @endphp
-        <div class="bg-card rounded-2xl border border-border shadow-sm overflow-hidden"
+        <div class="bg-card rounded-2xl lg:rounded-xl border border-border shadow-sm overflow-hidden"
              x-data='{
-                 open: {{ $paulineFilled ? "false" : "true" }},
+                 open: window.innerWidth >= 1024 || {{ $paulineFilled ? "false" : "true" }},
                  books: @json($paulineBooks),
                  selAm: "{{ $paulBookAm }}",
                  selEn: "{{ $paulBookEn }}",
@@ -320,7 +320,7 @@ $monthEmpty    = $maxDay - count($filledDays);
                  }
              }'>
             <button type="button" @click="open = !open"
-                    class="w-full flex items-center justify-between px-4 py-3.5 active:bg-muted/30 transition text-left select-none">
+                    class="w-full flex items-center justify-between px-4 py-3.5 lg:px-3 lg:py-2.5 active:bg-muted/30 transition text-left select-none">
                 <div class="flex items-center gap-3">
                     <span class="w-7 h-7 rounded-xl {{ $paulineFilled ? 'bg-green-500' : 'bg-accent/10' }} flex items-center justify-center shrink-0">
                         @if($paulineFilled)
@@ -340,7 +340,7 @@ $monthEmpty    = $maxDay - count($filledDays);
             <div x-show="open"
                  x-transition:enter="transition duration-200 ease-out" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
                  x-transition:leave="transition duration-150 ease-in" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-                 class="border-t border-border px-4 pb-4 pt-3 space-y-3">
+                 class="border-t border-border px-4 pb-4 pt-3 space-y-3 lg:px-3 lg:pb-3 lg:pt-2 lg:space-y-2">
                 {{-- Book selector --}}
                 <div>
                     <label class="{{ $labelClass }}">{{ __('app.lectionary_book_am') }}</label>
@@ -367,7 +367,7 @@ $monthEmpty    = $maxDay - count($filledDays);
                     <div class="relative">
                         <input type="text" x-model="ref" @input="sync()" @blur="sync()"
                                placeholder="6:5-12"
-                               class="w-full px-4 py-4 rounded-2xl border border-border bg-surface text-primary text-2xl font-mono text-center tracking-widest focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition">
+                               class="w-full px-4 py-4 lg:px-3 lg:py-2.5 rounded-2xl lg:rounded-xl border border-border bg-surface text-primary text-2xl lg:text-lg font-mono text-center tracking-widest focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition">
                         <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] text-muted-text font-bold uppercase tracking-wider pointer-events-none leading-tight text-right">ch<br>:v</span>
                     </div>
                     <div class="flex items-center gap-3 mt-1.5 px-1" x-show="ref" x-cloak>
@@ -398,9 +398,9 @@ $monthEmpty    = $maxDay - count($filledDays);
             $cathBookAm = old('catholic_book_am', $entry?->catholic_book_am ?? 'ያዕቆብ');
             $cathBookEn = old('catholic_book_en', $entry?->catholic_book_en ?? 'James');
         @endphp
-        <div class="bg-card rounded-2xl border border-border shadow-sm overflow-hidden"
+        <div class="bg-card rounded-2xl lg:rounded-xl border border-border shadow-sm overflow-hidden"
              x-data='{
-                 open: {{ $catholicFilled ? "false" : "true" }},
+                 open: window.innerWidth >= 1024 || {{ $catholicFilled ? "false" : "true" }},
                  books: @json($catholicBooks),
                  selAm: "{{ $cathBookAm }}",
                  selEn: "{{ $cathBookEn }}",
@@ -412,7 +412,7 @@ $monthEmpty    = $maxDay - count($filledDays);
                  }
              }'>
             <button type="button" @click="open = !open"
-                    class="w-full flex items-center justify-between px-4 py-3.5 active:bg-muted/30 transition text-left select-none">
+                    class="w-full flex items-center justify-between px-4 py-3.5 lg:px-3 lg:py-2.5 active:bg-muted/30 transition text-left select-none">
                 <div class="flex items-center gap-3">
                     <span class="w-7 h-7 rounded-xl {{ $catholicFilled ? 'bg-green-500' : 'bg-accent/10' }} flex items-center justify-center shrink-0">
                         @if($catholicFilled)
@@ -432,7 +432,7 @@ $monthEmpty    = $maxDay - count($filledDays);
             <div x-show="open"
                  x-transition:enter="transition duration-200 ease-out" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
                  x-transition:leave="transition duration-150 ease-in" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-                 class="border-t border-border px-4 pb-4 pt-3 space-y-3">
+                 class="border-t border-border px-4 pb-4 pt-3 space-y-3 lg:px-3 lg:pb-3 lg:pt-2 lg:space-y-2">
                 {{-- Book selector --}}
                 <div>
                     <label class="{{ $labelClass }}">{{ __('app.lectionary_book_am') }}</label>
@@ -459,7 +459,7 @@ $monthEmpty    = $maxDay - count($filledDays);
                     <div class="relative">
                         <input type="text" x-model="ref" @input="sync()" @blur="sync()"
                                placeholder="2:21-25"
-                               class="w-full px-4 py-4 rounded-2xl border border-border bg-surface text-primary text-2xl font-mono text-center tracking-widest focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition">
+                               class="w-full px-4 py-4 lg:px-3 lg:py-2.5 rounded-2xl lg:rounded-xl border border-border bg-surface text-primary text-2xl lg:text-lg font-mono text-center tracking-widest focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition">
                         <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] text-muted-text font-bold uppercase tracking-wider pointer-events-none leading-tight text-right">ch<br>:v</span>
                     </div>
                     <div class="flex items-center gap-3 mt-1.5 px-1" x-show="ref" x-cloak>
@@ -486,10 +486,10 @@ $monthEmpty    = $maxDay - count($filledDays);
         </div>
 
         {{-- ── 3. ACTS ── --}}
-        <div class="bg-card rounded-2xl border border-border shadow-sm overflow-hidden"
-             x-data="{ open: {{ $actsFilled ? 'false' : 'true' }} }">
+        <div class="bg-card rounded-2xl lg:rounded-xl border border-border shadow-sm overflow-hidden"
+             x-data="{ open: window.innerWidth >= 1024 || {{ $actsFilled ? 'false' : 'true' }} }">
             <button type="button" @click="open = !open"
-                    class="w-full flex items-center justify-between px-4 py-3.5 active:bg-muted/30 transition text-left select-none">
+                    class="w-full flex items-center justify-between px-4 py-3.5 lg:px-3 lg:py-2.5 active:bg-muted/30 transition text-left select-none">
                 <div class="flex items-center gap-3">
                     <span class="w-7 h-7 rounded-xl {{ $actsFilled ? 'bg-green-500' : 'bg-accent/10' }} flex items-center justify-center shrink-0">
                         @if($actsFilled)
@@ -509,7 +509,7 @@ $monthEmpty    = $maxDay - count($filledDays);
             <div x-show="open"
                  x-transition:enter="transition duration-200 ease-out" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
                  x-transition:leave="transition duration-150 ease-in" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-                 class="border-t border-border px-4 pb-4 pt-3 space-y-3">
+                 class="border-t border-border px-4 pb-4 pt-3 space-y-3 lg:px-3 lg:pb-3 lg:pt-2 lg:space-y-2">
                 {{-- Smart Chapter:Verses reference --}}
                 @php $actsCh = old('acts_chapter', $entry?->acts_chapter ?? ''); $actsVs = old('acts_verses', $entry?->acts_verses ?? ''); @endphp
                 <div x-data="{
@@ -524,7 +524,7 @@ $monthEmpty    = $maxDay - count($filledDays);
                     <div class="relative">
                         <input type="text" x-model="ref" @input="sync()" @blur="sync()"
                                placeholder="10:36-44"
-                               class="w-full px-4 py-4 rounded-2xl border border-border bg-surface text-primary text-2xl font-mono text-center tracking-widest focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition">
+                               class="w-full px-4 py-4 lg:px-3 lg:py-2.5 rounded-2xl lg:rounded-xl border border-border bg-surface text-primary text-2xl lg:text-lg font-mono text-center tracking-widest focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition">
                         <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] text-muted-text font-bold uppercase tracking-wider pointer-events-none leading-tight text-right">ch<br>:v</span>
                     </div>
                     <div class="flex items-center gap-3 mt-1.5 px-1" x-show="ref" x-cloak>
@@ -551,10 +551,10 @@ $monthEmpty    = $maxDay - count($filledDays);
         </div>
 
         {{-- ── 4. MESBAK ── --}}
-        <div class="bg-card rounded-2xl border border-border shadow-sm overflow-hidden"
-             x-data="{ open: {{ $mesbakFilled ? 'false' : 'true' }} }">
+        <div class="bg-card rounded-2xl lg:rounded-xl border border-border shadow-sm overflow-hidden"
+             x-data="{ open: window.innerWidth >= 1024 || {{ $mesbakFilled ? 'false' : 'true' }} }">
             <button type="button" @click="open = !open"
-                    class="w-full flex items-center justify-between px-4 py-3.5 active:bg-muted/30 transition text-left select-none">
+                    class="w-full flex items-center justify-between px-4 py-3.5 lg:px-3 lg:py-2.5 active:bg-muted/30 transition text-left select-none">
                 <div class="flex items-center gap-3">
                     <span class="w-7 h-7 rounded-xl {{ $mesbakFilled ? 'bg-green-500' : 'bg-accent/10' }} flex items-center justify-center shrink-0">
                         @if($mesbakFilled)
@@ -574,7 +574,7 @@ $monthEmpty    = $maxDay - count($filledDays);
             <div x-show="open"
                  x-transition:enter="transition duration-200 ease-out" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
                  x-transition:leave="transition duration-150 ease-in" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-                 class="border-t border-border px-4 pb-4 pt-3 space-y-3">
+                 class="border-t border-border px-4 pb-4 pt-3 space-y-3 lg:px-3 lg:pb-3 lg:pt-2 lg:space-y-2">
                 {{-- Smart Psalm:Verses reference --}}
                 @php $mesbPsalm = old('mesbak_psalm', $entry?->mesbak_psalm ?? ''); $mesbVs = old('mesbak_verses', $entry?->mesbak_verses ?? ''); @endphp
                 <div x-data="{
@@ -589,7 +589,7 @@ $monthEmpty    = $maxDay - count($filledDays);
                     <div class="relative">
                         <input type="text" x-model="ref" @input="sync()" @blur="sync()"
                                placeholder="73:12-13"
-                               class="w-full px-4 py-4 rounded-2xl border border-border bg-surface text-primary text-2xl font-mono text-center tracking-widest focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition">
+                               class="w-full px-4 py-4 lg:px-3 lg:py-2.5 rounded-2xl lg:rounded-xl border border-border bg-surface text-primary text-2xl lg:text-lg font-mono text-center tracking-widest focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition">
                         <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] text-muted-text font-bold uppercase tracking-wider pointer-events-none leading-tight text-right">ps<br>:v</span>
                     </div>
                     <div class="flex items-center gap-3 mt-1.5 px-1" x-show="ref" x-cloak>
@@ -629,10 +629,10 @@ $monthEmpty    = $maxDay - count($filledDays);
         </div>
 
         {{-- ── 5. GOSPEL ── --}}
-        <div class="bg-card rounded-2xl border border-border shadow-sm overflow-hidden"
-             x-data="{ open: {{ $gospelFilled ? 'false' : 'true' }} }">
+        <div class="bg-card rounded-2xl lg:rounded-xl border border-border shadow-sm overflow-hidden"
+             x-data="{ open: window.innerWidth >= 1024 || {{ $gospelFilled ? 'false' : 'true' }} }">
             <button type="button" @click="open = !open"
-                    class="w-full flex items-center justify-between px-4 py-3.5 active:bg-muted/30 transition text-left select-none">
+                    class="w-full flex items-center justify-between px-4 py-3.5 lg:px-3 lg:py-2.5 active:bg-muted/30 transition text-left select-none">
                 <div class="flex items-center gap-3">
                     <span class="w-7 h-7 rounded-xl {{ $gospelFilled ? 'bg-green-500' : 'bg-accent/10' }} flex items-center justify-center shrink-0">
                         @if($gospelFilled)
@@ -652,7 +652,7 @@ $monthEmpty    = $maxDay - count($filledDays);
             <div x-show="open"
                  x-transition:enter="transition duration-200 ease-out" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
                  x-transition:leave="transition duration-150 ease-in" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-                 class="border-t border-border px-4 pb-4 pt-3 space-y-3">
+                 class="border-t border-border px-4 pb-4 pt-3 space-y-3 lg:px-3 lg:pb-3 lg:pt-2 lg:space-y-2">
                 {{-- Book selector --}}
                 @php $gospBookAm = old('gospel_book_am', $entry?->gospel_book_am ?? ''); @endphp
                 <div x-data='{
@@ -686,7 +686,7 @@ $monthEmpty    = $maxDay - count($filledDays);
                     <div class="relative">
                         <input type="text" x-model="ref" @input="sync()" @blur="sync()"
                                placeholder="19:16-24"
-                               class="w-full px-4 py-4 rounded-2xl border border-border bg-surface text-primary text-2xl font-mono text-center tracking-widest focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition">
+                               class="w-full px-4 py-4 lg:px-3 lg:py-2.5 rounded-2xl lg:rounded-xl border border-border bg-surface text-primary text-2xl lg:text-lg font-mono text-center tracking-widest focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition">
                         <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] text-muted-text font-bold uppercase tracking-wider pointer-events-none leading-tight text-right">ch<br>:v</span>
                     </div>
                     <div class="flex items-center gap-3 mt-1.5 px-1" x-show="ref" x-cloak>
@@ -713,10 +713,10 @@ $monthEmpty    = $maxDay - count($filledDays);
         </div>
 
         {{-- ── 6. QIDDASE ── --}}
-        <div class="bg-card rounded-2xl border border-border shadow-sm overflow-hidden"
-             x-data="{ open: {{ $qiddaseFilled ? 'false' : 'true' }} }">
+        <div class="bg-card rounded-2xl lg:rounded-xl border border-border shadow-sm overflow-hidden"
+             x-data="{ open: window.innerWidth >= 1024 || {{ $qiddaseFilled ? 'false' : 'true' }} }">
             <button type="button" @click="open = !open"
-                    class="w-full flex items-center justify-between px-4 py-3.5 active:bg-muted/30 transition text-left select-none">
+                    class="w-full flex items-center justify-between px-4 py-3.5 lg:px-3 lg:py-2.5 active:bg-muted/30 transition text-left select-none">
                 <div class="flex items-center gap-3">
                     <span class="w-7 h-7 rounded-xl {{ $qiddaseFilled ? 'bg-green-500' : 'bg-accent/10' }} flex items-center justify-center shrink-0">
                         @if($qiddaseFilled)
@@ -736,7 +736,7 @@ $monthEmpty    = $maxDay - count($filledDays);
             <div x-show="open"
                  x-transition:enter="transition duration-200 ease-out" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
                  x-transition:leave="transition duration-150 ease-in" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-                 class="border-t border-border px-4 pb-4 pt-3 space-y-3">
+                 class="border-t border-border px-4 pb-4 pt-3 space-y-3 lg:px-3 lg:pb-3 lg:pt-2 lg:space-y-2">
                 <div class="lg:grid lg:grid-cols-2 lg:gap-3 space-y-3 lg:space-y-0">
                     <div>
                         <label class="{{ $labelClass }}">{{ __('app.lectionary_qiddase_am') }}</label>
@@ -756,10 +756,10 @@ $monthEmpty    = $maxDay - count($filledDays);
         <div class="h-2"></div>
 
         {{-- ── Sticky Save Bar ── --}}
-        <div class="fixed bottom-0 left-0 right-0 z-20 bg-card/95 backdrop-blur-sm border-t border-border px-4 py-3 lg:sticky lg:bottom-4 lg:left-auto lg:right-auto lg:px-0 lg:border-t-0 lg:bg-transparent lg:backdrop-blur-none lg:z-auto"
+        <div class="fixed bottom-0 left-0 right-0 z-20 bg-card/95 backdrop-blur-sm border-t border-border px-4 py-3 lg:static lg:px-0 lg:py-0 lg:border-t-0 lg:bg-transparent lg:backdrop-blur-none lg:z-auto"
              style="padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0.75rem))">
             <button type="submit"
-                    class="w-full py-4 lg:py-3 bg-accent text-on-accent text-base font-bold rounded-2xl shadow-lg shadow-accent/20 hover:opacity-90 active:scale-[0.98] transition lg:max-w-md">
+                    class="w-full py-4 lg:py-2.5 bg-accent text-on-accent text-base lg:text-sm font-bold rounded-2xl lg:rounded-xl shadow-lg shadow-accent/20 hover:opacity-90 active:scale-[0.98] transition lg:max-w-xs">
                 {{ $entry ? __('app.save_changes') : __('app.lectionary_add') }}
             </button>
         </div>
