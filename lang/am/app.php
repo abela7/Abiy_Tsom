@@ -1119,6 +1119,7 @@ return [
     'gospel_text' => 'የወንጌል ጽሑፍ',
     'epistles_text' => 'የመልእክት ጽሑፍ',
     'liturgy_text' => 'የቅዳሴ ጽሑፍ',
+    'lectionary_qiddase_en' => 'የቅዳሴ (አናፌራ) (EN)',
     'description_and_summary' => 'መግለጫ እና ማጠቃለያ',
     'theme_name_en_placeholder' => 'ምሳሌ፡ ዘወርደ',
     'theme_name_geez_placeholder' => 'ምሳሌ፡ ዘወርደ',

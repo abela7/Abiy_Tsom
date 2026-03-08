@@ -740,7 +740,7 @@ $monthEmpty    = $maxDay - count($filledDays);
                                placeholder="የቅዱስ ዮሐንስ አፈወርቅ ቅዳሴ" class="{{ $inputClass }}">
                     </div>
                     <div>
-                        <label class="{{ $labelClass }}">{{ __('app.lectionary_qiddase_en') ?? 'Qiddase (English)' }}</label>
+                        <label class="{{ $labelClass }}">{{ __('app.lectionary_qiddase_en') }}</label>
                         <input type="text" name="qiddase_en" value="{{ old('qiddase_en', $entry?->qiddase_en) }}"
                                placeholder="Anaphora of St. John Chrysostom" class="{{ $inputClass }}">
                     </div>
