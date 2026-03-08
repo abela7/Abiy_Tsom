@@ -223,6 +223,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/themes/create', [Admin\WeeklyThemeController::class, 'create'])->name('themes.create');
         Route::post('/themes', [Admin\WeeklyThemeController::class, 'store'])->name('themes.store');
         Route::get('/themes/{theme}/edit', [Admin\WeeklyThemeController::class, 'edit'])->name('themes.edit');
+        Route::post('/themes/{theme}/import-lectionary', [Admin\WeeklyThemeController::class, 'importLectionary'])->name('themes.import-lectionary');
         Route::put('/themes/{theme}', [Admin\WeeklyThemeController::class, 'update'])->name('themes.update');
 
         // Lectionary (ግጻዌ — daily scripture readings)

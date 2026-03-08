@@ -6,7 +6,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\LentSeason;
+use App\Models\Lectionary;
 use App\Models\WeeklyTheme;
+use App\Services\EthiopianCalendarService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -96,11 +98,21 @@ class WeeklyThemeController extends Controller
         return redirect('/admin/themes')->with('success', 'Weekly theme created.');
     }
 
-    public function edit(WeeklyTheme $theme): View
+    public function edit(WeeklyTheme $theme, EthiopianCalendarService $ethiopianCalendarService): View
     {
         $season = LentSeason::active();
+        $importDefaults = null;
 
-        return view('admin.themes.form', compact('season', 'theme'));
+        if ($theme->week_start_date) {
+            $ethDate = $ethiopianCalendarService->gregorianToEthiopian($theme->week_start_date->copy());
+            $importDefaults = [
+                'month' => $ethDate['month'],
+                'day' => $ethDate['day'],
+                'month_name_en' => $ethDate['month_name_en'],
+            ];
+        }
+
+        return view('admin.themes.form', compact('season', 'theme', 'importDefaults'));
     }
 
     public function update(Request $request, WeeklyTheme $theme): RedirectResponse
@@ -177,5 +189,148 @@ class WeeklyThemeController extends Controller
         $theme->update($validated);
 
         return redirect('/admin/themes')->with('success', 'Weekly theme updated.');
+    }
+
+    public function importLectionary(Request $request, WeeklyTheme $theme): RedirectResponse
+    {
+        $validated = $request->validate([
+            'month' => ['required', 'integer', 'min:1', 'max:13'],
+            'day' => ['required', 'integer', 'min:1', 'max:30'],
+        ]);
+
+        $lectionary = Lectionary::query()
+            ->where('month', $validated['month'])
+            ->where('day', $validated['day'])
+            ->first();
+
+        if (! $lectionary) {
+            return redirect()
+                ->route('admin.themes.edit', $theme)
+                ->with('error', __('app.theme_import_lectionary_missing'));
+        }
+
+        $theme->update($this->mapLectionaryToTheme($lectionary));
+
+        return redirect()
+            ->route('admin.themes.edit', $theme)
+            ->with('success', __('app.theme_import_lectionary_success'));
+    }
+
+    /**
+     * @return array<string, string|null>
+     */
+    private function mapLectionaryToTheme(Lectionary $lectionary): array
+    {
+        $paulineReferenceEn = $this->buildReference(
+            $lectionary->pauline_book_en,
+            $lectionary->pauline_chapter,
+            $lectionary->pauline_verses
+        );
+        $paulineReferenceAm = $this->buildReference(
+            $lectionary->pauline_book_am,
+            $lectionary->pauline_chapter,
+            $lectionary->pauline_verses
+        );
+        $catholicReferenceEn = $this->buildReference(
+            $lectionary->catholic_book_en,
+            $lectionary->catholic_chapter,
+            $lectionary->catholic_verses
+        );
+        $catholicReferenceAm = $this->buildReference(
+            $lectionary->catholic_book_am,
+            $lectionary->catholic_chapter,
+            $lectionary->catholic_verses
+        );
+        $actsReferenceEn = $this->buildReference('Acts', $lectionary->acts_chapter, $lectionary->acts_verses);
+        $actsReferenceAm = $this->buildReference('የሐዋርያት ሥራ', $lectionary->acts_chapter, $lectionary->acts_verses);
+        $gospelReferenceEn = $this->buildReference(
+            $lectionary->gospel_book_en,
+            $lectionary->gospel_chapter,
+            $lectionary->gospel_verses
+        );
+        $gospelReferenceAm = $this->buildReference(
+            $lectionary->gospel_book_am,
+            $lectionary->gospel_chapter,
+            $lectionary->gospel_verses
+        );
+        $psalmReference = $this->buildReference(
+            $lectionary->mesbak_psalm !== null ? 'Psalm' : null,
+            $lectionary->mesbak_psalm,
+            $lectionary->mesbak_verses,
+            includeBook: false
+        );
+
+        return [
+            'reading_1_reference' => $paulineReferenceEn,
+            'reading_1_reference_am' => $paulineReferenceAm,
+            'reading_1_text_en' => $lectionary->pauline_text_en,
+            'reading_1_text_am' => $lectionary->pauline_text_am,
+            'reading_2_reference' => $catholicReferenceEn,
+            'reading_2_reference_am' => $catholicReferenceAm,
+            'reading_2_text_en' => $lectionary->catholic_text_en,
+            'reading_2_text_am' => $lectionary->catholic_text_am,
+            'reading_3_reference' => $actsReferenceEn,
+            'reading_3_reference_am' => $actsReferenceAm,
+            'reading_3_text_en' => $lectionary->acts_text_en,
+            'reading_3_text_am' => $lectionary->acts_text_am,
+            'psalm_reference' => $psalmReference,
+            'psalm_reference_am' => $psalmReference,
+            'psalm_text_en' => $lectionary->mesbak_text_en,
+            'psalm_text_am' => $lectionary->mesbak_text_am,
+            'gospel_reference' => $gospelReferenceEn,
+            'gospel_reference_am' => $gospelReferenceAm,
+            'gospel_text_en' => $lectionary->gospel_text_en,
+            'gospel_text_am' => $lectionary->gospel_text_am,
+            'epistles_reference' => $this->combineValues([$paulineReferenceEn, $catholicReferenceEn], '; '),
+            'epistles_reference_am' => $this->combineValues([$paulineReferenceAm, $catholicReferenceAm], '; '),
+            'epistles_text_en' => $this->combineValues([$lectionary->pauline_text_en, $lectionary->catholic_text_en], "\n\n"),
+            'epistles_text_am' => $this->combineValues([$lectionary->pauline_text_am, $lectionary->catholic_text_am], "\n\n"),
+            'liturgy' => $lectionary->qiddase_en,
+            'liturgy_am' => $lectionary->qiddase_am,
+        ];
+    }
+
+    private function buildReference(
+        ?string $book,
+        int|string|null $chapter,
+        ?string $verses,
+        bool $includeBook = true
+    ): ?string {
+        $chapterValue = filled($chapter) ? (string) $chapter : null;
+        $versesValue = filled($verses) ? trim((string) $verses) : null;
+
+        if ($chapterValue === null && $versesValue === null && ! filled($book)) {
+            return null;
+        }
+
+        $ref = $chapterValue ?? '';
+        if ($versesValue !== null && $versesValue !== '') {
+            $ref .= ($ref !== '' ? ':' : '').$versesValue;
+        }
+
+        if (! $includeBook || ! filled($book)) {
+            return $ref !== '' ? $ref : null;
+        }
+
+        return trim($book.' '.$ref);
+    }
+
+    /**
+     * @param  array<int, string|null>  $values
+     */
+    private function combineValues(array $values, string $separator): ?string
+    {
+        $filtered = array_values(array_filter(
+            array_map(
+                static fn (?string $value): ?string => filled($value) ? trim($value) : null,
+                $values
+            )
+        ));
+
+        if ($filtered === []) {
+            return null;
+        }
+
+        return implode($separator, $filtered);
     }
 }

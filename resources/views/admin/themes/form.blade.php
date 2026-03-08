@@ -82,6 +82,44 @@
         </div>
 
         {{-- ───────────────────────────────────────────────────────── --}}
+        @if(isset($theme))
+        <div class="bg-card rounded-xl shadow-sm border border-border p-6 space-y-4">
+            <div class="flex flex-col gap-1">
+                <h2 class="text-sm font-bold text-primary uppercase tracking-wide">{{ __('app.theme_import_from_lectionary') }}</h2>
+                <p class="text-sm text-muted-text">{{ __('app.theme_import_from_lectionary_help') }}</p>
+            </div>
+
+            <div class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.ethiopian_month') }}</label>
+                        <input type="number" name="month" min="1" max="13" form="theme-lectionary-import"
+                               value="{{ old('month', $importDefaults['month'] ?? '') }}"
+                               class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.day_label') }}</label>
+                        <input type="number" name="day" min="1" max="30" form="theme-lectionary-import"
+                               value="{{ old('day', $importDefaults['day'] ?? '') }}"
+                               class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent outline-none">
+                    </div>
+                    <div class="flex items-end">
+                        <button type="submit" form="theme-lectionary-import"
+                                class="w-full px-4 py-2.5 bg-accent-secondary text-on-accent rounded-lg font-medium hover:bg-accent-secondary/90 transition">
+                            {{ __('app.theme_import_action') }}
+                        </button>
+                    </div>
+                </div>
+
+                @if(!empty($importDefaults['month_name_en'] ?? null))
+                    <p class="text-xs text-muted-text">
+                        {{ __('app.theme_import_from_lectionary_default_hint', ['month' => $importDefaults['month_name_en'], 'day' => $importDefaults['day'] ?? '-']) }}
+                    </p>
+                @endif
+            </div>
+        </div>
+        @endif
+
         {{-- SECTION 2: Feature Picture                                --}}
         {{-- ───────────────────────────────────────────────────────── --}}
         <div class="bg-card rounded-xl shadow-sm border border-border p-6 space-y-4">
@@ -368,5 +406,11 @@
             </a>
         </div>
     </form>
+
+    @if(isset($theme))
+    <form id="theme-lectionary-import" method="POST" action="{{ route('admin.themes.import-lectionary', $theme) }}">
+        @csrf
+    </form>
+    @endif
 </div>
 @endsection
