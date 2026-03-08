@@ -64,8 +64,7 @@ $monthEmpty    = $maxDay - count($filledDays);
     </div>
     @endif
 
-    <div class="lg:grid lg:grid-cols-[300px_1fr] lg:gap-6 lg:items-start">
-    <div class="space-y-3 mb-4 lg:mb-0 lg:sticky lg:top-4">
+    <div class="space-y-3 lg:space-y-2">
     {{-- ════════════ MONTH ACCORDION ════════════ --}}
     @php
         [$curMonthEn, $curMonthAm] = explode(' / ', $monthNames[$selectedMonth]);
@@ -188,9 +187,6 @@ $monthEmpty    = $maxDay - count($filledDays);
             </div>
         </div>
     </div>
-    </div>{{-- /sidebar --}}
-    <div>{{-- main column --}}
-
     {{-- ════════════ ENTRY FORM ════════════ --}}
     @if($selectedDay > 0)
 
@@ -782,8 +778,7 @@ $monthEmpty    = $maxDay - count($filledDays);
     </div>
     @endif
 
-    </div>{{-- /main column --}}
-    </div>{{-- /grid --}}
+    </div>{{-- /single-column wrapper --}}
 
     {{-- ═══════════ BOTTOM SHEETS ═══════════ --}}
 
