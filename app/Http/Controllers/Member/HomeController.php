@@ -130,10 +130,12 @@ class HomeController extends Controller
             $published = DailyContent::where('lent_season_id', $season->id)
                 ->where('is_published', true)
                 ->with('weeklyTheme')
-                ->get()
-                ->keyBy('day_number');
+                ->get();
 
-            $contentByDay = $published;
+            $contentByDay = $published->keyBy('day_number');
+            $contentByDate = $published
+                ->filter(fn (DailyContent $content): bool => $content->date !== null)
+                ->keyBy(fn (DailyContent $content): string => $content->date->toDateString());
             $dailyContentIds = $published->pluck('id')->toArray();
 
             $activitiesCount = Activity::where('lent_season_id', $season->id)->where('is_active', true)->count();
@@ -145,57 +147,141 @@ class HomeController extends Controller
                     ->groupBy('daily_content_id');
             }
 
-            $start = Carbon::parse($season->start_date);
-            $allWeeks = AbiyTsomStructure::getWeeks();
             $themesByWeek = $season->weeklyThemes()->orderBy('week_number')->get()->keyBy('week_number');
             $locale = app()->getLocale();
 
-            foreach ($allWeeks as $weekNum => $weekInfo) {
-                $daysInWeek = [];
-                for ($d = $weekInfo['day_start']; $d <= $weekInfo['day_end']; $d++) {
-                    $date = $start->copy()->addDays($d - 1);
-                    $content = $contentByDay->get($d);
-                    $completedCount = 0;
-                    if ($content && $member) {
-                        $checks = $checklistByDay->get($content->id, collect());
-                        $completedCount = $checks->where('completed', true)->count();
+            $seasonStart = Carbon::parse($season->start_date)->startOfDay();
+            $seasonEnd = Carbon::parse($season->end_date)->startOfDay();
+
+            if ($themesByWeek->isNotEmpty()) {
+                $seenDates = [];
+
+                foreach ($themesByWeek as $theme) {
+                    $weekStart = Carbon::parse($theme->week_start_date)->startOfDay();
+                    $weekEnd = Carbon::parse($theme->week_end_date)->startOfDay();
+
+                    if ($weekEnd->lt($weekStart)) {
+                        continue;
                     }
-                    $pct = ($activitiesCount > 0 && $content) ? round(($completedCount / $activitiesCount) * 100) : 0;
 
-                    $isToday = $date->isToday();
-                    $isPast = $date->isPast() && ! $isToday;
-                    $isFuture = $date->isFuture();
+                    if ($weekStart->lt($seasonStart)) {
+                        $weekStart = $seasonStart->copy();
+                    }
 
-                    $daysInWeek[] = [
-                        'day_number' => $d,
-                        'date' => $date,
-                        'content' => $content,
-                        'is_today' => $isToday,
-                        'is_past' => $isPast,
-                        'is_future' => $isFuture,
-                        'pct' => $pct,
-                        'has_content' => (bool) $content,
+                    if ($weekEnd->gt($seasonEnd)) {
+                        $weekEnd = $seasonEnd->copy();
+                    }
+
+                    if ($weekEnd->lt($weekStart)) {
+                        continue;
+                    }
+
+                    $daysInWeek = [];
+                    $cursor = $weekStart->copy();
+
+                    while ($cursor->lte($weekEnd)) {
+                        $dateKey = $cursor->toDateString();
+
+                        if (isset($seenDates[$dateKey])) {
+                            $cursor->addDay();
+                            continue;
+                        }
+
+                        $seenDates[$dateKey] = true;
+                        $content = $contentByDate->get($dateKey);
+                        $completedCount = 0;
+
+                        if ($content && $member) {
+                            $checks = $checklistByDay->get($content->id, collect());
+                            $completedCount = $checks->where('completed', true)->count();
+                        }
+
+                        $pct = ($activitiesCount > 0 && $content) ? round(($completedCount / $activitiesCount) * 100) : 0;
+                        $isToday = $cursor->isToday();
+                        $isPast = $cursor->isPast() && ! $isToday;
+                        $isFuture = $cursor->isFuture();
+
+                        $daysInWeek[] = [
+                            'day_number' => $content?->day_number ?? ($seasonStart->diffInDays($cursor) + 1),
+                            'date' => $cursor->copy(),
+                            'content' => $content,
+                            'is_today' => $isToday,
+                            'is_past' => $isPast,
+                            'is_future' => $isFuture,
+                            'pct' => $pct,
+                            'has_content' => (bool) $content,
+                        ];
+
+                        $cursor->addDay();
+                    }
+
+                    if ($daysInWeek === []) {
+                        continue;
+                    }
+
+                    $weeks[] = [
+                        'number' => $theme->week_number,
+                        'name' => $locale === 'am'
+                            ? ($theme->name_am ?? $theme->name_geez ?? $theme->name_en ?? '-')
+                            : ($theme->name_en ?? $theme->name_am ?? $theme->name_geez ?? '-'),
+                        'meaning' => $locale === 'am'
+                            ? ($theme->meaning_am ?? $theme->meaning ?? '')
+                            : ($theme->meaning ?? $theme->meaning_am ?? ''),
+                        'days' => $daysInWeek,
                     ];
                 }
-                // Use WeeklyTheme from DB (name_am, name_en, name_geez) when available
-                $theme = $themesByWeek->get($weekNum);
-                if ($theme) {
-                    $weekName = $locale === 'am'
-                        ? ($theme->name_am ?? $theme->name_geez ?? $theme->name_en)
-                        : ($theme->name_en ?? $theme->name_am ?? $theme->name_geez);
-                } else {
-                    $weekName = $locale === 'am'
-                        ? ($weekInfo['name_am'] ?? $weekInfo['name_geez'] ?? $weekInfo['name_en'])
-                        : $weekInfo['name_en'];
+            } else {
+                $start = $seasonStart->copy();
+                $allWeeks = AbiyTsomStructure::getWeeks();
+
+                foreach ($allWeeks as $weekNum => $weekInfo) {
+                    $daysInWeek = [];
+                    for ($d = $weekInfo['day_start']; $d <= $weekInfo['day_end']; $d++) {
+                        $date = $start->copy()->addDays($d - 1);
+                        $content = $contentByDay->get($d);
+                        $completedCount = 0;
+                        if ($content && $member) {
+                            $checks = $checklistByDay->get($content->id, collect());
+                            $completedCount = $checks->where('completed', true)->count();
+                        }
+                        $pct = ($activitiesCount > 0 && $content) ? round(($completedCount / $activitiesCount) * 100) : 0;
+
+                        $isToday = $date->isToday();
+                        $isPast = $date->isPast() && ! $isToday;
+                        $isFuture = $date->isFuture();
+
+                        $daysInWeek[] = [
+                            'day_number' => $d,
+                            'date' => $date,
+                            'content' => $content,
+                            'is_today' => $isToday,
+                            'is_past' => $isPast,
+                            'is_future' => $isFuture,
+                            'pct' => $pct,
+                            'has_content' => (bool) $content,
+                        ];
+                    }
+
+                    $theme = $themesByWeek->get($weekNum);
+                    if ($theme) {
+                        $weekName = $locale === 'am'
+                            ? ($theme->name_am ?? $theme->name_geez ?? $theme->name_en)
+                            : ($theme->name_en ?? $theme->name_am ?? $theme->name_geez);
+                    } else {
+                        $weekName = $locale === 'am'
+                            ? ($weekInfo['name_am'] ?? $weekInfo['name_geez'] ?? $weekInfo['name_en'])
+                            : $weekInfo['name_en'];
+                    }
+
+                    $weeks[] = [
+                        'number' => $weekNum,
+                        'name' => $weekName ?? $weekInfo['name_en'],
+                        'meaning' => $theme
+                            ? ($locale === 'am' ? ($theme->meaning_am ?? $theme->meaning) : ($theme->meaning ?? $theme->meaning_am))
+                            : $weekInfo['meaning'],
+                        'days' => $daysInWeek,
+                    ];
                 }
-                $weeks[] = [
-                    'number' => $weekNum,
-                    'name' => $weekName ?? $weekInfo['name_en'],
-                    'meaning' => $theme
-                        ? ($locale === 'am' ? ($theme->meaning_am ?? $theme->meaning) : ($theme->meaning ?? $theme->meaning_am))
-                        : $weekInfo['meaning'],
-                    'days' => $daysInWeek,
-                ];
             }
         }
 
