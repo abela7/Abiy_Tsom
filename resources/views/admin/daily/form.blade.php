@@ -267,11 +267,13 @@
                             >
                             <option value="">{{ __('app.select_placeholder') }}</option>
                             @foreach($themes as $theme)
-                                @php($range = \App\Services\AbiyTsomStructure::getDayRangeForWeek($theme->week_number))
+                                @php($range = $dayRangesByWeek[$theme->week_number] ?? null)
                                 <option value="{{ $theme->id }}">
                                     {{ __('app.week_label') }} {{ $theme->week_number }}
                                     - {{ $locale === 'en' ? ($theme->name_en ?: $theme->name_am ?: '-') : ($theme->name_am ?: $theme->name_en ?: '-') }}
+                                    @if(is_array($range) && count($range) === 2)
                                     ({{ $range[0] }}-{{ $range[1] }})
+                                    @endif
                                 </option>
                             @endforeach
                         </select>
@@ -1352,4 +1354,3 @@
         </script>
     @endif
 @endsection
-

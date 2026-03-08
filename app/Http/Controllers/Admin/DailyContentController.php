@@ -41,7 +41,19 @@ class DailyContentController extends Controller
             if (DailyContent::where('lent_season_id', $season->id)->where('day_number', $meta['day_number'])->exists()) {
                 continue;
             }
-            $theme = $themes->get(AbiyTsomStructure::getWeekForDay($meta['day_number']));
+
+            $metaDate = \Illuminate\Support\Carbon::parse($meta['date'])->startOfDay();
+            $theme = $themes->first(function ($item) use ($metaDate): bool {
+                if (! $item->week_start_date || ! $item->week_end_date) {
+                    return false;
+                }
+
+                return $metaDate->betweenIncluded(
+                    $item->week_start_date->copy()->startOfDay(),
+                    $item->week_end_date->copy()->endOfDay()
+                );
+            });
+
             if (! $theme) {
                 continue;
             }
@@ -635,9 +647,33 @@ class DailyContentController extends Controller
      */
     private function getDayRangesByWeek(): array
     {
+        $season = LentSeason::active();
+        if (! $season) {
+            return [];
+        }
+
+        $seasonStart = $season->start_date?->copy()?->startOfDay();
+        if (! $seasonStart) {
+            return [];
+        }
+
         $ranges = [];
-        for ($w = 1; $w <= AbiyTsomStructure::TOTAL_WEEKS; $w++) {
-            $ranges[$w] = AbiyTsomStructure::getDayRangeForWeek($w);
+        foreach ($season->weeklyThemes()->orderBy('week_number')->get() as $theme) {
+            if (! $theme->week_start_date || ! $theme->week_end_date) {
+                continue;
+            }
+
+            $start = $seasonStart->diffInDays($theme->week_start_date->copy()->startOfDay(), false) + 1;
+            $end = $seasonStart->diffInDays($theme->week_end_date->copy()->startOfDay(), false) + 1;
+
+            $start = max(1, $start);
+            $end = min(55, $end);
+
+            if ($end < $start) {
+                continue;
+            }
+
+            $ranges[(int) $theme->week_number] = [$start, $end];
         }
 
         return $ranges;
