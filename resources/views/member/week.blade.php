@@ -21,6 +21,7 @@
     // Group: Scripture Readings
     $readingItems = [];
     $readingIcons = ['bi-1-circle-fill', 'bi-2-circle-fill', 'bi-3-circle-fill'];
+    $readingLabelKeys = [1 => 'app.lectionary_pauline', 2 => 'app.lectionary_catholic', 3 => 'app.lectionary_acts'];
     for ($i = 1; $i <= 3; $i++) {
         $ref = $isAm
             ? ($weeklyTheme->{"reading_{$i}_reference_am"} ?? $weeklyTheme->{"reading_{$i}_reference"})
@@ -29,7 +30,7 @@
             ? ($weeklyTheme->{"reading_{$i}_text_am"} ?? $weeklyTheme->{"reading_{$i}_text_en"})
             : ($weeklyTheme->{"reading_{$i}_text_en"} ?? $weeklyTheme->{"reading_{$i}_text_am"});
         if ($ref || $text) {
-            $readingItems[] = ['key' => "reading_{$i}", 'label' => __('app.reading_number', ['number' => $i]), 'ref' => $ref, 'text' => $text, 'icon' => $readingIcons[$i - 1]];
+            $readingItems[] = ['key' => "reading_{$i}", 'label' => __($readingLabelKeys[$i]), 'ref' => $ref, 'text' => $text, 'icon' => $readingIcons[$i - 1]];
         }
     }
     if (!empty($readingItems)) {
