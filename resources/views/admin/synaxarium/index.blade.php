@@ -44,6 +44,8 @@ elseif (old('_form') === 'add_annual') $autoSheet = 'add-annual';
          sheet: '{{ $autoSheet }}',
          dayPickerOpen: true,
          pendingDeleteId: null,
+         convertItem: null,
+         convertMonth: 1,
          imgAdd: null,
          imgEdit: null,
          previewImg(event, key) {
@@ -54,9 +56,18 @@ elseif (old('_form') === 'add_annual') $autoSheet = 'add-annual';
              r.readAsDataURL(file);
          },
          openSheet(name) { this.sheet = name; },
-         closeSheet() { this.sheet = ''; this.imgAdd = null; },
+         closeSheet() { this.sheet = ''; this.imgAdd = null; this.convertItem = null; },
          confirmDelete(id) { this.pendingDeleteId = id; this.sheet = 'delete'; },
-         submitDelete() { if (this.pendingDeleteId) document.getElementById(this.pendingDeleteId)?.submit(); }
+         submitDelete() { if (this.pendingDeleteId) document.getElementById(this.pendingDeleteId)?.submit(); },
+         openConvert(item) { this.convertItem = item; this.convertMonth = 1; this.sheet = 'convert'; },
+         submitConvert() {
+             if (!this.convertItem) return;
+             const form = document.getElementById(this.convertItem.formId);
+             if (!form) return;
+             const monthInput = form.querySelector('input[name=month]');
+             if (monthInput) monthInput.value = this.convertMonth;
+             form.submit();
+         }
      }"
      @keydown.escape.window="closeSheet()">
 
@@ -183,36 +194,23 @@ elseif (old('_form') === 'add_annual') $autoSheet = 'add-annual';
                             <p class="text-sm text-muted-text leading-snug mt-0.5">{{ $item->celebration_am }}</p>
                         @endif
                     </div>
-                    {{-- Actions — always visible, 44px touch targets --}}
-                    <div class="flex items-center gap-1.5 shrink-0" x-data="{ showConvert: false }">
+                    {{-- Actions --}}
+                    <div class="flex items-center gap-1.5 shrink-0">
                         <a href="/admin/synaxarium?edit_monthly={{ $item->id }}&day={{ $item->day }}"
                            class="w-10 h-10 rounded-xl flex items-center justify-center text-accent bg-accent/10 active:scale-90 transition"
                            title="{{ __('app.edit') }}">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                         </a>
-                        <div class="relative">
-                            <button type="button" @click="showConvert = !showConvert"
-                                    class="w-10 h-10 rounded-xl flex items-center justify-center text-amber-600 bg-amber-50 dark:bg-amber-900/20 active:scale-90 transition"
-                                    title="{{ __('app.synaxarium_convert_to_annual') }}">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
-                            </button>
-                            <div x-show="showConvert" x-cloak @click.away="showConvert = false"
-                                 x-transition
-                                 class="absolute right-0 top-12 z-30 bg-card border border-border rounded-xl shadow-xl p-3 w-56">
-                                <p class="text-xs font-semibold text-muted-text mb-2">{{ __('app.synaxarium_convert_select_month') }}</p>
-                                <form method="POST" action="{{ route('admin.synaxarium.monthly.convert', $item) }}">
-                                    @csrf
-                                    <select name="month" class="w-full px-3 py-2 rounded-lg border border-border bg-surface text-primary text-sm mb-2">
-                                        @foreach($monthNamesFull as $m => $mFull)
-                                            <option value="{{ $m }}">{{ $mFull }}</option>
-                                        @endforeach
-                                    </select>
-                                    <button type="submit" class="w-full py-2 bg-amber-500 text-white text-xs font-bold rounded-lg hover:bg-amber-600 transition">
-                                        {{ __('app.synaxarium_convert_to_annual') }}
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
+                        <button type="button"
+                                @click="openConvert({ type: 'monthly', id: {{ $item->id }}, name: @js($item->celebration_en), nameAm: @js($item->celebration_am), day: {{ $item->day }}, formId: 'conv-m-{{ $item->id }}' })"
+                                class="w-10 h-10 rounded-xl flex items-center justify-center text-amber-600 bg-amber-50 dark:bg-amber-900/20 active:scale-90 transition"
+                                title="{{ __('app.synaxarium_convert_to_annual') }}">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                        </button>
+                        <form id="conv-m-{{ $item->id }}" method="POST" action="{{ route('admin.synaxarium.monthly.convert', $item) }}" class="hidden">
+                            @csrf
+                            <input type="hidden" name="month" :value="convertMonth">
+                        </form>
                         <button type="button" @click="confirmDelete('del-m-{{ $item->id }}')"
                                 class="w-10 h-10 rounded-xl flex items-center justify-center text-red-500 bg-red-50 dark:bg-red-900/20 active:scale-90 transition"
                                 title="{{ __('app.delete') }}">
@@ -340,14 +338,14 @@ elseif (old('_form') === 'add_annual') $autoSheet = 'add-annual';
                                title="{{ __('app.edit') }}">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                             </a>
-                            <form method="POST" action="{{ route('admin.synaxarium.annual.convert', $item) }}" class="inline"
-                                  onsubmit="return confirm('{{ __('app.synaxarium_convert_to_monthly') }}?')">
+                            <button type="button"
+                                    @click="openConvert({ type: 'annual', id: {{ $item->id }}, name: @js($item->celebration_en), nameAm: @js($item->celebration_am), day: {{ $item->day }}, formId: 'conv-a-{{ $item->id }}' })"
+                                    class="w-10 h-10 rounded-xl flex items-center justify-center text-amber-600 bg-amber-50 dark:bg-amber-900/20 active:scale-90 transition"
+                                    title="{{ __('app.synaxarium_convert_to_monthly') }}">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            </button>
+                            <form id="conv-a-{{ $item->id }}" method="POST" action="{{ route('admin.synaxarium.annual.convert', $item) }}" class="hidden">
                                 @csrf
-                                <button type="submit"
-                                        class="w-10 h-10 rounded-xl flex items-center justify-center text-amber-600 bg-amber-50 dark:bg-amber-900/20 active:scale-90 transition"
-                                        title="{{ __('app.synaxarium_convert_to_monthly') }}">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
-                                </button>
                             </form>
                             <button type="button" @click="confirmDelete('del-a-{{ $item->id }}')"
                                     class="w-10 h-10 rounded-xl flex items-center justify-center text-red-500 bg-red-50 dark:bg-red-900/20 active:scale-90 transition"
@@ -524,6 +522,13 @@ elseif (old('_form') === 'add_annual') $autoSheet = 'add-annual';
 
             <form method="POST" action="/admin/synaxarium/monthly/{{ $editingMonthly->id }}" enctype="multipart/form-data">
                 @csrf @method('PUT')
+
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2 lg:mb-1">{{ __('app.synaxarium_day_number') }}</label>
+                    <input type="number" name="day" min="1" max="30" value="{{ old('day', $editingMonthly->day) }}" required
+                           class="w-24 px-4 py-3.5 lg:px-3 lg:py-2.5 rounded-2xl lg:rounded-xl border border-border bg-surface text-primary text-base lg:text-sm text-center focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent">
+                    @error('day') <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p> @enderror
+                </div>
 
                 <div class="lg:grid lg:grid-cols-2 lg:gap-3 space-y-4 lg:space-y-0 mb-4">
                     <div>
@@ -839,6 +844,68 @@ elseif (old('_form') === 'add_annual') $autoSheet = 'add-annual';
         </div>
     </div>
     @endif
+
+    {{-- ── CONVERT CONFIRM SHEET ── --}}
+    <div x-show="sheet === 'convert'" x-cloak
+         x-transition:enter="transition duration-200 ease-out"
+         x-transition:enter-start="translate-y-full"
+         x-transition:enter-end="translate-y-0"
+         x-transition:leave="transition duration-150 ease-in"
+         x-transition:leave-start="translate-y-0"
+         x-transition:leave-end="translate-y-full"
+         class="fixed bottom-0 left-0 right-0 lg:left-1/2 lg:-translate-x-1/2 lg:max-w-lg lg:rounded-t-2xl z-50 bg-card rounded-t-3xl shadow-2xl">
+
+        <div class="flex justify-center pt-3 pb-1 lg:hidden">
+            <div class="w-10 h-1 rounded-full bg-border"></div>
+        </div>
+
+        <div class="px-5 py-5 lg:px-6" style="padding-bottom: max(1.25rem, env(safe-area-inset-bottom, 1.25rem))">
+            <div class="flex items-start gap-4 mb-5">
+                <div class="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center shrink-0">
+                    <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h3 class="text-base font-bold text-primary" x-text="convertItem?.type === 'monthly' ? '{{ __('app.synaxarium_convert_to_annual') }}' : '{{ __('app.synaxarium_convert_to_monthly') }}'"></h3>
+                    <p class="text-sm text-primary font-medium mt-1" x-text="convertItem?.name"></p>
+                    <p class="text-sm text-muted-text" x-show="convertItem?.nameAm" x-text="convertItem?.nameAm"></p>
+                </div>
+            </div>
+
+            {{-- Month selector (only for monthly → annual) --}}
+            <div x-show="convertItem?.type === 'monthly'" class="mb-5">
+                <label class="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2">{{ __('app.synaxarium_convert_select_month') }}</label>
+                <select x-model="convertMonth"
+                        class="w-full px-4 py-3.5 lg:px-3 lg:py-2.5 rounded-2xl lg:rounded-xl border border-border bg-surface text-primary text-base lg:text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent">
+                    @foreach($monthNamesFull as $m => $mFull)
+                        <option value="{{ $m }}">{{ $m }} — {{ $mFull }}</option>
+                    @endforeach
+                </select>
+                <p class="text-xs text-muted-text mt-2 flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <span>Day <span class="font-bold text-accent" x-text="convertItem?.day"></span> will be kept. This celebration will appear once a year on the selected month.</span>
+                </p>
+            </div>
+
+            {{-- Info (only for annual → monthly) --}}
+            <div x-show="convertItem?.type === 'annual'" class="mb-5">
+                <p class="text-sm text-muted-text flex items-center gap-1.5">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <span>This celebration will appear on day <span class="font-bold text-accent" x-text="convertItem?.day"></span> of every month.</span>
+                </p>
+            </div>
+
+            <div class="flex gap-3">
+                <button type="button" @click="closeSheet()"
+                        class="flex-1 py-4 lg:py-2.5 rounded-2xl lg:rounded-xl border border-border text-primary font-semibold text-base lg:text-sm active:scale-[0.98] transition">
+                    {{ __('app.cancel') }}
+                </button>
+                <button type="button" @click="submitConvert()"
+                        class="flex-1 py-4 lg:py-2.5 rounded-2xl lg:rounded-xl bg-amber-500 text-white font-bold text-base lg:text-sm active:scale-[0.98] transition hover:bg-amber-600">
+                    <span x-text="convertItem?.type === 'monthly' ? '{{ __('app.synaxarium_convert_to_annual') }}' : '{{ __('app.synaxarium_convert_to_monthly') }}'"></span>
+                </button>
+            </div>
+        </div>
+    </div>
 
     {{-- ── DELETE CONFIRM SHEET ── --}}
     <div x-show="sheet === 'delete'" x-cloak
