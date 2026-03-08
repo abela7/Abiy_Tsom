@@ -89,6 +89,7 @@ Route::middleware('member')->group(function () {
 // Member-protected routes (identified + passcode cleared)
 Route::middleware(['member', 'member.passcode'])->prefix('member')->name('member.')->group(function () {
     Route::get('/home', [Member\HomeController::class, 'index'])->name('home');
+    Route::get('/today-unavailable', [Member\HomeController::class, 'todayUnavailable'])->name('today-unavailable');
     Route::get('/calendar', [Member\HomeController::class, 'calendar'])->name('calendar');
     Route::get('/day/{daily}', [Member\HomeController::class, 'day'])->name('day');
     Route::get('/day/{daily}/commemorations', [Member\HomeController::class, 'commemorations'])->name('commemorations');

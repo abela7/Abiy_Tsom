@@ -15,8 +15,8 @@
      })">
 
     {{-- View Today — hero CTA card --}}
-    @if(isset($viewTodayTarget) && $viewTodayTarget)
-    <a href="{{ route('member.day', $viewTodayTarget) }}"
+    @if(($todayUnavailable ?? false) || (isset($viewTodayTarget) && $viewTodayTarget))
+    <a href="{{ ($todayUnavailable ?? false) ? route('member.today-unavailable') : route('member.day', $viewTodayTarget) }}"
        data-tour="view-today"
        class="group relative block overflow-hidden rounded-3xl bg-gradient-to-br from-accent via-accent to-accent-hover dark:from-accent-hover dark:via-accent-hover dark:to-[#7a5a08] transition-all duration-300 active:scale-[0.98]">
 
@@ -31,6 +31,11 @@
                     <i class="bi bi-calendar-week text-[10px] text-white/70"></i>
                     {{ localized($today->weeklyTheme, 'name') ?? $today->weeklyTheme->name_en ?? '' }}
                 </span>
+                @elseif($todayUnavailable ?? false)
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/15 backdrop-blur-sm border border-white/10 text-[11px] sm:text-xs font-bold text-white shrink-0">
+                    <i class="bi bi-clock-history text-[10px] text-white/70"></i>
+                    {{ __('app.no_content_today') }}
+                </span>
                 @endif
             </div>
 
@@ -44,7 +49,7 @@
                 @endif
 
                 <h2 class="flex-1 min-w-0 text-lg sm:text-2xl font-black text-on-accent dark:text-white leading-tight drop-shadow-sm">
-                    {{ $today ? __('app.view_today') : __('app.view_recommended_day') }}
+                    {{ ($todayUnavailable ?? false) ? __('app.today_content_not_ready_title') : ($today ? __('app.view_today') : __('app.view_recommended_day')) }}
                 </h2>
 
                 <div class="shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/15 backdrop-blur-sm border border-white/20 flex items-center justify-center group-hover:bg-white/25 group-hover:scale-105 transition-all duration-200">

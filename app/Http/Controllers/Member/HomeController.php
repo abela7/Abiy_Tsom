@@ -18,6 +18,7 @@ use App\Services\EthiopianCalendarService;
 use App\Services\AbiyTsomStructure;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 /**
@@ -65,13 +66,17 @@ class HomeController extends Controller
 
         $banners = Banner::active()->orderBy('sort_order')->get();
 
+        $todayUnavailable = false;
+
         // View Today target: today's content if in Lent, else recommended day (never crash)
         $viewTodayTarget = $today;
         if (! $viewTodayTarget && $season) {
             $now = Carbon::today();
             $baseQuery = fn () => DailyContent::where('lent_season_id', $season->id)->where('is_published', true);
 
-            if ($now->lt($season->start_date)) {
+            if ($now->between(Carbon::parse($season->start_date), Carbon::parse($season->end_date))) {
+                $todayUnavailable = true;
+            } elseif ($now->lt($season->start_date)) {
                 $viewTodayTarget = ($baseQuery)()->orderBy('day_number')->first();
             } elseif ($now->gt($season->end_date)) {
                 $viewTodayTarget = ($baseQuery)()->orderByDesc('day_number')->first();
@@ -83,8 +88,29 @@ class HomeController extends Controller
 
         return view('member.home', compact(
             'member', 'season', 'today', 'weekTheme', 'easterAt', 'lentStartAt', 'easterTimezone', 'announcements',
-            'banners', 'viewTodayTarget'
+            'banners', 'viewTodayTarget', 'todayUnavailable'
         ));
+    }
+
+    public function todayUnavailable(Request $request): View|RedirectResponse
+    {
+        $season = LentSeason::active();
+        $today = null;
+
+        if ($season) {
+            $today = DailyContent::where('lent_season_id', $season->id)
+                ->where('date', Carbon::today()->toDateString())
+                ->where('is_published', true)
+                ->first();
+        }
+
+        if ($today) {
+            return redirect()->route('member.day', $today);
+        }
+
+        return view('member.today-unavailable', [
+            'member' => $request->attributes->get('member'),
+        ]);
     }
 
     /**
