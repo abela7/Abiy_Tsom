@@ -10,6 +10,7 @@ use App\Models\DailyContent;
 use App\Models\Lectionary;
 use App\Models\Member;
 use App\Models\MemberReminderOpen;
+use App\Models\WeeklyTheme;
 use App\Services\EthiopianCalendarService;
 use App\Services\MemberSessionService;
 use App\Services\TelegramAuthService;
@@ -46,6 +47,15 @@ class ShareController extends Controller
         }
 
         $daily->load('weeklyTheme');
+
+        $resolvedWeekTheme = WeeklyTheme::where('lent_season_id', $daily->lent_season_id)
+            ->whereDate('week_start_date', '<=', $daily->date)
+            ->whereDate('week_end_date', '>=', $daily->date)
+            ->first();
+
+        if ($resolvedWeekTheme) {
+            $daily->setRelation('weeklyTheme', $resolvedWeekTheme);
+        }
 
         $weekName = $daily->weeklyTheme
             ? (localized($daily->weeklyTheme, 'name')

@@ -63,12 +63,13 @@ class ProgressController extends Controller
             ->where('is_published', true)
             ->orderBy('day_number')
             ->get();
+        $weeklyThemes = $season->weeklyThemes()->orderBy('week_number')->get();
 
         $today = Carbon::today();
 
         $referenceDay = $this->getReferenceDay($allDays, $today);
 
-        $periodDays = $this->filterByPeriod($allDays, $period, $referenceDay, $dayParam, $weekParam);
+        $periodDays = $this->filterByPeriod($allDays, $weeklyThemes, $period, $referenceDay, $dayParam, $weekParam);
 
         $activities = Activity::where('lent_season_id', $season->id)
             ->where('is_active', true)
@@ -221,17 +222,37 @@ class ProgressController extends Controller
 
         // Week picker options (1-8)
         $locale = app()->getLocale();
-        $weekNameAttr = $locale === 'am' ? 'name_am' : 'name_en';
         $weekOptions = [];
-        foreach (AbiyTsomStructure::getWeeks() as $wn => $info) {
-            $name = $info[$weekNameAttr] ?? $info['name_geez'] ?? $info['name_en'];
-            $weekOptions[] = [
-                'week' => $wn,
-                'name' => $name,
-                'day_start' => $info['day_start'],
-                'day_end' => $info['day_end'],
-                'label' => "Week {$wn} - {$name} (Days {$info['day_start']}-{$info['day_end']})",
-            ];
+        if ($weeklyThemes->isNotEmpty()) {
+            foreach ($weeklyThemes as $theme) {
+                $daysForTheme = $this->getDaysForTheme($allDays, $theme);
+                $name = $locale === 'am'
+                    ? ($theme->name_am ?? $theme->name_geez ?? $theme->name_en)
+                    : ($theme->name_en ?? $theme->name_am ?? $theme->name_geez);
+                $rangeLabel = $this->formatWeekRangeLabel($theme);
+
+                $weekOptions[] = [
+                    'week' => $theme->week_number,
+                    'name' => $name,
+                    'day_start' => $daysForTheme->min('day_number'),
+                    'day_end' => $daysForTheme->max('day_number'),
+                    'label' => $rangeLabel !== null
+                        ? "Week {$theme->week_number} - {$name} ({$rangeLabel})"
+                        : "Week {$theme->week_number} - {$name}",
+                ];
+            }
+        } else {
+            $weekNameAttr = $locale === 'am' ? 'name_am' : 'name_en';
+            foreach (AbiyTsomStructure::getWeeks() as $wn => $info) {
+                $name = $info[$weekNameAttr] ?? $info['name_geez'] ?? $info['name_en'];
+                $weekOptions[] = [
+                    'week' => $wn,
+                    'name' => $name,
+                    'day_start' => $info['day_start'],
+                    'day_end' => $info['day_end'],
+                    'label' => "Week {$wn} - {$name} (Days {$info['day_start']}-{$info['day_end']})",
+                ];
+            }
         }
 
         return response()->json([
@@ -261,6 +282,7 @@ class ProgressController extends Controller
      */
     private function filterByPeriod(
         Collection $allDays,
+        Collection $weeklyThemes,
         string $period,
         ?DailyContent $referenceDay,
         ?string $dayParam = null,
@@ -268,7 +290,7 @@ class ProgressController extends Controller
     ): Collection {
         return match ($period) {
             'daily' => $this->filterDaily($allDays, $referenceDay, $dayParam),
-            'weekly' => $this->filterWeekly($allDays, $referenceDay, $weekParam),
+            'weekly' => $this->filterWeekly($allDays, $weeklyThemes, $referenceDay, $weekParam),
             'monthly' => $this->getMonthlyDays($allDays, $referenceDay),
             default => $allDays,
         };
@@ -303,10 +325,23 @@ class ProgressController extends Controller
      * @param  Collection<int, DailyContent>  $allDays
      * @return Collection<int, DailyContent>
      */
-    private function filterWeekly(Collection $allDays, ?DailyContent $referenceDay, ?string $weekParam): Collection
+    private function filterWeekly(
+        Collection $allDays,
+        Collection $weeklyThemes,
+        ?DailyContent $referenceDay,
+        ?string $weekParam
+    ): Collection
     {
         if ($weekParam !== null && $weekParam !== '') {
             $weekNum = (int) $weekParam;
+            $theme = $weeklyThemes->first(
+                fn ($item): bool => (int) $item->week_number === $weekNum
+            );
+
+            if ($theme !== null) {
+                return $this->getDaysForTheme($allDays, $theme);
+            }
+
             if ($weekNum >= 1 && $weekNum <= 8) {
                 [$start, $end] = AbiyTsomStructure::getDayRangeForWeek($weekNum);
 
@@ -314,7 +349,24 @@ class ProgressController extends Controller
             }
         }
 
-        if ($referenceDay) {
+        if ($referenceDay?->date) {
+            $theme = $weeklyThemes->first(function ($item) use ($referenceDay): bool {
+                if (! $item->week_start_date || ! $item->week_end_date) {
+                    return false;
+                }
+
+                return $referenceDay->date->betweenIncluded(
+                    $item->week_start_date->copy()->startOfDay(),
+                    $item->week_end_date->copy()->endOfDay()
+                );
+            });
+
+            if ($theme !== null) {
+                return $this->getDaysForTheme($allDays, $theme);
+            }
+        }
+
+        if ($referenceDay?->weekly_theme_id) {
             return $allDays->where('weekly_theme_id', $referenceDay->weekly_theme_id)->values();
         }
 
@@ -331,6 +383,40 @@ class ProgressController extends Controller
         return $allDays->filter(
             fn (DailyContent $d) => $d->day_number >= $firstDayNumber && $d->day_number <= min($firstDayNumber + 6, $lastDayNumber)
         )->values();
+    }
+
+    /**
+     * @param  Collection<int, DailyContent>  $allDays
+     * @param  mixed  $theme
+     * @return Collection<int, DailyContent>
+     */
+    private function getDaysForTheme(Collection $allDays, $theme): Collection
+    {
+        if (! $theme->week_start_date || ! $theme->week_end_date) {
+            return collect();
+        }
+
+        return $allDays->filter(function (DailyContent $day) use ($theme): bool {
+            if (! $day->date) {
+                return false;
+            }
+
+            return $day->date->betweenIncluded(
+                $theme->week_start_date->copy()->startOfDay(),
+                $theme->week_end_date->copy()->endOfDay()
+            );
+        })->values();
+    }
+
+    private function formatWeekRangeLabel($theme): ?string
+    {
+        if (! $theme->week_start_date || ! $theme->week_end_date) {
+            return null;
+        }
+
+        return $theme->week_start_date->locale('en')->translatedFormat('M j')
+            .' - '
+            .$theme->week_end_date->locale('en')->translatedFormat('M j');
     }
 
     /**

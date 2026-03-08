@@ -44,12 +44,11 @@ class HomeController extends Controller
                 ->with(['weeklyTheme'])
                 ->first();
 
-            // Determine the current week by date range, not by the FK stored on DailyContent.
-            // This respects whatever week_start_date / week_end_date the admin set on each theme.
-            $weekTheme = WeeklyTheme::where('lent_season_id', $season->id)
-                ->whereDate('week_start_date', '<=', Carbon::today())
-                ->whereDate('week_end_date', '>=', Carbon::today())
-                ->first();
+            $weekTheme = $this->resolveWeekThemeForDate($season->id, Carbon::today());
+
+            if ($today && $weekTheme) {
+                $today->setRelation('weeklyTheme', $weekTheme);
+            }
         }
 
         $easterTimezone = config('app.easter_timezone', 'Europe/London');
@@ -305,6 +304,11 @@ class HomeController extends Controller
         // Load books relation for multiple spiritual books per day
         $daily->load(['weeklyTheme', 'mezmurs', 'references', 'books', 'sinksarImages']);
 
+        $resolvedWeekTheme = $this->resolveWeekThemeForDate($daily->lent_season_id, $daily->date);
+        if ($resolvedWeekTheme) {
+            $daily->setRelation('weeklyTheme', $resolvedWeekTheme);
+        }
+
         // Ethiopian calendar date + celebration
         $ethDateInfo = $ethCalendar->getDateInfo($daily->date, app()->getLocale());
 
@@ -370,5 +374,13 @@ class HomeController extends Controller
         $member = $request->attributes->get('member');
 
         return view('member.week', compact('member', 'weeklyTheme'));
+    }
+
+    private function resolveWeekThemeForDate(int $seasonId, Carbon $date): ?WeeklyTheme
+    {
+        return WeeklyTheme::where('lent_season_id', $seasonId)
+            ->whereDate('week_start_date', '<=', $date)
+            ->whereDate('week_end_date', '>=', $date)
+            ->first();
     }
 }
