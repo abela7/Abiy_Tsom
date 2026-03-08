@@ -94,7 +94,7 @@ return [
     'view_today' => 'ዛሬን ይመልከት',
     'view_recommended_day' => 'የሚመከር ቀን ይመልከት',
     'today_content_not_ready_title' => 'የዛሬ ይዘት ገና አልተዘጋጀም።',
-    'today_content_not_ready_body' => 'እባክዎ ቆይተው በኋላ ይመለሱ። እስከዚያ ድረስ በቀጠሮው ላይ ሌሎች የታተሙ ቀኖችን ማየት ይችላሉ።',
+    'today_content_not_ready_body' => 'እባክዎ ቆይተው በኋላ ይመለሱ።',
     'check_other_days' => 'ሌሎች ቀኖችን ይመልከቱ',
     'day_of' => 'ቀን :day ከ :total',
     'of_total' => 'ከ :total',
