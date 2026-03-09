@@ -7,6 +7,7 @@
         <h1 class="text-2xl font-bold text-primary">{{ __('app.view_admin') }}</h1>
         <div class="flex gap-2">
             <a href="{{ route('admin.admins.edit', $admin) }}" class="px-4 py-2 bg-accent text-on-accent rounded-lg text-sm font-medium hover:bg-accent-hover transition">{{ __('app.edit') }}</a>
+            <a href="{{ route('admin.admins.edit', $admin) }}#password-section" class="px-4 py-2 bg-card text-secondary border border-border rounded-lg text-sm font-medium hover:bg-muted transition">{{ __('app.change_password') }}</a>
             <a href="{{ route('admin.admins.index') }}" class="px-4 py-2 bg-muted text-secondary rounded-lg text-sm font-medium hover:bg-border transition">{{ __('app.back') }}</a>
         </div>
     </div>

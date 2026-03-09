@@ -147,6 +147,63 @@ final class TelegramService
         return $this->apiCall('answerCallbackQuery', $payload);
     }
 
+    /**
+     * Download a file that was uploaded to the Telegram bot.
+     *
+     * @return array{contents:string,file_path:string,mime_type:string|null,extension:string|null}|null
+     */
+    public function downloadFile(string $fileId): ?array
+    {
+        if (! $this->isConfigured() || trim($fileId) === '') {
+            return null;
+        }
+
+        $response = Http::acceptJson()
+            ->timeout(20)
+            ->post($this->apiEndpoint('getFile'), [
+                'file_id' => trim($fileId),
+            ]);
+
+        if (! $response->successful()) {
+            Log::warning('Telegram getFile failed.', [
+                'status' => $response->status(),
+                'file_id' => $fileId,
+                'response' => $response->body(),
+            ]);
+
+            return null;
+        }
+
+        $payload = $response->json();
+        $filePath = is_array($payload) ? (string) data_get($payload, 'result.file_path', '') : '';
+        if ($filePath === '') {
+            Log::warning('Telegram getFile returned no file path.', [
+                'file_id' => $fileId,
+                'payload' => $payload,
+            ]);
+
+            return null;
+        }
+
+        $fileResponse = Http::timeout(30)->get($this->fileEndpoint($filePath));
+        if (! $fileResponse->successful()) {
+            Log::warning('Telegram file download failed.', [
+                'status' => $fileResponse->status(),
+                'file_id' => $fileId,
+                'file_path' => $filePath,
+            ]);
+
+            return null;
+        }
+
+        return [
+            'contents' => $fileResponse->body(),
+            'file_path' => $filePath,
+            'mime_type' => $fileResponse->header('Content-Type'),
+            'extension' => pathinfo($filePath, PATHINFO_EXTENSION) ?: null,
+        ];
+    }
+
     private function apiCall(string $method, array $payload): bool
     {
         if (! $this->isConfigured()) {
@@ -181,6 +238,11 @@ final class TelegramService
     private function apiEndpoint(string $method): string
     {
         return sprintf('https://api.telegram.org/bot%s/%s', $this->botToken(), ltrim($method, '/'));
+    }
+
+    private function fileEndpoint(string $filePath): string
+    {
+        return sprintf('https://api.telegram.org/file/bot%s/%s', $this->botToken(), ltrim($filePath, '/'));
     }
 
     private function botToken(): string

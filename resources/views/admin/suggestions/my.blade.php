@@ -109,6 +109,24 @@
                             {{-- Expanded detail --}}
                             <div x-show="open" x-cloak x-collapse>
                                 <div class="px-3.5 pb-3.5 sm:px-4 sm:pb-4 space-y-2 border-t border-border pt-3 ml-12 sm:ml-[52px]">
+                                    @if($s->ethiopianDateLabel())
+                                        <div class="text-xs">
+                                            <span class="font-semibold text-muted-text">Date:</span>
+                                            <span class="text-secondary ml-1">{{ $s->ethiopianDateLabel() }}</span>
+                                        </div>
+                                    @endif
+                                    @if($s->entryScopeLabel())
+                                        <div class="text-xs">
+                                            <span class="font-semibold text-muted-text">Scope:</span>
+                                            <span class="text-secondary ml-1">{{ $s->entryScopeLabel() }}</span>
+                                        </div>
+                                    @endif
+                                    @if($s->structuredValue('lectionary_section_label'))
+                                        <div class="text-xs">
+                                            <span class="font-semibold text-muted-text">Section:</span>
+                                            <span class="text-secondary ml-1">{{ $s->structuredValue('lectionary_section_label') }}</span>
+                                        </div>
+                                    @endif
                                     @if($s->reference)
                                         <div class="text-xs">
                                             <span class="font-semibold text-muted-text">{{ __('app.suggest_reference_label') }}:</span>
@@ -126,6 +144,9 @@
                                             <span class="font-semibold text-muted-text">Link:</span>
                                             <a href="{{ $s->url }}" target="_blank" rel="noopener" class="text-accent hover:underline break-all ml-1">{{ $s->url }}</a>
                                         </div>
+                                    @endif
+                                    @if($s->imageUrl())
+                                        <img src="{{ $s->imageUrl() }}" alt="" class="w-24 h-24 rounded-lg object-cover border border-border">
                                     @endif
                                     @if($s->content_detail)
                                         <p class="text-xs text-secondary whitespace-pre-wrap leading-relaxed">{{ $s->content_detail }}</p>

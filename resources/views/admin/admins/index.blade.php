@@ -39,6 +39,8 @@
                        class="text-accent font-medium hover:underline active:opacity-80">{{ __('app.view') }}</a>
                     <a href="{{ route('admin.admins.edit', $user) }}"
                        class="text-accent font-medium hover:underline active:opacity-80">{{ __('app.edit') }}</a>
+                    <a href="{{ route('admin.admins.edit', $user) }}#password-section"
+                       class="text-accent font-medium hover:underline active:opacity-80">{{ __('app.change_password') }}</a>
                     @if(!$user->is_super_admin)
                         <form method="POST" action="{{ route('admin.admins.destroy', $user) }}"
                               class="inline"
@@ -86,6 +88,7 @@
                     </form>
                     <a href="{{ route('admin.admins.show', $user) }}" class="text-accent hover:underline">{{ __('app.view') }}</a>
                     <a href="{{ route('admin.admins.edit', $user) }}" class="text-accent hover:underline">{{ __('app.edit') }}</a>
+                    <a href="{{ route('admin.admins.edit', $user) }}#password-section" class="text-accent hover:underline">{{ __('app.change_password') }}</a>
                     @if(!$user->is_super_admin)
                         <form method="POST" action="{{ route('admin.admins.destroy', $user) }}" onsubmit="return confirm('{{ __('app.confirm_delete_admin') }}')" class="inline">
                             @csrf

@@ -42,6 +42,15 @@
             @error('whatsapp_phone')<p class="text-error text-xs mt-1">{{ $message }}</p>@enderror
         </div>
 
+        <div id="password-section" class="border-t border-border pt-4 scroll-mt-24">
+            <h2 class="text-lg font-semibold text-primary">
+                {{ $user ? __('app.change_password') : __('app.password') }}
+            </h2>
+            <p class="text-sm text-muted-text mt-1">
+                {{ $user ? __('app.change_password_help') : __('app.password_set_on_create_help') }}
+            </p>
+        </div>
+
         <div>
             <label class="block text-sm font-medium text-secondary mb-1">{{ __('app.password') }}</label>
             <input type="password" name="password" {{ $user ? '' : 'required' }}

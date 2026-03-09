@@ -79,9 +79,13 @@
                                 @endif
                             </button>
                             <div x-show="expanded" x-cloak x-transition class="mt-2 space-y-1 text-xs text-secondary max-w-md">
+                                @if($s->ethiopianDateLabel())<p><span class="font-semibold text-muted-text">Date:</span> {{ $s->ethiopianDateLabel() }}</p>@endif
+                                @if($s->entryScopeLabel())<p><span class="font-semibold text-muted-text">Scope:</span> {{ $s->entryScopeLabel() }}</p>@endif
+                                @if($s->structuredValue('lectionary_section_label'))<p><span class="font-semibold text-muted-text">Section:</span> {{ $s->structuredValue('lectionary_section_label') }}</p>@endif
                                 @if($s->reference)<p><span class="font-semibold text-muted-text">Ref:</span> {{ $s->reference }}</p>@endif
                                 @if($s->author)<p><span class="font-semibold text-muted-text">Author:</span> {{ $s->author }}</p>@endif
                                 @if($s->url)<p><span class="font-semibold text-muted-text">Link:</span> <a href="{{ $s->url }}" target="_blank" rel="noopener" class="text-accent hover:underline break-all">{{ $s->url }}</a></p>@endif
+                                @if($s->imageUrl())<img src="{{ $s->imageUrl() }}" alt="" class="mt-2 w-28 h-28 rounded-lg object-cover border border-border">@endif
                                 @if($s->content_detail)<p class="whitespace-pre-wrap leading-relaxed">{{ $s->content_detail }}</p>@endif
                                 @if($s->notes)<p class="text-muted-text italic">{{ $s->notes }}</p>@endif
                             </div>
@@ -197,6 +201,15 @@
                     {{-- Content details --}}
                     @if($s->reference || $s->author || $s->url || $s->content_detail || $s->notes)
                         <div class="px-3.5 sm:px-4 space-y-1.5 border-t border-border pt-3 ml-[52px]">
+                            @if($s->ethiopianDateLabel())
+                                <p class="text-xs"><span class="font-semibold text-muted-text">Date:</span> <span class="text-secondary">{{ $s->ethiopianDateLabel() }}</span></p>
+                            @endif
+                            @if($s->entryScopeLabel())
+                                <p class="text-xs"><span class="font-semibold text-muted-text">Scope:</span> <span class="text-secondary">{{ $s->entryScopeLabel() }}</span></p>
+                            @endif
+                            @if($s->structuredValue('lectionary_section_label'))
+                                <p class="text-xs"><span class="font-semibold text-muted-text">Section:</span> <span class="text-secondary">{{ $s->structuredValue('lectionary_section_label') }}</span></p>
+                            @endif
                             @if($s->reference)
                                 <p class="text-xs"><span class="font-semibold text-muted-text">Ref:</span> <span class="text-secondary">{{ $s->reference }}</span></p>
                             @endif
@@ -205,6 +218,9 @@
                             @endif
                             @if($s->url)
                                 <p class="text-xs"><span class="font-semibold text-muted-text">Link:</span> <a href="{{ $s->url }}" target="_blank" rel="noopener" class="text-accent hover:underline break-all">{{ $s->url }}</a></p>
+                            @endif
+                            @if($s->imageUrl())
+                                <img src="{{ $s->imageUrl() }}" alt="" class="w-24 h-24 rounded-lg object-cover border border-border">
                             @endif
                             @if($s->content_detail)
                                 <p class="text-xs text-secondary whitespace-pre-wrap leading-relaxed">{{ $s->content_detail }}</p>

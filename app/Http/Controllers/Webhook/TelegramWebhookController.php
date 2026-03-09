@@ -25,6 +25,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 /**
@@ -80,8 +81,27 @@ class TelegramWebhookController extends Controller
         // Centralised locale resolution for ALL message-based paths (slash commands + plain text).
         $this->applyLocaleForChat($chatId);
 
+        $activeState = TelegramBotState::getAnyActive($chatId);
+        $photos = data_get($message, 'photo', []);
+        if (
+            is_array($photos)
+            && $photos !== []
+            && $activeState?->action === 'suggest'
+        ) {
+            return $this->handleSuggestPhotoInput($chatId, $photos, $activeState, $telegramService);
+        }
+
         $text = trim((string) data_get($message, 'text', ''));
         if (! $text) {
+            if ($activeState?->action === 'suggest' && $activeState->step === 'await_image') {
+                return $this->reply(
+                    $telegramService,
+                    $chatId,
+                    __('app.telegram_suggest_send_photo_or_skip'),
+                    $this->structuredSuggestStepKeyboard('await_image')
+                );
+            }
+
             return response()->json(['success' => true, 'message' => 'No text command.']);
         }
 
@@ -1657,6 +1677,17 @@ class TelegramWebhookController extends Controller
         return User::query()->where('telegram_chat_id', $chatId)->first();
     }
 
+    private function staffActorFromChatId(string $chatId): ?User
+    {
+        $actor = $this->actorFromChatId($chatId);
+
+        if (! $actor instanceof User || ! $actor->isAdmin()) {
+            return null;
+        }
+
+        return $actor;
+    }
+
     private function syncTelegramChatId(Member|User $actor, string $chatId): void
     {
         $chatId = trim($chatId);
@@ -2071,8 +2102,18 @@ class TelegramWebhookController extends Controller
     ): JsonResponse {
         $actor = $this->actorFromChatId($chatId);
 
-        // Must be a linked admin/editor/writer User — not a Member
-        if (! $actor instanceof User) {
+        if ($actor instanceof Member) {
+            return $this->replyOrEdit(
+                $telegramService,
+                $chatId,
+                __('app.telegram_staff_portal_access_denied'),
+                $this->mainMenuKeyboard($actor, $telegramAuthService),
+                $messageId
+            );
+        }
+
+        // Must be a linked admin/editor/writer User.
+        if (! $actor instanceof User || ! $actor->isAdmin()) {
             // Start WhatsApp linking inline, remembering that they wanted to suggest
             TelegramBotState::startFor($chatId, 'link_admin', 'ask_phone', [
                 'pending_action' => str_starts_with($action, 'suggest') ? 'suggest' : $action,
@@ -2095,45 +2136,131 @@ class TelegramWebhookController extends Controller
             return $this->startSuggestWizard($chatId, $messageId, $telegramService);
         }
 
-        // ── Language chosen ───────────────────────────────────────────────
         if (str_starts_with($action, 'suggest_lang_')) {
             $lang = str_replace('suggest_lang_', '', $action); // 'en' or 'am'
             $state = TelegramBotState::getActive($chatId, 'suggest');
             if (! $state) {
                 return $this->startSuggestWizard($chatId, $messageId, $telegramService);
             }
-            $state->advance('choose_type', ['language' => $lang]);
+            $state->advance('choose_area', ['language' => $lang]);
 
             return $this->replyOrEdit(
                 $telegramService,
                 $chatId,
-                __('app.telegram_suggest_choose_type'),
-                $this->suggestTypeKeyboard(),
+                __('app.telegram_suggest_choose_area'),
+                $this->structuredSuggestAreaKeyboard(),
                 $messageId
             );
         }
 
-        // ── Type chosen ───────────────────────────────────────────────────
-        if (str_starts_with($action, 'suggest_type_')) {
-            $type = str_replace('suggest_type_', '', $action);
+        if (str_starts_with($action, 'suggest_area_')) {
+            $area = str_replace('suggest_area_', '', $action);
             $state = TelegramBotState::getActive($chatId, 'suggest');
             if (! $state) {
                 return $this->startSuggestWizard($chatId, $messageId, $telegramService);
             }
 
-            $nextStep = $this->suggestFirstStep($type);
-            $state->advance($nextStep, ['type' => $type]);
+            $state->advance('choose_month', ['content_area' => $area]);
 
             return $this->replyOrEdit(
                 $telegramService,
                 $chatId,
-                $this->suggestStepPrompt($nextStep, $type),
-                $this->suggestStepKeyboard($nextStep, 'choose_type'),
+                __('app.telegram_suggest_choose_month'),
+                $this->structuredSuggestMonthKeyboard(),
                 $messageId
             );
         }
 
-        // ── Skip optional field ───────────────────────────────────────────
+        if (str_starts_with($action, 'suggest_month_')) {
+            $month = (int) str_replace('suggest_month_', '', $action);
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+
+            $state->advance('choose_day', ['ethiopian_month' => $month]);
+
+            return $this->replyOrEdit(
+                $telegramService,
+                $chatId,
+                __('app.telegram_suggest_choose_day'),
+                $this->structuredSuggestDayKeyboard($month),
+                $messageId
+            );
+        }
+
+        if (str_starts_with($action, 'suggest_day_')) {
+            $day = (int) str_replace('suggest_day_', '', $action);
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+
+            $nextStep = match ((string) $state->get('content_area', '')) {
+                'synaxarium' => 'choose_scope',
+                'lectionary' => 'choose_lectionary_section',
+                'daily_message' => 'enter_title',
+                default => 'choose_area',
+            };
+
+            $state->advance($nextStep, ['ethiopian_day' => $day]);
+
+            return $this->replyOrEdit(
+                $telegramService,
+                $chatId,
+                $this->structuredSuggestPrompt($nextStep, $state->data ?? []),
+                $this->structuredSuggestKeyboardForStep($nextStep, $state),
+                $messageId
+            );
+        }
+
+        if (str_starts_with($action, 'suggest_scope_')) {
+            $scope = str_replace('suggest_scope_', '', $action);
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+
+            $state->advance('enter_title', ['entry_scope' => $scope]);
+
+            return $this->replyOrEdit(
+                $telegramService,
+                $chatId,
+                $this->structuredSuggestPrompt('enter_title', $state->data ?? []),
+                $this->structuredSuggestKeyboardForStep('enter_title', $state),
+                $messageId
+            );
+        }
+
+        if (str_starts_with($action, 'suggest_lectionary_section_')) {
+            $section = str_replace('suggest_lectionary_section_', '', $action);
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+
+            $state->advance('enter_reference', ['lectionary_section' => $section]);
+
+            return $this->replyOrEdit(
+                $telegramService,
+                $chatId,
+                $this->structuredSuggestPrompt('enter_reference', $state->data ?? []),
+                $this->structuredSuggestKeyboardForStep('enter_reference', $state),
+                $messageId
+            );
+        }
+
+        if ($action === 'suggest_main_yes' || $action === 'suggest_main_no') {
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+
+            $state->advance('preview', ['is_main' => $action === 'suggest_main_yes']);
+
+            return $this->showSuggestPreview($chatId, $messageId, $state, $telegramService);
+        }
+
         if ($action === 'suggest_skip') {
             $state = TelegramBotState::getActive($chatId, 'suggest');
             if (! $state) {
@@ -2143,7 +2270,6 @@ class TelegramWebhookController extends Controller
             return $this->advanceSuggestStep($chatId, $messageId, '', $state, $telegramService);
         }
 
-        // ── Confirm ───────────────────────────────────────────────────────
         if ($action === 'suggest_confirm') {
             $state = TelegramBotState::getActive($chatId, 'suggest');
             if (! $state) {
@@ -2153,7 +2279,6 @@ class TelegramWebhookController extends Controller
             return $this->confirmSuggestion($chatId, $messageId, $actor, $state, $telegramAuthService, $telegramService);
         }
 
-        // ── Back ──────────────────────────────────────────────────────────
         if ($action === 'suggest_back') {
             $state = TelegramBotState::getActive($chatId, 'suggest');
             if (! $state) {
@@ -2162,7 +2287,6 @@ class TelegramWebhookController extends Controller
             return $this->handleSuggestBack($chatId, $messageId, $state, $telegramService);
         }
 
-        // ── Cancel ────────────────────────────────────────────────────────
         if ($action === 'suggest_cancel') {
             TelegramBotState::query()->where('chat_id', $chatId)->where('action', 'suggest')->delete();
 
@@ -2231,36 +2355,30 @@ class TelegramWebhookController extends Controller
         TelegramBotState $state,
         TelegramService $telegramService
     ): JsonResponse {
-        $type = (string) $state->get('type', '');
         $currentStep = $state->step;
+        $input = trim($input);
 
-        // Map current step to the data field it fills
         $fieldForStep = [
             'enter_reference' => 'reference',
             'enter_title' => 'title',
-            'enter_author' => 'author',
-            'enter_url' => 'url',
             'enter_detail' => 'content_detail',
         ];
 
         $mergeData = [];
-        if (isset($fieldForStep[$currentStep]) && $input !== '') {
-            $field = $fieldForStep[$currentStep];
-
-            if (
-                $currentStep === 'enter_url'
-                && ! $this->suggestStepInputLooksUrl($input)
-            ) {
-                $field = 'content_detail';
-                if (! empty($state->get('content_detail'))) {
-                    $input = rtrim((string) $state->get('content_detail'))."\n\n".trim($input);
-                }
+        if (isset($fieldForStep[$currentStep])) {
+            if ($input === '') {
+                return $this->reply(
+                    $telegramService,
+                    $chatId,
+                    __('app.telegram_suggest_value_required'),
+                    $this->structuredSuggestStepKeyboard($currentStep)
+                );
             }
 
-            $mergeData[$field] = trim($input);
+            $mergeData[$fieldForStep[$currentStep]] = $input;
         }
 
-        $nextStep = $this->suggestNextStep($type, $currentStep);
+        $nextStep = $this->structuredSuggestNextStep($state, $currentStep);
 
         if ($nextStep === 'preview') {
             $state->advance('preview', $mergeData);
@@ -2270,13 +2388,11 @@ class TelegramWebhookController extends Controller
 
         $state->advance($nextStep, $mergeData);
 
-        $keyboard = $this->suggestStepKeyboard($nextStep, $currentStep);
-
         return $this->reply(
             $telegramService,
             $chatId,
-            $this->suggestStepPrompt($nextStep, $type),
-            $keyboard
+            $this->structuredSuggestPrompt($nextStep, $state->data ?? []),
+            $this->structuredSuggestKeyboardForStep($nextStep, $state)
         );
     }
 
@@ -2287,38 +2403,51 @@ class TelegramWebhookController extends Controller
         TelegramService $telegramService
     ): JsonResponse {
         $data = $state->data ?? [];
-        $type = $data['type'] ?? '?';
-        $lang = strtoupper($data['language'] ?? '?');
-
-        $typeLabel = match ($type) {
-            'bible' => '📖 Bible',
-            'mezmur' => '🎵 Mezmur',
-            'sinksar' => '📖 Sinksar',
-            'book' => '📚 Book',
-            'reference' => '🔗 Reference',
-            default => ucfirst($type),
-        };
+        $lang = strtoupper((string) ($data['language'] ?? '?'));
+        $contentArea = (string) ($data['content_area'] ?? '');
+        $typeLabel = $this->structuredSuggestAreaLabel($contentArea);
 
         $lines = [
             '<b>📋 '.__('app.telegram_suggest_preview').'</b>',
             '',
             "<b>Type:</b> {$typeLabel} [{$lang}]",
+            '<b>Date:</b> '.htmlspecialchars($this->structuredSuggestDateLabel($data), ENT_QUOTES, 'UTF-8'),
         ];
 
-        if (! empty($data['reference']) && $type === 'bible') {
+        if ($contentArea === 'synaxarium' && ! empty($data['entry_scope'])) {
+            $lines[] = '<b>Scope:</b> '.htmlspecialchars(
+                $data['entry_scope'] === 'yearly'
+                    ? __('app.telegram_suggest_scope_yearly')
+                    : __('app.telegram_suggest_scope_monthly'),
+                ENT_QUOTES,
+                'UTF-8'
+            );
+        }
+        if ($contentArea === 'lectionary' && ! empty($data['lectionary_section'])) {
+            $lines[] = '<b>Section:</b> '.htmlspecialchars(
+                $this->structuredSuggestLectionarySectionLabel((string) $data['lectionary_section']),
+                ENT_QUOTES,
+                'UTF-8'
+            );
+        }
+        if (! empty($data['reference'])) {
             $lines[] = '<b>Reference:</b> '.htmlspecialchars($data['reference'], ENT_QUOTES, 'UTF-8');
         }
         if (! empty($data['title'])) {
             $lines[] = '<b>Title:</b> '.htmlspecialchars($data['title'], ENT_QUOTES, 'UTF-8');
         }
-        if (! empty($data['author'])) {
-            $lines[] = '<b>Author:</b> '.htmlspecialchars($data['author'], ENT_QUOTES, 'UTF-8');
+        if (! empty($data['image_path'])) {
+            $lines[] = '<b>Image:</b> '.htmlspecialchars(__('app.telegram_suggest_image_attached'), ENT_QUOTES, 'UTF-8');
         }
-        if (! empty($data['url'])) {
-            $lines[] = '<b>Link:</b> '.htmlspecialchars($data['url'], ENT_QUOTES, 'UTF-8');
+        if ($contentArea === 'synaxarium' && array_key_exists('is_main', $data)) {
+            $lines[] = '<b>Main celebration:</b> '.htmlspecialchars(
+                $data['is_main'] ? __('app.yes') : __('app.no'),
+                ENT_QUOTES,
+                'UTF-8'
+            );
         }
         if (! empty($data['content_detail'])) {
-            $lines[] = '<b>Notes:</b> '.htmlspecialchars($data['content_detail'], ENT_QUOTES, 'UTF-8');
+            $lines[] = '<b>Details:</b> '.htmlspecialchars($data['content_detail'], ENT_QUOTES, 'UTF-8');
         }
 
         $keyboard = ['inline_keyboard' => [
@@ -2348,19 +2477,24 @@ class TelegramWebhookController extends Controller
         TelegramService $telegramService
     ): JsonResponse {
         $data = $state->data ?? [];
-        $type = $data['type'] ?? 'reference';
-        $language = $data['language'] ?? 'en';
+        $contentArea = (string) ($data['content_area'] ?? 'daily_message');
+        $language = (string) ($data['language'] ?? 'en');
 
         try {
             ContentSuggestion::create([
                 'user_id' => $user->id,
-                'type' => $type,
+                'source' => 'telegram',
+                'type' => $this->structuredSuggestLegacyType($contentArea),
+                'content_area' => $contentArea,
                 'language' => $language,
-                'title' => $data['title'] ?? null,
-                'reference' => $data['reference'] ?? null,
-                'author' => $data['author'] ?? null,
-                'url' => $data['url'] ?? null,
+                'ethiopian_month' => $data['ethiopian_month'] ?? null,
+                'ethiopian_day' => $data['ethiopian_day'] ?? null,
+                'entry_scope' => $data['entry_scope'] ?? null,
+                'title' => $this->structuredSuggestStoredTitle($data),
+                'reference' => $this->structuredSuggestStoredReference($data),
                 'content_detail' => $data['content_detail'] ?? null,
+                'image_path' => $data['image_path'] ?? null,
+                'structured_payload' => $this->structuredSuggestPayload($data),
                 'submitter_name' => $user->name,
                 'status' => 'pending',
             ]);
@@ -2473,47 +2607,17 @@ class TelegramWebhookController extends Controller
         TelegramBotState $state,
         TelegramService $telegramService
     ): JsonResponse {
-        $type = (string) $state->get('type', '');
-        $prevStep = $this->suggestPreviousStep($type, $state->step);
-
-        // If we're at (or before) the first text step, go back to the type selector
-        if ($prevStep === 'choose_type' || $state->step === 'choose_type') {
-            // If already on choose_type, go back to language selection
-            if ($state->step === 'choose_type') {
-                $state->advance('choose_language');
-
-                return $this->replyOrEdit(
-                    $telegramService,
-                    $chatId,
-                    '💡 '.__('app.telegram_suggest')."\n\n".__('app.telegram_suggest_choose_language'),
-                    $this->suggestLanguageKeyboard(),
-                    $messageId
-                );
-            }
-
-            $state->advance('choose_type');
-
-            return $this->replyOrEdit(
-                $telegramService,
-                $chatId,
-                __('app.telegram_suggest_choose_type'),
-                $this->suggestTypeKeyboard(),
-                $messageId
-            );
-        }
-
+        $prevStep = $this->structuredSuggestPreviousStep($state, $state->step);
         $state->advance($prevStep);
 
         $fieldForStep = [
             'enter_reference' => 'reference',
             'enter_title' => 'title',
-            'enter_author' => 'author',
-            'enter_url' => 'url',
             'enter_detail' => 'content_detail',
         ];
 
         $existing = isset($fieldForStep[$prevStep]) ? ((string) $state->get($fieldForStep[$prevStep], '')) : '';
-        $prompt = $this->suggestStepPrompt($prevStep, $type);
+        $prompt = $this->structuredSuggestPrompt($prevStep, $state->data ?? []);
         if ($existing !== '') {
             $prompt .= "\n\n<i>".__('app.telegram_suggest_current')." ".htmlspecialchars($existing, ENT_QUOTES, 'UTF-8')."</i>";
             $prompt .= "\n".__('app.telegram_suggest_type_to_replace');
@@ -2523,7 +2627,7 @@ class TelegramWebhookController extends Controller
             $telegramService,
             $chatId,
             $prompt,
-            $this->suggestStepKeyboard($prevStep, $this->suggestPreviousStep($type, $prevStep)),
+            $this->structuredSuggestKeyboardForStep($prevStep, $state),
             $messageId,
             'HTML'
         );
@@ -2656,6 +2760,410 @@ class TelegramWebhookController extends Controller
         ]];
     }
 
+    private function handleSuggestPhotoInput(
+        string $chatId,
+        array $photos,
+        TelegramBotState $state,
+        TelegramService $telegramService
+    ): JsonResponse {
+        if ($state->step !== 'await_image') {
+            return response()->json(['success' => true, 'message' => 'Photo ignored.']);
+        }
+
+        $photo = collect($photos)
+            ->filter(fn ($item) => is_array($item) && filled($item['file_id'] ?? null))
+            ->sortBy(fn ($item) => (int) ($item['file_size'] ?? 0))
+            ->last();
+
+        if (! is_array($photo) || blank($photo['file_id'] ?? null)) {
+            return $this->reply(
+                $telegramService,
+                $chatId,
+                __('app.telegram_suggest_photo_upload_failed'),
+                $this->structuredSuggestStepKeyboard('await_image')
+            );
+        }
+
+        $download = $telegramService->downloadFile((string) $photo['file_id']);
+        if (! is_array($download)) {
+            return $this->reply(
+                $telegramService,
+                $chatId,
+                __('app.telegram_suggest_photo_upload_failed'),
+                $this->structuredSuggestStepKeyboard('await_image')
+            );
+        }
+
+        $extension = strtolower((string) ($download['extension'] ?? 'jpg'));
+        if (! in_array($extension, ['jpg', 'jpeg', 'png', 'webp'], true)) {
+            $extension = 'jpg';
+        }
+
+        $path = 'telegram-suggestions/'.now()->format('Y/m').'/'.Str::uuid().'.'.$extension;
+        if (! Storage::disk('public')->put($path, $download['contents'])) {
+            return $this->reply(
+                $telegramService,
+                $chatId,
+                __('app.telegram_suggest_photo_upload_failed'),
+                $this->structuredSuggestStepKeyboard('await_image')
+            );
+        }
+
+        $state->advance('enter_detail', ['image_path' => $path]);
+
+        return $this->reply(
+            $telegramService,
+            $chatId,
+            $this->structuredSuggestPrompt('enter_detail', $state->data ?? []),
+            $this->structuredSuggestKeyboardForStep('enter_detail', $state)
+        );
+    }
+
+    private function structuredSuggestAreaKeyboard(): array
+    {
+        return ['inline_keyboard' => [
+            [['text' => '📖 '.__('app.telegram_suggest_area_lectionary'), 'callback_data' => 'suggest_area_lectionary']],
+            [['text' => '🕊️ '.__('app.telegram_suggest_area_synaxarium'), 'callback_data' => 'suggest_area_synaxarium']],
+            [['text' => '💬 '.__('app.telegram_suggest_area_daily_message'), 'callback_data' => 'suggest_area_daily_message']],
+            [
+                ['text' => '⬅️ '.__('app.telegram_suggest_back'), 'callback_data' => 'suggest_back'],
+                ['text' => '❌ '.__('app.telegram_suggest_cancel'), 'callback_data' => 'suggest_cancel'],
+            ],
+        ]];
+    }
+
+    private function structuredSuggestMonthKeyboard(): array
+    {
+        $months = [
+            1 => 'Meskerem / መስከረም',
+            2 => 'Tikimt / ጥቅምት',
+            3 => 'Hidar / ኅዳር',
+            4 => 'Tahsas / ታኅሣሥ',
+            5 => 'Tir / ጥር',
+            6 => 'Yekatit / የካቲት',
+            7 => 'Megabit / መጋቢት',
+            8 => 'Miyazia / ሚያዝያ',
+            9 => 'Ginbot / ግንቦት',
+            10 => 'Sene / ሰኔ',
+            11 => 'Hamle / ሐምሌ',
+            12 => 'Nehase / ነሐሴ',
+            13 => 'Pagumen / ጳጉሜን',
+        ];
+
+        $rows = [];
+        foreach ($months as $month => $label) {
+            $rows[] = [[
+                'text' => $label,
+                'callback_data' => 'suggest_month_'.$month,
+            ]];
+        }
+
+        $rows[] = [
+            ['text' => '⬅️ '.__('app.telegram_suggest_back'), 'callback_data' => 'suggest_back'],
+            ['text' => '❌ '.__('app.telegram_suggest_cancel'), 'callback_data' => 'suggest_cancel'],
+        ];
+
+        return ['inline_keyboard' => $rows];
+    }
+
+    private function structuredSuggestDayKeyboard(int $month): array
+    {
+        $maxDay = $month === 13 ? 6 : 30;
+        $rows = [];
+
+        for ($day = 1; $day <= $maxDay; $day += 5) {
+            $row = [];
+            for ($offset = 0; $offset < 5; $offset++) {
+                $value = $day + $offset;
+                if ($value > $maxDay) {
+                    break;
+                }
+
+                $row[] = [
+                    'text' => (string) $value,
+                    'callback_data' => 'suggest_day_'.$value,
+                ];
+            }
+
+            $rows[] = $row;
+        }
+
+        $rows[] = [
+            ['text' => '⬅️ '.__('app.telegram_suggest_back'), 'callback_data' => 'suggest_back'],
+            ['text' => '❌ '.__('app.telegram_suggest_cancel'), 'callback_data' => 'suggest_cancel'],
+        ];
+
+        return ['inline_keyboard' => $rows];
+    }
+
+    private function structuredSuggestScopeKeyboard(): array
+    {
+        return ['inline_keyboard' => [
+            [['text' => __('app.telegram_suggest_scope_yearly'), 'callback_data' => 'suggest_scope_yearly']],
+            [['text' => __('app.telegram_suggest_scope_monthly'), 'callback_data' => 'suggest_scope_monthly']],
+            [
+                ['text' => '⬅️ '.__('app.telegram_suggest_back'), 'callback_data' => 'suggest_back'],
+                ['text' => '❌ '.__('app.telegram_suggest_cancel'), 'callback_data' => 'suggest_cancel'],
+            ],
+        ]];
+    }
+
+    private function structuredSuggestLectionarySectionKeyboard(): array
+    {
+        $sections = [
+            'title_description',
+            'pauline',
+            'catholic',
+            'acts',
+            'mesbak',
+            'gospel',
+            'qiddase',
+        ];
+
+        $rows = [];
+        foreach ($sections as $section) {
+            $rows[] = [[
+                'text' => $this->structuredSuggestLectionarySectionLabel($section),
+                'callback_data' => 'suggest_lectionary_section_'.$section,
+            ]];
+        }
+
+        $rows[] = [
+            ['text' => '⬅️ '.__('app.telegram_suggest_back'), 'callback_data' => 'suggest_back'],
+            ['text' => '❌ '.__('app.telegram_suggest_cancel'), 'callback_data' => 'suggest_cancel'],
+        ];
+
+        return ['inline_keyboard' => $rows];
+    }
+
+    private function structuredSuggestMainChoiceKeyboard(): array
+    {
+        return ['inline_keyboard' => [
+            [
+                ['text' => __('app.yes'), 'callback_data' => 'suggest_main_yes'],
+                ['text' => __('app.no'), 'callback_data' => 'suggest_main_no'],
+            ],
+            [
+                ['text' => '⬅️ '.__('app.telegram_suggest_back'), 'callback_data' => 'suggest_back'],
+                ['text' => '❌ '.__('app.telegram_suggest_cancel'), 'callback_data' => 'suggest_cancel'],
+            ],
+        ]];
+    }
+
+    private function structuredSuggestKeyboardForStep(string $step, TelegramBotState $state): array
+    {
+        return match ($step) {
+            'choose_language' => $this->suggestLanguageKeyboard(),
+            'choose_area' => $this->structuredSuggestAreaKeyboard(),
+            'choose_month' => $this->structuredSuggestMonthKeyboard(),
+            'choose_day' => $this->structuredSuggestDayKeyboard((int) $state->get('ethiopian_month', 1)),
+            'choose_scope' => $this->structuredSuggestScopeKeyboard(),
+            'choose_lectionary_section' => $this->structuredSuggestLectionarySectionKeyboard(),
+            'choose_main' => $this->structuredSuggestMainChoiceKeyboard(),
+            default => $this->structuredSuggestStepKeyboard($step),
+        };
+    }
+
+    private function structuredSuggestStepKeyboard(string $step): array
+    {
+        $rows = [];
+
+        if ($step === 'await_image') {
+            $rows[] = [['text' => '⏭ '.__('app.telegram_suggest_skip'), 'callback_data' => 'suggest_skip']];
+        }
+
+        $rows[] = [
+            ['text' => '⬅️ '.__('app.telegram_suggest_back'), 'callback_data' => 'suggest_back'],
+            ['text' => '❌ '.__('app.telegram_suggest_cancel'), 'callback_data' => 'suggest_cancel'],
+        ];
+
+        return ['inline_keyboard' => $rows];
+    }
+
+    private function structuredSuggestPrompt(string $step, array $data): string
+    {
+        $contentArea = (string) ($data['content_area'] ?? '');
+
+        return match ($step) {
+            'choose_language' => __('app.telegram_suggest_choose_language'),
+            'choose_area' => __('app.telegram_suggest_choose_area'),
+            'choose_month' => __('app.telegram_suggest_choose_month'),
+            'choose_day' => __('app.telegram_suggest_choose_day'),
+            'choose_scope' => __('app.telegram_suggest_choose_scope'),
+            'choose_lectionary_section' => __('app.telegram_suggest_choose_lectionary_section'),
+            'enter_title' => match ($contentArea) {
+                'synaxarium' => __('app.telegram_suggest_enter_saint_name'),
+                'daily_message' => __('app.telegram_suggest_enter_daily_message_title'),
+                default => __('app.telegram_suggest_enter_title'),
+            },
+            'enter_reference' => match ((string) ($data['lectionary_section'] ?? '')) {
+                'title_description' => __('app.telegram_suggest_enter_lectionary_summary'),
+                'qiddase' => __('app.telegram_suggest_enter_qiddase_name'),
+                default => __('app.telegram_suggest_enter_lectionary_reference'),
+            },
+            'await_image' => __('app.telegram_suggest_send_photo'),
+            'enter_detail' => match ($contentArea) {
+                'synaxarium' => __('app.telegram_suggest_enter_saint_description'),
+                'daily_message' => __('app.telegram_suggest_enter_daily_message_body'),
+                'lectionary' => __('app.telegram_suggest_enter_lectionary_detail'),
+                default => __('app.telegram_suggest_enter_detail'),
+            },
+            'choose_main' => __('app.telegram_suggest_choose_main_celebration'),
+            default => __('app.telegram_suggest_enter_detail'),
+        };
+    }
+
+    private function structuredSuggestFlow(TelegramBotState $state): array
+    {
+        $contentArea = (string) $state->get('content_area', '');
+
+        return match ($contentArea) {
+            'lectionary' => ['choose_language', 'choose_area', 'choose_month', 'choose_day', 'choose_lectionary_section', 'enter_reference', 'enter_detail', 'preview'],
+            'synaxarium' => ['choose_language', 'choose_area', 'choose_month', 'choose_day', 'choose_scope', 'enter_title', 'await_image', 'enter_detail', 'choose_main', 'preview'],
+            'daily_message' => ['choose_language', 'choose_area', 'choose_month', 'choose_day', 'enter_title', 'enter_detail', 'preview'],
+            default => ['choose_language', 'choose_area'],
+        };
+    }
+
+    private function structuredSuggestNextStep(TelegramBotState $state, string $currentStep): string
+    {
+        if ($currentStep === 'await_image') {
+            return 'enter_detail';
+        }
+
+        $flow = $this->structuredSuggestFlow($state);
+        $index = array_search($currentStep, $flow, true);
+
+        if ($index === false) {
+            return 'preview';
+        }
+
+        return $flow[$index + 1] ?? 'preview';
+    }
+
+    private function structuredSuggestPreviousStep(TelegramBotState $state, string $currentStep): string
+    {
+        $flow = $this->structuredSuggestFlow($state);
+        if ($currentStep === 'preview') {
+            $steps = array_values(array_filter($flow, fn ($step) => $step !== 'preview'));
+
+            return end($steps) ?: 'choose_language';
+        }
+
+        $index = array_search($currentStep, $flow, true);
+        if ($index === false || $index === 0) {
+            return 'choose_language';
+        }
+
+        return $flow[$index - 1];
+    }
+
+    private function structuredSuggestAreaLabel(string $contentArea): string
+    {
+        return match ($contentArea) {
+            'lectionary' => '📖 '.__('app.telegram_suggest_area_lectionary'),
+            'synaxarium' => '🕊️ '.__('app.telegram_suggest_area_synaxarium'),
+            'daily_message' => '💬 '.__('app.telegram_suggest_area_daily_message'),
+            default => ucfirst($contentArea),
+        };
+    }
+
+    private function structuredSuggestDateLabel(array $data): string
+    {
+        $month = (int) ($data['ethiopian_month'] ?? 0);
+        $day = (int) ($data['ethiopian_day'] ?? 0);
+
+        $monthLabel = match ($month) {
+            1 => 'Meskerem',
+            2 => 'Tikimt',
+            3 => 'Hidar',
+            4 => 'Tahsas',
+            5 => 'Tir',
+            6 => 'Yekatit',
+            7 => 'Megabit',
+            8 => 'Miyazia',
+            9 => 'Ginbot',
+            10 => 'Sene',
+            11 => 'Hamle',
+            12 => 'Nehase',
+            13 => 'Pagumen',
+            default => __('app.telegram_suggest_unknown_date'),
+        };
+
+        return $day > 0 ? $monthLabel.' '.$day : $monthLabel;
+    }
+
+    private function structuredSuggestLectionarySectionLabel(string $section): string
+    {
+        return match ($section) {
+            'title_description' => __('app.telegram_suggest_lectionary_section_title_description'),
+            'pauline' => __('app.telegram_suggest_lectionary_section_pauline'),
+            'catholic' => __('app.telegram_suggest_lectionary_section_catholic'),
+            'acts' => __('app.telegram_suggest_lectionary_section_acts'),
+            'mesbak' => __('app.telegram_suggest_lectionary_section_mesbak'),
+            'gospel' => __('app.telegram_suggest_lectionary_section_gospel'),
+            'qiddase' => __('app.telegram_suggest_lectionary_section_qiddase'),
+            default => ucfirst(str_replace('_', ' ', $section)),
+        };
+    }
+
+    private function structuredSuggestLegacyType(string $contentArea): string
+    {
+        return match ($contentArea) {
+            'lectionary' => 'bible',
+            'synaxarium' => 'sinksar',
+            'daily_message' => 'reference',
+            default => 'reference',
+        };
+    }
+
+    private function structuredSuggestStoredTitle(array $data): ?string
+    {
+        return match ((string) ($data['content_area'] ?? '')) {
+            'lectionary' => __('app.telegram_suggest_area_lectionary').': '.$this->structuredSuggestLectionarySectionLabel((string) ($data['lectionary_section'] ?? '')),
+            default => $data['title'] ?? null,
+        };
+    }
+
+    private function structuredSuggestStoredReference(array $data): ?string
+    {
+        $parts = [$this->structuredSuggestDateLabel($data)];
+
+        if (($data['content_area'] ?? null) === 'synaxarium' && ! empty($data['entry_scope'])) {
+            $parts[] = $data['entry_scope'] === 'yearly'
+                ? __('app.telegram_suggest_scope_yearly')
+                : __('app.telegram_suggest_scope_monthly');
+        }
+
+        if (($data['content_area'] ?? null) === 'lectionary' && ! empty($data['lectionary_section'])) {
+            $parts[] = $this->structuredSuggestLectionarySectionLabel((string) $data['lectionary_section']);
+        }
+
+        if (! empty($data['reference'])) {
+            $parts[] = (string) $data['reference'];
+        }
+
+        $parts = array_values(array_filter($parts, fn ($value) => filled($value)));
+
+        return $parts === [] ? null : implode(' • ', $parts);
+    }
+
+    private function structuredSuggestPayload(array $data): array
+    {
+        return array_filter([
+            'content_area' => $data['content_area'] ?? null,
+            'ethiopian_month' => $data['ethiopian_month'] ?? null,
+            'ethiopian_day' => $data['ethiopian_day'] ?? null,
+            'entry_scope' => $data['entry_scope'] ?? null,
+            'lectionary_section' => $data['lectionary_section'] ?? null,
+            'lectionary_section_label' => ! empty($data['lectionary_section'])
+                ? $this->structuredSuggestLectionarySectionLabel((string) $data['lectionary_section'])
+                : null,
+            'reference' => $data['reference'] ?? null,
+            'is_main' => $data['is_main'] ?? null,
+        ], fn ($value) => $value !== null && $value !== '');
+    }
+
     // =========================================================================
     // Main menu keyboard
     // =========================================================================
@@ -2683,10 +3191,11 @@ class TelegramWebhookController extends Controller
         }
 
         // Staff/admin dual-mode menu: Main Page (member view) | Portal (staff tools)
-        $rows[] = [
-            ['text' => '📱 '.__('app.telegram_staff_main_page'), 'callback_data' => 'staff_main_page'],
-            ['text' => '⚙️ '.__('app.telegram_staff_portal'), 'callback_data' => 'staff_portal'],
-        ];
+        $rows[] = [['text' => '📱 '.__('app.telegram_staff_main_page'), 'callback_data' => 'staff_main_page']];
+
+        if ($actor->isAdmin()) {
+            $rows[] = [['text' => '⚙️ '.__('app.telegram_staff_portal'), 'callback_data' => 'staff_portal']];
+        }
 
         if ($this->telegramBotBuilder->buttonEnabled('help', 'admin')) {
             $rows[] = [['text' => $this->telegramBotBuilder->buttonLabel('help', 'admin', __('app.help')), 'callback_data' => 'help']];
@@ -2743,9 +3252,17 @@ class TelegramWebhookController extends Controller
         TelegramAuthService $telegramAuthService,
         TelegramService $telegramService
     ): JsonResponse {
-        $actor = $this->actorFromChatId($chatId);
+        $actor = $this->staffActorFromChatId($chatId);
         if (! $actor instanceof User) {
-            return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->notLinkedMessage(), $this->startChoiceKeyboard());
+            $linkedActor = $this->actorFromChatId($chatId);
+
+            return $this->replyAfterDelete(
+                $telegramService,
+                $chatId,
+                $messageId,
+                $linkedActor instanceof Member ? __('app.telegram_staff_portal_access_denied') : $this->notLinkedMessage(),
+                $linkedActor instanceof Member ? $this->mainMenuKeyboard($linkedActor, $telegramAuthService) : $this->startChoiceKeyboard()
+            );
         }
 
         return $this->replyOrEdit(
@@ -2763,9 +3280,17 @@ class TelegramWebhookController extends Controller
         TelegramAuthService $telegramAuthService,
         TelegramService $telegramService
     ): JsonResponse {
-        $actor = $this->actorFromChatId($chatId);
+        $actor = $this->staffActorFromChatId($chatId);
         if (! $actor instanceof User) {
-            return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->notLinkedMessage(), $this->startChoiceKeyboard());
+            $linkedActor = $this->actorFromChatId($chatId);
+
+            return $this->replyAfterDelete(
+                $telegramService,
+                $chatId,
+                $messageId,
+                $linkedActor instanceof Member ? __('app.telegram_staff_portal_access_denied') : $this->notLinkedMessage(),
+                $linkedActor instanceof Member ? $this->mainMenuKeyboard($linkedActor, $telegramAuthService) : $this->startChoiceKeyboard()
+            );
         }
 
         return $this->replyOrEdit(
