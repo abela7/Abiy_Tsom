@@ -2159,23 +2159,6 @@ class TelegramWebhookController extends Controller
             return $this->startSuggestWizard($chatId, $messageId, $telegramService);
         }
 
-        if (str_starts_with($action, 'suggest_lang_')) {
-            $lang = str_replace('suggest_lang_', '', $action); // 'en' or 'am'
-            $state = TelegramBotState::getActive($chatId, 'suggest');
-            if (! $state) {
-                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
-            }
-            $state->advance('choose_area', ['language' => $lang]);
-
-            return $this->replyOrEdit(
-                $telegramService,
-                $chatId,
-                __('app.telegram_suggest_choose_area'),
-                $this->structuredSuggestAreaKeyboard(),
-                $messageId
-            );
-        }
-
         if (str_starts_with($action, 'suggest_area_')) {
             $area = str_replace('suggest_area_', '', $action);
             $state = TelegramBotState::getActive($chatId, 'suggest');
@@ -2192,6 +2175,62 @@ class TelegramWebhookController extends Controller
                 $this->structuredSuggestMonthKeyboard(),
                 $messageId
             );
+        }
+
+        if (str_starts_with($action, 'suggest_first_lang_')) {
+            $lang = str_replace('suggest_first_lang_', '', $action);
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+
+            $firstFieldStep = $this->structuredSuggestFirstFieldStep($state);
+            $state->advance($firstFieldStep, [
+                'first_language' => $lang,
+                'current_language' => $lang,
+                'lang_phase' => 1,
+            ]);
+
+            return $this->replyOrEdit(
+                $telegramService,
+                $chatId,
+                $this->structuredSuggestPrompt($firstFieldStep, $state->data ?? []),
+                $this->structuredSuggestKeyboardForStep($firstFieldStep, $state),
+                $messageId
+            );
+        }
+
+        if ($action === 'suggest_other_lang_yes') {
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+
+            $otherLang = ((string) $state->get('first_language', 'en')) === 'en' ? 'am' : 'en';
+            $firstFieldStep = $this->structuredSuggestFirstFieldStep($state);
+            $state->advance($firstFieldStep, [
+                'current_language' => $otherLang,
+                'lang_phase' => 2,
+            ]);
+
+            return $this->replyOrEdit(
+                $telegramService,
+                $chatId,
+                $this->structuredSuggestPrompt($firstFieldStep, $state->data ?? []),
+                $this->structuredSuggestKeyboardForStep($firstFieldStep, $state),
+                $messageId
+            );
+        }
+
+        if ($action === 'suggest_other_lang_skip') {
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+
+            $state->advance('preview');
+
+            return $this->showSuggestPreview($chatId, $messageId, $state, $telegramService);
         }
 
         if ($action === 'suggest_today' || $action === 'suggest_tomorrow') {
@@ -2265,11 +2304,7 @@ class TelegramWebhookController extends Controller
             $nextStep = match ((string) $state->get('content_area', '')) {
                 'synaxarium' => 'choose_scope',
                 'lectionary' => 'choose_lectionary_section',
-                'bible_reading' => 'enter_reference',
-                'mezmur', 'spiritual_book' => 'enter_title',
-                'reference_resource' => 'choose_resource_type',
-                'daily_message' => 'enter_title',
-                default => 'choose_area',
+                default => 'choose_first_language',
             };
 
             $state->advance($nextStep);
@@ -2307,13 +2342,13 @@ class TelegramWebhookController extends Controller
                 return $this->startSuggestWizard($chatId, $messageId, $telegramService);
             }
 
-            $state->advance('enter_title', ['entry_scope' => $scope]);
+            $state->advance('choose_first_language', ['entry_scope' => $scope]);
 
             return $this->replyOrEdit(
                 $telegramService,
                 $chatId,
-                $this->structuredSuggestPrompt('enter_title', $state->data ?? []),
-                $this->structuredSuggestKeyboardForStep('enter_title', $state),
+                __('app.telegram_suggest_choose_first_language'),
+                $this->suggestFirstLanguageKeyboard(),
                 $messageId
             );
         }
@@ -2460,25 +2495,42 @@ class TelegramWebhookController extends Controller
         int $messageId,
         TelegramService $telegramService
     ): JsonResponse {
-        TelegramBotState::startFor($chatId, 'suggest', 'choose_language');
+        TelegramBotState::startFor($chatId, 'suggest', 'choose_area');
 
         return $this->replyOrEdit(
             $telegramService,
             $chatId,
-            '💡 '.__('app.telegram_suggest')."\n\n".__('app.telegram_suggest_choose_language'),
-            $this->suggestLanguageKeyboard(),
+            '💡 '.__('app.telegram_suggest')."\n\n".__('app.telegram_suggest_choose_area'),
+            $this->structuredSuggestAreaKeyboard(),
             $messageId
         );
     }
 
-    private function suggestLanguageKeyboard(): array
+    private function suggestFirstLanguageKeyboard(): array
     {
         return ['inline_keyboard' => [
             [
-                ['text' => '🇬🇧 English', 'callback_data' => 'suggest_lang_en'],
-                ['text' => '🇪🇹 አማርኛ', 'callback_data' => 'suggest_lang_am'],
+                ['text' => '🇬🇧 English', 'callback_data' => 'suggest_first_lang_en'],
+                ['text' => '🇪🇹 አማርኛ', 'callback_data' => 'suggest_first_lang_am'],
             ],
-            [['text' => '❌ '.__('app.telegram_suggest_cancel'), 'callback_data' => 'suggest_cancel']],
+            [
+                ['text' => '⬅️ '.__('app.telegram_suggest_back'), 'callback_data' => 'suggest_back'],
+                ['text' => '❌ '.__('app.telegram_suggest_cancel'), 'callback_data' => 'suggest_cancel'],
+            ],
+        ]];
+    }
+
+    private function suggestOfferOtherLanguageKeyboard(string $otherLang): array
+    {
+        $langLabel = $otherLang === 'am' ? '🇪🇹 አማርኛ' : '🇬🇧 English';
+
+        return ['inline_keyboard' => [
+            [['text' => '✅ '.__('app.telegram_suggest_add_other_lang', ['lang' => $langLabel]), 'callback_data' => 'suggest_other_lang_yes']],
+            [['text' => '⏭ '.__('app.telegram_suggest_skip_other_lang'), 'callback_data' => 'suggest_other_lang_skip']],
+            [
+                ['text' => '⬅️ '.__('app.telegram_suggest_back'), 'callback_data' => 'suggest_back'],
+                ['text' => '❌ '.__('app.telegram_suggest_cancel'), 'callback_data' => 'suggest_cancel'],
+            ],
         ]];
     }
 
@@ -2509,14 +2561,26 @@ class TelegramWebhookController extends Controller
         $currentStep = $state->step;
         $input = trim($input);
 
+        $lang = (string) $state->get('current_language', 'en');
+        $bilingualSteps = ['enter_reference', 'enter_summary', 'enter_text', 'enter_title', 'enter_url', 'enter_detail'];
+        $isBilingual = in_array($currentStep, $bilingualSteps, true);
+
+        // Non-bilingual fields stay as-is; bilingual fields get _en/_am suffix
         $fieldForStep = [
-            'enter_reference' => 'reference',
             'enter_chapter' => 'lectionary_chapter',
             'enter_verse_range' => 'lectionary_verse_range',
-            'enter_title' => 'title',
-            'enter_url' => 'url',
-            'enter_detail' => 'content_detail',
         ];
+        if ($isBilingual) {
+            $fieldForStep[$currentStep] = match ($currentStep) {
+                'enter_reference' => "reference_{$lang}",
+                'enter_summary' => "summary_{$lang}",
+                'enter_text' => "text_{$lang}",
+                'enter_title' => "title_{$lang}",
+                'enter_url' => "url_{$lang}",
+                'enter_detail' => "content_detail_{$lang}",
+                default => $currentStep,
+            };
+        }
 
         $mergeData = [];
         if (isset($fieldForStep[$currentStep])) {
@@ -3299,26 +3363,36 @@ class TelegramWebhookController extends Controller
     private function structuredSuggestKeyboardForStep(string $step, TelegramBotState $state): array
     {
         return match ($step) {
-            'choose_language' => $this->suggestLanguageKeyboard(),
             'choose_area' => $this->structuredSuggestAreaKeyboard(),
             'choose_month' => $this->structuredSuggestMonthKeyboard(),
             'choose_day' => $this->structuredSuggestDayKeyboard((int) $state->get('ethiopian_month', 1)),
             'choose_scope' => $this->structuredSuggestScopeKeyboard(),
+            'choose_first_language' => $this->suggestFirstLanguageKeyboard(),
             'choose_lectionary_section' => $this->structuredSuggestLectionarySectionKeyboard(),
             'confirm_date' => $this->structuredSuggestConfirmDateKeyboard(),
             'choose_book' => $this->structuredSuggestLectionaryBookKeyboard($state),
             'choose_geez_line' => $this->structuredSuggestGeezLineKeyboard(),
             'choose_resource_type' => $this->structuredSuggestResourceTypeKeyboard(),
             'choose_main' => $this->structuredSuggestMainChoiceKeyboard(),
+            'offer_other_language' => $this->suggestOfferOtherLanguageKeyboard(
+                ((string) $state->get('first_language', 'en')) === 'en' ? 'am' : 'en'
+            ),
             default => $this->structuredSuggestStepKeyboard($step),
         };
     }
 
-    private function structuredSuggestStepKeyboard(string $step): array
+    private function structuredSuggestStepKeyboard(string $step, ?TelegramBotState $state = null): array
     {
         $rows = [];
+        $langPhase = $state ? (int) $state->get('lang_phase', 1) : 1;
 
-        if (in_array($step, ['await_image', 'enter_url', 'enter_detail'], true)) {
+        $optionalSteps = ['await_image', 'enter_url', 'enter_detail', 'enter_summary', 'enter_text'];
+        // In lang_phase 2, all bilingual field steps are skippable
+        if ($langPhase === 2) {
+            $optionalSteps = array_merge($optionalSteps, ['enter_reference', 'enter_title']);
+        }
+
+        if (in_array($step, $optionalSteps, true)) {
             $rows[] = [['text' => '⏭ '.__('app.telegram_suggest_skip'), 'callback_data' => 'suggest_skip']];
         }
 
@@ -3391,9 +3465,9 @@ class TelegramWebhookController extends Controller
     {
         $contentArea = (string) $state->get('content_area', '');
         $lectionarySection = (string) $state->get('lectionary_section', '');
+        $base = ['choose_area', 'choose_month', 'choose_day', 'confirm_date'];
 
         if ($contentArea === 'lectionary') {
-            $base = ['choose_language', 'choose_area', 'choose_month', 'choose_day', 'choose_lectionary_section'];
             $refSteps = match ($lectionarySection) {
                 'pauline', 'catholic', 'gospel' => ['choose_book', 'enter_chapter', 'enter_verse_range'],
                 'acts' => ['enter_chapter', 'enter_verse_range'],
@@ -3402,26 +3476,33 @@ class TelegramWebhookController extends Controller
                 default => ['enter_reference'],
             };
 
-            return array_merge($base, ['confirm_date'], $refSteps, ['enter_detail', 'preview']);
+            return array_merge($base, ['choose_lectionary_section'], $refSteps, ['choose_first_language', 'enter_detail', 'offer_other_language', 'preview']);
         }
 
         return match ($contentArea) {
-            'bible_reading' => ['choose_language', 'choose_area', 'choose_month', 'choose_day', 'confirm_date', 'enter_reference', 'enter_detail', 'preview'],
-            'mezmur' => ['choose_language', 'choose_area', 'choose_month', 'choose_day', 'confirm_date', 'enter_title', 'enter_url', 'enter_detail', 'preview'],
-            'synaxarium' => ['choose_language', 'choose_area', 'choose_month', 'choose_day', 'confirm_date', 'choose_scope', 'enter_title', 'await_image', 'enter_detail', 'choose_main', 'preview'],
-            'spiritual_book' => ['choose_language', 'choose_area', 'choose_month', 'choose_day', 'confirm_date', 'enter_title', 'enter_url', 'enter_detail', 'preview'],
-            'reference_resource' => ['choose_language', 'choose_area', 'choose_month', 'choose_day', 'confirm_date', 'choose_resource_type', 'enter_title', 'enter_url', 'enter_detail', 'preview'],
-            'daily_message' => ['choose_language', 'choose_area', 'choose_month', 'choose_day', 'confirm_date', 'enter_title', 'enter_detail', 'preview'],
-            default => ['choose_language', 'choose_area'],
+            'bible_reading' => [...$base, 'choose_first_language', 'enter_reference', 'enter_summary', 'enter_text', 'offer_other_language', 'preview'],
+            'mezmur' => [...$base, 'choose_first_language', 'enter_title', 'enter_url', 'enter_detail', 'offer_other_language', 'preview'],
+            'synaxarium' => [...$base, 'choose_scope', 'choose_first_language', 'enter_title', 'await_image', 'enter_detail', 'choose_main', 'offer_other_language', 'preview'],
+            'spiritual_book' => [...$base, 'choose_first_language', 'enter_title', 'enter_url', 'enter_detail', 'offer_other_language', 'preview'],
+            'reference_resource' => [...$base, 'choose_resource_type', 'choose_first_language', 'enter_title', 'enter_url', 'enter_detail', 'offer_other_language', 'preview'],
+            'daily_message' => [...$base, 'choose_first_language', 'enter_title', 'enter_detail', 'offer_other_language', 'preview'],
+            default => ['choose_area'],
         };
     }
 
     private function structuredSuggestStepIsOptional(TelegramBotState $state, string $step): bool
     {
         $contentArea = (string) $state->get('content_area', '');
+        $langPhase = (int) $state->get('lang_phase', 1);
+
+        // In the second language phase, all fields are optional (user can skip any)
+        if ($langPhase === 2 && in_array($step, ['enter_reference', 'enter_summary', 'enter_text', 'enter_title', 'enter_url', 'enter_detail'], true)) {
+            return true;
+        }
 
         return match ($step) {
             'await_image' => true,
+            'enter_summary', 'enter_text' => true,
             'enter_url' => in_array($contentArea, ['mezmur', 'spiritual_book'], true),
             'enter_detail' => in_array($contentArea, ['mezmur', 'spiritual_book', 'reference_resource', 'bible_reading', 'lectionary'], true),
             default => false,
@@ -3441,24 +3522,72 @@ class TelegramWebhookController extends Controller
             return 'preview';
         }
 
-        return $flow[$index + 1] ?? 'preview';
+        $nextStep = $flow[$index + 1] ?? 'preview';
+
+        // In lang_phase 2, skip offer_other_language and go to preview (or next non-field step)
+        if ($nextStep === 'offer_other_language' && (int) $state->get('lang_phase', 1) === 2) {
+            return 'preview';
+        }
+
+        return $nextStep;
     }
 
     private function structuredSuggestPreviousStep(TelegramBotState $state, string $currentStep): string
     {
         $flow = $this->structuredSuggestFlow($state);
         if ($currentStep === 'preview') {
+            // Go back to offer_other_language (or last field step in lang_phase 2)
             $steps = array_values(array_filter($flow, fn ($step) => $step !== 'preview'));
 
-            return end($steps) ?: 'choose_language';
+            return end($steps) ?: 'choose_area';
         }
 
         $index = array_search($currentStep, $flow, true);
         if ($index === false || $index === 0) {
-            return 'choose_language';
+            return 'choose_area';
         }
 
-        return $flow[$index - 1];
+        $prevStep = $flow[$index - 1];
+
+        // In lang_phase 2, if going back from the first field step, go to offer_other_language
+        if ($prevStep === 'choose_first_language' && (int) $state->get('lang_phase', 1) === 2) {
+            return 'offer_other_language';
+        }
+
+        return $prevStep;
+    }
+
+    /**
+     * Returns the first content-entry step (after language selection) for a content area.
+     */
+    private function structuredSuggestFirstFieldStep(TelegramBotState $state): string
+    {
+        $contentArea = (string) $state->get('content_area', '');
+
+        return match ($contentArea) {
+            'bible_reading' => 'enter_reference',
+            'synaxarium' => 'enter_title',
+            'mezmur', 'spiritual_book', 'daily_message', 'reference_resource' => 'enter_title',
+            'lectionary' => 'enter_detail',
+            default => 'enter_title',
+        };
+    }
+
+    /**
+     * Returns the bilingual field steps for a content area (steps that get language suffix).
+     */
+    private function structuredSuggestBilingualFieldSteps(string $contentArea): array
+    {
+        return match ($contentArea) {
+            'bible_reading' => ['enter_reference', 'enter_summary', 'enter_text'],
+            'synaxarium' => ['enter_title', 'enter_detail'],
+            'mezmur' => ['enter_title', 'enter_url', 'enter_detail'],
+            'spiritual_book' => ['enter_title', 'enter_url', 'enter_detail'],
+            'reference_resource' => ['enter_title', 'enter_url', 'enter_detail'],
+            'daily_message' => ['enter_title', 'enter_detail'],
+            'lectionary' => ['enter_detail'],
+            default => ['enter_title', 'enter_detail'],
+        };
     }
 
     private function structuredSuggestAreaLabel(string $contentArea): string
