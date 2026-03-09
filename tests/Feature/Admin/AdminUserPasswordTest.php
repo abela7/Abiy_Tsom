@@ -95,4 +95,32 @@ class AdminUserPasswordTest extends TestCase
         $response->assertOk()
             ->assertSeeText('Change Password');
     }
+
+    public function test_super_admin_can_update_own_password_without_role_field(): void
+    {
+        $superAdmin = User::create([
+            'name' => 'Super Admin',
+            'username' => 'superadmin',
+            'email' => 'super@example.com',
+            'password' => bcrypt('old-password'),
+            'role' => 'admin',
+            'is_super_admin' => true,
+        ]);
+
+        $response = $this->actingAs($superAdmin)->put(
+            route('admin.admins.update', $superAdmin),
+            [
+                'name' => $superAdmin->name,
+                'username' => $superAdmin->username,
+                'email' => $superAdmin->email,
+                'whatsapp_phone' => '',
+                'password' => 'new-password',
+                'password_confirmation' => 'new-password',
+            ]
+        );
+
+        $response->assertRedirect(route('admin.admins.index'));
+        $this->assertTrue(Hash::check('new-password', (string) $superAdmin->fresh()?->password));
+        $this->assertSame('admin', $superAdmin->fresh()?->role);
+    }
 }

@@ -96,8 +96,8 @@ class AdminUserController extends Controller
             30
         );
 
-        $payload = 'admin:' . $code;
-        $link = 'https://t.me/' . $telegramBotUsername . '?startapp=' . rawurlencode($payload);
+        $payload = 'admin:'.$code;
+        $link = 'https://t.me/'.$telegramBotUsername.'?startapp='.rawurlencode($payload);
 
         $links = (array) session('telegram_admin_links', []);
         $links[$admin->id] = $link;
