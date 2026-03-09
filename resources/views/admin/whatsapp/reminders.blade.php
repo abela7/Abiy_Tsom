@@ -35,7 +35,6 @@
 
 {{-- Members list + Edit modal --}}
 <div x-data="reminderActions()">
-{{-- Members list --}}
 <div class="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
     <div class="px-5 py-4 border-b border-border">
         <h2 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_members_list') }}</h2>
@@ -47,6 +46,7 @@
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.baptism_name') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_phone') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_reminder_time') }}</th>
+                    <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_opened_days') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.whatsapp_last_sent') }}</th>
                     <th class="text-left px-5 py-3.5 font-medium text-muted-text text-xs uppercase tracking-wider">{{ __('app.actions') }}</th>
                 </tr>
@@ -61,6 +61,7 @@
                         </td>
                         <td class="px-5 py-3.5 font-mono text-xs text-secondary">{{ $m->whatsapp_phone ? maskPhone($m->whatsapp_phone) : '—' }}</td>
                         <td class="px-5 py-3.5 text-secondary">{{ $m->whatsapp_reminder_time ? \Carbon\Carbon::parse($m->whatsapp_reminder_time)->format('H:i') : '—' }} {{ __('app.london_time') }}</td>
+                        <td class="px-5 py-3.5 text-secondary tabular-nums">{{ number_format((int) ($m->opened_days_count ?? 0)) }}</td>
                         <td class="px-5 py-3.5 text-secondary">{{ $m->whatsapp_last_sent_date ? $m->whatsapp_last_sent_date->format('Y-m-d') : __('app.never') }}</td>
                         <td class="px-5 py-3.5">
                             <div class="flex items-center gap-1.5 flex-wrap">
@@ -100,7 +101,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" class="px-5 py-12 text-center text-muted-text">{{ __('app.whatsapp_no_opted_in') }}</td></tr>
+                    <tr><td colspan="6" class="px-5 py-12 text-center text-muted-text">{{ __('app.whatsapp_no_opted_in') }}</td></tr>
                 @endforelse
             </tbody>
         </table>

@@ -73,6 +73,9 @@ class WhatsAppRemindersController extends Controller
             ->get();
 
         $members = (clone $this->membersWithWhatsAppQuery())
+            ->withCount([
+                'reminderLinkOpens as opened_days_count',
+            ])
             ->orderByRaw("CASE WHEN whatsapp_confirmation_status = 'confirmed' THEN 0 ELSE 1 END")
             ->orderBy('whatsapp_reminder_time')
             ->orderBy('created_at', 'desc')
