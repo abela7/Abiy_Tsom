@@ -13,7 +13,7 @@
     @endphp
 
     <form method="POST"
-          action="{{ $announcement->exists ? route('admin.announcements.update', $announcement) : route('admin.announcements.store') }}"
+          action="{{ ($canEdit ?? true) && !$announcement->exists ? route('admin.announcements.store') : (($canEdit ?? true) ? route('admin.announcements.update', $announcement) : route('admin.announcements.suggestions.store', $announcement)) }}"
           enctype="multipart/form-data"
           x-data="announcementImagePreview({
               amharicPhoto: @js($amharicPhotoUrl),
@@ -21,11 +21,12 @@
           })"
           class="space-y-6">
         @csrf
-        @if($announcement->exists)
+        @if($announcement->exists && ($canEdit ?? true))
             @method('PUT')
         @endif
 
-        {{-- Photo --}}
+        {{-- Photo (admin only; writers suggest text changes only) --}}
+        @if($canEdit ?? true)
         <div class="bg-card rounded-xl p-4 shadow-sm border border-border">
             <label class="block text-sm font-medium text-secondary mb-2">{{ __('app.photo') }}</label>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -53,6 +54,7 @@
                 </div>
             </div>
         </div>
+        @endif
 
         {{-- Title --}}
         <div class="bg-card rounded-xl p-4 shadow-sm border border-border">
@@ -186,7 +188,11 @@
 
         <div class="flex gap-3">
             <button type="submit" class="px-6 py-2 bg-accent text-on-accent rounded-lg font-medium hover:bg-accent-hover transition">
-                {{ $announcement->exists ? __('app.save') : __('app.create') }}
+                @if(!($canEdit ?? true) && $announcement->exists)
+                    {{ __('app.suggest_update') }}
+                @else
+                    {{ $announcement->exists ? __('app.save') : __('app.create') }}
+                @endif
             </button>
             <a href="{{ route('admin.announcements.index') }}" class="px-6 py-2 border border-border rounded-lg font-medium hover:bg-muted transition">
                 {{ __('app.cancel') }}

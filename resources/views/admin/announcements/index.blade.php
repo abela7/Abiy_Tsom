@@ -2,12 +2,20 @@
 @section('title', __('app.announcements'))
 
 @section('content')
-<div class="flex items-center justify-between mb-6">
+<div class="flex flex-col gap-3 mb-6 sm:flex-row sm:items-center sm:justify-between">
     <h1 class="text-2xl font-bold text-primary">{{ __('app.announcements') }}</h1>
-    <a href="{{ route('admin.announcements.create') }}"
-       class="px-4 py-2 bg-accent text-on-accent rounded-lg text-sm font-medium hover:bg-accent-hover transition">
-        + {{ __('app.create') }}
-    </a>
+    @if($canEdit ?? false)
+        <div class="flex gap-2">
+            <a href="{{ route('admin.announcements.create') }}"
+               class="px-4 py-2 bg-accent text-on-accent rounded-lg text-sm font-medium hover:bg-accent-hover transition">
+                + {{ __('app.create') }}
+            </a>
+            <a href="{{ route('admin.announcement-suggestions.index') }}"
+               class="px-4 py-2 border border-accent-secondary bg-accent-secondary/10 rounded-lg text-sm font-medium text-accent-secondary hover:bg-accent-secondary/20 transition">
+                {{ __('app.announcement_suggestions') }}
+            </a>
+        </div>
+    @endif
 </div>
 
 <div class="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
@@ -17,6 +25,7 @@
                 <th class="text-left px-4 py-3 font-semibold text-secondary w-16">{{ __('app.photo') }}</th>
                 <th class="text-left px-4 py-3 font-semibold text-secondary">{{ __('app.title_label') }}</th>
                 <th class="text-left px-4 py-3 font-semibold text-secondary">{{ __('app.date_label') }}</th>
+                <th class="text-left px-4 py-3 font-semibold text-secondary">{{ __('app.created_by') }}</th>
                 <th class="text-left px-4 py-3 font-semibold text-secondary">{{ __('app.actions') }}</th>
             </tr>
         </thead>
@@ -39,19 +48,26 @@
                     </td>
                     <td class="px-4 py-3 font-medium text-primary">{{ $announcement->titleForLocale() }}</td>
                     <td class="px-4 py-3 text-muted-text">{{ $announcement->created_at->format('M d, Y') }}</td>
+                    <td class="px-4 py-3 text-xs text-secondary">{{ optional($announcement->createdBy)->name ?: '-' }}</td>
                     <td class="px-4 py-3 flex gap-3">
-                        <a href="{{ route('admin.announcements.edit', $announcement) }}" class="text-accent hover:underline">{{ __('app.edit') }}</a>
-                        <form method="POST" action="{{ route('admin.announcements.destroy', $announcement) }}" onsubmit="return confirm('{{ __('app.confirm') }} {{ __('app.delete') }}?')">
-                            @csrf @method('DELETE')
-                            <button type="submit" class="text-error hover:underline">{{ __('app.delete') }}</button>
-                        </form>
+                        <a href="{{ route('admin.announcements.edit', $announcement) }}" class="text-accent hover:underline">
+                            {{ ($canEdit ?? false) ? __('app.edit') : __('app.suggest_update') }}
+                        </a>
+                        @if($canEdit ?? false)
+                            <form method="POST" action="{{ route('admin.announcements.destroy', $announcement) }}" onsubmit="return confirm('{{ __('app.confirm') }} {{ __('app.delete') }}?')">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="text-error hover:underline">{{ __('app.delete') }}</button>
+                            </form>
+                        @endif
                     </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="4" class="px-4 py-12 text-center text-muted-text">
+                    <td colspan="5" class="px-4 py-12 text-center text-muted-text">
                         <p class="mb-2">{{ __('app.no_announcements') }}</p>
-                        <a href="{{ route('admin.announcements.create') }}" class="text-accent font-medium">{{ __('app.create') }} {{ __('app.announcement') }}</a>
+                        @if($canEdit ?? false)
+                            <a href="{{ route('admin.announcements.create') }}" class="text-accent font-medium">{{ __('app.create') }} {{ __('app.announcement') }}</a>
+                        @endif
                     </td>
                 </tr>
             @endforelse

@@ -160,8 +160,12 @@ Route::middleware(['auth', 'admin.audit'])->prefix('admin')->name('admin.')->gro
         Route::post('/daily/{daily}/suggestions', [Admin\DailyContentSuggestionController::class, 'store'])
             ->name('daily.suggestions.store');
 
-        // Announcements
-        Route::resource('announcements', Admin\AnnouncementController::class)->except(['show']);
+        // Announcements (view: writer/editor/admin; write: admin only)
+        Route::get('/announcements', [Admin\AnnouncementController::class, 'index'])->name('announcements.index');
+        Route::get('/announcements/create', [Admin\AnnouncementController::class, 'create'])->name('announcements.create');
+        Route::get('/announcements/{announcement}/edit', [Admin\AnnouncementController::class, 'edit'])->name('announcements.edit');
+        Route::post('/announcements/{announcement}/suggestions', [Admin\AnnouncementSuggestionController::class, 'store'])
+            ->name('announcements.suggestions.store');
 
         // Activities
         Route::get('/activities', [Admin\ActivityController::class, 'index'])->name('activities.index');
@@ -192,6 +196,17 @@ Route::middleware(['auth', 'admin.audit'])->prefix('admin')->name('admin.')->gro
             ->name('daily-suggestions.apply');
         Route::post('/daily-suggestions/{suggestion}/reject', [Admin\DailyContentSuggestionController::class, 'reject'])
             ->name('daily-suggestions.reject');
+
+        // Announcement write + suggestions review
+        Route::post('/announcements', [Admin\AnnouncementController::class, 'store'])->name('announcements.store');
+        Route::put('/announcements/{announcement}', [Admin\AnnouncementController::class, 'update'])->name('announcements.update');
+        Route::delete('/announcements/{announcement}', [Admin\AnnouncementController::class, 'destroy'])->name('announcements.destroy');
+        Route::get('/announcement-suggestions', [Admin\AnnouncementSuggestionController::class, 'index'])
+            ->name('announcement-suggestions.index');
+        Route::post('/announcement-suggestions/{suggestion}/apply', [Admin\AnnouncementSuggestionController::class, 'apply'])
+            ->name('announcement-suggestions.apply');
+        Route::post('/announcement-suggestions/{suggestion}/reject', [Admin\AnnouncementSuggestionController::class, 'reject'])
+            ->name('announcement-suggestions.reject');
     });
 
     // Editor/admin routes

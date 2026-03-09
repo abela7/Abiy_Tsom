@@ -21,15 +21,17 @@ class AnnouncementController extends Controller
         $announcements = Announcement::with(['createdBy', 'updatedBy'])
             ->orderByDesc('created_at')
             ->get();
+        $canEdit = auth()->user()?->role === 'admin' || auth()->user()?->isSuperAdmin();
 
-        return view('admin.announcements.index', compact('announcements'));
+        return view('admin.announcements.index', compact('announcements', 'canEdit'));
     }
 
     public function create(): View
     {
         $announcement = new Announcement;
+        $canEdit = auth()->user()?->role === 'admin' || auth()->user()?->isSuperAdmin();
 
-        return view('admin.announcements.form', compact('announcement'));
+        return view('admin.announcements.form', compact('announcement', 'canEdit'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -74,7 +76,9 @@ class AnnouncementController extends Controller
 
     public function edit(Announcement $announcement): View
     {
-        return view('admin.announcements.form', compact('announcement'));
+        $canEdit = auth()->user()?->role === 'admin' || auth()->user()?->isSuperAdmin();
+
+        return view('admin.announcements.form', compact('announcement', 'canEdit'));
     }
 
     public function update(Request $request, Announcement $announcement): RedirectResponse
