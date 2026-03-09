@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(php artisan test --filter=\"TelegramStaffPortalTest\")"
+      "Bash(php artisan test --filter=\"TelegramStaffPortalTest\")",
+      "Bash(xargs grep -l \"class.*Controller\")"
     ]
   }
 }
