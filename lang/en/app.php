@@ -1387,6 +1387,13 @@ return [
     'telegram_suggest_value_required' => 'This step is required. Please send a value to continue.',
     'telegram_suggest_invalid_url' => 'Please send a valid URL or tap Skip if the step is optional.',
     'telegram_suggest_unknown_date' => 'Unknown date',
+    'telegram_suggest_choose_first_language' => 'Which language would you like to enter first?',
+    'telegram_suggest_offer_other_lang' => "You've completed the first language. Would you like to add the :lang version too?",
+    'telegram_suggest_add_other_lang' => 'Add :lang version',
+    'telegram_suggest_skip_other_lang' => 'Skip — submit as is',
+    'telegram_suggest_enter_bible_reference' => 'Enter the Bible reference (e.g. John 3:16):',
+    'telegram_suggest_enter_bible_summary' => 'Enter a short summary or context for this reading (optional):',
+    'telegram_suggest_enter_bible_text' => 'Enter the full Bible text (optional):',
     // Fundraising popup
     'fundraising' => 'Fundraising',
     'fundraising_active' => 'Active',

@@ -1367,6 +1367,13 @@ return [
     'telegram_suggest_value_required' => 'This step is required. Please send a value to continue.',
     'telegram_suggest_invalid_url' => 'Please send a valid URL or tap Skip if the step is optional.',
     'telegram_suggest_unknown_date' => 'Unknown date',
+    'telegram_suggest_choose_first_language' => 'በየትኛው ቋንቋ መጀመር ይፈልጋሉ?',
+    'telegram_suggest_offer_other_lang' => "የመጀመሪያውን ቋንቋ አጠናቅቀዋል። የ :lang ስሪት ማከል ይፈልጋሉ?",
+    'telegram_suggest_add_other_lang' => 'የ :lang ስሪት አክል',
+    'telegram_suggest_skip_other_lang' => 'ዝለል — እንዳለ ላክ',
+    'telegram_suggest_enter_bible_reference' => 'የመጽሐፍ ቅዱስ ማጣቀሻ ያስገቡ (ለምሳሌ ዮሐንስ 3:16):',
+    'telegram_suggest_enter_bible_summary' => 'ለዚህ ንባብ አጭር ማጠቃለያ ያስገቡ (አማራጭ):',
+    'telegram_suggest_enter_bible_text' => 'ሙሉ የመጽሐፍ ቅዱስ ጽሑፍ ያስገቡ (አማራጭ):',
     // Fundraising popup
     'fundraising' => 'የቤተ ክርስቲያን ግንባታ ድጋፍ',
     'fundraising_active' => 'ንቁ',

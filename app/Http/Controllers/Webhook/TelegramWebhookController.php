@@ -2665,14 +2665,13 @@ class TelegramWebhookController extends Controller
         TelegramService $telegramService
     ): JsonResponse {
         $data = $state->data ?? [];
-        $lang = strtoupper((string) ($data['language'] ?? '?'));
         $contentArea = (string) ($data['content_area'] ?? '');
         $typeLabel = $this->structuredSuggestAreaLabel($contentArea);
 
         $lines = [
             '<b>📋 '.__('app.telegram_suggest_preview').'</b>',
             '',
-            "<b>Type:</b> {$typeLabel} [{$lang}]",
+            "<b>Type:</b> {$typeLabel}",
             '<b>Date:</b> '.htmlspecialchars($this->structuredSuggestDateLabel($data), ENT_QUOTES, 'UTF-8'),
         ];
 
@@ -2691,15 +2690,10 @@ class TelegramWebhookController extends Controller
                 ENT_QUOTES,
                 'UTF-8'
             );
-        }
-        $ref = ($contentArea === 'lectionary')
-            ? $this->structuredSuggestBuildLectionaryReference($data)
-            : ($data['reference'] ?? null);
-        if (! empty($ref)) {
-            $lines[] = '<b>Reference:</b> '.htmlspecialchars((string) $ref, ENT_QUOTES, 'UTF-8');
-        }
-        if (! empty($data['title'])) {
-            $lines[] = '<b>Title:</b> '.htmlspecialchars($data['title'], ENT_QUOTES, 'UTF-8');
+            $ref = $this->structuredSuggestBuildLectionaryReference($data);
+            if ($ref !== null) {
+                $lines[] = '<b>Reference:</b> '.htmlspecialchars($ref, ENT_QUOTES, 'UTF-8');
+            }
         }
         if (! empty($data['resource_type'])) {
             $lines[] = '<b>Resource Type:</b> '.htmlspecialchars(
@@ -2711,9 +2705,6 @@ class TelegramWebhookController extends Controller
         if (! empty($data['image_path'])) {
             $lines[] = '<b>Image:</b> '.htmlspecialchars(__('app.telegram_suggest_image_attached'), ENT_QUOTES, 'UTF-8');
         }
-        if (! empty($data['url'])) {
-            $lines[] = '<b>Link:</b> '.htmlspecialchars($data['url'], ENT_QUOTES, 'UTF-8');
-        }
         if ($contentArea === 'synaxarium' && array_key_exists('is_main', $data)) {
             $lines[] = '<b>Main celebration:</b> '.htmlspecialchars(
                 $data['is_main'] ? __('app.yes') : __('app.no'),
@@ -2721,9 +2712,9 @@ class TelegramWebhookController extends Controller
                 'UTF-8'
             );
         }
-        if (! empty($data['content_detail'])) {
-            $lines[] = '<b>Details:</b> '.htmlspecialchars($data['content_detail'], ENT_QUOTES, 'UTF-8');
-        }
+
+        // Show bilingual content grouped by language
+        $this->appendBilingualPreviewLines($lines, $data, $contentArea);
 
         $keyboard = ['inline_keyboard' => [
             [['text' => '✅ '.__('app.telegram_suggest_confirm'), 'callback_data' => 'suggest_confirm']],
@@ -2743,6 +2734,72 @@ class TelegramWebhookController extends Controller
         );
     }
 
+    private function appendBilingualPreviewLines(array &$lines, array $data, string $contentArea): void
+    {
+        $fieldLabels = match ($contentArea) {
+            'bible_reading' => [
+                'reference' => 'Reference',
+                'summary' => 'Summary',
+                'text' => 'Bible Text',
+            ],
+            'synaxarium' => [
+                'title' => 'Celebration',
+                'content_detail' => 'Description',
+            ],
+            'mezmur' => [
+                'title' => 'Title',
+                'url' => 'Link',
+                'content_detail' => 'Notes',
+            ],
+            'spiritual_book' => [
+                'title' => 'Title',
+                'url' => 'Link',
+                'content_detail' => 'Notes',
+            ],
+            'reference_resource' => [
+                'title' => 'Title',
+                'url' => 'Link',
+                'content_detail' => 'Notes',
+            ],
+            'daily_message' => [
+                'title' => 'Title',
+                'content_detail' => 'Message',
+            ],
+            'lectionary' => [
+                'content_detail' => 'Details',
+            ],
+            default => [
+                'title' => 'Title',
+                'content_detail' => 'Details',
+            ],
+        };
+
+        foreach (['en' => '🇬🇧 English', 'am' => '🇪🇹 አማርኛ'] as $lang => $langLabel) {
+            $hasContent = false;
+            foreach ($fieldLabels as $field => $_label) {
+                if (! empty($data["{$field}_{$lang}"])) {
+                    $hasContent = true;
+                    break;
+                }
+            }
+            if (! $hasContent) {
+                continue;
+            }
+
+            $lines[] = '';
+            $lines[] = "<b>── {$langLabel} ──</b>";
+            foreach ($fieldLabels as $field => $label) {
+                $value = (string) ($data["{$field}_{$lang}"] ?? '');
+                if ($value !== '') {
+                    $display = mb_strlen($value) > 200
+                        ? mb_substr($value, 0, 197).'…'
+                        : $value;
+                    $lines[] = "<b>{$label}:</b> ".htmlspecialchars($display, ENT_QUOTES, 'UTF-8');
+                }
+            }
+        }
+    }
+
     private function confirmSuggestion(
         string $chatId,
         int $messageId,
@@ -2753,7 +2810,17 @@ class TelegramWebhookController extends Controller
     ): JsonResponse {
         $data = $state->data ?? [];
         $contentArea = (string) ($data['content_area'] ?? 'daily_message');
-        $language = (string) ($data['language'] ?? 'en');
+        $firstLang = (string) ($data['first_language'] ?? 'en');
+
+        // Determine which languages have content
+        $hasEn = ! empty($data['reference_en']) || ! empty($data['title_en']) || ! empty($data['content_detail_en']);
+        $hasAm = ! empty($data['reference_am']) || ! empty($data['title_am']) || ! empty($data['content_detail_am']);
+        $language = ($hasEn && $hasAm) ? 'both' : ($hasAm ? 'am' : 'en');
+
+        // Use first available title/reference for the legacy columns
+        $legacyTitle = $this->structuredSuggestStoredTitle($data);
+        $legacyUrl = $data['url_en'] ?? $data['url_am'] ?? null;
+        $legacyDetail = $data['content_detail_en'] ?? $data['content_detail_am'] ?? null;
 
         try {
             ContentSuggestion::create([
@@ -2765,10 +2832,10 @@ class TelegramWebhookController extends Controller
                 'ethiopian_month' => $data['ethiopian_month'] ?? null,
                 'ethiopian_day' => $data['ethiopian_day'] ?? null,
                 'entry_scope' => $data['entry_scope'] ?? null,
-                'title' => $this->structuredSuggestStoredTitle($data),
+                'title' => $legacyTitle,
                 'reference' => $this->structuredSuggestStoredReference($data),
-                'url' => $data['url'] ?? null,
-                'content_detail' => $data['content_detail'] ?? null,
+                'url' => $legacyUrl,
+                'content_detail' => $legacyDetail,
                 'image_path' => $data['image_path'] ?? null,
                 'structured_payload' => $this->structuredSuggestPayload($data),
                 'submitter_name' => $user->name,
@@ -2886,13 +2953,24 @@ class TelegramWebhookController extends Controller
         $prevStep = $this->structuredSuggestPreviousStep($state, $state->step);
         $state->advance($prevStep);
 
+        $lang = (string) $state->get('current_language', 'en');
+        $bilingualSteps = ['enter_reference', 'enter_summary', 'enter_text', 'enter_title', 'enter_url', 'enter_detail'];
+
         $fieldForStep = [
-            'enter_reference' => 'reference',
             'enter_chapter' => 'lectionary_chapter',
             'enter_verse_range' => 'lectionary_verse_range',
-            'enter_title' => 'title',
-            'enter_detail' => 'content_detail',
         ];
+        if (in_array($prevStep, $bilingualSteps, true)) {
+            $fieldForStep[$prevStep] = match ($prevStep) {
+                'enter_reference' => "reference_{$lang}",
+                'enter_summary' => "summary_{$lang}",
+                'enter_text' => "text_{$lang}",
+                'enter_title' => "title_{$lang}",
+                'enter_url' => "url_{$lang}",
+                'enter_detail' => "content_detail_{$lang}",
+                default => $prevStep,
+            };
+        }
 
         $existing = isset($fieldForStep[$prevStep]) ? ((string) $state->get($fieldForStep[$prevStep], '')) : '';
         $prompt = $this->structuredSuggestPrompt($prevStep, $state->data ?? []);
@@ -3407,13 +3485,16 @@ class TelegramWebhookController extends Controller
     private function structuredSuggestPrompt(string $step, array $data): string
     {
         $contentArea = (string) ($data['content_area'] ?? '');
+        $currentLang = (string) ($data['current_language'] ?? 'en');
+        $langLabel = $currentLang === 'am' ? '🇪🇹 አማርኛ' : '🇬🇧 English';
+        $langTag = " [{$langLabel}]";
 
-        return match ($step) {
-            'choose_language' => __('app.telegram_suggest_choose_language'),
+        $basePrompt = match ($step) {
             'choose_area' => __('app.telegram_suggest_choose_area'),
             'choose_month' => __('app.telegram_suggest_choose_month'),
             'choose_day' => __('app.telegram_suggest_choose_day'),
             'choose_scope' => __('app.telegram_suggest_choose_scope'),
+            'choose_first_language' => __('app.telegram_suggest_choose_first_language'),
             'choose_lectionary_section' => __('app.telegram_suggest_choose_lectionary_section'),
             'confirm_date' => $this->structuredSuggestConfirmDatePrompt($data),
             'choose_book' => __('app.telegram_suggest_choose_book'),
@@ -3433,13 +3514,12 @@ class TelegramWebhookController extends Controller
                 default => __('app.telegram_suggest_enter_title'),
             },
             'enter_reference' => match ($contentArea) {
-                'bible_reading', 'lectionary' => __('app.telegram_suggest_enter_bible_reading_reference'),
-                default => match ((string) ($data['lectionary_section'] ?? '')) {
-                'title_description' => __('app.telegram_suggest_enter_lectionary_summary'),
-                'qiddase' => __('app.telegram_suggest_enter_qiddase_name'),
+                'bible_reading' => __('app.telegram_suggest_enter_bible_reference'),
+                'lectionary' => __('app.telegram_suggest_enter_bible_reading_reference'),
                 default => __('app.telegram_suggest_enter_lectionary_reference'),
-                },
             },
+            'enter_summary' => __('app.telegram_suggest_enter_bible_summary'),
+            'enter_text' => __('app.telegram_suggest_enter_bible_text'),
             'enter_url' => match ($contentArea) {
                 'mezmur' => __('app.telegram_suggest_enter_mezmur_link'),
                 'spiritual_book' => __('app.telegram_suggest_enter_spiritual_book_link'),
@@ -3456,9 +3536,27 @@ class TelegramWebhookController extends Controller
                 'bible_reading', 'lectionary' => __('app.telegram_suggest_enter_bible_reading_notes'),
                 default => __('app.telegram_suggest_enter_detail'),
             },
+            'offer_other_language' => $this->structuredSuggestOfferOtherLangPrompt($data),
             'choose_main' => __('app.telegram_suggest_choose_main_celebration'),
             default => __('app.telegram_suggest_enter_detail'),
         };
+
+        // Append language tag to bilingual field steps
+        $bilingualSteps = ['enter_reference', 'enter_summary', 'enter_text', 'enter_title', 'enter_url', 'enter_detail'];
+        if (in_array($step, $bilingualSteps, true) && ! empty($data['current_language'])) {
+            return $basePrompt.$langTag;
+        }
+
+        return $basePrompt;
+    }
+
+    private function structuredSuggestOfferOtherLangPrompt(array $data): string
+    {
+        $firstLang = (string) ($data['first_language'] ?? 'en');
+        $otherLang = $firstLang === 'en' ? 'am' : 'en';
+        $otherLabel = $otherLang === 'am' ? '🇪🇹 አማርኛ' : '🇬🇧 English';
+
+        return __('app.telegram_suggest_offer_other_lang', ['lang' => $otherLabel]);
     }
 
     private function structuredSuggestFlow(TelegramBotState $state): array
@@ -3670,8 +3768,8 @@ class TelegramWebhookController extends Controller
     {
         return match ((string) ($data['content_area'] ?? '')) {
             'lectionary' => __('app.telegram_suggest_area_lectionary').': '.$this->structuredSuggestLectionarySectionLabel((string) ($data['lectionary_section'] ?? '')),
-            'bible_reading' => __('app.telegram_suggest_area_bible_reading'),
-            default => $data['title'] ?? null,
+            'bible_reading' => $data['reference_en'] ?? $data['reference_am'] ?? __('app.telegram_suggest_area_bible_reading'),
+            default => $data['title_en'] ?? $data['title_am'] ?? null,
         };
     }
 
@@ -3728,8 +3826,10 @@ class TelegramWebhookController extends Controller
         $ref = $this->structuredSuggestBuildLectionaryReference($data);
         if ($ref !== null) {
             $parts[] = $ref;
-        } elseif (! empty($data['reference'])) {
-            $parts[] = (string) $data['reference'];
+        } elseif (! empty($data['reference_en'])) {
+            $parts[] = (string) $data['reference_en'];
+        } elseif (! empty($data['reference_am'])) {
+            $parts[] = (string) $data['reference_am'];
         }
 
         if (($data['content_area'] ?? null) === 'reference_resource' && ! empty($data['resource_type'])) {
@@ -3748,6 +3848,7 @@ class TelegramWebhookController extends Controller
             'ethiopian_month' => $data['ethiopian_month'] ?? null,
             'ethiopian_day' => $data['ethiopian_day'] ?? null,
             'entry_scope' => $data['entry_scope'] ?? null,
+            'first_language' => $data['first_language'] ?? null,
             'lectionary_section' => $data['lectionary_section'] ?? null,
             'lectionary_section_label' => ! empty($data['lectionary_section'])
                 ? $this->structuredSuggestLectionarySectionLabel((string) $data['lectionary_section'])
@@ -3761,10 +3862,19 @@ class TelegramWebhookController extends Controller
             'resource_type_label' => ! empty($data['resource_type'])
                 ? $this->structuredSuggestResourceTypeLabel((string) $data['resource_type'])
                 : null,
-            'reference' => $this->structuredSuggestBuildLectionaryReference($data) ?? $data['reference'] ?? null,
-            'url' => $data['url'] ?? null,
+            'reference' => $this->structuredSuggestBuildLectionaryReference($data) ?? $data['reference_en'] ?? $data['reference_am'] ?? null,
             'is_main' => $data['is_main'] ?? null,
         ];
+
+        // Add all bilingual fields
+        foreach (['en', 'am'] as $lang) {
+            foreach (['reference', 'summary', 'text', 'title', 'url', 'content_detail'] as $field) {
+                $key = "{$field}_{$lang}";
+                if (! empty($data[$key])) {
+                    $payload[$key] = $data[$key];
+                }
+            }
+        }
 
         return array_filter($payload, fn ($value) => $value !== null && $value !== '');
     }

@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(php artisan test --filter=\"TelegramStaffPortalTest\")",
-      "Bash(xargs grep -l \"class.*Controller\")"
+      "Bash(xargs grep -l \"class.*Controller\")",
+      "Bash(php -l app/Http/Controllers/Webhook/TelegramWebhookController.php)"
     ]
   }
 }
