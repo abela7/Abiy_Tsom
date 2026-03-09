@@ -726,6 +726,13 @@
                             {{ __('app.back') }}
                         </button>
 
+                        <a
+                            href="{{ route('admin.daily.index') }}"
+                            class="flex-1 min-h-12 px-4 py-3 rounded-xl border border-border bg-card text-secondary text-base font-medium hover:bg-muted transition touch-manipulation text-center flex items-center justify-center"
+                        >
+                            {{ __('app.cancel') }}
+                        </a>
+
                         <button
                             type="button"
                             @click="nextStep()"
