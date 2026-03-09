@@ -13,7 +13,7 @@ return new class extends Migration
         Schema::create('content_suggestions', function (Blueprint $table) {
             $table->id();
             $table->enum('type', ['bible', 'mezmur', 'sinksar', 'book', 'reference']);
-            $table->enum('language', ['en', 'am'])->default('en');
+            $table->enum('language', ['en', 'am', 'both'])->default('en');
             $table->enum('status', ['pending', 'reviewed', 'approved', 'rejected'])->default('pending');
             $table->string('submitter_name', 100)->nullable();
             $table->string('title', 255)->nullable();

@@ -3,7 +3,8 @@
     "allow": [
       "Bash(php artisan test --filter=\"TelegramStaffPortalTest\")",
       "Bash(xargs grep -l \"class.*Controller\")",
-      "Bash(php -l app/Http/Controllers/Webhook/TelegramWebhookController.php)"
+      "Bash(php -l app/Http/Controllers/Webhook/TelegramWebhookController.php)",
+      "Bash(php artisan make:migration add_both_language_to_content_suggestions --table=content_suggestions)"
     ]
   }
 }
