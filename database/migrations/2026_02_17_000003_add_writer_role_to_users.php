@@ -10,6 +10,7 @@ return new class extends Migration
     public function up(): void
     {
         if (DB::getDriverName() !== 'mysql') {
+            // SQLite: 'writer' is already included in the base enum definition
             return;
         }
 
