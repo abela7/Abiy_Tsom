@@ -6,9 +6,9 @@ use App\Http\Controllers\Admin;
 use App\Http\Controllers\ContentSuggestionController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\Member;
+use App\Http\Controllers\TelegramAuthController;
 use App\Http\Controllers\VolunteerInviteController;
 use App\Http\Controllers\Webhook;
-use App\Http\Controllers\TelegramAuthController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -143,7 +143,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 });
 
 // Admin protected routes
-Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'admin.audit'])->prefix('admin')->name('admin.')->group(function () {
     // Writer/editor/admin routes
     Route::middleware('admin_role:writer,editor,admin')->group(function () {
         // My suggestions (writer sees their own submissions)
@@ -330,5 +330,8 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
             Route::post('/{admin}/telegram-link', [Admin\AdminUserController::class, 'createTelegramMiniLink'])
                 ->name('telegram-link');
         });
+
+        // Audit log
+        Route::get('/audit', [Admin\AuditLogController::class, 'index'])->name('audit.index');
     });
 });

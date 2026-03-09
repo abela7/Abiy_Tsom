@@ -30,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'api.member' => \App\Http\Middleware\EnsureMemberFromToken::class,
             'super_admin' => \App\Http\Middleware\EnsureSuperAdmin::class,
             'admin_role' => \App\Http\Middleware\EnsureAdminRole::class,
+            'admin.audit' => \App\Http\Middleware\LogAdminAudit::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
