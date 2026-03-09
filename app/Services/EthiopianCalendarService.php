@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use Andegna\DateTime as EthiopianDateTime;
+use Andegna\DateTimeFactory;
 use App\Models\EthiopianSynaxariumAnnual;
 use App\Models\EthiopianSynaxariumMonthly;
 use Carbon\Carbon;
@@ -50,6 +51,21 @@ class EthiopianCalendarService
             'month_name_en' => self::MONTH_NAMES_EN[$month] ?? 'Unknown',
             'month_name_am' => self::MONTH_NAMES_AM[$month] ?? '',
         ];
+    }
+
+    /**
+     * Convert Ethiopian calendar components to Gregorian Carbon date.
+     * Uses current Ethiopian year when year is not provided.
+     */
+    public function ethiopianToGregorian(int $month, int $day, ?int $year = null): Carbon
+    {
+        $ethToday = $this->gregorianToEthiopian(Carbon::today());
+        $year = $year ?? $ethToday['year'];
+
+        $ethDate = DateTimeFactory::of($year, $month, $day);
+        $gregorian = $ethDate->toGregorian();
+
+        return Carbon::parse($gregorian->format('Y-m-d'));
     }
 
     /**

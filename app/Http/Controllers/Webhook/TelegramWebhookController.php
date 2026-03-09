@@ -16,12 +16,14 @@ use App\Models\TelegramAccessToken;
 use App\Models\TelegramBotState;
 use App\Models\Translation;
 use App\Models\User;
+use App\Services\EthiopianCalendarService;
 use App\Services\TelegramAuthService;
 use App\Services\TelegramBotBuilderService;
 use App\Services\TelegramContentFormatter;
 use App\Services\TelegramService;
 use App\Services\UltraMsgService;
 use Carbon\CarbonImmutable;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -56,7 +58,8 @@ class TelegramWebhookController extends Controller
     public function __construct(
         private readonly TelegramBotBuilderService $telegramBotBuilder,
         private readonly TelegramContentFormatter $contentFormatter,
-        private readonly UltraMsgService $ultraMsg
+        private readonly UltraMsgService $ultraMsg,
+        private readonly EthiopianCalendarService $ethiopianCalendar
     ) {}
 
     public function handle(
@@ -2191,6 +2194,32 @@ class TelegramWebhookController extends Controller
             );
         }
 
+        if ($action === 'suggest_today' || $action === 'suggest_tomorrow') {
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+
+            $gcDate = $action === 'suggest_tomorrow'
+                ? Carbon::today()->addDay()
+                : Carbon::today();
+            $eth = $this->ethiopianCalendar->gregorianToEthiopian($gcDate);
+
+            $state->advance('confirm_date', [
+                'ethiopian_month' => $eth['month'],
+                'ethiopian_day' => $eth['day'],
+                'gregorian_date' => $gcDate->format('Y-m-d'),
+            ]);
+
+            return $this->replyOrEdit(
+                $telegramService,
+                $chatId,
+                $this->structuredSuggestConfirmDatePrompt($state->data ?? []),
+                $this->structuredSuggestConfirmDateKeyboard(),
+                $messageId
+            );
+        }
+
         if (str_starts_with($action, 'suggest_month_')) {
             $month = (int) str_replace('suggest_month_', '', $action);
             $state = TelegramBotState::getActive($chatId, 'suggest');
@@ -2216,6 +2245,23 @@ class TelegramWebhookController extends Controller
                 return $this->startSuggestWizard($chatId, $messageId, $telegramService);
             }
 
+            $state->advance('confirm_date', ['ethiopian_day' => $day]);
+
+            return $this->replyOrEdit(
+                $telegramService,
+                $chatId,
+                $this->structuredSuggestConfirmDatePrompt($state->data ?? []),
+                $this->structuredSuggestConfirmDateKeyboard(),
+                $messageId
+            );
+        }
+
+        if ($action === 'suggest_confirm_date_yes') {
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+
             $nextStep = match ((string) $state->get('content_area', '')) {
                 'synaxarium' => 'choose_scope',
                 'lectionary' => 'choose_lectionary_section',
@@ -2226,13 +2272,30 @@ class TelegramWebhookController extends Controller
                 default => 'choose_area',
             };
 
-            $state->advance($nextStep, ['ethiopian_day' => $day]);
+            $state->advance($nextStep);
 
             return $this->replyOrEdit(
                 $telegramService,
                 $chatId,
                 $this->structuredSuggestPrompt($nextStep, $state->data ?? []),
                 $this->structuredSuggestKeyboardForStep($nextStep, $state),
+                $messageId
+            );
+        }
+
+        if ($action === 'suggest_confirm_date_change') {
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+
+            $state->advance('choose_month');
+
+            return $this->replyOrEdit(
+                $telegramService,
+                $chatId,
+                __('app.telegram_suggest_choose_month'),
+                $this->structuredSuggestMonthKeyboard(),
                 $messageId
             );
         }
@@ -3002,6 +3065,13 @@ class TelegramWebhookController extends Controller
 
     private function structuredSuggestMonthKeyboard(): array
     {
+        $rows = [
+            [
+                ['text' => '📅 '.__('app.telegram_suggest_today'), 'callback_data' => 'suggest_today'],
+                ['text' => '📆 '.__('app.telegram_suggest_tomorrow'), 'callback_data' => 'suggest_tomorrow'],
+            ],
+        ];
+
         $months = [
             1 => 'Meskerem / መስከረም',
             2 => 'Tikimt / ጥቅምት',
@@ -3018,7 +3088,6 @@ class TelegramWebhookController extends Controller
             13 => 'Pagumen / ጳጉሜን',
         ];
 
-        $rows = [];
         foreach ($months as $month => $label) {
             $rows[] = [[
                 'text' => $label,
@@ -3121,6 +3190,57 @@ class TelegramWebhookController extends Controller
         ]];
     }
 
+    private function structuredSuggestConfirmDatePrompt(array $data): string
+    {
+        $month = (int) ($data['ethiopian_month'] ?? 0);
+        $day = (int) ($data['ethiopian_day'] ?? 0);
+        $gcDate = (string) ($data['gregorian_date'] ?? '');
+
+        $monthNames = [
+            1 => 'Meskerem', 2 => 'Tikimt', 3 => 'Hidar', 4 => 'Tahsas', 5 => 'Tir', 6 => 'Yekatit',
+            7 => 'Megabit', 8 => 'Miyazia', 9 => 'Ginbot', 10 => 'Sene', 11 => 'Hamle', 12 => 'Nehase',
+            13 => 'Pagumen',
+        ];
+        $ethLabel = ($monthNames[$month] ?? '?').' '.$day;
+
+        if ($gcDate !== '') {
+            try {
+                $carbon = Carbon::parse($gcDate);
+                $gcLabel = $carbon->format('M j, Y');
+            } catch (\Throwable) {
+                $gcLabel = $gcDate;
+            }
+        } elseif ($month > 0 && $day > 0) {
+            try {
+                $carbon = $this->ethiopianCalendar->ethiopianToGregorian($month, $day);
+                $gcLabel = $carbon->format('M j, Y');
+            } catch (\Throwable) {
+                $gcLabel = __('app.telegram_suggest_unknown_date');
+            }
+        } else {
+            $gcLabel = __('app.telegram_suggest_unknown_date');
+        }
+
+        return __('app.telegram_suggest_confirm_date', [
+            'ethiopian' => $ethLabel,
+            'gregorian' => $gcLabel,
+        ]);
+    }
+
+    private function structuredSuggestConfirmDateKeyboard(): array
+    {
+        return ['inline_keyboard' => [
+            [
+                ['text' => '✅ '.__('app.telegram_suggest_confirm_date_yes'), 'callback_data' => 'suggest_confirm_date_yes'],
+                ['text' => '✏️ '.__('app.telegram_suggest_confirm_date_change'), 'callback_data' => 'suggest_confirm_date_change'],
+            ],
+            [
+                ['text' => '⬅️ '.__('app.telegram_suggest_back'), 'callback_data' => 'suggest_back'],
+                ['text' => '❌ '.__('app.telegram_suggest_cancel'), 'callback_data' => 'suggest_cancel'],
+            ],
+        ]];
+    }
+
     private function structuredSuggestLectionarySectionKeyboard(): array
     {
         $sections = [
@@ -3185,6 +3305,7 @@ class TelegramWebhookController extends Controller
             'choose_day' => $this->structuredSuggestDayKeyboard((int) $state->get('ethiopian_month', 1)),
             'choose_scope' => $this->structuredSuggestScopeKeyboard(),
             'choose_lectionary_section' => $this->structuredSuggestLectionarySectionKeyboard(),
+            'confirm_date' => $this->structuredSuggestConfirmDateKeyboard(),
             'choose_book' => $this->structuredSuggestLectionaryBookKeyboard($state),
             'choose_geez_line' => $this->structuredSuggestGeezLineKeyboard(),
             'choose_resource_type' => $this->structuredSuggestResourceTypeKeyboard(),
@@ -3220,6 +3341,7 @@ class TelegramWebhookController extends Controller
             'choose_day' => __('app.telegram_suggest_choose_day'),
             'choose_scope' => __('app.telegram_suggest_choose_scope'),
             'choose_lectionary_section' => __('app.telegram_suggest_choose_lectionary_section'),
+            'confirm_date' => $this->structuredSuggestConfirmDatePrompt($data),
             'choose_book' => __('app.telegram_suggest_choose_book'),
             'choose_geez_line' => __('app.telegram_suggest_choose_geez_line'),
             'choose_resource_type' => __('app.telegram_suggest_choose_resource_type'),
@@ -3280,16 +3402,16 @@ class TelegramWebhookController extends Controller
                 default => ['enter_reference'],
             };
 
-            return array_merge($base, $refSteps, ['enter_detail', 'preview']);
+            return array_merge($base, ['confirm_date'], $refSteps, ['enter_detail', 'preview']);
         }
 
         return match ($contentArea) {
-            'bible_reading' => ['choose_language', 'choose_area', 'choose_month', 'choose_day', 'enter_reference', 'enter_detail', 'preview'],
-            'mezmur' => ['choose_language', 'choose_area', 'choose_month', 'choose_day', 'enter_title', 'enter_url', 'enter_detail', 'preview'],
-            'synaxarium' => ['choose_language', 'choose_area', 'choose_month', 'choose_day', 'choose_scope', 'enter_title', 'await_image', 'enter_detail', 'choose_main', 'preview'],
-            'spiritual_book' => ['choose_language', 'choose_area', 'choose_month', 'choose_day', 'enter_title', 'enter_url', 'enter_detail', 'preview'],
-            'reference_resource' => ['choose_language', 'choose_area', 'choose_month', 'choose_day', 'choose_resource_type', 'enter_title', 'enter_url', 'enter_detail', 'preview'],
-            'daily_message' => ['choose_language', 'choose_area', 'choose_month', 'choose_day', 'enter_title', 'enter_detail', 'preview'],
+            'bible_reading' => ['choose_language', 'choose_area', 'choose_month', 'choose_day', 'confirm_date', 'enter_reference', 'enter_detail', 'preview'],
+            'mezmur' => ['choose_language', 'choose_area', 'choose_month', 'choose_day', 'confirm_date', 'enter_title', 'enter_url', 'enter_detail', 'preview'],
+            'synaxarium' => ['choose_language', 'choose_area', 'choose_month', 'choose_day', 'confirm_date', 'choose_scope', 'enter_title', 'await_image', 'enter_detail', 'choose_main', 'preview'],
+            'spiritual_book' => ['choose_language', 'choose_area', 'choose_month', 'choose_day', 'confirm_date', 'enter_title', 'enter_url', 'enter_detail', 'preview'],
+            'reference_resource' => ['choose_language', 'choose_area', 'choose_month', 'choose_day', 'confirm_date', 'choose_resource_type', 'enter_title', 'enter_url', 'enter_detail', 'preview'],
+            'daily_message' => ['choose_language', 'choose_area', 'choose_month', 'choose_day', 'confirm_date', 'enter_title', 'enter_detail', 'preview'],
             default => ['choose_language', 'choose_area'],
         };
     }
