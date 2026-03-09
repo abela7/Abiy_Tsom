@@ -1,4 +1,4 @@
-﻿@extends('layouts.admin')
+@extends('layouts.admin')
 
 @php
     $locale = app()->getLocale();
@@ -161,11 +161,13 @@
                 recentBooks: @js($recentBooks),
                 recentMezmurs: @js($recentMezmurs),
                 state: @js($wizardState),
+                canEdit: @js($canEdit ?? true),
                 urls: {
                     create: @js(route('admin.daily.store')),
                     patchTemplate: @js(route('admin.daily.patch', ['daily' => '__DAILY_ID__'])),
                     editTemplate: @js(route('admin.daily.edit', ['daily' => '__DAILY_ID__'])),
                     index: @js(route('admin.daily.index')),
+                    suggestStore: @js($isEdit ? route('admin.daily.suggestions.store', ['daily' => $daily]) : null),
                     copyFromTemplate: @js(route('admin.daily.copy_from', ['day_number' => '__DAY__'])),
                     uploadBookPdf: @js(route('admin.daily.upload_book_pdf')),
                     uploadSinksarImage: @js(route('admin.daily.upload_sinksar_image')),
@@ -184,7 +186,8 @@
                     copyFromDay: @js(__('app.copy_from_day')),
                     copyDayHint: @js(__('app.copy_from_day_hint')),
                     copying: @js(__('app.copying')),
-                    copySuccess: @js(__('app.copy_day_success'))
+                    copySuccess: @js(__('app.copy_day_success')),
+                    suggestUpdate: @js(__('app.suggest_update'))
                 }
             })"
             x-init="init()" @keydown.ctrl.enter.prevent="nextStep()" @keydown.meta.enter.prevent="nextStep()"
@@ -288,8 +291,8 @@
                         <span class="text-secondary" x-text="resolvedInfo ? resolvedInfo.dayOfWeek : ''"></span>
                     </div>
 
-                    {{-- Copy from day (mobile-first) --}}
-                    @if(!empty($daysWithContent ?? []))
+                    {{-- Copy from day (mobile-first) — admin only --}}
+                    @if(($canEdit ?? true) && !empty($daysWithContent ?? []))
                     <div class="p-4 rounded-xl border-2 border-dashed border-border bg-muted/20 space-y-3">
                         <label class="block text-sm font-medium text-secondary">{{ __('app.copy_from_day') }}</label>
                         <p class="text-xs text-muted-text" x-text="messages.copyDayHint"></p>
@@ -503,6 +506,7 @@
                                 </div>
                             </template>
 
+                            @if($canEdit ?? true)
                             <div x-show="(form.sinksar_images || []).length < 5"
                                  class="rounded-xl border-2 border-dashed border-sinksar/30 hover:border-sinksar/60 bg-sinksar/5 flex items-center justify-center cursor-pointer transition group touch-manipulation">
                                 <label class="flex flex-col items-center gap-2 cursor-pointer p-4 aspect-[4/3] justify-center w-full">
@@ -517,6 +521,7 @@
                                            @change="uploadSinksarImage($event)">
                                 </label>
                             </div>
+                            @endif
                         </div>
                     </div>
                 </section>
@@ -576,7 +581,7 @@
                                     <div class="space-y-2">
                                         <label class="text-xs font-semibold text-book">{{ __('app.upload_book_pdf') }}</label>
                                         <div class="flex flex-col sm:flex-row gap-2 sm:items-center">
-                                            <label class="inline-flex items-center justify-center px-3 py-2 text-xs sm:text-sm min-h-10 rounded-lg border border-book/40 bg-white hover:bg-book/10 transition cursor-pointer touch-manipulation">
+                                            <label x-show="canEdit" class="inline-flex items-center justify-center px-3 py-2 text-xs sm:text-sm min-h-10 rounded-lg border border-book/40 bg-white hover:bg-book/10 transition cursor-pointer touch-manipulation">
                                                 <span x-text="book.uploadingPdf ? '{{ __('app.loading') }}...' : '{{ __('app.upload_book_pdf') }}'"></span>
                                                 <input
                                                     type="file"
@@ -767,6 +772,7 @@
                         // 7 Review & publish — eye
                         '<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>',
                     ],
+                    canEdit: Boolean(config.canEdit !== false),
                     urls: config.urls || {},
                     messages: config.messages || {},
                     daysWithContent: Array.isArray(config.daysWithContent) ? config.daysWithContent : [],
@@ -1120,6 +1126,9 @@
 
                     nextButtonText() {
                         if (this.step === this.totalSteps) {
+                            if (!this.canEdit && this.urls.suggestStore) {
+                                return this.messages.suggestUpdate || 'Suggest update';
+                            }
                             return this.messages.finish || 'Finish';
                         }
                         return this.messages.next || 'Next';
@@ -1137,6 +1146,10 @@
                         }
 
                         if (this.step === this.totalSteps) {
+                            if (!this.canEdit && this.urls.suggestStore) {
+                                await this.submitSuggestion();
+                                return;
+                            }
                             await this.saveStep({ finish: true });
                             return;
                         }
@@ -1271,6 +1284,87 @@
                         }
 
                         return payload;
+                    },
+
+                    serializeFullPayload() {
+                        const f = this.form;
+                        return {
+                            lent_season_id: f.lent_season_id,
+                            weekly_theme_id: f.weekly_theme_id,
+                            day_number: f.day_number,
+                            date: f.date,
+                            day_title_en: f.day_title_en || '',
+                            day_title_am: f.day_title_am || '',
+                            bible_reference_en: f.bible_reference_en || '',
+                            bible_reference_am: f.bible_reference_am || '',
+                            bible_summary_en: f.bible_summary_en || '',
+                            bible_summary_am: f.bible_summary_am || '',
+                            bible_text_en: f.bible_text_en || '',
+                            bible_text_am: f.bible_text_am || '',
+                            mezmurs: (f.mezmurs || []).map((m) => ({
+                                title_en: m.title_en || '',
+                                title_am: m.title_am || '',
+                                url_en: m.url_en || '',
+                                url_am: m.url_am || '',
+                                description_en: m.description_en || '',
+                                description_am: m.description_am || '',
+                            })),
+                            sinksar_title_en: f.sinksar_title_en || '',
+                            sinksar_title_am: f.sinksar_title_am || '',
+                            sinksar_url_en: f.sinksar_url_en || '',
+                            sinksar_url_am: f.sinksar_url_am || '',
+                            sinksar_text_en: f.sinksar_text_en || '',
+                            sinksar_text_am: f.sinksar_text_am || '',
+                            sinksar_description_en: f.sinksar_description_en || '',
+                            sinksar_description_am: f.sinksar_description_am || '',
+                            sinksar_images: (f.sinksar_images || []).map((img) => ({
+                                path: img.path || '',
+                                caption_en: img.caption_en || '',
+                                caption_am: img.caption_am || '',
+                            })),
+                            books: (f.books || []).map((b) => ({
+                                title_en: b.title_en || '',
+                                title_am: b.title_am || '',
+                                url_en: b.url_en || '',
+                                url_am: b.url_am || '',
+                                description_en: b.description_en || '',
+                                description_am: b.description_am || '',
+                            })),
+                            reflection_en: f.reflection_en || '',
+                            reflection_am: f.reflection_am || '',
+                            reflection_title_en: f.reflection_title_en || '',
+                            reflection_title_am: f.reflection_title_am || '',
+                            references: (f.references || []).map((r) => ({
+                                name_en: r.name_en || '',
+                                name_am: r.name_am || '',
+                                url_en: r.url_en || '',
+                                url_am: r.url_am || '',
+                                type: r.type || 'website',
+                            })),
+                            is_published: Boolean(f.is_published),
+                        };
+                    },
+
+                    async submitSuggestion() {
+                        this.isSaving = true;
+                        this.errorMessage = '';
+                        this.saveNotice = this.messages.saving || 'Submitting...';
+
+                        try {
+                            const payload = this.serializeFullPayload();
+                            const data = await this.apiRequest(this.urls.suggestStore, 'POST', payload);
+                            this.saveNotice = data?.message || this.messages.saved || 'Submitted';
+                            if (data?.redirect) {
+                                window.location.href = data.redirect;
+                            } else {
+                                window.location.href = this.urls.index;
+                            }
+                        } catch (error) {
+                            this.errorMessage = error.message || this.messages.failed || 'Failed';
+                            this.saveNotice = '';
+                        } finally {
+                            this.isSaving = false;
+                        }
                     },
 
                     async apiRequest(url, method, payload) {

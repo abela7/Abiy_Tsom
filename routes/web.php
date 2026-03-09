@@ -151,20 +151,14 @@ Route::middleware(['auth', 'admin.audit'])->prefix('admin')->name('admin.')->gro
         Route::get('/profile', [Admin\ProfileController::class, 'edit'])->name('profile.edit');
         Route::put('/profile', [Admin\ProfileController::class, 'update'])->name('profile.update');
 
-        // Daily content
+        // Daily content (view: writer/editor/admin; write: admin only)
         Route::get('/daily', [Admin\DailyContentController::class, 'index'])->name('daily.index');
-        Route::post('/daily/scaffold', [Admin\DailyContentController::class, 'scaffold'])->name('daily.scaffold');
-        Route::get('/daily/create', [Admin\DailyContentController::class, 'create'])->name('daily.create');
-        Route::get('/daily/copy-from/{day_number}', [Admin\DailyContentController::class, 'copyFrom'])->name('daily.copy_from');
-        Route::post('/daily/upload-book-pdf', [Admin\DailyContentController::class, 'uploadBookPdf'])->name('daily.upload_book_pdf');
-        Route::post('/daily/upload-sinksar-image', [Admin\DailyContentController::class, 'uploadSinksarImage'])->name('daily.upload_sinksar_image');
-        Route::post('/daily/delete-sinksar-image', [Admin\DailyContentController::class, 'deleteSinksarImage'])->name('daily.delete_sinksar_image');
-        Route::post('/daily', [Admin\DailyContentController::class, 'store'])->name('daily.store');
         Route::get('/daily/{daily}/preview', [Admin\DailyContentController::class, 'preview'])->name('daily.preview');
         Route::get('/daily/{daily}/edit', [Admin\DailyContentController::class, 'edit'])->name('daily.edit');
-        Route::patch('/daily/{daily}', [Admin\DailyContentController::class, 'patch'])->name('daily.patch');
-        Route::put('/daily/{daily}', [Admin\DailyContentController::class, 'update'])->name('daily.update');
-        Route::delete('/daily/{daily}', [Admin\DailyContentController::class, 'destroy'])->name('daily.destroy');
+
+        // Daily content suggestions (writer/editor submit; admin reviews)
+        Route::post('/daily/{daily}/suggestions', [Admin\DailyContentSuggestionController::class, 'store'])
+            ->name('daily.suggestions.store');
 
         // Announcements
         Route::resource('announcements', Admin\AnnouncementController::class)->except(['show']);
@@ -176,6 +170,28 @@ Route::middleware(['auth', 'admin.audit'])->prefix('admin')->name('admin.')->gro
         Route::get('/activities/{activity}/edit', [Admin\ActivityController::class, 'edit'])->name('activities.edit');
         Route::put('/activities/{activity}', [Admin\ActivityController::class, 'update'])->name('activities.update');
         Route::delete('/activities/{activity}', [Admin\ActivityController::class, 'destroy'])->name('activities.destroy');
+    });
+
+    // Admin-only daily content write routes (scaffold, create, edit, delete)
+    Route::middleware('admin_role:admin')->group(function () {
+        Route::post('/daily/scaffold', [Admin\DailyContentController::class, 'scaffold'])->name('daily.scaffold');
+        Route::get('/daily/create', [Admin\DailyContentController::class, 'create'])->name('daily.create');
+        Route::get('/daily/copy-from/{day_number}', [Admin\DailyContentController::class, 'copyFrom'])->name('daily.copy_from');
+        Route::post('/daily/upload-book-pdf', [Admin\DailyContentController::class, 'uploadBookPdf'])->name('daily.upload_book_pdf');
+        Route::post('/daily/upload-sinksar-image', [Admin\DailyContentController::class, 'uploadSinksarImage'])->name('daily.upload_sinksar_image');
+        Route::post('/daily/delete-sinksar-image', [Admin\DailyContentController::class, 'deleteSinksarImage'])->name('daily.delete_sinksar_image');
+        Route::post('/daily', [Admin\DailyContentController::class, 'store'])->name('daily.store');
+        Route::patch('/daily/{daily}', [Admin\DailyContentController::class, 'patch'])->name('daily.patch');
+        Route::put('/daily/{daily}', [Admin\DailyContentController::class, 'update'])->name('daily.update');
+        Route::delete('/daily/{daily}', [Admin\DailyContentController::class, 'destroy'])->name('daily.destroy');
+
+        // Daily content suggestions (admin review and apply/reject)
+        Route::get('/daily-suggestions', [Admin\DailyContentSuggestionController::class, 'index'])
+            ->name('daily-suggestions.index');
+        Route::post('/daily-suggestions/{suggestion}/apply', [Admin\DailyContentSuggestionController::class, 'apply'])
+            ->name('daily-suggestions.apply');
+        Route::post('/daily-suggestions/{suggestion}/reject', [Admin\DailyContentSuggestionController::class, 'reject'])
+            ->name('daily-suggestions.reject');
     });
 
     // Editor/admin routes

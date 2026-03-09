@@ -113,6 +113,14 @@ class DailyContent extends Model
     }
 
     /**
+     * Pending suggestions from writers/editors for this day.
+     */
+    public function suggestions(): HasMany
+    {
+        return $this->hasMany(DailyContentSuggestion::class)->orderByDesc('created_at');
+    }
+
+    /**
      * Admin user who created this day entry.
      */
     public function createdBy(): BelongsTo

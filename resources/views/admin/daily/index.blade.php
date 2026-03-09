@@ -6,14 +6,20 @@
     <h1 class="text-2xl sm:text-3xl font-bold text-primary leading-tight">{{ __('app.daily_content') }}</h1>
     @if($season)
         <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-            <a href="{{ route('admin.day-assignments.index') }}"
-               class="inline-flex w-full items-center justify-center rounded-xl border border-border bg-muted px-4 py-2.5 text-sm font-semibold text-secondary transition hover:bg-border sm:w-auto">
-                {{ __('app.day_assignments') }}
-            </a>
-            <a href="{{ route('admin.daily.create') }}"
-               class="inline-flex w-full items-center justify-center rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-on-accent transition hover:bg-accent-hover sm:w-auto">
-                {{ __('app.create') }}
-            </a>
+            @if($canEdit ?? false)
+                <a href="{{ route('admin.day-assignments.index') }}"
+                   class="inline-flex w-full items-center justify-center rounded-xl border border-border bg-muted px-4 py-2.5 text-sm font-semibold text-secondary transition hover:bg-border sm:w-auto">
+                    {{ __('app.day_assignments') }}
+                </a>
+                <a href="{{ route('admin.daily.create') }}"
+                   class="inline-flex w-full items-center justify-center rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-on-accent transition hover:bg-accent-hover sm:w-auto">
+                    {{ __('app.create') }}
+                </a>
+                <a href="{{ route('admin.daily-suggestions.index') }}"
+                   class="inline-flex w-full items-center justify-center rounded-xl border border-accent-secondary bg-accent-secondary/10 px-4 py-2.5 text-sm font-semibold text-accent-secondary transition hover:bg-accent-secondary/20 sm:w-auto">
+                    {{ __('app.daily_suggestions') }}
+                </a>
+            @endif
         </div>
     @endif
 </div>
@@ -61,13 +67,17 @@
                             <span class="inline-flex items-center gap-2">
                                 <a href="{{ route('admin.daily.preview', $content) }}" target="_blank" rel="noopener" class="text-accent hover:underline">{{ __('app.view') }}</a>
                                 <span class="text-muted-text">|</span>
-                                <a href="{{ route('admin.daily.edit', $content) }}" class="text-accent hover:underline">{{ __('app.edit') }}</a>
-                                <span class="text-muted-text">|</span>
-                                <form action="{{ route('admin.daily.destroy', $content) }}" method="POST" class="inline"
-                                      onsubmit="return confirm('{{ __('app.confirm_delete_daily') }}')">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="text-red-500 hover:underline">{{ __('app.delete') }}</button>
-                                </form>
+                                <a href="{{ route('admin.daily.edit', $content) }}" class="text-accent hover:underline">
+                                    {{ ($canEdit ?? false) ? __('app.edit') : __('app.suggest_update') }}
+                                </a>
+                                @if($canEdit ?? false)
+                                    <span class="text-muted-text">|</span>
+                                    <form action="{{ route('admin.daily.destroy', $content) }}" method="POST" class="inline"
+                                          onsubmit="return confirm('{{ __('app.confirm_delete_daily') }}')">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="text-red-500 hover:underline">{{ __('app.delete') }}</button>
+                                    </form>
+                                @endif
                             </span>
                         </td>
                     </tr>
@@ -124,12 +134,16 @@
             </a>
             <div class="flex border-t border-border">
                 <a href="{{ route('admin.daily.preview', $content) }}" target="_blank" rel="noopener" class="flex-1 py-2.5 text-center text-sm font-medium text-accent hover:bg-muted/50 transition">{{ __('app.view') }}</a>
-                <a href="{{ route('admin.daily.edit', $content) }}" class="flex-1 py-2.5 text-center text-sm font-medium text-accent hover:bg-muted/50 transition border-l border-border">{{ __('app.edit') }}</a>
-                <form action="{{ route('admin.daily.destroy', $content) }}" method="POST" class="flex-1 border-l border-border"
-                      onsubmit="return confirm('{{ __('app.confirm_delete_daily') }}')">
-                    @csrf @method('DELETE')
-                    <button type="submit" class="w-full py-2.5 text-center text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition">{{ __('app.delete') }}</button>
-                </form>
+                <a href="{{ route('admin.daily.edit', $content) }}" class="flex-1 py-2.5 text-center text-sm font-medium text-accent hover:bg-muted/50 transition border-l border-border">
+                    {{ ($canEdit ?? false) ? __('app.edit') : __('app.suggest_update') }}
+                </a>
+                @if($canEdit ?? false)
+                    <form action="{{ route('admin.daily.destroy', $content) }}" method="POST" class="flex-1 border-l border-border"
+                          onsubmit="return confirm('{{ __('app.confirm_delete_daily') }}')">
+                        @csrf @method('DELETE')
+                        <button type="submit" class="w-full py-2.5 text-center text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition">{{ __('app.delete') }}</button>
+                    </form>
+                @endif
             </div>
             </div>
         @empty

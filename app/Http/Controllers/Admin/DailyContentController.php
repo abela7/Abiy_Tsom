@@ -78,8 +78,9 @@ class DailyContentController extends Controller
         $contents = $season
             ? $season->dailyContents()->with(['weeklyTheme', 'createdBy', 'updatedBy', 'assignedTo'])->orderBy('day_number')->get()
             : collect();
+        $canEdit = auth()->user()?->role === 'admin' || auth()->user()?->isSuperAdmin();
 
-        return view('admin.daily.index', compact('season', 'contents'));
+        return view('admin.daily.index', compact('season', 'contents', 'canEdit'));
     }
 
     /**
@@ -273,8 +274,9 @@ class DailyContentController extends Controller
         $recentBooks = $this->getRecentBooks($daily->id);
         $recentMezmurs = $this->getRecentMezmurs($daily->id);
         $daysWithContent = $this->getDaysWithContent($daily->id);
+        $canEdit = auth()->user()?->role === 'admin' || auth()->user()?->isSuperAdmin();
 
-        return view('admin.daily.form', compact('season', 'themes', 'daily', 'dayRangesByWeek', 'initialStep', 'recentBooks', 'recentMezmurs', 'daysWithContent'));
+        return view('admin.daily.form', compact('season', 'themes', 'daily', 'dayRangesByWeek', 'initialStep', 'recentBooks', 'recentMezmurs', 'daysWithContent', 'canEdit'));
     }
 
     public function update(Request $request, DailyContent $daily): RedirectResponse
