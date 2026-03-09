@@ -97,6 +97,9 @@
         @if($weeklyTheme->feature_picture)
         <img src="{{ Storage::disk('public')->url($weeklyTheme->feature_picture) }}"
              alt="{{ $themeName }}"
+             loading="eager"
+             fetchpriority="high"
+             decoding="async"
              class="w-full aspect-video object-cover">
         @endif
     </div>

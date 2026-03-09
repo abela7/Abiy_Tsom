@@ -87,7 +87,7 @@
         {{-- Ethiopian Calendar row --}}
         @if($hasEthDate)
         <div class="flex items-center gap-3 px-4 py-3 bg-muted/30">
-            <img src="{{ asset('images/EOTC_Logo.jpg') }}" alt="" class="w-10 h-10 rounded-lg object-cover shrink-0 shadow-sm">
+            <img src="{{ asset('images/EOTC_Logo.jpg') }}" alt="" loading="eager" decoding="async" class="w-10 h-10 rounded-lg object-cover shrink-0 shadow-sm">
             <div class="flex-1 min-w-0">
                 <span class="block text-[10px] font-semibold text-muted-text uppercase tracking-wider">{{ __('app.ethiopian_calendar_title') }}</span>
                 <span class="block text-lg font-bold text-primary mt-0.5">{{ $ethDateInfo['ethiopian_date_formatted'] }}</span>
@@ -102,7 +102,7 @@
            x-data="{ current: 0, total: {{ $slides->count() }}, images: {{ $slides->map(fn($s) => $s['image'] ?? null)->toJson() }}, fallback: '{{ asset('images/Saints.png') }}' }"
            x-init="setInterval(() => current = (current + 1) % total, 3000)">
             <div class="shrink-0 w-12 h-12 rounded-xl overflow-hidden shadow-sm relative ring-1 ring-border">
-                <img :src="images[current] || fallback" alt="" class="w-full h-full object-cover">
+                <img :src="images[current] || fallback" alt="" loading="eager" decoding="async" class="w-full h-full object-cover">
             </div>
             <div class="flex-1 min-w-0 relative h-11 overflow-hidden">
                 @foreach($slides as $i => $slide)
@@ -509,13 +509,15 @@
                     {{-- Blurred ambient background --}}
                     <img src="{{ $img->imageUrl() }}" alt=""
                          class="absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-70 select-none pointer-events-none"
-                         loading="{{ $idx === 0 ? 'eager' : 'lazy' }}">
+                         loading="{{ $idx === 0 ? 'eager' : 'lazy' }}"
+                         decoding="async">
                     <div class="absolute inset-0 bg-gradient-to-br from-amber-900/25 via-transparent to-black/35 pointer-events-none"></div>
                     {{-- Main image --}}
                     <img src="{{ $img->imageUrl() }}"
                          alt="{{ localized($img, 'caption') ?? '' }}"
                          class="relative z-10 w-full h-full object-contain drop-shadow-[0_4px_20px_rgba(0,0,0,0.55)]"
-                         loading="{{ $idx === 0 ? 'eager' : 'lazy' }}">
+                         loading="{{ $idx === 0 ? 'eager' : 'lazy' }}"
+                         decoding="async">
                     @if(localized($img, 'caption'))
                     <div class="absolute bottom-0 inset-x-0 z-20 bg-gradient-to-t from-black/70 to-transparent px-3 py-2">
                         <p class="text-white text-xs font-medium">{{ localized($img, 'caption') }}</p>
@@ -750,11 +752,11 @@
                                          : 'opacity:0;transform:translateX(-100%);z-index:1'">
                                 {{-- Blurred ambient background --}}
                                 <img src="{{ $img->imageUrl() }}" alt=""
-                                     class="absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-70 select-none pointer-events-none" loading="lazy">
+                                     class="absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-70 select-none pointer-events-none" loading="lazy" decoding="async">
                                 <div class="absolute inset-0 bg-gradient-to-br from-amber-900/25 via-transparent to-black/35 pointer-events-none"></div>
                                 {{-- Main image --}}
                                 <img src="{{ $img->imageUrl() }}" alt="{{ localized($img, 'caption') ?? '' }}"
-                                     class="relative z-10 w-full h-full object-contain drop-shadow-[0_4px_20px_rgba(0,0,0,0.55)]" loading="lazy">
+                                     class="relative z-10 w-full h-full object-contain drop-shadow-[0_4px_20px_rgba(0,0,0,0.55)]" loading="lazy" decoding="async">
                                 @if(localized($img, 'caption'))
                                 <div class="absolute bottom-0 inset-x-0 z-20 bg-gradient-to-t from-black/70 to-transparent px-3 py-2">
                                     <p class="text-white text-xs font-medium">{{ localized($img, 'caption') }}</p>

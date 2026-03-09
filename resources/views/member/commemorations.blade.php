@@ -32,7 +32,7 @@
     <div class="space-y-3">
         <h2 class="text-base font-black text-primary text-center">{{ __('app.synaxarium_yearly_commemorations') }}</h2>
 
-        @foreach($annualCelebrations as $saint)
+        @foreach($annualCelebrations as $index => $saint)
         @php $hasImage = (bool) $saint->imageUrl(); $hasDesc = (bool) localized($saint, 'description'); @endphp
         <div class="rounded-2xl bg-card border border-border shadow-sm overflow-hidden">
             {{-- Image as a contained hero banner --}}
@@ -41,11 +41,15 @@
                  @click="showImageModal = true; modalImage = '{{ $saint->imageUrl() }}'">
                 {{-- Blurred ambient background --}}
                 <img src="{{ $saint->imageUrl() }}" alt=""
+                     loading="{{ $index === 0 ? 'eager' : 'lazy' }}"
+                     decoding="async"
                      class="absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-70 select-none pointer-events-none">
                 {{-- Warm golden veil to match Orthodox iconography tones --}}
                 <div class="absolute inset-0 bg-gradient-to-br from-amber-900/30 via-transparent to-black/40"></div>
                 {{-- Main image, sharp and centred --}}
                 <img src="{{ $saint->imageUrl() }}" alt=""
+                     loading="{{ $index === 0 ? 'eager' : 'lazy' }}"
+                     decoding="async"
                      class="relative z-10 h-full w-full object-contain drop-shadow-[0_4px_24px_rgba(0,0,0,0.6)]">
                 {{-- Bottom gradient for badge legibility --}}
                 <div class="absolute inset-0 z-20 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none"></div>
@@ -96,16 +100,16 @@
     <div class="space-y-3">
         <h2 class="text-base font-black text-primary text-center">{{ __('app.synaxarium_monthly_commemorations') }}</h2>
 
-        @foreach($monthlyCelebrations as $saint)
+        @foreach($monthlyCelebrations as $index => $saint)
         @php $monthlyImage = $saint->imageUrl(); $monthlyDesc = localized($saint, 'description'); $hasMonthlyDetail = $monthlyImage || $monthlyDesc; @endphp
         <div x-data="{ open: false }" class="rounded-2xl bg-card border border-border shadow-sm overflow-hidden">
             <div class="px-4 flex items-center gap-3 py-3 {{ $hasMonthlyDetail ? 'cursor-pointer' : '' }}" @if($hasMonthlyDetail) @click="open = !open" @endif>
                 {{-- Thumbnail --}}
                 @if($monthlyImage)
-                    <img src="{{ $monthlyImage }}" alt="" class="w-11 h-11 rounded-xl object-cover shrink-0 shadow-sm ring-1 ring-border">
+                    <img src="{{ $monthlyImage }}" alt="" loading="{{ $index === 0 ? 'eager' : 'lazy' }}" decoding="async" class="w-11 h-11 rounded-xl object-cover shrink-0 shadow-sm ring-1 ring-border">
                 @else
                     <div class="shrink-0 w-11 h-11 rounded-xl overflow-hidden shadow-sm ring-1 ring-border">
-                        <img src="{{ asset('images/Saints.png') }}" alt="" class="w-full h-full object-cover">
+                        <img src="{{ asset('images/Saints.png') }}" alt="" loading="{{ $index === 0 ? 'eager' : 'lazy' }}" decoding="async" class="w-full h-full object-cover">
                     </div>
                 @endif
                 <div class="flex-1 min-w-0">
@@ -128,10 +132,14 @@
                      @click.stop="showImageModal = true; modalImage = '{{ $monthlyImage }}'">
                     {{-- Blurred ambient background --}}
                     <img src="{{ $monthlyImage }}" alt=""
+                         loading="{{ $index === 0 ? 'eager' : 'lazy' }}"
+                         decoding="async"
                          class="absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-70 select-none pointer-events-none">
                     <div class="absolute inset-0 bg-gradient-to-br from-amber-900/25 via-transparent to-black/35"></div>
                     {{-- Main image --}}
                     <img src="{{ $monthlyImage }}" alt=""
+                         loading="{{ $index === 0 ? 'eager' : 'lazy' }}"
+                         decoding="async"
                          class="relative z-10 h-full w-full object-contain drop-shadow-[0_4px_20px_rgba(0,0,0,0.55)]">
                     <div class="absolute inset-0 z-20 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none"></div>
                 </div>

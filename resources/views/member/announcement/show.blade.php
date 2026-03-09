@@ -25,6 +25,9 @@
     @if($announcementPhotoUrl)
         <div class="relative w-full aspect-[16/9] sm:aspect-[21/9] overflow-hidden bg-muted">
             <img src="{{ $announcementPhotoUrl }}" alt=""
+                 loading="eager"
+                 fetchpriority="high"
+                 decoding="async"
                  class="absolute inset-0 w-full h-full object-cover object-center">
             <div class="absolute inset-0 bg-gradient-to-t from-surface/60 via-transparent to-transparent"></div>
         </div>

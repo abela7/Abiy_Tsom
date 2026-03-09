@@ -14,6 +14,8 @@
             <div class="overflow-hidden">
                 <img src="{{ $bannerImgUrl }}"
                      alt="{{ $banner->localizedTitle() }}"
+                     loading="lazy"
+                     decoding="async"
                      class="w-full h-auto block">
             </div>
             @endif
