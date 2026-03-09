@@ -67,7 +67,8 @@ class ContentSuggestion extends Model
     {
         if (filled($this->content_area)) {
             return match ($this->content_area) {
-                'lectionary', 'bible_reading' => __('app.telegram_suggest_area_bible_reading'),
+                'lectionary' => __('app.telegram_suggest_area_lectionary'),
+                'bible_reading' => __('app.telegram_suggest_area_bible_reading'),
                 'synaxarium' => __('app.telegram_suggest_area_synaxarium'),
                 'daily_message' => __('app.telegram_suggest_area_daily_message'),
                 'mezmur' => __('app.telegram_suggest_area_mezmur'),

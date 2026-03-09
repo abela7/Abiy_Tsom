@@ -33,6 +33,26 @@ use Illuminate\Support\Str;
  */
 class TelegramWebhookController extends Controller
 {
+    /** @var array<string, string> Amharic => English */
+    private const PAULINE_BOOKS = [
+        'ሮሜ' => 'Romans', '1ኛ ቆሮንቶስ' => '1 Corinthians', '2ኛ ቆሮንቶስ' => '2 Corinthians',
+        'ገላትያ' => 'Galatians', 'ኤፌሶን' => 'Ephesians', 'ፊልጵስዩስ' => 'Philippians',
+        'ቈሎስይስ' => 'Colossians', '1ኛ ተሰሎንቄ' => '1 Thessalonians', '2ኛ ተሰሎንቄ' => '2 Thessalonians',
+        '1ኛ ጢሞቴዎስ' => '1 Timothy', '2ኛ ጢሞቴዎስ' => '2 Timothy', 'ቲቶ' => 'Titus',
+        'ፊልሞና' => 'Philemon', 'ዕብራውያን' => 'Hebrews',
+    ];
+
+    /** @var array<string, string> Amharic => English */
+    private const CATHOLIC_BOOKS = [
+        'ያዕቆብ' => 'James', '1ኛ ጴጥሮስ' => '1 Peter', '2ኛ ጴጥሮስ' => '2 Peter',
+        '1ኛ ዮሐንስ' => '1 John', '2ኛ ዮሐንስ' => '2 John', '3ኛ ዮሐንስ' => '3 John',
+        'ይሁዳ' => 'Jude',
+    ];
+
+    /** @var array<string, string> Amharic => English */
+    private const GOSPEL_BOOKS = [
+        'ማቴዎስ' => 'Matthew', 'ማርቆስ' => 'Mark', 'ሉቃስ' => 'Luke', 'ዮሐንስ' => 'John',
+    ];
     public function __construct(
         private readonly TelegramBotBuilderService $telegramBotBuilder,
         private readonly TelegramContentFormatter $contentFormatter,
@@ -2198,7 +2218,8 @@ class TelegramWebhookController extends Controller
 
             $nextStep = match ((string) $state->get('content_area', '')) {
                 'synaxarium' => 'choose_scope',
-                'lectionary', 'bible_reading' => 'enter_reference',
+                'lectionary' => 'choose_lectionary_section',
+                'bible_reading' => 'enter_reference',
                 'mezmur', 'spiritual_book' => 'enter_title',
                 'reference_resource' => 'choose_resource_type',
                 'daily_message' => 'enter_title',
@@ -2241,13 +2262,60 @@ class TelegramWebhookController extends Controller
                 return $this->startSuggestWizard($chatId, $messageId, $telegramService);
             }
 
-            $state->advance('enter_reference', ['lectionary_section' => $section]);
+            $nextStep = match ($section) {
+                'pauline', 'catholic', 'gospel' => 'choose_book',
+                'acts', 'mesbak' => 'enter_chapter',
+                'qiddase', 'title_description' => 'enter_detail',
+                default => 'enter_reference',
+            };
+            $state->advance($nextStep, ['lectionary_section' => $section]);
 
             return $this->replyOrEdit(
                 $telegramService,
                 $chatId,
-                $this->structuredSuggestPrompt('enter_reference', $state->data ?? []),
-                $this->structuredSuggestKeyboardForStep('enter_reference', $state),
+                $this->structuredSuggestPrompt($nextStep, $state->data ?? []),
+                $this->structuredSuggestKeyboardForStep($nextStep, $state),
+                $messageId
+            );
+        }
+
+        if (str_starts_with($action, 'suggest_book_')) {
+            $bookKey = str_replace('suggest_book_', '', $action);
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+
+            $books = $this->lectionaryBooksForSection((string) $state->get('lectionary_section', ''));
+            $bookLabel = $books[$bookKey] ?? $bookKey;
+            $state->advance('enter_chapter', [
+                'lectionary_book' => $bookKey,
+                'lectionary_book_label' => $bookLabel,
+            ]);
+
+            return $this->replyOrEdit(
+                $telegramService,
+                $chatId,
+                $this->structuredSuggestPrompt('enter_chapter', $state->data ?? []),
+                $this->structuredSuggestKeyboardForStep('enter_chapter', $state),
+                $messageId
+            );
+        }
+
+        if (str_starts_with($action, 'suggest_geez_line_')) {
+            $line = str_replace('suggest_geez_line_', '', $action);
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+
+            $state->advance('enter_detail', ['lectionary_geez_line' => $line]);
+
+            return $this->replyOrEdit(
+                $telegramService,
+                $chatId,
+                $this->structuredSuggestPrompt('enter_detail', $state->data ?? []),
+                $this->structuredSuggestKeyboardForStep('enter_detail', $state),
                 $messageId
             );
         }
@@ -2380,6 +2448,8 @@ class TelegramWebhookController extends Controller
 
         $fieldForStep = [
             'enter_reference' => 'reference',
+            'enter_chapter' => 'lectionary_chapter',
+            'enter_verse_range' => 'lectionary_verse_range',
             'enter_title' => 'title',
             'enter_url' => 'url',
             'enter_detail' => 'content_detail',
@@ -2387,6 +2457,22 @@ class TelegramWebhookController extends Controller
 
         $mergeData = [];
         if (isset($fieldForStep[$currentStep])) {
+            if ($currentStep === 'enter_chapter' && $input !== '' && ! ctype_digit(trim($input))) {
+                return $this->reply(
+                    $telegramService,
+                    $chatId,
+                    __('app.telegram_suggest_invalid_chapter'),
+                    $this->structuredSuggestStepKeyboard($currentStep)
+                );
+            }
+            if ($currentStep === 'enter_verse_range' && $input !== '' && ! $this->suggestStepInputLooksVerseRange($input)) {
+                return $this->reply(
+                    $telegramService,
+                    $chatId,
+                    __('app.telegram_suggest_invalid_verse_range'),
+                    $this->structuredSuggestStepKeyboard($currentStep)
+                );
+            }
             if ($input === '') {
                 if ($this->structuredSuggestStepIsOptional($state, $currentStep)) {
                     $nextStep = $this->structuredSuggestNextStep($state, $currentStep);
@@ -2479,8 +2565,11 @@ class TelegramWebhookController extends Controller
                 'UTF-8'
             );
         }
-        if (! empty($data['reference'])) {
-            $lines[] = '<b>Reference:</b> '.htmlspecialchars($data['reference'], ENT_QUOTES, 'UTF-8');
+        $ref = ($contentArea === 'lectionary')
+            ? $this->structuredSuggestBuildLectionaryReference($data)
+            : ($data['reference'] ?? null);
+        if (! empty($ref)) {
+            $lines[] = '<b>Reference:</b> '.htmlspecialchars((string) $ref, ENT_QUOTES, 'UTF-8');
         }
         if (! empty($data['title'])) {
             $lines[] = '<b>Title:</b> '.htmlspecialchars($data['title'], ENT_QUOTES, 'UTF-8');
@@ -2672,6 +2761,8 @@ class TelegramWebhookController extends Controller
 
         $fieldForStep = [
             'enter_reference' => 'reference',
+            'enter_chapter' => 'lectionary_chapter',
+            'enter_verse_range' => 'lectionary_verse_range',
             'enter_title' => 'title',
             'enter_detail' => 'content_detail',
         ];
@@ -2715,6 +2806,19 @@ class TelegramWebhookController extends Controller
         }
 
         return $flow[$idx - 1];
+    }
+
+    /**
+     * Determines whether user input looks like a verse range (e.g. 1-5, 1,3,5, 1).
+     */
+    private function suggestStepInputLooksVerseRange(string $input): bool
+    {
+        $value = trim($input);
+        if ($value === '') {
+            return false;
+        }
+
+        return (bool) preg_match('/^[\d\s,\-]+$/', $value);
     }
 
     /**
@@ -2883,6 +2987,7 @@ class TelegramWebhookController extends Controller
     {
         return ['inline_keyboard' => [
             [['text' => '📖 '.__('app.telegram_suggest_area_bible_reading'), 'callback_data' => 'suggest_area_bible_reading']],
+            [['text' => '📜 '.__('app.telegram_suggest_area_lectionary'), 'callback_data' => 'suggest_area_lectionary']],
             [['text' => '🎵 '.__('app.telegram_suggest_area_mezmur'), 'callback_data' => 'suggest_area_mezmur']],
             [['text' => '🕊️ '.__('app.telegram_suggest_area_synaxarium'), 'callback_data' => 'suggest_area_synaxarium']],
             [['text' => '📚 '.__('app.telegram_suggest_area_spiritual_book'), 'callback_data' => 'suggest_area_spiritual_book']],
@@ -2971,6 +3076,51 @@ class TelegramWebhookController extends Controller
         ]];
     }
 
+    /** @return array<string, string> Amharic => English */
+    private function lectionaryBooksForSection(string $section): array
+    {
+        return match ($section) {
+            'pauline' => self::PAULINE_BOOKS,
+            'catholic' => self::CATHOLIC_BOOKS,
+            'gospel' => self::GOSPEL_BOOKS,
+            default => [],
+        };
+    }
+
+    private function structuredSuggestLectionaryBookKeyboard(TelegramBotState $state): array
+    {
+        $section = (string) $state->get('lectionary_section', '');
+        $books = $this->lectionaryBooksForSection($section);
+        $rows = [];
+
+        foreach ($books as $amharic => $english) {
+            $rows[] = [[
+                'text' => $amharic,
+                'callback_data' => 'suggest_book_'.$amharic,
+            ]];
+        }
+
+        $rows[] = [
+            ['text' => '⬅️ '.__('app.telegram_suggest_back'), 'callback_data' => 'suggest_back'],
+            ['text' => '❌ '.__('app.telegram_suggest_cancel'), 'callback_data' => 'suggest_cancel'],
+        ];
+
+        return ['inline_keyboard' => $rows];
+    }
+
+    private function structuredSuggestGeezLineKeyboard(): array
+    {
+        return ['inline_keyboard' => [
+            [['text' => __('app.telegram_suggest_geez_line_1'), 'callback_data' => 'suggest_geez_line_1']],
+            [['text' => __('app.telegram_suggest_geez_line_2'), 'callback_data' => 'suggest_geez_line_2']],
+            [['text' => __('app.telegram_suggest_geez_line_3'), 'callback_data' => 'suggest_geez_line_3']],
+            [
+                ['text' => '⬅️ '.__('app.telegram_suggest_back'), 'callback_data' => 'suggest_back'],
+                ['text' => '❌ '.__('app.telegram_suggest_cancel'), 'callback_data' => 'suggest_cancel'],
+            ],
+        ]];
+    }
+
     private function structuredSuggestLectionarySectionKeyboard(): array
     {
         $sections = [
@@ -3035,6 +3185,8 @@ class TelegramWebhookController extends Controller
             'choose_day' => $this->structuredSuggestDayKeyboard((int) $state->get('ethiopian_month', 1)),
             'choose_scope' => $this->structuredSuggestScopeKeyboard(),
             'choose_lectionary_section' => $this->structuredSuggestLectionarySectionKeyboard(),
+            'choose_book' => $this->structuredSuggestLectionaryBookKeyboard($state),
+            'choose_geez_line' => $this->structuredSuggestGeezLineKeyboard(),
             'choose_resource_type' => $this->structuredSuggestResourceTypeKeyboard(),
             'choose_main' => $this->structuredSuggestMainChoiceKeyboard(),
             default => $this->structuredSuggestStepKeyboard($step),
@@ -3068,7 +3220,14 @@ class TelegramWebhookController extends Controller
             'choose_day' => __('app.telegram_suggest_choose_day'),
             'choose_scope' => __('app.telegram_suggest_choose_scope'),
             'choose_lectionary_section' => __('app.telegram_suggest_choose_lectionary_section'),
+            'choose_book' => __('app.telegram_suggest_choose_book'),
+            'choose_geez_line' => __('app.telegram_suggest_choose_geez_line'),
             'choose_resource_type' => __('app.telegram_suggest_choose_resource_type'),
+            'enter_chapter' => match ((string) ($data['lectionary_section'] ?? '')) {
+                'mesbak' => __('app.telegram_suggest_enter_psalm_number'),
+                default => __('app.telegram_suggest_enter_chapter'),
+            },
+            'enter_verse_range' => __('app.telegram_suggest_enter_verse_range'),
             'enter_title' => match ($contentArea) {
                 'synaxarium' => __('app.telegram_suggest_enter_saint_name'),
                 'daily_message' => __('app.telegram_suggest_enter_daily_message_title'),
@@ -3109,9 +3268,22 @@ class TelegramWebhookController extends Controller
     private function structuredSuggestFlow(TelegramBotState $state): array
     {
         $contentArea = (string) $state->get('content_area', '');
+        $lectionarySection = (string) $state->get('lectionary_section', '');
+
+        if ($contentArea === 'lectionary') {
+            $base = ['choose_language', 'choose_area', 'choose_month', 'choose_day', 'choose_lectionary_section'];
+            $refSteps = match ($lectionarySection) {
+                'pauline', 'catholic', 'gospel' => ['choose_book', 'enter_chapter', 'enter_verse_range'],
+                'acts' => ['enter_chapter', 'enter_verse_range'],
+                'mesbak' => ['enter_chapter', 'enter_verse_range', 'choose_geez_line'],
+                'qiddase', 'title_description' => [],
+                default => ['enter_reference'],
+            };
+
+            return array_merge($base, $refSteps, ['enter_detail', 'preview']);
+        }
 
         return match ($contentArea) {
-            'lectionary' => ['choose_language', 'choose_area', 'choose_month', 'choose_day', 'choose_lectionary_section', 'enter_reference', 'enter_detail', 'preview'],
             'bible_reading' => ['choose_language', 'choose_area', 'choose_month', 'choose_day', 'enter_reference', 'enter_detail', 'preview'],
             'mezmur' => ['choose_language', 'choose_area', 'choose_month', 'choose_day', 'enter_title', 'enter_url', 'enter_detail', 'preview'],
             'synaxarium' => ['choose_language', 'choose_area', 'choose_month', 'choose_day', 'choose_scope', 'enter_title', 'await_image', 'enter_detail', 'choose_main', 'preview'],
@@ -3170,7 +3342,8 @@ class TelegramWebhookController extends Controller
     private function structuredSuggestAreaLabel(string $contentArea): string
     {
         return match ($contentArea) {
-            'lectionary', 'bible_reading' => '📖 '.__('app.telegram_suggest_area_bible_reading'),
+            'lectionary' => '📜 '.__('app.telegram_suggest_area_lectionary'),
+            'bible_reading' => '📖 '.__('app.telegram_suggest_area_bible_reading'),
             'mezmur' => '🎵 '.__('app.telegram_suggest_area_mezmur'),
             'synaxarium' => '🕊️ '.__('app.telegram_suggest_area_synaxarium'),
             'spiritual_book' => '📚 '.__('app.telegram_suggest_area_spiritual_book'),
@@ -3245,10 +3418,46 @@ class TelegramWebhookController extends Controller
     private function structuredSuggestStoredTitle(array $data): ?string
     {
         return match ((string) ($data['content_area'] ?? '')) {
-            'lectionary' => __('app.telegram_suggest_area_bible_reading').': '.$this->structuredSuggestLectionarySectionLabel((string) ($data['lectionary_section'] ?? '')),
+            'lectionary' => __('app.telegram_suggest_area_lectionary').': '.$this->structuredSuggestLectionarySectionLabel((string) ($data['lectionary_section'] ?? '')),
             'bible_reading' => __('app.telegram_suggest_area_bible_reading'),
             default => $data['title'] ?? null,
         };
+    }
+
+    /**
+     * Builds a lectionary reference from structured fields (book, chapter, verse range, geez line).
+     */
+    private function structuredSuggestBuildLectionaryReference(array $data): ?string
+    {
+        $section = (string) ($data['lectionary_section'] ?? '');
+        $chapter = trim((string) ($data['lectionary_chapter'] ?? ''));
+        $verseRange = trim((string) ($data['lectionary_verse_range'] ?? ''));
+
+        if ($chapter === '' && $verseRange === '' && empty($data['reference'])) {
+            return null;
+        }
+
+        $book = match ($section) {
+            'pauline', 'catholic', 'gospel' => (string) ($data['lectionary_book_label'] ?? $data['lectionary_book'] ?? ''),
+            'acts' => 'Acts',
+            'mesbak' => 'Psalm',
+            default => null,
+        };
+
+        if ($book !== null && $book !== '') {
+            $ref = $book.' '.$chapter;
+            if ($verseRange !== '') {
+                $ref .= ':'.$verseRange;
+            }
+            if (! empty($data['lectionary_geez_line'])) {
+                $lineKey = 'telegram_suggest_geez_line_'.((string) $data['lectionary_geez_line']);
+                $ref .= ' ('.__('app.'.$lineKey).')';
+            }
+
+            return $ref;
+        }
+
+        return ! empty($data['reference']) ? (string) $data['reference'] : null;
     }
 
     private function structuredSuggestStoredReference(array $data): ?string
@@ -3265,12 +3474,15 @@ class TelegramWebhookController extends Controller
             $parts[] = $this->structuredSuggestLectionarySectionLabel((string) $data['lectionary_section']);
         }
 
-        if (($data['content_area'] ?? null) === 'reference_resource' && ! empty($data['resource_type'])) {
-            $parts[] = $this->structuredSuggestResourceTypeLabel((string) $data['resource_type']);
+        $ref = $this->structuredSuggestBuildLectionaryReference($data);
+        if ($ref !== null) {
+            $parts[] = $ref;
+        } elseif (! empty($data['reference'])) {
+            $parts[] = (string) $data['reference'];
         }
 
-        if (! empty($data['reference'])) {
-            $parts[] = (string) $data['reference'];
+        if (($data['content_area'] ?? null) === 'reference_resource' && ! empty($data['resource_type'])) {
+            $parts[] = $this->structuredSuggestResourceTypeLabel((string) $data['resource_type']);
         }
 
         $parts = array_values(array_filter($parts, fn ($value) => filled($value)));
@@ -3280,7 +3492,7 @@ class TelegramWebhookController extends Controller
 
     private function structuredSuggestPayload(array $data): array
     {
-        return array_filter([
+        $payload = [
             'content_area' => $data['content_area'] ?? null,
             'ethiopian_month' => $data['ethiopian_month'] ?? null,
             'ethiopian_day' => $data['ethiopian_day'] ?? null,
@@ -3289,14 +3501,21 @@ class TelegramWebhookController extends Controller
             'lectionary_section_label' => ! empty($data['lectionary_section'])
                 ? $this->structuredSuggestLectionarySectionLabel((string) $data['lectionary_section'])
                 : null,
+            'lectionary_book' => $data['lectionary_book'] ?? null,
+            'lectionary_book_label' => $data['lectionary_book_label'] ?? null,
+            'lectionary_chapter' => $data['lectionary_chapter'] ?? null,
+            'lectionary_verse_range' => $data['lectionary_verse_range'] ?? null,
+            'lectionary_geez_line' => $data['lectionary_geez_line'] ?? null,
             'resource_type' => $data['resource_type'] ?? null,
             'resource_type_label' => ! empty($data['resource_type'])
                 ? $this->structuredSuggestResourceTypeLabel((string) $data['resource_type'])
                 : null,
-            'reference' => $data['reference'] ?? null,
+            'reference' => $this->structuredSuggestBuildLectionaryReference($data) ?? $data['reference'] ?? null,
             'url' => $data['url'] ?? null,
             'is_main' => $data['is_main'] ?? null,
-        ], fn ($value) => $value !== null && $value !== '');
+        ];
+
+        return array_filter($payload, fn ($value) => $value !== null && $value !== '');
     }
 
     // =========================================================================
