@@ -29,7 +29,7 @@
     <div class="bg-card rounded-xl p-4 shadow-sm border border-border">
         <p class="text-sm text-muted-text mb-1">{{ __('app.total_members') }}</p>
         <p class="text-2xl font-bold text-primary">{{ $totalMembers }}</p>
-        <p class="text-xs text-green-500 font-semibold mt-1">+{{ $newToday }} today</p>
+        <p class="text-xs text-green-500 font-semibold mt-1">+{{ $newToday }} {{ strtolower(__('app.today')) }}</p>
     </div>
 
     <div class="bg-accent rounded-xl p-4 shadow-sm text-on-accent">
@@ -44,26 +44,26 @@
 
 {{-- Row 2: New Registrations --}}
 <div class="mb-6">
-    <h2 class="text-sm font-bold text-muted-text uppercase tracking-wider mb-3">New Registrations</h2>
+    <h2 class="text-sm font-bold text-muted-text uppercase tracking-wider mb-3">{{ __('app.new_registrations') }}</h2>
     <div class="grid grid-cols-3 gap-4">
         <div class="bg-card rounded-xl p-4 shadow-sm border border-border">
             <div class="flex items-center gap-2 mb-1">
                 <div class="w-2 h-2 rounded-full bg-green-500"></div>
-                <p class="text-xs text-muted-text font-medium">Today</p>
+                <p class="text-xs text-muted-text font-medium">{{ __('app.today') }}</p>
             </div>
             <p class="text-2xl font-bold text-primary">{{ $newToday }}</p>
         </div>
         <div class="bg-card rounded-xl p-4 shadow-sm border border-border">
             <div class="flex items-center gap-2 mb-1">
                 <div class="w-2 h-2 rounded-full bg-blue-500"></div>
-                <p class="text-xs text-muted-text font-medium">Last 7 Days</p>
+                <p class="text-xs text-muted-text font-medium">{{ __('app.last_7_days') }}</p>
             </div>
             <p class="text-2xl font-bold text-primary">{{ $new7d }}</p>
         </div>
         <div class="bg-card rounded-xl p-4 shadow-sm border border-border">
             <div class="flex items-center gap-2 mb-1">
                 <div class="w-2 h-2 rounded-full bg-purple-500"></div>
-                <p class="text-xs text-muted-text font-medium">Last 30 Days</p>
+                <p class="text-xs text-muted-text font-medium">{{ __('app.last_30_days') }}</p>
             </div>
             <p class="text-2xl font-bold text-primary">{{ $new30d }}</p>
         </div>
@@ -72,26 +72,26 @@
 
 {{-- Row 3: Active Users --}}
 <div class="mb-6">
-    <h2 class="text-sm font-bold text-muted-text uppercase tracking-wider mb-3">Active Users</h2>
+    <h2 class="text-sm font-bold text-muted-text uppercase tracking-wider mb-3">{{ __('app.active_users') }}</h2>
     <div class="grid grid-cols-3 gap-4">
         <div class="bg-card rounded-xl p-4 shadow-sm border border-border">
             <div class="flex items-center gap-2 mb-1">
                 <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                <p class="text-xs text-muted-text font-medium">Last 24h</p>
+                <p class="text-xs text-muted-text font-medium">{{ __('app.last_24h') }}</p>
             </div>
             <p class="text-2xl font-bold text-green-600 dark:text-green-400">{{ $active24h }}</p>
         </div>
         <div class="bg-card rounded-xl p-4 shadow-sm border border-border">
             <div class="flex items-center gap-2 mb-1">
                 <div class="w-2 h-2 rounded-full bg-blue-500"></div>
-                <p class="text-xs text-muted-text font-medium">Last 7 Days</p>
+                <p class="text-xs text-muted-text font-medium">{{ __('app.last_7_days') }}</p>
             </div>
             <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ $active7d }}</p>
         </div>
         <div class="bg-card rounded-xl p-4 shadow-sm border border-border">
             <div class="flex items-center gap-2 mb-1">
                 <div class="w-2 h-2 rounded-full bg-purple-500"></div>
-                <p class="text-xs text-muted-text font-medium">Last 30 Days</p>
+                <p class="text-xs text-muted-text font-medium">{{ __('app.last_30_days') }}</p>
             </div>
             <p class="text-2xl font-bold text-purple-600 dark:text-purple-400">{{ $active30d }}</p>
         </div>
@@ -101,29 +101,29 @@
 {{-- Row 4: Engagement + Connections --}}
 <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
     <div class="bg-card rounded-xl p-4 shadow-sm border border-border">
-        <p class="text-xs text-muted-text font-medium mb-1">Engaged Members</p>
+        <p class="text-xs text-muted-text font-medium mb-1">{{ __('app.engaged_members') }}</p>
         <p class="text-2xl font-bold text-primary">{{ $engagedMembers }}</p>
         @if($totalMembers > 0)
         <div class="w-full h-1.5 bg-muted rounded-full mt-2 overflow-hidden">
             <div class="h-full bg-amber-500 rounded-full" style="width: {{ round(($engagedMembers / $totalMembers) * 100) }}%"></div>
         </div>
-        <p class="text-[11px] text-muted-text mt-1">{{ round(($engagedMembers / $totalMembers) * 100) }}% of all members</p>
+        <p class="text-[11px] text-muted-text mt-1">{{ round(($engagedMembers / $totalMembers) * 100) }}% {{ strtolower(__('app.of_all_members')) }}</p>
         @endif
     </div>
     <div class="bg-card rounded-xl p-4 shadow-sm border border-border">
-        <p class="text-xs text-muted-text font-medium mb-1">Total Completions</p>
+        <p class="text-xs text-muted-text font-medium mb-1">{{ __('app.total_completions') }}</p>
         <p class="text-2xl font-bold text-primary">{{ number_format($totalCompletions) }}</p>
-        <p class="text-[11px] text-muted-text mt-1">Checklist items done</p>
+        <p class="text-[11px] text-muted-text mt-1">{{ __('app.checklist_items_done') }}</p>
     </div>
     <div class="bg-card rounded-xl p-4 shadow-sm border border-border">
-        <p class="text-xs text-muted-text font-medium mb-1">Telegram</p>
+        <p class="text-xs text-muted-text font-medium mb-1">{{ __('app.telegram') }}</p>
         <p class="text-2xl font-bold text-blue-500">{{ $telegramConnected }}</p>
-        <p class="text-[11px] text-muted-text mt-1">Connected accounts</p>
+        <p class="text-[11px] text-muted-text mt-1">{{ __('app.connected_accounts') }}</p>
     </div>
     <div class="bg-card rounded-xl p-4 shadow-sm border border-border">
-        <p class="text-xs text-muted-text font-medium mb-1">WhatsApp</p>
+        <p class="text-xs text-muted-text font-medium mb-1">{{ __('app.whatsapp') }}</p>
         <p class="text-2xl font-bold text-green-500">{{ $whatsappConnected }}</p>
-        <p class="text-[11px] text-muted-text mt-1">Reminders active</p>
+        <p class="text-[11px] text-muted-text mt-1">{{ __('app.reminders_active') }}</p>
     </div>
     <div class="bg-card rounded-xl p-4 shadow-sm border border-border">
         <p class="text-xs text-muted-text font-medium mb-1">{{ __('app.referrals') }}</p>
@@ -137,7 +137,7 @@
     $maxTrend = max(1, max($trendData));
 @endphp
 <div class="bg-card rounded-xl p-5 shadow-sm border border-border mb-6">
-    <h2 class="text-sm font-bold text-muted-text uppercase tracking-wider mb-4">Registration Trend (Last 14 Days)</h2>
+    <h2 class="text-sm font-bold text-muted-text uppercase tracking-wider mb-4">{{ __('app.registration_trend') }}</h2>
     <div class="flex items-end gap-1 h-32">
         @foreach($trendData as $date => $count)
         <div class="flex-1 flex flex-col items-center gap-1 group relative">
@@ -163,7 +163,7 @@
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
     {{-- Locale --}}
     <div class="bg-card rounded-xl p-5 shadow-sm border border-border">
-        <h2 class="text-sm font-bold text-muted-text uppercase tracking-wider mb-3">Language</h2>
+        <h2 class="text-sm font-bold text-muted-text uppercase tracking-wider mb-3">{{ __('app.language') }}</h2>
         @php $localeTotal = max(1, $localeDistribution->sum()); @endphp
         <div class="space-y-3">
             @foreach($localeDistribution as $locale => $count)
@@ -182,7 +182,7 @@
 
     {{-- Theme --}}
     <div class="bg-card rounded-xl p-5 shadow-sm border border-border">
-        <h2 class="text-sm font-bold text-muted-text uppercase tracking-wider mb-3">Theme Preference</h2>
+        <h2 class="text-sm font-bold text-muted-text uppercase tracking-wider mb-3">{{ __('app.theme_preference') }}</h2>
         @php $themeTotal = max(1, $themeDistribution->sum()); @endphp
         <div class="space-y-3">
             @foreach($themeDistribution as $theme => $count)

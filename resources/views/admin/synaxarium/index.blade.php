@@ -645,7 +645,7 @@ elseif (old('_form') === 'add_annual') $autoSheet = 'add-annual';
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2">Day</label>
+                        <label class="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2">{{ __('app.day') }}</label>
                         <input type="number" name="day" min="1" max="30" value="{{ old('day') }}" required
                                class="w-full px-4 py-3.5 rounded-2xl border border-border bg-surface text-primary text-base focus:outline-none focus:ring-2 focus:ring-accent/50 text-center">
                         @error('day') <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p> @enderror
@@ -761,7 +761,7 @@ elseif (old('_form') === 'add_annual') $autoSheet = 'add-annual';
                         @error('month') <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p> @enderror
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2">Day</label>
+                        <label class="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2">{{ __('app.day') }}</label>
                         <input type="number" name="day" min="1" max="30" value="{{ old('day', $editingAnnual->day) }}" required
                                class="w-full px-4 py-3.5 rounded-2xl border border-border bg-surface text-primary text-base text-center focus:outline-none focus:ring-2 focus:ring-accent/50">
                         @error('day') <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p> @enderror

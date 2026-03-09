@@ -1,11 +1,11 @@
 @extends('layouts.admin')
 
-@section('title', 'Feedback')
+@section('title', __('app.feedback_page_title'))
 
 @section('content')
 <div class="max-w-4xl">
     <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl font-bold text-primary">Feedback</h1>
+        <h1 class="text-2xl font-bold text-primary">{{ __('app.feedback_page_title') }}</h1>
         <span class="text-sm text-muted-text">{{ $feedbacks->total() }} total</span>
     </div>
 

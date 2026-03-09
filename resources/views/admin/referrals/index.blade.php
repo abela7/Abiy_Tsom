@@ -3,22 +3,22 @@
 @section('title', 'Referral Tracking')
 
 @section('content')
-<h1 class="text-2xl font-bold text-primary mb-1">Referral Tracking</h1>
-<p class="text-sm text-muted-text mb-6">Track affiliate links, clicks, and conversions.</p>
+<h1 class="text-2xl font-bold text-primary mb-1">{{ __('app.referral_tracking') }}</h1>
+<p class="text-sm text-muted-text mb-6">{{ __('app.referral_tracking_subtitle') }}</p>
 
 {{-- Summary stat cards --}}
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
     <div class="bg-card rounded-xl p-4 shadow-sm border border-border">
         <div class="flex items-center gap-2 mb-1">
             <div class="w-2 h-2 rounded-full bg-blue-500"></div>
-            <p class="text-xs text-muted-text font-medium">Total Clicks</p>
+            <p class="text-xs text-muted-text font-medium">{{ __('app.total_clicks') }}</p>
         </div>
         <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ number_format($totalClicks) }}</p>
     </div>
     <div class="bg-card rounded-xl p-4 shadow-sm border border-border">
         <div class="flex items-center gap-2 mb-1">
             <div class="w-2 h-2 rounded-full bg-purple-500"></div>
-            <p class="text-xs text-muted-text font-medium">Unique Visitors</p>
+            <p class="text-xs text-muted-text font-medium">{{ __('app.unique_visitors') }}</p>
         </div>
         <p class="text-2xl font-bold text-purple-600 dark:text-purple-400">{{ number_format($totalUniqueClicks) }}</p>
     </div>
@@ -32,7 +32,7 @@
     <div class="bg-card rounded-xl p-4 shadow-sm border border-border">
         <div class="flex items-center gap-2 mb-1">
             <div class="w-2 h-2 rounded-full bg-amber-500"></div>
-            <p class="text-xs text-muted-text font-medium">Conversion Rate</p>
+            <p class="text-xs text-muted-text font-medium">{{ __('app.conversion_rate') }}</p>
         </div>
         <p class="text-2xl font-bold text-amber-600 dark:text-amber-400">{{ $overallConversionRate }}%</p>
     </div>
@@ -68,7 +68,7 @@
 {{-- Enable affiliate --}}
 @if($availableAdmins->isNotEmpty())
 <div class="bg-card rounded-xl p-5 shadow-sm border border-border mb-6">
-    <h2 class="text-sm font-bold text-muted-text uppercase tracking-wider mb-3">Enable Affiliate</h2>
+    <h2 class="text-sm font-bold text-muted-text uppercase tracking-wider mb-3">{{ __('app.enable_affiliate') }}</h2>
     <form x-data="{ userId: '' }" :action="userId ? '{{ url('admin/referrals') }}/' + userId + '/enable' : '#'" method="POST" class="flex flex-col sm:flex-row items-stretch sm:items-end gap-3">
         @csrf
         <div class="flex-1">
@@ -92,7 +92,7 @@
 {{-- Leaderboard --}}
 <div class="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
     <div class="px-4 py-3 border-b border-border">
-        <h2 class="text-sm font-bold text-primary">Leaderboard</h2>
+        <h2 class="text-sm font-bold text-primary">{{ __('app.leaderboard') }}</h2>
     </div>
 
     @if($affiliates->isEmpty())
@@ -108,14 +108,14 @@
                 <thead class="bg-muted">
                     <tr>
                         <th class="text-left px-4 py-3 font-semibold text-secondary">#</th>
-                        <th class="text-left px-4 py-3 font-semibold text-secondary">Name</th>
-                        <th class="text-left px-4 py-3 font-semibold text-secondary">Referral Link</th>
-                        <th class="text-right px-4 py-3 font-semibold text-secondary">Clicks</th>
-                        <th class="text-right px-4 py-3 font-semibold text-secondary">Unique</th>
-                        <th class="text-right px-4 py-3 font-semibold text-secondary">Registrations</th>
-                        <th class="text-right px-4 py-3 font-semibold text-secondary">Bounces</th>
-                        <th class="text-right px-4 py-3 font-semibold text-secondary">Conv. %</th>
-                        <th class="text-right px-4 py-3 font-semibold text-secondary">Actions</th>
+                        <th class="text-left px-4 py-3 font-semibold text-secondary">{{ __('app.name') }}</th>
+                        <th class="text-left px-4 py-3 font-semibold text-secondary">{{ __('app.referral_link') }}</th>
+                        <th class="text-right px-4 py-3 font-semibold text-secondary">{{ __('app.clicks') }}</th>
+                        <th class="text-right px-4 py-3 font-semibold text-secondary">{{ __('app.unique') }}</th>
+                        <th class="text-right px-4 py-3 font-semibold text-secondary">{{ __('app.registrations') }}</th>
+                        <th class="text-right px-4 py-3 font-semibold text-secondary">{{ __('app.bounces') }}</th>
+                        <th class="text-right px-4 py-3 font-semibold text-secondary">{{ __('app.conv_percent') }}</th>
+                        <th class="text-right px-4 py-3 font-semibold text-secondary">{{ __('app.actions') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
@@ -145,7 +145,7 @@
                                         @click="navigator.clipboard.writeText($el.previousElementSibling.value); copied = true; setTimeout(() => copied = false, 2000)"
                                         class="px-2.5 py-1.5 rounded-md border text-xs font-semibold transition"
                                         :class="copied ? 'bg-green-500/10 border-green-500/30 text-green-600' : 'bg-surface border-border text-secondary hover:bg-muted'">
-                                    <span x-show="!copied">Copy</span>
+                                    <span x-show="!copied">{{ __('app.copy') }}</span>
                                     <span x-show="copied" x-cloak>Copied!</span>
                                 </button>
                             </div>

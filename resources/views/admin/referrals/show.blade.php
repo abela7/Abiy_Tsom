@@ -9,7 +9,7 @@
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
         </svg>
-        Back to Leaderboard
+        {{ __('app.back_to_leaderboard') }}
     </a>
     <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-full bg-accent/15 flex items-center justify-center text-accent font-bold text-lg">
@@ -24,7 +24,7 @@
 
 {{-- Referral link card --}}
 <div class="bg-card rounded-xl p-4 shadow-sm border border-border mb-6" x-data="{ copied: false }">
-    <p class="text-xs text-muted-text font-medium mb-2">Referral Link</p>
+    <p class="text-xs text-muted-text font-medium mb-2">{{ __('app.referral_link') }}</p>
     <div class="flex items-center gap-2">
         <input type="text"
                class="flex-1 px-3 py-2 text-sm border border-border rounded-lg bg-surface text-secondary font-mono"
@@ -35,8 +35,8 @@
                 @click="navigator.clipboard.writeText(document.getElementById('detail-ref-link').value); copied = true; setTimeout(() => copied = false, 2000)"
                 class="px-4 py-2 rounded-lg border text-sm font-semibold transition"
                 :class="copied ? 'bg-green-500/10 border-green-500/30 text-green-600' : 'bg-surface border-border text-secondary hover:bg-muted'">
-            <span x-show="!copied">Copy</span>
-            <span x-show="copied" x-cloak>Copied!</span>
+            <span x-show="!copied">{{ __('app.copy') }}</span>
+            <span x-show="copied" x-cloak>{{ __('app.copied_exclamation') }}</span>
         </button>
     </div>
 </div>
@@ -46,14 +46,14 @@
     <div class="bg-card rounded-xl p-4 shadow-sm border border-border">
         <div class="flex items-center gap-2 mb-1">
             <div class="w-2 h-2 rounded-full bg-blue-500"></div>
-            <p class="text-xs text-muted-text font-medium">Total Clicks</p>
+            <p class="text-xs text-muted-text font-medium">{{ __('app.total_clicks') }}</p>
         </div>
         <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ number_format($totalClicks) }}</p>
     </div>
     <div class="bg-card rounded-xl p-4 shadow-sm border border-border">
         <div class="flex items-center gap-2 mb-1">
             <div class="w-2 h-2 rounded-full bg-purple-500"></div>
-            <p class="text-xs text-muted-text font-medium">Unique Visitors</p>
+            <p class="text-xs text-muted-text font-medium">{{ __('app.unique_visitors') }}</p>
         </div>
         <p class="text-2xl font-bold text-purple-600 dark:text-purple-400">{{ number_format($uniqueClicks) }}</p>
     </div>
@@ -67,7 +67,7 @@
     <div class="bg-card rounded-xl p-4 shadow-sm border border-border">
         <div class="flex items-center gap-2 mb-1">
             <div class="w-2 h-2 rounded-full bg-amber-500"></div>
-            <p class="text-xs text-muted-text font-medium">Conversion Rate</p>
+            <p class="text-xs text-muted-text font-medium">{{ __('app.conversion_rate') }}</p>
         </div>
         <p class="text-2xl font-bold text-amber-600 dark:text-amber-400">{{ $conversionRate }}%</p>
     </div>
@@ -111,7 +111,7 @@
     {{-- Referred Members --}}
     <div class="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
         <div class="px-4 py-3 border-b border-border flex items-center justify-between">
-            <h2 class="text-sm font-bold text-primary">Referred Members</h2>
+            <h2 class="text-sm font-bold text-primary">{{ __('app.referred_members') }}</h2>
             <span class="text-xs text-muted-text font-medium bg-muted px-2 py-0.5 rounded-full">{{ $referredMembers->count() }}</span>
         </div>
         @if($referredMembers->isEmpty())
@@ -141,7 +141,7 @@
     {{-- Top Referrer Sources --}}
     <div class="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
         <div class="px-4 py-3 border-b border-border">
-            <h2 class="text-sm font-bold text-primary">Top Sources</h2>
+            <h2 class="text-sm font-bold text-primary">{{ __('app.top_sources') }}</h2>
         </div>
         @if($topSources->isEmpty())
             <div class="px-4 py-8 text-center text-muted-text">
@@ -183,8 +183,8 @@
                     <tr>
                         <th class="text-left px-4 py-2.5 font-semibold text-secondary">Visitor (IP)</th>
                         <th class="text-right px-4 py-2.5 font-semibold text-secondary">Clicks</th>
-                        <th class="text-left px-4 py-2.5 font-semibold text-secondary">First Visit</th>
-                        <th class="text-left px-4 py-2.5 font-semibold text-secondary">Last Visit</th>
+                        <th class="text-left px-4 py-2.5 font-semibold text-secondary">{{ __('app.first_visit') }}</th>
+                        <th class="text-left px-4 py-2.5 font-semibold text-secondary">{{ __('app.last_visit') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">

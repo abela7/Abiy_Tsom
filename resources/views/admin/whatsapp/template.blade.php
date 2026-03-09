@@ -253,7 +253,7 @@
                                 <svg class="w-3.5 h-3.5 text-white/80" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <p class="text-white text-xs font-medium">Abiy Tsom Bot</p>
+                                <p class="text-white text-xs font-medium">{{ __('app.abiy_tsom_bot') }}</p>
                             </div>
                             <span class="flex h-5 items-center rounded bg-white/15 px-1.5 text-[10px] font-bold text-white/80">EN</span>
                         </div>
@@ -272,7 +272,7 @@
                                 <svg class="w-3.5 h-3.5 text-white/80" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <p class="text-white text-xs font-medium">Abiy Tsom Bot</p>
+                                <p class="text-white text-xs font-medium">{{ __('app.abiy_tsom_bot') }}</p>
                             </div>
                             <span class="flex h-5 items-center rounded bg-white/15 px-1.5 text-[10px] font-bold text-white/80">AM</span>
                         </div>
@@ -502,7 +502,7 @@
                                             <svg class="w-3.5 h-3.5 text-white/80" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
                                         </div>
                                         <div class="flex-1 min-w-0">
-                                            <p class="text-white text-xs font-medium">Abiy Tsom Bot</p>
+                                            <p class="text-white text-xs font-medium">{{ __('app.abiy_tsom_bot') }}</p>
                                         </div>
                                         <span class="flex h-5 items-center rounded bg-white/15 px-1.5 text-[10px] font-bold text-white/80">EN</span>
                                     </div>
@@ -522,7 +522,7 @@
                                             <svg class="w-3.5 h-3.5 text-white/80" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
                                         </div>
                                         <div class="flex-1 min-w-0">
-                                            <p class="text-white text-xs font-medium">Abiy Tsom Bot</p>
+                                            <p class="text-white text-xs font-medium">{{ __('app.abiy_tsom_bot') }}</p>
                                         </div>
                                         <span class="flex h-5 items-center rounded bg-white/15 px-1.5 text-[10px] font-bold text-white/80">AM</span>
                                     </div>

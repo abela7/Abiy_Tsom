@@ -13,22 +13,22 @@
             <div class="flex flex-wrap items-center gap-2">
                 <h1 class="text-2xl sm:text-3xl font-black text-primary tracking-tight truncate">{{ $campaign->name }}</h1>
                 @if($campaign->is_active)
-                    <span class="text-[10px] font-bold uppercase px-2 py-1 rounded-full bg-accent/15 text-accent">Active</span>
+                    <span class="text-[10px] font-bold uppercase px-2 py-1 rounded-full bg-accent/15 text-accent">{{ __('app.active') }}</span>
                 @endif
             </div>
-            <p class="text-sm text-muted-text mt-1.5">Slug: {{ $campaign->slug }}</p>
-            <p class="text-xs text-muted-text break-all">Campaign URL: {{ $campaignUrl }}</p>
+            <p class="text-sm text-muted-text mt-1.5">{{ __('app.slug') }}: {{ $campaign->slug }}</p>
+            <p class="text-xs text-muted-text break-all">{{ __('app.campaign_url') }}: {{ $campaignUrl }}</p>
         </div>
         <div class="flex flex-col sm:flex-row flex-wrap gap-2">
             <a href="{{ route('admin.volunteer-invitations.index') }}"
                class="inline-flex items-center justify-center rounded-lg border border-border px-4 py-2.5 text-sm font-semibold text-secondary hover:bg-muted transition">
-                &larr; Back
+                &larr; {{ __('app.back') }}
             </a>
             <a href="{{ $campaignUrl }}"
                target="_blank"
                rel="noopener"
                class="inline-flex items-center justify-center rounded-lg bg-accent text-on-accent px-4 py-2.5 text-sm font-semibold hover:bg-accent-hover transition">
-                Open live page
+                {{ __('app.open_live_page') }}
                 <svg class="ml-1.5 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5-5 5m6-5H7"/>
                 </svg>
@@ -39,12 +39,12 @@
     @php
         $total = $summary['total_invitations'];
         $funnelSteps = [
-            ['label' => 'Opened', 'count' => $total, 'color' => 'text-primary'],
-            ['label' => 'Video started', 'count' => $summary['video_started_count'], 'color' => 'text-primary'],
-            ['label' => 'Video completed', 'count' => $summary['video_completed_count'], 'color' => 'text-accent'],
-            ['label' => 'Decision made', 'count' => $summary['decision_count'], 'color' => 'text-primary'],
-            ['label' => 'Willing', 'count' => $summary['interested_count'], 'color' => 'text-green-600 dark:text-green-400'],
-            ['label' => 'Contact submitted', 'count' => $summary['contact_submitted_count'], 'color' => 'text-green-600 dark:text-green-400'],
+            ['label' => __('app.opened'), 'count' => $total, 'color' => 'text-primary'],
+            ['label' => __('app.video_started'), 'count' => $summary['video_started_count'], 'color' => 'text-primary'],
+            ['label' => __('app.video_completed'), 'count' => $summary['video_completed_count'], 'color' => 'text-accent'],
+            ['label' => __('app.decision_made'), 'count' => $summary['decision_count'], 'color' => 'text-primary'],
+            ['label' => __('app.willing'), 'count' => $summary['interested_count'], 'color' => 'text-green-600 dark:text-green-400'],
+            ['label' => __('app.contact_submitted'), 'count' => $summary['contact_submitted_count'], 'color' => 'text-green-600 dark:text-green-400'],
         ];
         $bounceRate = $total > 0 ? round(($summary['bounced_count'] / $total) * 100) : 0;
         $shareRate = $total > 0 ? round(($summary['shared_count'] / $total) * 100) : 0;
@@ -52,7 +52,7 @@
 
     {{-- Funnel visualization --}}
     <div class="bg-card rounded-xl border border-border p-4 sm:p-6">
-        <h2 class="text-sm uppercase tracking-wider text-muted-text font-bold mb-4">Conversion funnel</h2>
+        <h2 class="text-sm uppercase tracking-wider text-muted-text font-bold mb-4">{{ __('app.conversion_funnel') }}</h2>
         <div class="space-y-2">
             @foreach($funnelSteps as $i => $fStep)
                 @php
@@ -108,11 +108,11 @@
 
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         <div class="bg-card rounded-xl p-4 border border-border">
-            <p class="text-xs uppercase tracking-wider text-muted-text">Decisions</p>
+            <p class="text-xs uppercase tracking-wider text-muted-text">{{ __('app.decisions') }}</p>
             <p class="text-2xl font-black text-primary mt-2">{{ $summary['decision_count'] }}</p>
         </div>
         <div class="bg-card rounded-xl p-4 border border-border">
-            <p class="text-xs uppercase tracking-wider text-muted-text">Willing</p>
+            <p class="text-xs uppercase tracking-wider text-muted-text">{{ __('app.willing') }}</p>
             <p class="text-xl font-black text-green-600 dark:text-green-400 mt-2">{{ $summary['interested_count'] }}</p>
         </div>
         <div class="bg-card rounded-xl p-4 border border-border">
@@ -131,17 +131,17 @@
             <p class="text-xl font-black text-primary mt-2">{{ $summary['contact_submitted_count'] }}</p>
         </div>
         <div class="bg-card rounded-xl p-4 border border-border">
-            <p class="text-xs uppercase tracking-wider text-muted-text">Shared</p>
+            <p class="text-xs uppercase tracking-wider text-muted-text">{{ __('app.shared') }}</p>
             <p class="text-xl font-black text-primary mt-2">{{ $summary['shared_count'] }}</p>
             <p class="text-[10px] text-muted-text mt-1">{{ $shareRate }}% of visitors</p>
         </div>
         <div class="bg-card rounded-xl p-4 border border-border">
-            <p class="text-xs uppercase tracking-wider text-muted-text">Bounced</p>
+            <p class="text-xs uppercase tracking-wider text-muted-text">{{ __('app.bounced') }}</p>
             <p class="text-xl font-black text-red-600 dark:text-red-400 mt-2">{{ $summary['bounced_count'] }}</p>
             <p class="text-[10px] text-muted-text mt-1">{{ $bounceRate }}% bounce rate</p>
         </div>
         <div class="bg-card rounded-xl p-4 border border-border">
-            <p class="text-xs uppercase tracking-wider text-muted-text">Engaged</p>
+            <p class="text-xs uppercase tracking-wider text-muted-text">{{ __('app.engaged') }}</p>
             <p class="text-xl font-black text-green-600 dark:text-green-400 mt-2">{{ $total - $summary['bounced_count'] }}</p>
             <p class="text-[10px] text-muted-text mt-1">{{ $total > 0 ? 100 - $bounceRate : 0 }}% engagement</p>
         </div>
@@ -192,14 +192,14 @@
                     {{-- Header --}}
                     <div class="grid grid-cols-[auto_1fr_auto_1fr_1fr_auto_auto_auto_auto_auto] items-center bg-muted text-xs font-semibold text-secondary">
                         <div class="px-4 py-3"><input id="select-all-submissions" type="checkbox" class="rounded border-border text-accent"></div>
-                        <div class="px-4 py-3">Visitor</div>
-                        <div class="px-4 py-3">Decision</div>
-                        <div class="px-4 py-3">Name</div>
-                        <div class="px-4 py-3">Phone</div>
-                        <div class="px-4 py-3">Method</div>
-                        <div class="px-4 py-3">Views</div>
-                        <div class="px-4 py-3">Touched</div>
-                        <div class="px-4 py-3">Created</div>
+                        <div class="px-4 py-3">{{ __('app.visitor') }}</div>
+                        <div class="px-4 py-3">{{ __('app.decision') }}</div>
+                        <div class="px-4 py-3">{{ __('app.name') }}</div>
+                        <div class="px-4 py-3">{{ __('app.phone') }}</div>
+                        <div class="px-4 py-3">{{ __('app.method') }}</div>
+                        <div class="px-4 py-3">{{ __('app.views') }}</div>
+                        <div class="px-4 py-3">{{ __('app.touched') }}</div>
+                        <div class="px-4 py-3">{{ __('app.created') }}</div>
                         <div class="px-4 py-3 w-10"></div>
                     </div>
 
@@ -248,13 +248,13 @@
                                 </div>
                                 <div class="px-4 py-3">
                                     @if($submission->decision === \App\Models\VolunteerInvitationSubmission::DECISION_INTERESTED)
-                                        <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-success-bg text-success whitespace-nowrap">Willing</span>
+                                        <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-success-bg text-success whitespace-nowrap">{{ __('app.willing') }}</span>
                                     @elseif($submission->decision === \App\Models\VolunteerInvitationSubmission::DECISION_NO_TIME)
-                                        <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 whitespace-nowrap">No time</span>
+                                        <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 whitespace-nowrap">{{ __('app.no_time') }}</span>
                                     @elseif($submission->decision === \App\Models\VolunteerInvitationSubmission::DECISION_NOT_INTERESTED)
-                                        <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300 whitespace-nowrap">Not interested</span>
+                                        <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300 whitespace-nowrap">{{ __('app.not_interested') }}</span>
                                     @else
-                                        <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-text whitespace-nowrap">Pending</span>
+                                        <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-text whitespace-nowrap">{{ __('app.pending') }}</span>
                                     @endif
                                 </div>
                                 <div class="px-4 py-3 text-secondary truncate">{{ $submission->contact_name ?: '—' }}</div>
@@ -404,13 +404,13 @@
                                     <div class="flex items-center justify-between gap-2">
                                         <div>
                                             @if($submission->decision === \App\Models\VolunteerInvitationSubmission::DECISION_INTERESTED)
-                                                <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-success-bg text-success">Willing</span>
+                                                <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-success-bg text-success">{{ __('app.willing') }}</span>
                                             @elseif($submission->decision === \App\Models\VolunteerInvitationSubmission::DECISION_NO_TIME)
-                                                <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">No time</span>
+                                                <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">{{ __('app.no_time') }}</span>
                                             @elseif($submission->decision === \App\Models\VolunteerInvitationSubmission::DECISION_NOT_INTERESTED)
-                                                <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300">Not interested</span>
+                                                <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300">{{ __('app.not_interested') }}</span>
                                             @else
-                                                <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-text">Pending</span>
+                                                <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-text">{{ __('app.pending') }}</span>
                                             @endif
                                         </div>
                                         <p class="text-xs text-muted-text">{{ $submission->open_count ?: 0 }} views</p>

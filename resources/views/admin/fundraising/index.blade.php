@@ -202,7 +202,7 @@
             </div>
             <div class="rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 p-4 text-center">
                 <p class="text-2xl font-bold text-blue-700 dark:text-blue-400">{{ $stats['viewed'] }}</p>
-                <p class="text-xs text-blue-600 dark:text-blue-500 mt-0.5">Viewed</p>
+                <p class="text-xs text-blue-600 dark:text-blue-500 mt-0.5">{{ __('app.viewed') }}</p>
             </div>
         </div>
 
@@ -214,7 +214,7 @@
                             <th class="px-4 py-2.5 text-left">{{ __('app.fundraising_member') }}</th>
                             <th class="px-4 py-2.5 text-left">{{ __('app.fundraising_contact_info') }}</th>
                             <th class="px-4 py-2.5 text-left">{{ __('app.status') }}</th>
-                            <th class="px-4 py-2.5 text-left">Views</th>
+                            <th class="px-4 py-2.5 text-left">{{ __('app.views') }}</th>
                             <th class="px-4 py-2.5 text-right"></th>
                         </tr>
                     </thead>

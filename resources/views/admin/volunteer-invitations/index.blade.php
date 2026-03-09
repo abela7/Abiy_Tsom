@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Volunteer Invitations')
+@section('title', __('app.volunteer_invitations'))
 
 @section('content')
 @php
@@ -11,7 +11,7 @@
 <div class="space-y-6">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div class="min-w-0">
-            <h1 class="text-2xl sm:text-3xl font-black text-primary tracking-tight">Volunteer Invitations</h1>
+            <h1 class="text-2xl sm:text-3xl font-black text-primary tracking-tight">{{ __('app.volunteer_invitations') }}</h1>
             <p class="text-sm text-muted-text mt-2">Create invitation campaigns, add a YouTube intro, and track responses.</p>
         </div>
         <div class="flex flex-col sm:flex-row flex-wrap sm:flex-nowrap gap-2 w-full sm:w-auto">
@@ -20,7 +20,7 @@
                    target="_blank"
                    rel="noopener"
                    class="inline-flex items-center justify-center rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold text-primary hover:bg-muted transition touch-manipulation w-full sm:w-auto">
-                    Open active invitation
+                    {{ __('app.open_active_invitation') }}
                     <svg class="ml-2 w-4 h-4 animate-nudge-right" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5-5 5m6-5H6"/>
                     </svg>
@@ -28,26 +28,26 @@
             @endif
                 <a href="{{ route('admin.suggestions.index') }}"
                class="inline-flex items-center justify-center rounded-xl bg-accent text-on-accent px-4 py-2.5 text-sm font-semibold hover:bg-accent-hover transition touch-manipulation">
-                Back to content suggestions
+                {{ __('app.back_to_content_suggestions') }}
             </a>
         </div>
     </div>
 
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <div class="bg-card rounded-xl p-4 border border-border shadow-sm">
-                <p class="text-xs uppercase tracking-wider text-muted-text">Campaigns</p>
+                <p class="text-xs uppercase tracking-wider text-muted-text">{{ __('app.campaigns') }}</p>
                 <p class="text-2xl font-black text-primary mt-2">{{ $summary['total_campaigns'] }}</p>
             </div>
         <div class="bg-card rounded-xl p-4 border border-border shadow-sm">
-            <p class="text-xs uppercase tracking-wider text-muted-text">Total Views</p>
+            <p class="text-xs uppercase tracking-wider text-muted-text">{{ __('app.total_views') }}</p>
             <p class="text-2xl font-black text-accent mt-2">{{ $summary['total_invitations'] }}</p>
         </div>
         <div class="bg-card rounded-xl p-4 border border-border shadow-sm">
-            <p class="text-xs uppercase tracking-wider text-muted-text">Video started</p>
+            <p class="text-xs uppercase tracking-wider text-muted-text">{{ __('app.video_started') }}</p>
             <p class="text-2xl font-black text-primary mt-2">{{ $summary['video_started'] }}</p>
         </div>
         <div class="bg-card rounded-xl p-4 border border-border shadow-sm">
-            <p class="text-xs uppercase tracking-wider text-muted-text">Decisions made</p>
+            <p class="text-xs uppercase tracking-wider text-muted-text">{{ __('app.decisions_made') }}</p>
             <p class="text-2xl font-black text-primary mt-2">{{ $summary['decisions_made'] }}</p>
         </div>
     </div>
@@ -130,35 +130,35 @@
                             <div class="flex flex-wrap items-center gap-2">
                                 <h3 class="text-lg font-bold text-primary truncate">{{ $campaign->name }}</h3>
                                 @if($campaign->is_active)
-                                    <span class="shrink-0 text-[10px] font-bold uppercase px-2 py-1 rounded-full bg-accent/15 text-accent">Active</span>
+                                    <span class="shrink-0 text-[10px] font-bold uppercase px-2 py-1 rounded-full bg-accent/15 text-accent">{{ __('app.active') }}</span>
                                 @else
-                                    <span class="shrink-0 text-[10px] font-bold uppercase px-2 py-1 rounded-full bg-muted text-muted-text">Draft</span>
+                                    <span class="shrink-0 text-[10px] font-bold uppercase px-2 py-1 rounded-full bg-muted text-muted-text">{{ __('app.draft') }}</span>
                                 @endif
                             </div>
-                            <p class="text-xs text-muted-text mt-1">Slug: /invite/{{ $campaign->slug }}</p>
+                            <p class="text-xs text-muted-text mt-1">{{ __('app.slug') }}: /invite/{{ $campaign->slug }}</p>
                             <p class="text-xs text-muted-text mt-0.5">
-                                <span class="font-medium text-secondary">SEO title:</span>
-                                {{ $campaign->seo_title ?: 'Not set' }}
+                                <span class="font-medium text-secondary">{{ __('app.seo_title') }}:</span>
+                                {{ $campaign->seo_title ?: __('app.not_set') }}
                             </p>
                             <p class="text-xs text-muted-text mt-0.5">
-                                <span class="font-medium text-secondary">SEO description:</span>
-                                {{ $campaign->seo_description ?: 'Not set' }}
+                                <span class="font-medium text-secondary">{{ __('app.seo_description') }}:</span>
+                                {{ $campaign->seo_description ?: __('app.not_set') }}
                             </p>
                             <p class="text-xs text-muted-text mt-0.5">
-                                <span class="font-medium text-secondary">YouTube:</span>
+                                <span class="font-medium text-secondary">{{ __('app.youtube') }}:</span>
                                 @if($campaign->youtube_url)
                                     <a href="{{ $campaign->youtube_url }}" target="_blank" rel="noopener" class="text-accent underline hover:text-accent-hover break-all">
                                         {{ $campaign->youtube_url }}
                                     </a>
                                 @else
-                                    Not added yet
+                                    {{ __('app.not_added_yet') }}
                                 @endif
                             </p>
                         </div>
                         <div class="shrink-0 text-left sm:text-right">
                             <a href="{{ route('admin.volunteer-invitations.stats', $campaign) }}"
                                class="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-semibold text-primary hover:bg-muted transition">
-                                View Stats
+                                {{ __('app.view_stats') }}
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                                 </svg>
@@ -168,7 +168,7 @@
 
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
                         <div class="rounded-xl bg-muted/50 border border-border px-3 py-2">
-                            <p class="text-[11px] uppercase text-muted-text">Opened</p>
+                            <p class="text-[11px] uppercase text-muted-text">{{ __('app.opened') }}</p>
                             <p class="text-sm font-bold text-primary">{{ $campaign->submissions_count }}</p>
                         </div>
                         <div class="rounded-xl bg-muted/50 border border-border px-3 py-2">
@@ -176,7 +176,7 @@
                             <p class="text-sm font-bold text-primary">{{ $campaign->video_started_count }}</p>
                         </div>
                         <div class="rounded-xl bg-muted/50 border border-border px-3 py-2">
-                            <p class="text-[11px] uppercase text-muted-text">Completed</p>
+                            <p class="text-[11px] uppercase text-muted-text">{{ __('app.completed') }}</p>
                             <p class="text-sm font-bold text-primary">{{ $campaign->video_completed_count }}</p>
                         </div>
                         <div class="rounded-xl bg-muted/50 border border-border px-3 py-2">
@@ -194,7 +194,7 @@
                                 @click="navigator.clipboard.writeText($el.previousElementSibling.value); copied = true; setTimeout(() => copied = false, 1800)"
                                 class="px-3 h-11 rounded-lg border border-border text-xs font-semibold text-secondary hover:bg-muted transition touch-manipulation">
                             <span x-show="!copied">Copy link</span>
-                            <span x-show="copied" x-cloak>Copied</span>
+                            <span x-show="copied" x-cloak>{{ __('app.copied') }}</span>
                         </button>
 
                         @if(!$campaign->is_active)
@@ -229,7 +229,7 @@
                             @method('PUT')
                             <div class="grid sm:grid-cols-2 gap-3 mt-3">
                                 <div>
-                                    <label class="text-xs text-muted-text font-bold uppercase tracking-wider">Name</label>
+                                    <label class="text-xs text-muted-text font-bold uppercase tracking-wider">{{ __('app.name') }}</label>
                                     <input name="name"
                                            value="{{ old('name', $campaign->name) }}"
                                            class="mt-1.5 w-full h-11 px-3 rounded-lg border border-border bg-surface text-primary focus:outline-none focus:ring-2 focus:ring-accent/40">

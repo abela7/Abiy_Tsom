@@ -1492,4 +1492,104 @@ return [
     'feedback_success_title' => 'Thank you!',
     'feedback_success_body' => 'Your feedback has been received. We appreciate your input.',
     'feedback_contact_us' => 'Contact Us',
+
+    // Admin dashboard stat labels
+    'new_registrations' => 'New Registrations',
+    'today' => 'Today',
+    'last_7_days' => 'Last 7 Days',
+    'last_30_days' => 'Last 30 Days',
+    'active_users' => 'Active Users',
+    'last_24h' => 'Last 24h',
+    'engaged_members' => 'Engaged Members',
+    'total_completions' => 'Total Completions',
+    'checklist_items_done' => 'Checklist items done',
+    'telegram' => 'Telegram',
+    'connected_accounts' => 'Connected accounts',
+    'whatsapp' => 'WhatsApp',
+    'reminders_active' => 'Reminders active',
+    'registration_trend' => 'Registration Trend (Last 14 Days)',
+    'language' => 'Language',
+    'theme_preference' => 'Theme Preference',
+    'of_all_members' => 'of all members',
+
+    // Volunteer invitations
+    'volunteer_invitations' => 'Volunteer Invitations',
+    'active' => 'Active',
+    'draft' => 'Draft',
+    'pending' => 'Pending',
+    'willing' => 'Willing',
+    'no_time' => 'No time',
+    'not_interested' => 'Not interested',
+    'decisions' => 'Decisions',
+    'shared' => 'Shared',
+    'bounced' => 'Bounced',
+    'engaged' => 'Engaged',
+    'visitor' => 'Visitor',
+    'decision' => 'Decision',
+    'method' => 'Method',
+    'views' => 'Views',
+    'touched' => 'Touched',
+    'created' => 'Created',
+    'opened' => 'Opened',
+    'completed' => 'Completed',
+    'copied' => 'Copied',
+    'conversion_funnel' => 'Conversion funnel',
+    'invitations_opened' => 'Invitations opened',
+    'video_started' => 'Video started',
+    'video_completed' => 'Video completed',
+    'decision_made' => 'Decision made',
+    'contact_submitted' => 'Contact submitted',
+    'open_live_page' => 'Open live page',
+    'campaign_url' => 'Campaign URL',
+    'slug' => 'Slug',
+
+    // Referral tracking
+    'referral_tracking' => 'Referral Tracking',
+    'total_clicks' => 'Total Clicks',
+    'unique_visitors' => 'Unique Visitors',
+    'conversion_rate' => 'Conversion Rate',
+    'enable_affiliate' => 'Enable Affiliate',
+    'leaderboard' => 'Leaderboard',
+    'referral_link' => 'Referral Link',
+    'unique' => 'Unique',
+    'conv_percent' => 'Conv. %',
+    'copy' => 'Copy',
+    'referred_members' => 'Referred Members',
+    'top_sources' => 'Top Sources',
+    'first_visit' => 'First Visit',
+    'last_visit' => 'Last Visit',
+    'back_to_leaderboard' => 'Back to Leaderboard',
+    'copied_exclamation' => 'Copied!',
+
+    // Lectionary page
+    'chapter' => 'Chapter',
+    'verses' => 'Verses',
+
+    // Members page
+    'rejected' => 'Rejected',
+
+    // Synaxarium
+    'day' => 'Day',
+
+    // WhatsApp template
+    'abiy_tsom_bot' => 'Abiy Tsom Bot',
+
+    // Fundraising
+    'viewed' => 'Viewed',
+
+    // Volunteer invitations - additional labels
+    'campaigns' => 'Campaigns',
+    'total_views' => 'Total Views',
+    'decisions_made' => 'Decisions made',
+    'open_active_invitation' => 'Open active invitation',
+    'back_to_content_suggestions' => 'Back to content suggestions',
+    'seo_title' => 'SEO title',
+    'seo_description' => 'SEO description',
+    'youtube' => 'YouTube',
+    'not_set' => 'Not set',
+    'not_added_yet' => 'Not added yet',
+    'view_stats' => 'View Stats',
+
+    // Lectionary - additional labels
+    'lectionary_chapter_verses' => 'Chapter : Verses',
 ];
