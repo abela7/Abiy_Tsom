@@ -3377,7 +3377,7 @@ class TelegramWebhookController extends Controller
             'offer_other_language' => $this->suggestOfferOtherLanguageKeyboard(
                 ((string) $state->get('first_language', 'en')) === 'en' ? 'am' : 'en'
             ),
-            default => $this->structuredSuggestStepKeyboard($step),
+            default => $this->structuredSuggestStepKeyboard($step, $state),
         };
     }
 
