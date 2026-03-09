@@ -3099,7 +3099,6 @@ class TelegramWebhookController extends Controller
                 'spiritual_book' => __('app.telegram_suggest_enter_spiritual_book_notes'),
                 'reference_resource' => __('app.telegram_suggest_enter_resource_notes'),
                 'bible_reading', 'lectionary' => __('app.telegram_suggest_enter_bible_reading_notes'),
-                'lectionary' => __('app.telegram_suggest_enter_lectionary_detail'),
                 default => __('app.telegram_suggest_enter_detail'),
             },
             'choose_main' => __('app.telegram_suggest_choose_main_celebration'),

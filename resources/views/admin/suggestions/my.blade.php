@@ -127,6 +127,12 @@
                                             <span class="text-secondary ml-1">{{ $s->structuredValue('lectionary_section_label') }}</span>
                                         </div>
                                     @endif
+                                    @if($s->structuredValue('resource_type_label'))
+                                        <div class="text-xs">
+                                            <span class="font-semibold text-muted-text">Resource:</span>
+                                            <span class="text-secondary ml-1">{{ $s->structuredValue('resource_type_label') }}</span>
+                                        </div>
+                                    @endif
                                     @if($s->reference)
                                         <div class="text-xs">
                                             <span class="font-semibold text-muted-text">{{ __('app.suggest_reference_label') }}:</span>

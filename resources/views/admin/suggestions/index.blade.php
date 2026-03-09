@@ -82,6 +82,7 @@
                                 @if($s->ethiopianDateLabel())<p><span class="font-semibold text-muted-text">Date:</span> {{ $s->ethiopianDateLabel() }}</p>@endif
                                 @if($s->entryScopeLabel())<p><span class="font-semibold text-muted-text">Scope:</span> {{ $s->entryScopeLabel() }}</p>@endif
                                 @if($s->structuredValue('lectionary_section_label'))<p><span class="font-semibold text-muted-text">Section:</span> {{ $s->structuredValue('lectionary_section_label') }}</p>@endif
+                                @if($s->structuredValue('resource_type_label'))<p><span class="font-semibold text-muted-text">Resource:</span> {{ $s->structuredValue('resource_type_label') }}</p>@endif
                                 @if($s->reference)<p><span class="font-semibold text-muted-text">Ref:</span> {{ $s->reference }}</p>@endif
                                 @if($s->author)<p><span class="font-semibold text-muted-text">Author:</span> {{ $s->author }}</p>@endif
                                 @if($s->url)<p><span class="font-semibold text-muted-text">Link:</span> <a href="{{ $s->url }}" target="_blank" rel="noopener" class="text-accent hover:underline break-all">{{ $s->url }}</a></p>@endif
@@ -209,6 +210,9 @@
                             @endif
                             @if($s->structuredValue('lectionary_section_label'))
                                 <p class="text-xs"><span class="font-semibold text-muted-text">Section:</span> <span class="text-secondary">{{ $s->structuredValue('lectionary_section_label') }}</span></p>
+                            @endif
+                            @if($s->structuredValue('resource_type_label'))
+                                <p class="text-xs"><span class="font-semibold text-muted-text">Resource:</span> <span class="text-secondary">{{ $s->structuredValue('resource_type_label') }}</span></p>
                             @endif
                             @if($s->reference)
                                 <p class="text-xs"><span class="font-semibold text-muted-text">Ref:</span> <span class="text-secondary">{{ $s->reference }}</span></p>

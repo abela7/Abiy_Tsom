@@ -138,7 +138,7 @@ class AdminUserController extends Controller
             'username' => ['required', 'string', 'max:64', 'unique:users,username,'.$admin->id],
             'email' => ['nullable', 'email', 'max:255'],
             'whatsapp_phone' => ['nullable', 'string', 'max:20'],
-            'role' => ['required', 'in:admin,editor,writer'],
+            'role' => [$admin->is_super_admin ? 'sometimes' : 'required', 'in:admin,editor,writer'],
         ];
 
         if ($request->filled('password')) {
@@ -149,6 +149,10 @@ class AdminUserController extends Controller
         $data['whatsapp_phone'] = ! empty($data['whatsapp_phone'])
             ? normalizeUkWhatsAppPhone($data['whatsapp_phone'])
             : null;
+
+        if ($admin->is_super_admin) {
+            $data['role'] = $admin->role;
+        }
 
         if ($request->filled('password')) {
             $data['password'] = Hash::make($data['password']);

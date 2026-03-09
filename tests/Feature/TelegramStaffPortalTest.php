@@ -100,6 +100,52 @@ class TelegramStaffPortalTest extends TestCase
         $this->assertNull(TelegramBotState::getActive('writer-chat', 'suggest'));
     }
 
+    public function test_writer_can_submit_mezmur_suggestion_via_telegram_wizard(): void
+    {
+        config()->set('services.telegram.bot_token', 'test-bot-token');
+        config()->set('services.telegram.webhook_secret', 'telegram-secret');
+
+        $writer = User::create([
+            'name' => 'Writer Two',
+            'username' => 'writertwo',
+            'email' => 'writer2@example.com',
+            'password' => 'password',
+            'role' => 'writer',
+            'telegram_chat_id' => 'writer-mezmur-chat',
+        ]);
+
+        Http::fake([
+            'https://api.telegram.org/*' => Http::response(['ok' => true, 'result' => true], 200),
+        ]);
+
+        $header = ['X-Telegram-Bot-Api-Secret-Token' => 'telegram-secret'];
+
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload('writer-mezmur-chat', 'suggest'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload('writer-mezmur-chat', 'suggest_lang_en'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload('writer-mezmur-chat', 'suggest_area_mezmur'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload('writer-mezmur-chat', 'suggest_month_6'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload('writer-mezmur-chat', 'suggest_day_12'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->messagePayload('writer-mezmur-chat', 'Amazing Grace'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->messagePayload('writer-mezmur-chat', 'https://example.com/mezmur'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload('writer-mezmur-chat', 'suggest_skip'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload('writer-mezmur-chat', 'suggest_confirm'))->assertOk();
+
+        $this->assertDatabaseHas('content_suggestions', [
+            'user_id' => $writer->id,
+            'source' => 'telegram',
+            'type' => 'mezmur',
+            'content_area' => 'mezmur',
+            'language' => 'en',
+            'ethiopian_month' => 6,
+            'ethiopian_day' => 12,
+            'title' => 'Amazing Grace',
+            'url' => 'https://example.com/mezmur',
+            'status' => 'pending',
+        ]);
+
+        $this->assertNull(TelegramBotState::getActive('writer-mezmur-chat', 'suggest'));
+    }
+
     /**
      * @return array<string, mixed>
      */
