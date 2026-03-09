@@ -96,6 +96,10 @@ class AuditLogTest extends TestCase
         $this->assertSame('[REDACTED]', $auditLog->request_summary['password']);
         $this->assertSame('[REDACTED]', $auditLog->request_summary['password_confirmation']);
         $this->assertContains('password', $auditLog->changed_fields ?? []);
+        $this->assertSame('Editor User', $auditLog->meta['value_changes']['name']['before']);
+        $this->assertSame('Updated Editor', $auditLog->meta['value_changes']['name']['after']);
+        $this->assertSame('[REDACTED]', $auditLog->meta['value_changes']['password']['before']);
+        $this->assertSame('[REDACTED]', $auditLog->meta['value_changes']['password']['after']);
         $this->assertSame(302, $auditLog->status_code);
     }
 
@@ -131,7 +135,15 @@ class AuditLogTest extends TestCase
             'status_code' => 302,
             'request_summary' => ['name' => 'Updated Editor'],
             'changed_fields' => ['name'],
-            'meta' => ['route_parameters' => ['admin' => ['type' => 'User', 'id' => '2']]],
+            'meta' => [
+                'route_parameters' => ['admin' => ['type' => 'User', 'id' => '2']],
+                'value_changes' => [
+                    'name' => [
+                        'before' => 'Editor User',
+                        'after' => 'Updated Editor',
+                    ],
+                ],
+            ],
         ]);
 
         AuditLog::create([
@@ -155,6 +167,8 @@ class AuditLogTest extends TestCase
 
         $response->assertOk()
             ->assertSeeText('Updated admin user')
+            ->assertSeeText('Editor User')
+            ->assertSeeText('Updated Editor')
             ->assertDontSeeText('Deleted member');
     }
 

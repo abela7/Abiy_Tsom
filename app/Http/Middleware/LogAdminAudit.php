@@ -27,8 +27,10 @@ class LogAdminAudit
 
         $route = $request->route();
         $target = AdminAudit::targetDetails($route);
+        $targetModel = $target['target_model'] ?? null;
         $requestSummary = AdminAudit::requestSummary($request);
         $changedFields = AdminAudit::changedFields($request);
+        $beforeSnapshot = AdminAudit::modelSnapshot($targetModel);
         $routeName = $route?->getName();
         $action = AdminAudit::actionLabel(
             $routeName,
@@ -38,6 +40,13 @@ class LogAdminAudit
 
         try {
             $response = $next($request);
+            $valueChanges = AdminAudit::valueChanges(
+                $beforeSnapshot,
+                AdminAudit::refreshedModelSnapshot($targetModel, $response->getStatusCode()),
+                $changedFields,
+                $requestSummary,
+                $request->method()
+            );
 
             $this->storeAuditLog(
                 $request,
@@ -46,7 +55,8 @@ class LogAdminAudit
                 $target,
                 $requestSummary,
                 $changedFields,
-                $response->getStatusCode()
+                $response->getStatusCode(),
+                ['value_changes' => $valueChanges]
             );
 
             return $response;
@@ -59,7 +69,10 @@ class LogAdminAudit
                 $requestSummary,
                 $changedFields,
                 $exception->status,
-                ['exception' => class_basename($exception)]
+                [
+                    'exception' => class_basename($exception),
+                    'value_changes' => [],
+                ]
             );
 
             throw $exception;
@@ -76,7 +89,10 @@ class LogAdminAudit
                 $requestSummary,
                 $changedFields,
                 $statusCode,
-                ['exception' => class_basename($exception)]
+                [
+                    'exception' => class_basename($exception),
+                    'value_changes' => [],
+                ]
             );
 
             throw $exception;

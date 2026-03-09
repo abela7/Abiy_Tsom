@@ -3,6 +3,23 @@
 @section('title', __('app.audit_log'))
 
 @section('content')
+@php
+    $formatAuditValue = static function (mixed $value): string {
+        if ($value === null || $value === '') {
+            return '—';
+        }
+
+        if (is_bool($value)) {
+            return $value ? 'true' : 'false';
+        }
+
+        if (is_array($value)) {
+            return (string) json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        }
+
+        return (string) $value;
+    };
+@endphp
 <div class="flex flex-col gap-6">
     <div>
         <h1 class="text-2xl font-bold text-primary">{{ __('app.audit_log') }}</h1>
@@ -89,6 +106,7 @@
 
     <div class="space-y-3 lg:hidden">
         @forelse($logs as $log)
+            @php($valueChanges = $log->meta['value_changes'] ?? [])
             <div class="bg-card rounded-xl border border-border shadow-sm p-4 space-y-3">
                 <div class="flex items-start justify-between gap-3">
                     <div>
@@ -108,14 +126,29 @@
                 </div>
 
                 <div>
-                    <p class="text-xs font-semibold text-muted-text uppercase tracking-wide mb-2">{{ __('app.audit_changed_fields') }}</p>
-                    <div class="flex flex-wrap gap-2">
-                        @forelse($log->changed_fields ?? [] as $field)
-                            <span class="px-2 py-1 rounded-md bg-muted text-secondary text-xs">{{ $field }}</span>
-                        @empty
-                            <span class="text-sm text-muted-text">—</span>
-                        @endforelse
-                    </div>
+                    <p class="text-xs font-semibold text-muted-text uppercase tracking-wide mb-2">{{ __('app.audit_exact_changes') }}</p>
+                    @if($valueChanges !== [])
+                        <div class="space-y-2">
+                            @foreach($valueChanges as $field => $change)
+                                <div class="rounded-lg border border-border bg-surface p-3 text-xs">
+                                    <p class="font-semibold text-primary">{{ $field }}</p>
+                                    <p class="text-muted-text mt-1">{{ __('app.audit_before') }}: {{ $formatAuditValue($change['before'] ?? null) }}</p>
+                                    <p class="text-muted-text">{{ __('app.audit_after') }}: {{ $formatAuditValue($change['after'] ?? null) }}</p>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="space-y-2">
+                            <p class="text-sm text-muted-text">{{ __('app.audit_no_exact_changes') }}</p>
+                            <div class="flex flex-wrap gap-2">
+                                @forelse($log->changed_fields ?? [] as $field)
+                                    <span class="px-2 py-1 rounded-md bg-muted text-secondary text-xs">{{ $field }}</span>
+                                @empty
+                                    <span class="text-sm text-muted-text">—</span>
+                                @endforelse
+                            </div>
+                        </div>
+                    @endif
                 </div>
 
                 <details class="rounded-lg border border-border bg-surface">
@@ -155,6 +188,7 @@
                 </thead>
                 <tbody class="divide-y divide-border">
                     @forelse($logs as $log)
+                        @php($valueChanges = $log->meta['value_changes'] ?? [])
                         <tr class="hover:bg-muted/40 align-top">
                             <td class="px-4 py-3 whitespace-nowrap text-secondary">{{ $log->created_at->format('d M Y H:i:s') }}</td>
                             <td class="px-4 py-3">
@@ -174,13 +208,28 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3">
-                                <div class="flex flex-wrap gap-2 max-w-xs">
-                                    @forelse($log->changed_fields ?? [] as $field)
-                                        <span class="px-2 py-1 rounded-md bg-muted text-secondary text-xs">{{ $field }}</span>
-                                    @empty
-                                        <span class="text-muted-text">—</span>
-                                    @endforelse
-                                </div>
+                                @if($valueChanges !== [])
+                                    <div class="space-y-2 max-w-sm">
+                                        @foreach($valueChanges as $field => $change)
+                                            <div class="rounded-lg border border-border bg-surface p-2 text-xs">
+                                                <p class="font-semibold text-primary">{{ $field }}</p>
+                                                <p class="text-muted-text mt-1">{{ __('app.audit_before') }}: {{ $formatAuditValue($change['before'] ?? null) }}</p>
+                                                <p class="text-muted-text">{{ __('app.audit_after') }}: {{ $formatAuditValue($change['after'] ?? null) }}</p>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <div class="space-y-2 max-w-xs">
+                                        <p class="text-xs text-muted-text">{{ __('app.audit_no_exact_changes') }}</p>
+                                        <div class="flex flex-wrap gap-2">
+                                            @forelse($log->changed_fields ?? [] as $field)
+                                                <span class="px-2 py-1 rounded-md bg-muted text-secondary text-xs">{{ $field }}</span>
+                                            @empty
+                                                <span class="text-muted-text">—</span>
+                                            @endforelse
+                                        </div>
+                                    </div>
+                                @endif
                             </td>
                             <td class="px-4 py-3">
                                 <span class="px-2 py-1 rounded-full text-xs font-semibold {{ $log->status_code >= 400 ? 'bg-error-bg text-error' : 'bg-success-bg text-success' }}">

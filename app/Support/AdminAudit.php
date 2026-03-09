@@ -29,6 +29,11 @@ class AdminAudit
     /**
      * @var list<string>
      */
+    private const IGNORED_SNAPSHOT_KEYS = ['created_at', 'updated_at', 'deleted_at', 'remember_token'];
+
+    /**
+     * @var list<string>
+     */
     private const EXACT_SENSITIVE_KEYS = [
         'password',
         'password_confirmation',
@@ -198,7 +203,8 @@ class AdminAudit
      *     target_type: string|null,
      *     target_id: string|null,
      *     target_label: string|null,
-     *     route_parameters: array<string, mixed>
+     *     route_parameters: array<string, mixed>,
+     *     target_model: \Illuminate\Database\Eloquent\Model|null
      * }
      */
     public static function targetDetails(?Route $route): array
@@ -209,6 +215,7 @@ class AdminAudit
                 'target_id' => null,
                 'target_label' => null,
                 'route_parameters' => [],
+                'target_model' => null,
             ];
         }
 
@@ -216,6 +223,7 @@ class AdminAudit
         $targetType = null;
         $targetId = null;
         $targetLabel = null;
+        $targetModel = null;
 
         foreach ($route->parametersWithoutNulls() as $name => $value) {
             if ($value instanceof Model) {
@@ -229,6 +237,7 @@ class AdminAudit
                     $targetType = class_basename($value);
                     $targetId = (string) $value->getKey();
                     $targetLabel = self::modelLabel($value);
+                    $targetModel = $value;
                 }
 
                 continue;
@@ -248,7 +257,107 @@ class AdminAudit
             'target_id' => $targetId,
             'target_label' => $targetLabel,
             'route_parameters' => $routeParameters,
+            'target_model' => $targetModel,
         ];
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    public static function modelSnapshot(?Model $model): ?array
+    {
+        if ($model === null) {
+            return null;
+        }
+
+        /** @var array<string, mixed> $attributes */
+        $attributes = Arr::except($model->getAttributes(), self::IGNORED_SNAPSHOT_KEYS);
+
+        return self::sanitizeValue($attributes);
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    public static function refreshedModelSnapshot(?Model $model, int $statusCode): ?array
+    {
+        if ($model === null || $statusCode >= 400) {
+            return null;
+        }
+
+        $freshModel = $model->fresh();
+
+        return $freshModel instanceof Model
+            ? self::modelSnapshot($freshModel)
+            : null;
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $before
+     * @param  array<string, mixed>|null  $after
+     * @param  list<string>  $changedFields
+     * @param  array<string, mixed>  $requestSummary
+     * @return array<string, array{before: mixed, after: mixed}>
+     */
+    public static function valueChanges(
+        ?array $before,
+        ?array $after,
+        array $changedFields,
+        array $requestSummary,
+        string $method
+    ): array {
+        if ($before === null && $after === null) {
+            return [];
+        }
+
+        $fields = array_values(array_filter(
+            $changedFields,
+            static fn (string $field): bool => $field !== '_files'
+        ));
+
+        $changes = [];
+
+        foreach ($fields as $field) {
+            $beforeValue = $before[$field] ?? null;
+            $afterValue = array_key_exists($field, $after ?? [])
+                ? $after[$field]
+                : ($requestSummary[$field] ?? null);
+
+            if (self::isSensitiveKey($field)) {
+                $changes[$field] = [
+                    'before' => '[REDACTED]',
+                    'after' => '[REDACTED]',
+                ];
+
+                continue;
+            }
+
+            if (self::valuesMatch($beforeValue, $afterValue)) {
+                continue;
+            }
+
+            $changes[$field] = [
+                'before' => $beforeValue,
+                'after' => $afterValue,
+            ];
+        }
+
+        if ($changes !== [] || $method !== 'DELETE' || $before === null) {
+            return $changes;
+        }
+
+        foreach (['id', 'name', 'title', 'username', 'baptism_name', 'email', 'role', 'status'] as $field) {
+            if (! array_key_exists($field, $before)) {
+                continue;
+            }
+
+            $changes[$field] = [
+                'before' => $before[$field],
+                'after' => null,
+            ];
+        }
+
+        return $changes;
     }
 
     private static function sanitizeValue(mixed $value, ?string $key = null): mixed
@@ -341,5 +450,10 @@ class AdminAudit
         }
 
         return null;
+    }
+
+    private static function valuesMatch(mixed $before, mixed $after): bool
+    {
+        return json_encode($before) === json_encode($after);
     }
 }
