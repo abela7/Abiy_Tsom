@@ -39,9 +39,8 @@
                     <th class="text-left px-4 py-3 font-semibold text-secondary">{{ __('app.date_label') }}</th>
                     <th class="text-left px-4 py-3 font-semibold text-secondary">{{ __('app.week_label') }}</th>
                     <th class="text-left px-4 py-3 font-semibold text-secondary">{{ __('app.title') }}</th>
-                    <th class="text-left px-4 py-3 font-semibold text-secondary">{{ __('app.bible') }}</th>
                     <th class="text-left px-4 py-3 font-semibold text-secondary">{{ __('app.status') }}</th>
-                    <th class="text-left px-4 py-3 font-semibold text-secondary">{{ __('app.writer') }}</th>
+                    <th class="text-left px-4 py-3 font-semibold text-secondary">{{ __('app.created_by') }}</th>
                     <th class="text-left px-4 py-3 font-semibold text-secondary">{{ __('app.actions') }}</th>
                 </tr>
             </thead>
@@ -52,16 +51,13 @@
                         <td class="px-4 py-3 text-secondary">{{ $content->date->format('M d') }}</td>
                         <td class="px-4 py-3 text-secondary">{{ $content->weeklyTheme ? (localized($content->weeklyTheme, 'name') ?? '-') : '-' }}</td>
                         <td class="px-4 py-3">{{ localized($content, 'day_title') ?? '-' }}</td>
-                        <td class="px-4 py-3 text-secondary">{{ localized($content, 'bible_reference') ?? '-' }}</td>
                         <td class="px-4 py-3">
                             <span class="px-2 py-0.5 rounded-full text-xs font-medium {{ $content->is_published ? 'bg-success-bg text-success' : 'bg-reflection-bg text-accent-secondary' }}">
                                 {{ $content->is_published ? __('app.published') : __('app.draft') }}
                             </span>
                         </td>
                         <td class="px-4 py-3 text-xs text-secondary">
-                            <div>{{ __('app.assigned_writer') }}: {{ optional($content->assignedTo)->name ?: '-' }}</div>
-                            <div class="text-muted-text">{{ __('app.created_by') }}: {{ optional($content->createdBy)->name ?: '-' }}</div>
-                            <div class="text-muted-text">{{ __('app.updated_by') }}: {{ optional($content->updatedBy)->name ?: '-' }}</div>
+                            {{ __('app.created_by') }}: {{ optional($content->createdBy)->name ?: '-' }}
                         </td>
                         <td class="px-4 py-3">
                             <span class="inline-flex items-center gap-2">
@@ -82,7 +78,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="8" class="px-4 py-8 text-center text-muted-text">{{ __('app.no_daily_content_yet') }}</td></tr>
+                    <tr><td colspan="7" class="px-4 py-8 text-center text-muted-text">{{ __('app.no_daily_content_yet') }}</td></tr>
                 @endforelse
             </tbody>
         </table>
@@ -121,15 +117,10 @@
                         </div>
                     </div>
 
-                    {{-- Writer info --}}
-                    @if(optional($content->assignedTo)->name)
-                        <div class="flex items-center gap-1.5 text-xs text-muted-text pt-1 border-t border-border">
-                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
-                            </svg>
-                            <span>{{ optional($content->assignedTo)->name }}</span>
-                        </div>
-                    @endif
+                    {{-- Created by --}}
+                    <div class="flex items-center gap-1.5 text-xs text-muted-text pt-1 border-t border-border">
+                        <span>{{ __('app.created_by') }}: {{ optional($content->createdBy)->name ?: '-' }}</span>
+                    </div>
                 </div>
             </a>
             <div class="flex border-t border-border">
