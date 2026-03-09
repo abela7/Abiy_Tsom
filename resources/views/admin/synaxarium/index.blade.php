@@ -547,13 +547,13 @@ elseif (old('_form') === 'add_annual') $autoSheet = 'add-annual';
                 <div class="lg:grid lg:grid-cols-2 lg:gap-3 space-y-4 lg:space-y-0 mb-4">
                     <div>
                         <label class="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2 lg:mb-1">{{ __('app.synaxarium_description') }} (English)</label>
-                        <textarea name="description_en" rows="3"
-                                  class="w-full px-4 py-3.5 lg:px-3 lg:py-2.5 rounded-2xl lg:rounded-xl border border-border bg-surface text-primary text-base lg:text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent resize-none transition">{{ old('description_en', $editingMonthly->description_en) }}</textarea>
+                        <textarea name="description_en" rows="6"
+                                  class="w-full px-4 py-3.5 lg:px-3 lg:py-2.5 rounded-2xl lg:rounded-xl border border-border bg-surface text-primary text-base lg:text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent resize-y transition">{{ old('description_en', $editingMonthly->description_en) }}</textarea>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2 lg:mb-1">{{ __('app.synaxarium_description') }} (አማርኛ)</label>
-                        <textarea name="description_am" rows="3"
-                                  class="w-full px-4 py-3.5 lg:px-3 lg:py-2.5 rounded-2xl lg:rounded-xl border border-border bg-surface text-primary text-base lg:text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent resize-none transition">{{ old('description_am', $editingMonthly->description_am) }}</textarea>
+                        <textarea name="description_am" rows="6"
+                                  class="w-full px-4 py-3.5 lg:px-3 lg:py-2.5 rounded-2xl lg:rounded-xl border border-border bg-surface text-primary text-base lg:text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent resize-y transition">{{ old('description_am', $editingMonthly->description_am) }}</textarea>
                     </div>
                 </div>
 
@@ -785,13 +785,13 @@ elseif (old('_form') === 'add_annual') $autoSheet = 'add-annual';
                 <div class="lg:grid lg:grid-cols-2 lg:gap-3 space-y-4 lg:space-y-0 mb-4">
                     <div>
                         <label class="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2 lg:mb-1">{{ __('app.synaxarium_description') }} (English)</label>
-                        <textarea name="description_en" rows="3"
-                                  class="w-full px-4 py-3.5 lg:px-3 lg:py-2.5 rounded-2xl lg:rounded-xl border border-border bg-surface text-primary text-base lg:text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent resize-none transition">{{ old('description_en', $editingAnnual->description_en) }}</textarea>
+                        <textarea name="description_en" rows="6"
+                                  class="w-full px-4 py-3.5 lg:px-3 lg:py-2.5 rounded-2xl lg:rounded-xl border border-border bg-surface text-primary text-base lg:text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent resize-y transition">{{ old('description_en', $editingAnnual->description_en) }}</textarea>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2 lg:mb-1">{{ __('app.synaxarium_description') }} (አማርኛ)</label>
-                        <textarea name="description_am" rows="3"
-                                  class="w-full px-4 py-3.5 lg:px-3 lg:py-2.5 rounded-2xl lg:rounded-xl border border-border bg-surface text-primary text-base lg:text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent resize-none transition">{{ old('description_am', $editingAnnual->description_am) }}</textarea>
+                        <textarea name="description_am" rows="6"
+                                  class="w-full px-4 py-3.5 lg:px-3 lg:py-2.5 rounded-2xl lg:rounded-xl border border-border bg-surface text-primary text-base lg:text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent resize-y transition">{{ old('description_am', $editingAnnual->description_am) }}</textarea>
                     </div>
                 </div>
 
