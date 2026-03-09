@@ -148,6 +148,8 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::middleware('admin_role:writer,editor,admin')->group(function () {
         // My suggestions (writer sees their own submissions)
         Route::get('/suggestions/my', [App\Http\Controllers\ContentSuggestionController::class, 'my'])->name('suggestions.my');
+        Route::get('/profile', [Admin\ProfileController::class, 'edit'])->name('profile.edit');
+        Route::put('/profile', [Admin\ProfileController::class, 'update'])->name('profile.update');
 
         // Daily content
         Route::get('/daily', [Admin\DailyContentController::class, 'index'])->name('daily.index');
