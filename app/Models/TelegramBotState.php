@@ -149,4 +149,15 @@ class TelegramBotState extends Model
     {
         return ($this->data ?? [])[$key] ?? $default;
     }
+
+    /**
+     * Set a single data field without changing the step.
+     */
+    public function set(string $key, mixed $value): void
+    {
+        $data = $this->data ?? [];
+        $data[$key] = $value;
+        $this->data = $data;
+        $this->save();
+    }
 }

@@ -215,6 +215,220 @@ class TelegramStaffPortalTest extends TestCase
         $this->assertNull(TelegramBotState::getActive($chat, 'suggest'));
     }
 
+    public function test_writer_can_submit_spiritual_book_suggestion(): void
+    {
+        config()->set('services.telegram.bot_token', 'test-bot-token');
+        config()->set('services.telegram.webhook_secret', 'telegram-secret');
+
+        $writer = User::create([
+            'name' => 'Writer Book',
+            'username' => 'writerbook',
+            'email' => 'book@example.com',
+            'password' => 'password',
+            'role' => 'writer',
+            'telegram_chat_id' => 'writer-book-chat',
+        ]);
+
+        Http::fake([
+            'https://api.telegram.org/*' => Http::response(['ok' => true, 'result' => true], 200),
+        ]);
+
+        $header = ['X-Telegram-Bot-Api-Secret-Token' => 'telegram-secret'];
+        $chat = 'writer-book-chat';
+
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_area_spiritual_book'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_today'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_confirm_date_yes'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_first_lang_en'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->messagePayload($chat, 'The Spiritual Combat'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->messagePayload($chat, 'https://example.com/book'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_skip'))->assertOk(); // skip detail
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_other_lang_skip'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_confirm'))->assertOk();
+
+        $this->assertDatabaseHas('content_suggestions', [
+            'user_id' => $writer->id,
+            'source' => 'telegram',
+            'type' => 'book',
+            'content_area' => 'spiritual_book',
+            'language' => 'en',
+            'status' => 'pending',
+        ]);
+
+        $suggestion = ContentSuggestion::query()->latest()->first();
+        $this->assertNotNull($suggestion);
+        $this->assertSame('The Spiritual Combat', $suggestion->structuredValue('title_en'));
+        $this->assertSame('https://example.com/book', $suggestion->structuredValue('url_en'));
+        $this->assertNull(TelegramBotState::getActive($chat, 'suggest'));
+    }
+
+    public function test_writer_can_submit_daily_message_suggestion(): void
+    {
+        config()->set('services.telegram.bot_token', 'test-bot-token');
+        config()->set('services.telegram.webhook_secret', 'telegram-secret');
+
+        $writer = User::create([
+            'name' => 'Writer Daily',
+            'username' => 'writerdaily',
+            'email' => 'daily@example.com',
+            'password' => 'password',
+            'role' => 'writer',
+            'telegram_chat_id' => 'writer-daily-chat',
+        ]);
+
+        Http::fake([
+            'https://api.telegram.org/*' => Http::response(['ok' => true, 'result' => true], 200),
+        ]);
+
+        $header = ['X-Telegram-Bot-Api-Secret-Token' => 'telegram-secret'];
+        $chat = 'writer-daily-chat';
+
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_area_daily_message'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_today'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_confirm_date_yes'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_first_lang_am'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->messagePayload($chat, 'የዕለቱ መልዕክት'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->messagePayload($chat, 'ዛሬ ስለ ጸሎት ነው'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_other_lang_skip'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_confirm'))->assertOk();
+
+        $this->assertDatabaseHas('content_suggestions', [
+            'user_id' => $writer->id,
+            'source' => 'telegram',
+            'type' => 'reference',
+            'content_area' => 'daily_message',
+            'language' => 'am',
+            'status' => 'pending',
+        ]);
+
+        $suggestion = ContentSuggestion::query()->latest()->first();
+        $this->assertNotNull($suggestion);
+        $this->assertSame('የዕለቱ መልዕክት', $suggestion->structuredValue('title_am'));
+        $this->assertSame('ዛሬ ስለ ጸሎት ነው', $suggestion->structuredValue('content_detail_am'));
+        $this->assertSame('am', $suggestion->structuredValue('first_language'));
+        $this->assertNull(TelegramBotState::getActive($chat, 'suggest'));
+    }
+
+    public function test_writer_can_submit_reference_resource_suggestion(): void
+    {
+        config()->set('services.telegram.bot_token', 'test-bot-token');
+        config()->set('services.telegram.webhook_secret', 'telegram-secret');
+
+        $writer = User::create([
+            'name' => 'Writer Ref',
+            'username' => 'writerref',
+            'email' => 'ref@example.com',
+            'password' => 'password',
+            'role' => 'writer',
+            'telegram_chat_id' => 'writer-ref-chat',
+        ]);
+
+        Http::fake([
+            'https://api.telegram.org/*' => Http::response(['ok' => true, 'result' => true], 200),
+        ]);
+
+        $header = ['X-Telegram-Bot-Api-Secret-Token' => 'telegram-secret'];
+        $chat = 'writer-ref-chat';
+
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_area_reference_resource'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_today'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_confirm_date_yes'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_resource_type_video'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_first_lang_en'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->messagePayload($chat, 'Orthodox Teaching Video'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->messagePayload($chat, 'https://youtube.com/watch?v=123'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_skip'))->assertOk(); // skip detail
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_other_lang_skip'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_confirm'))->assertOk();
+
+        $this->assertDatabaseHas('content_suggestions', [
+            'user_id' => $writer->id,
+            'source' => 'telegram',
+            'type' => 'reference',
+            'content_area' => 'reference_resource',
+            'language' => 'en',
+            'status' => 'pending',
+        ]);
+
+        $suggestion = ContentSuggestion::query()->latest()->first();
+        $this->assertNotNull($suggestion);
+        $this->assertSame('Orthodox Teaching Video', $suggestion->structuredValue('title_en'));
+        $this->assertSame('https://youtube.com/watch?v=123', $suggestion->structuredValue('url_en'));
+        $this->assertSame('video', $suggestion->structuredValue('resource_type'));
+        $this->assertNull(TelegramBotState::getActive($chat, 'suggest'));
+    }
+
+    public function test_writer_can_submit_synaxarium_with_both_languages(): void
+    {
+        config()->set('services.telegram.bot_token', 'test-bot-token');
+        config()->set('services.telegram.webhook_secret', 'telegram-secret');
+
+        $writer = User::create([
+            'name' => 'Writer Synax',
+            'username' => 'writersynax',
+            'email' => 'synax@example.com',
+            'password' => 'password',
+            'role' => 'writer',
+            'telegram_chat_id' => 'writer-synax-chat',
+        ]);
+
+        Http::fake([
+            'https://api.telegram.org/*' => Http::response(['ok' => true, 'result' => true], 200),
+        ]);
+
+        $header = ['X-Telegram-Bot-Api-Secret-Token' => 'telegram-secret'];
+        $chat = 'writer-synax-chat';
+
+        // Flow: area → date → scope → first_lang → title → image → detail → is_main → offer_other_lang → title → detail → confirm
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_area_synaxarium'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_month_3'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_day_15'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_confirm_date_yes'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_scope_yearly'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_first_lang_en'))->assertOk();
+
+        // Phase 1: English fields
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->messagePayload($chat, 'Saint Gabriel'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_skip'))->assertOk(); // skip image
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->messagePayload($chat, 'Feast of Archangel Gabriel'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_main_yes'))->assertOk();
+
+        // Offer other language → yes
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_other_lang_yes'))->assertOk();
+
+        // Phase 2: Amharic fields (only bilingual: title, detail — skips image and choose_main)
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->messagePayload($chat, 'ቅዱስ ገብርኤል'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->messagePayload($chat, 'የቅዱስ ገብርኤል በዓል'))->assertOk();
+
+        // Confirm
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_confirm'))->assertOk();
+
+        $this->assertDatabaseHas('content_suggestions', [
+            'user_id' => $writer->id,
+            'source' => 'telegram',
+            'type' => 'sinksar',
+            'content_area' => 'synaxarium',
+            'language' => 'both',
+            'ethiopian_month' => 3,
+            'ethiopian_day' => 15,
+            'entry_scope' => 'yearly',
+            'status' => 'pending',
+        ]);
+
+        $suggestion = ContentSuggestion::query()->latest()->first();
+        $this->assertNotNull($suggestion);
+        $this->assertSame('Saint Gabriel', $suggestion->structuredValue('title_en'));
+        $this->assertSame('Feast of Archangel Gabriel', $suggestion->structuredValue('content_detail_en'));
+        $this->assertSame('ቅዱስ ገብርኤል', $suggestion->structuredValue('title_am'));
+        $this->assertSame('የቅዱስ ገብርኤል በዓል', $suggestion->structuredValue('content_detail_am'));
+        $this->assertTrue((bool) $suggestion->structuredValue('is_main'));
+        $this->assertNull(TelegramBotState::getActive($chat, 'suggest'));
+    }
+
     /**
      * @return array<string, mixed>
      */

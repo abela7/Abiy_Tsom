@@ -104,6 +104,7 @@ class TelegramWebhookController extends Controller
         // Centralised locale resolution for ALL message-based paths (slash commands + plain text).
         $this->applyLocaleForChat($chatId);
 
+        $userMessageId = (int) data_get($message, 'message_id', 0);
         $activeState = TelegramBotState::getAnyActive($chatId);
         $photos = data_get($message, 'photo', []);
         if (
@@ -111,7 +112,7 @@ class TelegramWebhookController extends Controller
             && $photos !== []
             && $activeState?->action === 'suggest'
         ) {
-            return $this->handleSuggestPhotoInput($chatId, $photos, $activeState, $telegramService);
+            return $this->handleSuggestPhotoInput($chatId, $userMessageId, $photos, $activeState, $telegramService);
         }
 
         $text = trim((string) data_get($message, 'text', ''));
@@ -148,7 +149,7 @@ class TelegramWebhookController extends Controller
             '/me' => $this->handleMe($chatId, $telegramAuthService, $telegramService),
             '/day',
             '/today' => $this->handleToday($chatId, $telegramAuthService, $telegramService),
-            default => $this->handlePlainText($chatId, $text, $telegramAuthService, $telegramService),
+            default => $this->handlePlainText($chatId, $userMessageId, $text, $telegramAuthService, $telegramService),
         };
     }
 
@@ -247,6 +248,7 @@ class TelegramWebhookController extends Controller
 
     private function handlePlainText(
         string $chatId,
+        int $userMessageId,
         string $text,
         TelegramAuthService $telegramAuthService,
         TelegramService $telegramService
@@ -261,6 +263,11 @@ class TelegramWebhookController extends Controller
             if ($normalized === 'cancel') {
                 $action = $activeState->action;
                 $activeState->clear();
+
+                // Clean up user message and last bot message
+                if ($action === 'suggest') {
+                    $this->suggestDeleteStaleMessages($chatId, $userMessageId, $activeState, $telegramService);
+                }
 
                 $cancelMsg = in_array($action, ['link_admin', 'link_member', 'subscribe_wa'], true)
                     ? __('app.telegram_link_cancelled')
@@ -282,7 +289,7 @@ class TelegramWebhookController extends Controller
             }
 
             if ($activeState->action === 'suggest') {
-                return $this->handleSuggestTextInput($chatId, $text, $activeState, $telegramAuthService, $telegramService);
+                return $this->handleSuggestTextInput($chatId, $userMessageId, $text, $activeState, $telegramAuthService, $telegramService);
             }
         }
 
@@ -1851,6 +1858,61 @@ class TelegramWebhookController extends Controller
         return $this->reply($telegramService, $chatId, $text, $replyMarkup, $parseMode);
     }
 
+    /**
+     * Delete the user's input message and the bot's previous prompt message
+     * during the suggestion wizard, keeping only the latest bot message visible.
+     */
+    private function suggestDeleteStaleMessages(
+        string $chatId,
+        int $userMessageId,
+        TelegramBotState $state,
+        TelegramService $telegramService
+    ): void {
+        // Delete the user's text/photo message
+        if ($userMessageId > 0) {
+            $telegramService->deleteMessage($chatId, $userMessageId);
+        }
+
+        // Delete the bot's previous prompt message
+        $lastBotMsgId = (int) $state->get('last_bot_message_id', 0);
+        if ($lastBotMsgId > 0) {
+            $telegramService->deleteMessage($chatId, $lastBotMsgId);
+        }
+    }
+
+    /**
+     * Send a reply and track the bot's message ID in the wizard state
+     * so it can be deleted on the next user input.
+     */
+    private function suggestReplyAndTrack(
+        TelegramService $telegramService,
+        TelegramBotState $state,
+        string $chatId,
+        string $text,
+        array $replyMarkup = [],
+        ?string $parseMode = null
+    ): JsonResponse {
+        $options = [];
+        if (! empty($replyMarkup)) {
+            $options['reply_markup'] = $replyMarkup;
+        }
+        if ($parseMode !== null) {
+            $options['parse_mode'] = $parseMode;
+        }
+
+        $sentId = $telegramService->sendAndGetMessageId($chatId, $text, $options);
+
+        if ($sentId !== null) {
+            $state->set('last_bot_message_id', $sentId);
+        }
+
+        return response()->json([
+            'success' => $sentId !== null,
+            'delivered' => $sentId !== null,
+            'sent' => $sentId !== null,
+        ]);
+    }
+
     private function startChoiceKeyboard(): array
     {
         $appUrl = route('home');
@@ -2147,6 +2209,14 @@ class TelegramWebhookController extends Controller
                 .__('app.telegram_link_enter_phone');
 
             return $this->replyOrEdit($telegramService, $chatId, $text, [], $messageId);
+        }
+
+        // Track the bot message ID for cleanup when user types text next
+        if ($messageId > 0) {
+            $existingState = TelegramBotState::getActive($chatId, 'suggest');
+            if ($existingState) {
+                $existingState->set('last_bot_message_id', $messageId);
+            }
         }
 
         // ── My Suggestions ────────────────────────────────────────────────
@@ -2539,11 +2609,15 @@ class TelegramWebhookController extends Controller
      */
     private function handleSuggestTextInput(
         string $chatId,
+        int $userMessageId,
         string $text,
         TelegramBotState $state,
         TelegramAuthService $telegramAuthService,
         TelegramService $telegramService
     ): JsonResponse {
+        // Delete user's text message and bot's previous prompt to keep chat clean
+        $this->suggestDeleteStaleMessages($chatId, $userMessageId, $state, $telegramService);
+
         return $this->advanceSuggestStep($chatId, 0, $text, $state, $telegramService);
     }
 
@@ -2585,17 +2659,15 @@ class TelegramWebhookController extends Controller
         $mergeData = [];
         if (isset($fieldForStep[$currentStep])) {
             if ($currentStep === 'enter_chapter' && $input !== '' && ! ctype_digit(trim($input))) {
-                return $this->reply(
-                    $telegramService,
-                    $chatId,
+                return $this->suggestReplyAndTrack(
+                    $telegramService, $state, $chatId,
                     __('app.telegram_suggest_invalid_chapter'),
                     $this->structuredSuggestStepKeyboard($currentStep)
                 );
             }
             if ($currentStep === 'enter_verse_range' && $input !== '' && ! $this->suggestStepInputLooksVerseRange($input)) {
-                return $this->reply(
-                    $telegramService,
-                    $chatId,
+                return $this->suggestReplyAndTrack(
+                    $telegramService, $state, $chatId,
                     __('app.telegram_suggest_invalid_verse_range'),
                     $this->structuredSuggestStepKeyboard($currentStep)
                 );
@@ -2612,26 +2684,23 @@ class TelegramWebhookController extends Controller
 
                     $state->advance($nextStep);
 
-                    return $this->reply(
-                        $telegramService,
-                        $chatId,
+                    return $this->suggestReplyAndTrack(
+                        $telegramService, $state, $chatId,
                         $this->structuredSuggestPrompt($nextStep, $state->data ?? []),
                         $this->structuredSuggestKeyboardForStep($nextStep, $state)
                     );
                 }
 
-                return $this->reply(
-                    $telegramService,
-                    $chatId,
+                return $this->suggestReplyAndTrack(
+                    $telegramService, $state, $chatId,
                     __('app.telegram_suggest_value_required'),
                     $this->structuredSuggestStepKeyboard($currentStep)
                 );
             }
 
             if ($currentStep === 'enter_url' && ! $this->suggestStepInputLooksUrl($input)) {
-                return $this->reply(
-                    $telegramService,
-                    $chatId,
+                return $this->suggestReplyAndTrack(
+                    $telegramService, $state, $chatId,
                     __('app.telegram_suggest_invalid_url'),
                     $this->structuredSuggestStepKeyboard($currentStep)
                 );
@@ -2650,9 +2719,8 @@ class TelegramWebhookController extends Controller
 
         $state->advance($nextStep, $mergeData);
 
-        return $this->reply(
-            $telegramService,
-            $chatId,
+        return $this->suggestReplyAndTrack(
+            $telegramService, $state, $chatId,
             $this->structuredSuggestPrompt($nextStep, $state->data ?? []),
             $this->structuredSuggestKeyboardForStep($nextStep, $state)
         );
@@ -2724,14 +2792,14 @@ class TelegramWebhookController extends Controller
             ],
         ]];
 
-        return $this->replyOrEdit(
-            $telegramService,
-            $chatId,
-            implode("\n", $lines),
-            $keyboard,
-            $messageId,
-            'HTML'
-        );
+        $text = implode("\n", $lines);
+
+        // When called from text input (messageId=0), track the bot message for cleanup
+        if ($messageId === 0) {
+            return $this->suggestReplyAndTrack($telegramService, $state, $chatId, $text, $keyboard, 'HTML');
+        }
+
+        return $this->replyOrEdit($telegramService, $chatId, $text, $keyboard, $messageId, 'HTML');
     }
 
     private function appendBilingualPreviewLines(array &$lines, array $data, string $contentArea): void
@@ -3131,6 +3199,7 @@ class TelegramWebhookController extends Controller
 
     private function handleSuggestPhotoInput(
         string $chatId,
+        int $userMessageId,
         array $photos,
         TelegramBotState $state,
         TelegramService $telegramService
@@ -3139,15 +3208,17 @@ class TelegramWebhookController extends Controller
             return response()->json(['success' => true, 'message' => 'Photo ignored.']);
         }
 
+        // Delete user's photo message and bot's previous prompt to keep chat clean
+        $this->suggestDeleteStaleMessages($chatId, $userMessageId, $state, $telegramService);
+
         $photo = collect($photos)
             ->filter(fn ($item) => is_array($item) && filled($item['file_id'] ?? null))
             ->sortBy(fn ($item) => (int) ($item['file_size'] ?? 0))
             ->last();
 
         if (! is_array($photo) || blank($photo['file_id'] ?? null)) {
-            return $this->reply(
-                $telegramService,
-                $chatId,
+            return $this->suggestReplyAndTrack(
+                $telegramService, $state, $chatId,
                 __('app.telegram_suggest_photo_upload_failed'),
                 $this->structuredSuggestStepKeyboard('await_image')
             );
@@ -3155,9 +3226,8 @@ class TelegramWebhookController extends Controller
 
         $download = $telegramService->downloadFile((string) $photo['file_id']);
         if (! is_array($download)) {
-            return $this->reply(
-                $telegramService,
-                $chatId,
+            return $this->suggestReplyAndTrack(
+                $telegramService, $state, $chatId,
                 __('app.telegram_suggest_photo_upload_failed'),
                 $this->structuredSuggestStepKeyboard('await_image')
             );
@@ -3170,9 +3240,8 @@ class TelegramWebhookController extends Controller
 
         $path = 'telegram-suggestions/'.now()->format('Y/m').'/'.Str::uuid().'.'.$extension;
         if (! Storage::disk('public')->put($path, $download['contents'])) {
-            return $this->reply(
-                $telegramService,
-                $chatId,
+            return $this->suggestReplyAndTrack(
+                $telegramService, $state, $chatId,
                 __('app.telegram_suggest_photo_upload_failed'),
                 $this->structuredSuggestStepKeyboard('await_image')
             );
@@ -3180,9 +3249,8 @@ class TelegramWebhookController extends Controller
 
         $state->advance('enter_detail', ['image_path' => $path]);
 
-        return $this->reply(
-            $telegramService,
-            $chatId,
+        return $this->suggestReplyAndTrack(
+            $telegramService, $state, $chatId,
             $this->structuredSuggestPrompt('enter_detail', $state->data ?? []),
             $this->structuredSuggestKeyboardForStep('enter_detail', $state)
         );
@@ -3609,6 +3677,21 @@ class TelegramWebhookController extends Controller
 
     private function structuredSuggestNextStep(TelegramBotState $state, string $currentStep): string
     {
+        $langPhase = (int) $state->get('lang_phase', 1);
+        $contentArea = (string) $state->get('content_area', '');
+
+        // In lang_phase 2, only navigate through bilingual field steps
+        if ($langPhase === 2) {
+            $bilingualSteps = $this->structuredSuggestBilingualFieldSteps($contentArea);
+            $index = array_search($currentStep, $bilingualSteps, true);
+
+            if ($index !== false && isset($bilingualSteps[$index + 1])) {
+                return $bilingualSteps[$index + 1];
+            }
+
+            return 'preview';
+        }
+
         if ($currentStep === 'await_image') {
             return 'enter_detail';
         }
@@ -3620,21 +3703,35 @@ class TelegramWebhookController extends Controller
             return 'preview';
         }
 
-        $nextStep = $flow[$index + 1] ?? 'preview';
-
-        // In lang_phase 2, skip offer_other_language and go to preview (or next non-field step)
-        if ($nextStep === 'offer_other_language' && (int) $state->get('lang_phase', 1) === 2) {
-            return 'preview';
-        }
-
-        return $nextStep;
+        return $flow[$index + 1] ?? 'preview';
     }
 
     private function structuredSuggestPreviousStep(TelegramBotState $state, string $currentStep): string
     {
+        $langPhase = (int) $state->get('lang_phase', 1);
+        $contentArea = (string) $state->get('content_area', '');
+
+        // In lang_phase 2, only navigate through bilingual field steps
+        if ($langPhase === 2) {
+            $bilingualSteps = $this->structuredSuggestBilingualFieldSteps($contentArea);
+
+            if ($currentStep === 'preview') {
+                return end($bilingualSteps) ?: 'offer_other_language';
+            }
+
+            $index = array_search($currentStep, $bilingualSteps, true);
+
+            if ($index !== false && $index > 0) {
+                return $bilingualSteps[$index - 1];
+            }
+
+            // At the first bilingual step in phase 2, go back to offer_other_language
+            return 'offer_other_language';
+        }
+
         $flow = $this->structuredSuggestFlow($state);
+
         if ($currentStep === 'preview') {
-            // Go back to offer_other_language (or last field step in lang_phase 2)
             $steps = array_values(array_filter($flow, fn ($step) => $step !== 'preview'));
 
             return end($steps) ?: 'choose_area';
@@ -3645,14 +3742,7 @@ class TelegramWebhookController extends Controller
             return 'choose_area';
         }
 
-        $prevStep = $flow[$index - 1];
-
-        // In lang_phase 2, if going back from the first field step, go to offer_other_language
-        if ($prevStep === 'choose_first_language' && (int) $state->get('lang_phase', 1) === 2) {
-            return 'offer_other_language';
-        }
-
-        return $prevStep;
+        return $flow[$index - 1];
     }
 
     /**

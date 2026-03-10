@@ -90,6 +90,33 @@ final class TelegramService
     }
 
     /**
+     * Send a text message and return the sent message's ID (or null on failure).
+     */
+    public function sendAndGetMessageId(string $chatId, string $body, array $options = []): ?int
+    {
+        if (! $this->isConfigured() || $chatId === '') {
+            return null;
+        }
+
+        $response = Http::acceptJson()
+            ->timeout(20)
+            ->post($this->apiEndpoint('sendMessage'), array_merge([
+                'chat_id' => trim($chatId),
+                'text' => $body,
+            ], $options));
+
+        if (! $response->successful()) {
+            return null;
+        }
+
+        $payload = $response->json();
+
+        return is_array($payload) && ($payload['ok'] ?? false)
+            ? (int) data_get($payload, 'result.message_id', 0) ?: null
+            : null;
+    }
+
+    /**
      * Delete a message from a chat.
      */
     public function deleteMessage(string $chatId, int $messageId): bool
