@@ -1350,6 +1350,7 @@ return [
     'telegram_suggest_enter_mezmur_title' => 'Type the Mezmur title:',
     'telegram_suggest_enter_mezmur_link' => 'Paste the Mezmur link, or tap Skip if you do not have one yet:',
     'telegram_suggest_enter_mezmur_notes' => 'Add any Mezmur notes or description, or tap Skip:',
+    'telegram_suggest_enter_mezmur_lyrics' => 'የመዝሙሩን ግጥም ይጻፉ ወይም ይለጥፉ፣ ከሌለዎት Skip ይንኩ:',
     'telegram_suggest_enter_spiritual_book_title' => 'Type the spiritual book title:',
     'telegram_suggest_enter_spiritual_book_link' => 'Paste the spiritual book link, or tap Skip if you do not have one yet:',
     'telegram_suggest_enter_spiritual_book_notes' => 'Add any spiritual book notes or description, or tap Skip:',

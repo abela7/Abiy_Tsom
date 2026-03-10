@@ -409,6 +409,8 @@ class ContentSuggestionController extends Controller
             'url_am' => $payload['url_am'] ?? null,
             'description_en' => $payload['content_detail_en'] ?? null,
             'description_am' => $payload['content_detail_am'] ?? null,
+            'lyrics_en' => $payload['lyrics_en'] ?? null,
+            'lyrics_am' => $payload['lyrics_am'] ?? null,
             'sort_order' => $maxSort + 1,
         ]);
     }

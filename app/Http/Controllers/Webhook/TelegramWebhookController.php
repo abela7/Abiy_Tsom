@@ -3719,7 +3719,7 @@ class TelegramWebhookController extends Controller
         }
 
         $lang = (string) $state->get('current_language', 'en');
-        $bilingualSteps = ['enter_reference', 'enter_summary', 'enter_text', 'enter_title', 'enter_url', 'enter_detail'];
+        $bilingualSteps = ['enter_reference', 'enter_summary', 'enter_text', 'enter_title', 'enter_url', 'enter_detail', 'enter_lyrics'];
         $isBilingual = in_array($currentStep, $bilingualSteps, true);
 
         // Non-bilingual fields stay as-is; bilingual fields get _en/_am suffix
@@ -3741,6 +3741,7 @@ class TelegramWebhookController extends Controller
                 'enter_title' => "title_{$lang}",
                 'enter_url' => "url_{$lang}",
                 'enter_detail' => "content_detail_{$lang}",
+                'enter_lyrics' => "lyrics_{$lang}",
                 default => $currentStep,
             };
         }
@@ -4189,6 +4190,7 @@ class TelegramWebhookController extends Controller
                 'title' => 'Title',
                 'url' => 'Link',
                 'content_detail' => 'Notes',
+                'lyrics' => 'Lyrics',
             ],
             'spiritual_book' => [
                 'title' => 'Title',
@@ -4266,8 +4268,8 @@ class TelegramWebhookController extends Controller
                 }
             }
         } else {
-            $hasEn = ! empty($data['reference_en']) || ! empty($data['title_en']) || ! empty($data['url_en']) || ! empty($data['text_en']) || ! empty($data['content_detail_en']);
-            $hasAm = ! empty($data['reference_am']) || ! empty($data['title_am']) || ! empty($data['url_am']) || ! empty($data['text_am']) || ! empty($data['content_detail_am']);
+            $hasEn = ! empty($data['reference_en']) || ! empty($data['title_en']) || ! empty($data['url_en']) || ! empty($data['text_en']) || ! empty($data['content_detail_en']) || ! empty($data['lyrics_en']);
+            $hasAm = ! empty($data['reference_am']) || ! empty($data['title_am']) || ! empty($data['url_am']) || ! empty($data['text_am']) || ! empty($data['content_detail_am']) || ! empty($data['lyrics_am']);
         }
         $language = ($hasEn && $hasAm) ? 'both' : ($hasAm ? 'am' : 'en');
 
@@ -4560,6 +4562,7 @@ class TelegramWebhookController extends Controller
                 'enter_title' => "title_{$lang}",
                 'enter_url' => "url_{$lang}",
                 'enter_detail' => "content_detail_{$lang}",
+                'enter_lyrics' => "lyrics_{$lang}",
                 default => null,
             };
 
@@ -4692,7 +4695,7 @@ class TelegramWebhookController extends Controller
 
         // For text-input steps, show current value if any
         $lang = $targetLang;
-        $bilingualSteps = ['enter_reference', 'enter_summary', 'enter_text', 'enter_title', 'enter_url', 'enter_detail'];
+        $bilingualSteps = ['enter_reference', 'enter_summary', 'enter_text', 'enter_title', 'enter_url', 'enter_detail', 'enter_lyrics'];
 
         $fieldForStep = [
             'enter_chapter' => 'lectionary_chapter',
@@ -4737,7 +4740,8 @@ class TelegramWebhookController extends Controller
         $flow = match ($type) {
             'bible' => ['enter_reference', 'enter_url', 'enter_detail'],
             'sinksar' => ['enter_title', 'enter_url', 'enter_detail'],
-            'mezmur', 'book' => ['enter_title', 'enter_author', 'enter_url', 'enter_detail'],
+            'mezmur' => ['enter_title', 'enter_author', 'enter_url', 'enter_detail', 'enter_lyrics'],
+            'book' => ['enter_title', 'enter_author', 'enter_url', 'enter_detail'],
             'reference' => ['enter_title', 'enter_url', 'enter_detail'],
             default => ['enter_title', 'enter_url', 'enter_detail'],
         };
@@ -4824,7 +4828,8 @@ class TelegramWebhookController extends Controller
         $flow = match ($type) {
             'bible' => ['enter_reference', 'enter_url', 'enter_detail', 'preview'],
             'sinksar' => ['enter_title', 'enter_url', 'enter_detail', 'preview'],
-            'mezmur', 'book' => ['enter_title', 'enter_author', 'enter_url', 'enter_detail', 'preview'],
+            'mezmur' => ['enter_title', 'enter_author', 'enter_url', 'enter_detail', 'enter_lyrics', 'preview'],
+            'book' => ['enter_title', 'enter_author', 'enter_url', 'enter_detail', 'preview'],
             'reference' => ['enter_title', 'enter_url', 'enter_detail', 'preview'],
             default => ['enter_title', 'enter_url', 'enter_detail', 'preview'],
         };
@@ -5321,6 +5326,7 @@ class TelegramWebhookController extends Controller
             'edit_image_caption_am' => __('app.telegram_suggest_enter_sinksar_image_caption', ['lang' => __('app.amharic')]),
             'edit_image_caption_en' => __('app.telegram_suggest_enter_sinksar_image_caption', ['lang' => __('app.english')]),
             'ask_more_images' => __('app.telegram_suggest_add_another_image_prompt'),
+            'enter_lyrics' => __('app.telegram_suggest_enter_mezmur_lyrics'),
             'enter_detail' => match (true) {
                 $contentArea === 'synaxarium' => __('app.telegram_suggest_enter_saint_description'),
                 $contentArea === 'synaxarium_celebration' => __('app.telegram_suggest_enter_celebration_description'),
@@ -5339,7 +5345,7 @@ class TelegramWebhookController extends Controller
         };
 
         // Append language tag to bilingual field steps
-        $bilingualSteps = ['enter_reference', 'enter_summary', 'enter_text', 'enter_title', 'enter_url', 'enter_detail'];
+        $bilingualSteps = ['enter_reference', 'enter_summary', 'enter_text', 'enter_title', 'enter_url', 'enter_detail', 'enter_lyrics'];
         if (in_array($step, $bilingualSteps, true) && ! empty($data['current_language'])) {
             if ($contentArea === 'synaxarium' && $step === 'enter_text') {
                 $basePrompt = __('app.telegram_suggest_enter_sinksar_text');
@@ -5387,7 +5393,7 @@ class TelegramWebhookController extends Controller
 
         return match ($contentArea) {
             'bible_reading' => [...$base, 'choose_first_language', 'enter_reference', 'enter_summary', 'enter_text', 'offer_other_language', 'preview'],
-            'mezmur' => [...$base, 'choose_first_language', 'enter_title', 'enter_url', 'enter_detail', 'offer_other_language', 'preview'],
+            'mezmur' => [...$base, 'choose_first_language', 'enter_title', 'enter_url', 'enter_detail', 'enter_lyrics', 'offer_other_language', 'preview'],
             'synaxarium' => [...$base, 'choose_scope', 'choose_first_language', 'enter_title', 'enter_url', 'enter_text', 'enter_detail', 'offer_other_language', 'await_image', 'preview'],
             'synaxarium_celebration' => array_values(array_filter([
                 'choose_area',
@@ -5431,6 +5437,7 @@ class TelegramWebhookController extends Controller
             'enter_image_caption_am', 'enter_image_caption_en' => true,
             'enter_sort_order' => $contentArea === 'synaxarium_celebration',
             'enter_url' => in_array($contentArea, ['synaxarium', 'mezmur', 'spiritual_book'], true),
+            'enter_lyrics' => $contentArea === 'mezmur',
             'enter_detail' => in_array($contentArea, ['synaxarium', 'synaxarium_celebration', 'mezmur', 'spiritual_book', 'reference_resource', 'bible_reading', 'lectionary'], true),
             default => false,
         };
@@ -5657,7 +5664,7 @@ class TelegramWebhookController extends Controller
             'bible_reading' => ['enter_reference', 'enter_summary', 'enter_text'],
             'synaxarium' => ['enter_title', 'enter_url', 'enter_text', 'enter_detail'],
             'synaxarium_celebration' => ['enter_title', 'enter_detail'],
-            'mezmur' => ['enter_title', 'enter_url', 'enter_detail'],
+            'mezmur' => ['enter_title', 'enter_url', 'enter_detail', 'enter_lyrics'],
             'spiritual_book' => ['enter_title', 'enter_url', 'enter_detail'],
             'reference_resource' => ['enter_title', 'enter_url', 'enter_detail'],
             'daily_message' => ['enter_title', 'enter_detail'],
@@ -5923,7 +5930,7 @@ class TelegramWebhookController extends Controller
 
         // Add all bilingual fields
         foreach (['en', 'am'] as $lang) {
-            foreach (['reference', 'summary', 'text', 'title', 'url', 'content_detail'] as $field) {
+            foreach (['reference', 'summary', 'text', 'title', 'url', 'content_detail', 'lyrics'] as $field) {
                 $key = "{$field}_{$lang}";
                 if (! empty($data[$key])) {
                     $payload[$key] = $data[$key];

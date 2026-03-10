@@ -211,7 +211,8 @@
                                                                             || $s->structuredValue("reference_{$lang}")
                                                                             || $s->structuredValue("url_{$lang}")
                                                                             || $s->structuredValue("text_{$lang}")
-                                                                            || $s->structuredValue("content_detail_{$lang}");
+                                                                            || $s->structuredValue("content_detail_{$lang}")
+                                                                            || $s->structuredValue("lyrics_{$lang}");
                                                                     @endphp
                                                                     @if($hasLang)
                                                                         <div class="mt-2 border-l-2 border-accent/30 pl-2">
@@ -222,6 +223,7 @@
                                                                             @if($s->structuredValue("url_{$lang}"))<p class="text-xs"><span class="font-semibold text-muted-text">Link:</span> <a href="{{ $s->structuredValue("url_{$lang}") }}" target="_blank" rel="noopener" class="break-all text-accent hover:underline">{{ $s->structuredValue("url_{$lang}") }}</a></p>@endif
                                                                             @if($s->structuredValue("text_{$lang}"))<p class="whitespace-pre-wrap text-xs leading-relaxed text-secondary"><span class="font-semibold text-muted-text">Text:</span> {{ $s->structuredValue("text_{$lang}") }}</p>@endif
                                                                             @if($s->structuredValue("content_detail_{$lang}"))<p class="whitespace-pre-wrap text-xs leading-relaxed text-secondary">{{ $s->structuredValue("content_detail_{$lang}") }}</p>@endif
+                                                                            @if($s->structuredValue("lyrics_{$lang}"))<p class="whitespace-pre-wrap text-xs leading-relaxed text-secondary"><span class="font-semibold text-muted-text">Lyrics:</span> {{ $s->structuredValue("lyrics_{$lang}") }}</p>@endif
                                                                         </div>
                                                                     @endif
                                                                 @endforeach
