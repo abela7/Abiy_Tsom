@@ -10,7 +10,8 @@
       "Bash(php artisan route:list --name=suggestions)",
       "Bash(php artisan test)",
       "Bash(php artisan test --filter=test_writer_can_submit_lectionary_all_in_one)",
-      "Bash(php -r \":*)"
+      "Bash(php -r \":*)",
+      "WebFetch(domain:abiytsom.abuneteklehaymanot.org)"
     ]
   }
 }

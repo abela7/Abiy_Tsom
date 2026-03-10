@@ -2589,24 +2589,6 @@ class TelegramWebhookController extends Controller
             );
         }
 
-        if (str_starts_with($action, 'suggest_geez_line_')) {
-            $line = str_replace('suggest_geez_line_', '', $action);
-            $state = TelegramBotState::getActive($chatId, 'suggest');
-            if (! $state) {
-                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
-            }
-
-            $state->advance('enter_detail', ['lectionary_geez_line' => $line]);
-
-            return $this->replyOrEdit(
-                $telegramService,
-                $chatId,
-                $this->structuredSuggestPrompt('enter_detail', $state->data ?? []),
-                $this->structuredSuggestKeyboardForStep('enter_detail', $state),
-                $messageId
-            );
-        }
-
         if (str_starts_with($action, 'suggest_resource_type_')) {
             $resourceType = str_replace('suggest_resource_type_', '', $action);
             $state = TelegramBotState::getActive($chatId, 'suggest');
@@ -2888,7 +2870,7 @@ class TelegramWebhookController extends Controller
 
         // Extract section data from flat fields into lect_sections
         $sectionData = [];
-        $refKeys = ['lectionary_chapter', 'lectionary_verse_range', 'lectionary_book', 'lectionary_book_label', 'lectionary_geez_line'];
+        $refKeys = ['lectionary_chapter', 'lectionary_verse_range', 'lectionary_book', 'lectionary_book_label', 'mesbak_geez_1', 'mesbak_geez_2', 'mesbak_geez_3'];
         foreach ($refKeys as $key) {
             if (! empty($data[$key])) {
                 $sectionData[$key] = $data[$key];
@@ -3066,6 +3048,9 @@ class TelegramWebhookController extends Controller
         $fieldForStep = [
             'enter_chapter' => 'lectionary_chapter',
             'enter_verse_range' => 'lectionary_verse_range',
+            'enter_geez_1' => 'mesbak_geez_1',
+            'enter_geez_2' => 'mesbak_geez_2',
+            'enter_geez_3' => 'mesbak_geez_3',
         ];
         if ($isBilingual) {
             $fieldForStep[$currentStep] = match ($currentStep) {
@@ -3214,6 +3199,13 @@ class TelegramWebhookController extends Controller
                 $ref = $this->structuredSuggestBuildLectionaryReference($sData);
                 if ($ref !== null) {
                     $lines[] = '<b>Ref:</b> '.htmlspecialchars($ref, ENT_QUOTES, 'UTF-8');
+                }
+                // Show Geez lines for mesbak
+                for ($g = 1; $g <= 3; $g++) {
+                    $geez = (string) ($sData["mesbak_geez_{$g}"] ?? '');
+                    if ($geez !== '') {
+                        $lines[] = "<b>Geez {$g}:</b> ".htmlspecialchars($geez, ENT_QUOTES, 'UTF-8');
+                    }
                 }
                 foreach (['am' => '🇪🇹', 'en' => '🇬🇧'] as $lang => $flag) {
                     foreach (['title', 'content_detail'] as $field) {
@@ -3905,19 +3897,6 @@ class TelegramWebhookController extends Controller
         return ['inline_keyboard' => $rows];
     }
 
-    private function structuredSuggestGeezLineKeyboard(): array
-    {
-        return ['inline_keyboard' => [
-            [['text' => __('app.telegram_suggest_geez_line_1'), 'callback_data' => 'suggest_geez_line_1']],
-            [['text' => __('app.telegram_suggest_geez_line_2'), 'callback_data' => 'suggest_geez_line_2']],
-            [['text' => __('app.telegram_suggest_geez_line_3'), 'callback_data' => 'suggest_geez_line_3']],
-            [
-                ['text' => '⬅️ '.__('app.telegram_suggest_back'), 'callback_data' => 'suggest_back'],
-                ['text' => '❌ '.__('app.telegram_suggest_cancel'), 'callback_data' => 'suggest_cancel'],
-            ],
-        ]];
-    }
-
     private function structuredSuggestConfirmDatePrompt(array $data): string
     {
         $month = (int) ($data['ethiopian_month'] ?? 0);
@@ -4040,7 +4019,6 @@ class TelegramWebhookController extends Controller
             ),
             'confirm_date' => $this->structuredSuggestConfirmDateKeyboard(),
             'choose_book' => $this->structuredSuggestLectionaryBookKeyboard($state),
-            'choose_geez_line' => $this->structuredSuggestGeezLineKeyboard(),
             'choose_resource_type' => $this->structuredSuggestResourceTypeKeyboard(),
             'choose_main' => $this->structuredSuggestMainChoiceKeyboard(),
             'offer_other_language' => $this->suggestOfferOtherLanguageKeyboard(
@@ -4091,7 +4069,9 @@ class TelegramWebhookController extends Controller
             'awaiting_continue' => __('app.telegram_suggest_continue_prompt', ['date' => $this->structuredSuggestDateLabel($data)]),
             'confirm_date' => $this->structuredSuggestConfirmDatePrompt($data),
             'choose_book' => __('app.telegram_suggest_choose_book'),
-            'choose_geez_line' => __('app.telegram_suggest_choose_geez_line'),
+            'enter_geez_1' => __('app.telegram_suggest_enter_geez_line', ['n' => 1]),
+            'enter_geez_2' => __('app.telegram_suggest_enter_geez_line', ['n' => 2]),
+            'enter_geez_3' => __('app.telegram_suggest_enter_geez_line', ['n' => 3]),
             'choose_resource_type' => __('app.telegram_suggest_choose_resource_type'),
             'enter_chapter' => match ((string) ($data['lectionary_section'] ?? '')) {
                 'mesbak' => __('app.telegram_suggest_enter_psalm_number'),
@@ -4165,7 +4145,7 @@ class TelegramWebhookController extends Controller
             $refSteps = match ($lectionarySection) {
                 'pauline', 'catholic', 'gospel' => ['choose_book', 'enter_chapter', 'enter_verse_range'],
                 'acts' => ['enter_chapter', 'enter_verse_range'],
-                'mesbak' => ['enter_chapter', 'enter_verse_range', 'choose_geez_line'],
+                'mesbak' => ['enter_chapter', 'enter_verse_range', 'enter_geez_1', 'enter_geez_2', 'enter_geez_3'],
                 'qiddase', 'title_description' => [],
                 default => [],
             };
@@ -4194,13 +4174,14 @@ class TelegramWebhookController extends Controller
         $langPhase = (int) $state->get('lang_phase', 1);
 
         // In the second language phase, all fields are optional (user can skip any)
-        if ($langPhase === 2 && in_array($step, ['enter_reference', 'enter_summary', 'enter_text', 'enter_title', 'enter_url', 'enter_detail'], true)) {
+        if ($langPhase === 2 && in_array($step, ['enter_reference', 'enter_summary', 'enter_text', 'enter_title', 'enter_url', 'enter_detail', 'enter_geez_1', 'enter_geez_2', 'enter_geez_3'], true)) {
             return true;
         }
 
         return match ($step) {
             'await_image' => true,
             'enter_summary', 'enter_text' => true,
+            'enter_geez_1', 'enter_geez_2', 'enter_geez_3' => true,
             'enter_url' => in_array($contentArea, ['mezmur', 'spiritual_book'], true),
             'enter_detail' => in_array($contentArea, ['mezmur', 'spiritual_book', 'reference_resource', 'bible_reading', 'lectionary'], true),
             default => false,
@@ -4473,10 +4454,6 @@ class TelegramWebhookController extends Controller
             if ($verseRange !== '') {
                 $ref .= ':'.$verseRange;
             }
-            if (! empty($data['lectionary_geez_line'])) {
-                $lineKey = 'telegram_suggest_geez_line_'.((string) $data['lectionary_geez_line']);
-                $ref .= ' ('.__('app.'.$lineKey).')';
-            }
 
             return $ref;
         }
@@ -4532,7 +4509,6 @@ class TelegramWebhookController extends Controller
             'lectionary_book_label' => $data['lectionary_book_label'] ?? null,
             'lectionary_chapter' => $data['lectionary_chapter'] ?? null,
             'lectionary_verse_range' => $data['lectionary_verse_range'] ?? null,
-            'lectionary_geez_line' => $data['lectionary_geez_line'] ?? null,
             'resource_type' => $data['resource_type'] ?? null,
             'resource_type_label' => ! empty($data['resource_type'])
                 ? $this->structuredSuggestResourceTypeLabel((string) $data['resource_type'])
@@ -4546,7 +4522,7 @@ class TelegramWebhookController extends Controller
             $sections = [];
             foreach ((array) $data['lect_sections'] as $section => $sData) {
                 $sPayload = [];
-                foreach (['lectionary_book', 'lectionary_book_label', 'lectionary_chapter', 'lectionary_verse_range', 'lectionary_geez_line'] as $key) {
+                foreach (['lectionary_book', 'lectionary_book_label', 'lectionary_chapter', 'lectionary_verse_range', 'mesbak_geez_1', 'mesbak_geez_2', 'mesbak_geez_3'] as $key) {
                     if (! empty($sData[$key])) {
                         $sPayload[$key] = $sData[$key];
                     }

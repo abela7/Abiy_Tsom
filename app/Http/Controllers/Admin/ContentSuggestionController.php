@@ -315,6 +315,9 @@ class ContentSuggestionController extends Controller
             'mesbak' => array_filter([
                 'mesbak_psalm' => $data['lectionary_chapter'] ?? null,
                 'mesbak_verses' => $data['lectionary_verse_range'] ?? null,
+                'mesbak_geez_1' => $data['mesbak_geez_1'] ?? null,
+                'mesbak_geez_2' => $data['mesbak_geez_2'] ?? null,
+                'mesbak_geez_3' => $data['mesbak_geez_3'] ?? null,
                 'mesbak_text_en' => $data['content_detail_en'] ?? null,
                 'mesbak_text_am' => $data['content_detail_am'] ?? null,
             ]),
