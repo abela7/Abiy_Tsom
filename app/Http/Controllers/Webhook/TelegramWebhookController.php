@@ -3301,13 +3301,14 @@ class TelegramWebhookController extends Controller
             'lang_phase' => 1,
         ]));
 
-        return $this->replyOrEdit(
-            $telegramService,
-            $chatId,
-            $this->structuredSuggestPrompt($firstFieldStep, $state->data ?? []),
-            $this->structuredSuggestKeyboardForStep($firstFieldStep, $state),
-            $messageId
-        );
+        $prompt = $this->structuredSuggestPrompt($firstFieldStep, $state->data ?? []);
+        $keyboard = $this->structuredSuggestKeyboardForStep($firstFieldStep, $state);
+
+        if ($messageId === 0) {
+            return $this->suggestReplyAndTrack($telegramService, $state, $chatId, $prompt, $keyboard);
+        }
+
+        return $this->replyOrEdit($telegramService, $chatId, $prompt, $keyboard, $messageId);
     }
 
     private function suggestStartSynaxariumEnglishPhase(
@@ -3323,13 +3324,14 @@ class TelegramWebhookController extends Controller
             'lang_phase' => 2,
         ]));
 
-        return $this->replyOrEdit(
-            $telegramService,
-            $chatId,
-            $this->structuredSuggestPrompt($firstFieldStep, $state->data ?? []),
-            $this->structuredSuggestKeyboardForStep($firstFieldStep, $state),
-            $messageId
-        );
+        $prompt = $this->structuredSuggestPrompt($firstFieldStep, $state->data ?? []);
+        $keyboard = $this->structuredSuggestKeyboardForStep($firstFieldStep, $state);
+
+        if ($messageId === 0) {
+            return $this->suggestReplyAndTrack($telegramService, $state, $chatId, $prompt, $keyboard);
+        }
+
+        return $this->replyOrEdit($telegramService, $chatId, $prompt, $keyboard, $messageId);
     }
 
     /**
@@ -3438,13 +3440,14 @@ class TelegramWebhookController extends Controller
             $state->expires_at = now()->addHour();
             $state->save();
 
-            return $this->replyOrEdit(
-                $telegramService, $chatId,
-                $this->structuredSuggestPrompt('lect_section_intro', $data),
-                $this->structuredSuggestKeyboardForStep('lect_section_intro', $state),
-                $messageId,
-                'HTML'
-            );
+            $prompt = $this->structuredSuggestPrompt('lect_section_intro', $data);
+            $keyboard = $this->structuredSuggestKeyboardForStep('lect_section_intro', $state);
+
+            if ($messageId === 0) {
+                return $this->suggestReplyAndTrack($telegramService, $state, $chatId, $prompt, $keyboard, 'HTML');
+            }
+
+            return $this->replyOrEdit($telegramService, $chatId, $prompt, $keyboard, $messageId, 'HTML');
         }
 
         return $this->lectFinishAllSections($chatId, $messageId, $state, $telegramService, $data);
@@ -3470,13 +3473,14 @@ class TelegramWebhookController extends Controller
         if ($nextSection !== null) {
             $state->advance('lect_section_intro', ['lect_current_section' => $nextSection]);
 
-            return $this->replyOrEdit(
-                $telegramService, $chatId,
-                $this->structuredSuggestPrompt('lect_section_intro', $state->data ?? []),
-                $this->structuredSuggestKeyboardForStep('lect_section_intro', $state),
-                $messageId,
-                'HTML'
-            );
+            $prompt = $this->structuredSuggestPrompt('lect_section_intro', $state->data ?? []);
+            $keyboard = $this->structuredSuggestKeyboardForStep('lect_section_intro', $state);
+
+            if ($messageId === 0) {
+                return $this->suggestReplyAndTrack($telegramService, $state, $chatId, $prompt, $keyboard, 'HTML');
+            }
+
+            return $this->replyOrEdit($telegramService, $chatId, $prompt, $keyboard, $messageId, 'HTML');
         }
 
         return $this->lectFinishAllSections($chatId, $messageId, $state, $telegramService, $data);

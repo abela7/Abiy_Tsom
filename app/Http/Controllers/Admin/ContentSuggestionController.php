@@ -20,6 +20,7 @@ use App\Services\EthiopianCalendarService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -47,6 +48,7 @@ class ContentSuggestionController extends Controller
         }
 
         $suggestions = $query->get();
+        $groupedSuggestions = $this->groupSuggestionsByEthiopianDateAndType($suggestions);
         $counts = [
             'all'      => ContentSuggestion::count(),
             'pending'  => ContentSuggestion::where('status', 'pending')->whereNull('used_at')->count(),
@@ -54,7 +56,110 @@ class ContentSuggestionController extends Controller
             'rejected' => ContentSuggestion::where('status', 'rejected')->count(),
         ];
 
-        return view('admin.suggestions.index', compact('suggestions', 'filter', 'counts'));
+        return view('admin.suggestions.index', compact('suggestions', 'groupedSuggestions', 'filter', 'counts'));
+    }
+
+    private function groupSuggestionsByEthiopianDateAndType(Collection $suggestions): Collection
+    {
+        $sorted = $suggestions->sort(function (ContentSuggestion $a, ContentSuggestion $b): int {
+            return [
+                $this->suggestionMonthSortValue($a),
+                $this->suggestionDaySortValue($a),
+                $a->typeLabel(),
+                $a->created_at?->getTimestamp() ? -1 * $a->created_at->getTimestamp() : 0,
+            ] <=> [
+                $this->suggestionMonthSortValue($b),
+                $this->suggestionDaySortValue($b),
+                $b->typeLabel(),
+                $b->created_at?->getTimestamp() ? -1 * $b->created_at->getTimestamp() : 0,
+            ];
+        })->values();
+
+        return $sorted
+            ->groupBy(fn (ContentSuggestion $suggestion) => $this->suggestionMonthGroupKey($suggestion))
+            ->map(function (Collection $monthSuggestions): array {
+                $monthSuggestions = $monthSuggestions->values();
+                $monthSuggestion = $monthSuggestions->first();
+
+                return [
+                    'label' => $this->suggestionMonthGroupLabel($monthSuggestion),
+                    'days' => $monthSuggestions
+                        ->groupBy(fn (ContentSuggestion $suggestion) => $this->suggestionDayGroupKey($suggestion))
+                        ->map(function (Collection $daySuggestions): array {
+                            $daySuggestions = $daySuggestions->sortBy(fn (ContentSuggestion $suggestion) => $suggestion->typeLabel())->values();
+                            $daySuggestion = $daySuggestions->first();
+
+                            return [
+                                'label' => $this->suggestionDayGroupLabel($daySuggestion),
+                                'types' => $daySuggestions
+                                    ->groupBy(fn (ContentSuggestion $suggestion) => $suggestion->typeLabel())
+                                    ->map(fn (Collection $typeSuggestions, string $typeLabel): array => [
+                                        'label' => $typeLabel,
+                                        'items' => $typeSuggestions->sortByDesc('created_at')->values(),
+                                    ]),
+                            ];
+                        }),
+                ];
+            });
+    }
+
+    private function suggestionMonthSortValue(ContentSuggestion $suggestion): int
+    {
+        if ($suggestion->content_area === 'synaxarium_celebration' && $suggestion->entry_scope === 'monthly') {
+            return 0;
+        }
+
+        return (int) ($suggestion->ethiopian_month ?? 99);
+    }
+
+    private function suggestionDaySortValue(ContentSuggestion $suggestion): int
+    {
+        return (int) ($suggestion->ethiopian_day ?? 99);
+    }
+
+    private function suggestionMonthGroupKey(ContentSuggestion $suggestion): string
+    {
+        return sprintf('%02d', $this->suggestionMonthSortValue($suggestion));
+    }
+
+    private function suggestionDayGroupKey(ContentSuggestion $suggestion): string
+    {
+        return sprintf('%02d', $this->suggestionDaySortValue($suggestion));
+    }
+
+    private function suggestionMonthGroupLabel(ContentSuggestion $suggestion): string
+    {
+        if ($suggestion->content_area === 'synaxarium_celebration' && $suggestion->entry_scope === 'monthly') {
+            return __('app.telegram_suggest_scope_monthly');
+        }
+
+        $month = (int) ($suggestion->ethiopian_month ?? 0);
+
+        return match ($month) {
+            1 => 'Meskerem',
+            2 => 'Tikimt',
+            3 => 'Hidar',
+            4 => 'Tahsas',
+            5 => 'Tir',
+            6 => 'Yekatit',
+            7 => 'Megabit',
+            8 => 'Miyazia',
+            9 => 'Ginbot',
+            10 => 'Sene',
+            11 => 'Hamle',
+            12 => 'Nehase',
+            13 => 'Pagumen',
+            default => __('app.telegram_suggest_unknown_date'),
+        };
+    }
+
+    private function suggestionDayGroupLabel(ContentSuggestion $suggestion): string
+    {
+        if (! $suggestion->ethiopian_day) {
+            return __('app.telegram_suggest_unknown_date');
+        }
+
+        return __('app.synaxarium_day_number_short', ['day' => $suggestion->ethiopian_day]);
     }
 
     /**
