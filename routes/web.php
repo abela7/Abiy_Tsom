@@ -148,6 +148,9 @@ Route::middleware(['auth', 'admin.audit'])->prefix('admin')->name('admin.')->gro
     Route::middleware('admin_role:writer,editor,admin')->group(function () {
         // My suggestions (writer sees their own submissions)
         Route::get('/suggestions/my', [App\Http\Controllers\ContentSuggestionController::class, 'my'])->name('suggestions.my');
+        // Advanced suggestion wizard (mirrors Telegram suggest flow)
+        Route::get('/suggest/advanced', [Admin\AdvancedSuggestionController::class, 'create'])->name('advanced-suggestions.create');
+        Route::post('/suggest/advanced', [Admin\AdvancedSuggestionController::class, 'store'])->name('advanced-suggestions.store');
         Route::get('/profile', [Admin\ProfileController::class, 'edit'])->name('profile.edit');
         Route::put('/profile', [Admin\ProfileController::class, 'update'])->name('profile.update');
 

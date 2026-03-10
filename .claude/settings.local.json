@@ -15,7 +15,9 @@
       "Bash(php artisan test --filter=test_writer_can_submit_synaxarium_with_both_languages)",
       "Bash(grep -n \"if \\($action === ''suggest_back''\\)\" \"c:/xampp/htdocs/Abiy_Tsom/app/Http/Controllers/Webhook/TelegramWebhookController.php\")",
       "Bash(php artisan make:migration add_lyrics_to_daily_content_mezmurs_table --table=daily_content_mezmurs)",
-      "Bash(php artisan migrate)"
+      "Bash(php artisan migrate)",
+      "Bash(php artisan route:list --name=advanced)",
+      "Bash(php artisan view:cache)"
     ]
   }
 }
