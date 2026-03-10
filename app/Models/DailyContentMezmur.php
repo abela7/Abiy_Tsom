@@ -22,6 +22,8 @@ class DailyContentMezmur extends Model
         'url_am',
         'description_en',
         'description_am',
+        'lyrics_en',
+        'lyrics_am',
         'sort_order',
     ];
 

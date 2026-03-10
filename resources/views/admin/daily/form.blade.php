@@ -430,6 +430,7 @@
                                     <input type="text" x-model="mezmur.title_am" placeholder="{{ __('app.name_amharic_label') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
                                     <textarea x-model="mezmur.description_am" rows="2" placeholder="{{ __('app.description_label') }} ({{ __('app.amharic') }})" class="w-full min-h-[4rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
                                     <input type="url" x-model="mezmur.url_am" placeholder="{{ __('app.url_placeholder') }} ({{ __('app.amharic') }})" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                                    <textarea x-model="mezmur.lyrics_am" rows="4" placeholder="{{ __('app.lyrics_label') }} ({{ __('app.amharic') }})" class="w-full min-h-[6rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
                                 </div>
 
                                 <div class="space-y-2 rounded-lg bg-white/40 border border-accent-secondary/20 p-3">
@@ -437,6 +438,7 @@
                                     <input type="text" x-model="mezmur.title_en" placeholder="{{ __('app.name_english_label') }}" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
                                     <textarea x-model="mezmur.description_en" rows="2" placeholder="{{ __('app.description_label') }} ({{ __('app.english') }})" class="w-full min-h-[4rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
                                     <input type="url" x-model="mezmur.url_en" placeholder="{{ __('app.url_placeholder') }} ({{ __('app.english') }})" class="w-full min-h-12 px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
+                                    <textarea x-model="mezmur.lyrics_en" rows="4" placeholder="{{ __('app.lyrics_label') }} ({{ __('app.english') }})" class="w-full min-h-[6rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition">
                                 </div>
                             </div>
                         </div>
@@ -793,7 +795,7 @@
 
                     init() {
                         if (!Array.isArray(this.form.mezmurs) || this.form.mezmurs.length === 0) {
-                            this.form.mezmurs = [{ title_en: '', title_am: '', url_en: '', url_am: '', description_en: '', description_am: '' }];
+                            this.form.mezmurs = [{ title_en: '', title_am: '', url_en: '', url_am: '', description_en: '', description_am: '', lyrics_en: '', lyrics_am: '' }];
                         }
                         if (!Array.isArray(this.form.references) || this.form.references.length === 0) {
                             this.form.references = [{ name_en: '', name_am: '', url_en: '', url_am: '', type: 'website' }];
@@ -851,6 +853,8 @@
                             url_am: '',
                             description_en: '',
                             description_am: '',
+                            lyrics_en: '',
+                            lyrics_am: '',
                         });
                     },
 
@@ -863,6 +867,8 @@
                                 url_am: '',
                                 description_en: '',
                                 description_am: '',
+                                lyrics_en: '',
+                                lyrics_am: '',
                             };
                             return;
                         }
@@ -926,6 +932,8 @@
                             url_am: m.url_am || m.url || '',
                             description_en: m.description_en || '',
                             description_am: m.description_am || '',
+                            lyrics_en: m.lyrics_en || '',
+                            lyrics_am: m.lyrics_am || '',
                         };
                         if (blank) {
                             this.form.mezmurs[0] = entry;
@@ -1083,8 +1091,10 @@
                                     url_am: m.url_am ?? m.url ?? '',
                                     description_en: m.description_en ?? '',
                                     description_am: m.description_am ?? '',
+                                    lyrics_en: m.lyrics_en ?? '',
+                                    lyrics_am: m.lyrics_am ?? '',
                                 }))
-                                : [{ title_en: '', title_am: '', url_en: '', url_am: '', description_en: '', description_am: '' }];
+                                : [{ title_en: '', title_am: '', url_en: '', url_am: '', description_en: '', description_am: '', lyrics_en: '', lyrics_am: '' }];
                             this.form.references = Array.isArray(data.references) && data.references.length > 0
                                 ? data.references.map((r) => ({
                                     name_en: r.name_en ?? '',
@@ -1250,6 +1260,8 @@
                                 url_am: item.url_am || '',
                                 description_en: item.description_en || '',
                                 description_am: item.description_am || '',
+                                lyrics_en: item.lyrics_en || '',
+                                lyrics_am: item.lyrics_am || '',
                             }));
                         } else if (step === 4) {
                             payload.sinksar_title_am = this.form.sinksar_title_am;

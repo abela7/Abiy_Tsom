@@ -200,6 +200,8 @@ class DailyContentController extends Controller
             'url_am' => $m->url_am ?? $m->url ?? '',
             'description_en' => $m->description_en ?? '',
             'description_am' => $m->description_am ?? '',
+            'lyrics_en' => $m->lyrics_en ?? '',
+            'lyrics_am' => $m->lyrics_am ?? '',
         ])->values()->toArray();
 
         $references = $source->references->map(fn ($r) => [
@@ -398,6 +400,8 @@ class DailyContentController extends Controller
                     'mezmurs.*.url_am' => ['nullable', 'url', 'max:500'],
                     'mezmurs.*.description_en' => ['nullable', 'string'],
                     'mezmurs.*.description_am' => ['nullable', 'string'],
+                    'mezmurs.*.lyrics_en' => ['nullable', 'string'],
+                    'mezmurs.*.lyrics_am' => ['nullable', 'string'],
                 ]);
                 $this->syncMezmurs($daily, $this->parseMezmurs($request));
                 break;
@@ -571,6 +575,8 @@ class DailyContentController extends Controller
                 'daily_content_mezmurs.url_am',
                 'daily_content_mezmurs.description_en',
                 'daily_content_mezmurs.description_am',
+                'daily_content_mezmurs.lyrics_en',
+                'daily_content_mezmurs.lyrics_am',
                 'daily_contents.day_number',
                 'daily_contents.date'
             )
@@ -589,6 +595,8 @@ class DailyContentController extends Controller
             'url_am'         => $row->url_am ?? null,
             'description_en' => $row->description_en,
             'description_am' => $row->description_am,
+            'lyrics_en'      => $row->lyrics_en,
+            'lyrics_am'      => $row->lyrics_am,
             'day_number'     => (int) $row->day_number,
             'date'           => $row->date instanceof \DateTimeInterface ? $row->date->format('Y-m-d') : (string) $row->date,
         ])->unique(fn (array $m) => trim(($m['title_am'] ?? '').'|'.($m['url_am'] ?? '').($m['url_en'] ?? '')))->values()->toArray();
@@ -712,6 +720,8 @@ class DailyContentController extends Controller
             'mezmurs.*.url_am' => ['nullable', 'url', 'max:500'],
             'mezmurs.*.description_en' => ['nullable', 'string'],
             'mezmurs.*.description_am' => ['nullable', 'string'],
+            'mezmurs.*.lyrics_en' => ['nullable', 'string'],
+            'mezmurs.*.lyrics_am' => ['nullable', 'string'],
             'sinksar_title_en' => ['nullable', 'string', 'max:255'],
             'sinksar_title_am' => ['nullable', 'string', 'max:255'],
             'sinksar_url_en' => ['nullable', 'url', 'max:500'],
@@ -766,6 +776,8 @@ class DailyContentController extends Controller
                 'url_am' => trim((string) ($m['url_am'] ?? '')) ?: null,
                 'description_en' => trim((string) ($m['description_en'] ?? '')) ?: null,
                 'description_am' => trim((string) ($m['description_am'] ?? '')) ?: null,
+                'lyrics_en' => trim((string) ($m['lyrics_en'] ?? '')) ?: null,
+                'lyrics_am' => trim((string) ($m['lyrics_am'] ?? '')) ?: null,
             ];
         }
 
@@ -787,6 +799,8 @@ class DailyContentController extends Controller
                 'url' => $m['url_en'] ?? $m['url_am'] ?? null,
                 'description_en' => $m['description_en'],
                 'description_am' => $m['description_am'],
+                'lyrics_en' => $m['lyrics_en'] ?? null,
+                'lyrics_am' => $m['lyrics_am'] ?? null,
                 'sort_order' => $i,
             ]);
         }
