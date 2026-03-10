@@ -459,22 +459,38 @@ class TelegramStaffPortalTest extends TestCase
         $this->assertSame('lect_section_intro', $state->step);
         $this->assertSame('title_description', $state->get('lect_current_section'));
 
-        // Fill title_description section
+        // Fill title_description: Amharic title/detail then English title/detail
         $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'lect_fill'))->assertOk();
         $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->messagePayload($chat, 'የዕለቱ ርዕስ'))->assertOk();
         $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->messagePayload($chat, 'የዕለቱ ገለፃ'))->assertOk();
+
+        // After Amharic, now prompted for English (same section, lang_phase 2)
+        $state->refresh();
+        $this->assertSame(2, $state->get('lang_phase'));
+        $this->assertSame('en', $state->get('current_language'));
+
+        // Enter English title and detail (both optional — skip detail)
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->messagePayload($chat, 'Daily Title'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->messagePayload($chat, 'Daily Description'))->assertOk();
 
         // Auto-advanced to next section intro (pauline)
         $state->refresh();
         $this->assertSame('lect_section_intro', $state->step);
         $this->assertSame('pauline', $state->get('lect_current_section'));
 
-        // Fill pauline section (choose book → chapter → verse → detail)
+        // Fill pauline: book → chapter → verse → Amharic text → English text
         $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'lect_fill'))->assertOk();
         $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_book_ሮሜ'))->assertOk();
         $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->messagePayload($chat, '5'))->assertOk();
         $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->messagePayload($chat, '1-11'))->assertOk();
         $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->messagePayload($chat, 'ጳውሎስ ጽሑፍ'))->assertOk();
+
+        // After Amharic detail, prompted for English detail (same section)
+        $state->refresh();
+        $this->assertSame(2, $state->get('lang_phase'));
+
+        // Enter English text for pauline
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->messagePayload($chat, 'Pauline text'))->assertOk();
 
         // Auto-advanced to catholic section intro
         $state->refresh();
@@ -482,18 +498,17 @@ class TelegramStaffPortalTest extends TestCase
         $this->assertSame('catholic', $state->get('lect_current_section'));
 
         // Skip remaining sections (catholic through qiddase)
-        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'lect_skip'))->assertOk(); // skip catholic
-        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'lect_skip'))->assertOk(); // skip acts
-        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'lect_skip'))->assertOk(); // skip mesbak
-        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'lect_skip'))->assertOk(); // skip gospel
-        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'lect_skip'))->assertOk(); // skip qiddase
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'lect_skip'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'lect_skip'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'lect_skip'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'lect_skip'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'lect_skip'))->assertOk();
 
-        // Now at lect_offer_english
+        // Now directly at preview (no lect_offer_english step)
         $state->refresh();
-        $this->assertSame('lect_offer_english', $state->step);
+        $this->assertSame('preview', $state->step);
 
-        // Skip English → preview → confirm
-        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'lect_english_skip'))->assertOk();
+        // Confirm
         $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_confirm'))->assertOk();
 
         // Verify suggestion created
@@ -502,7 +517,6 @@ class TelegramStaffPortalTest extends TestCase
             'source' => 'telegram',
             'type' => 'bible',
             'content_area' => 'lectionary',
-            'language' => 'am',
             'ethiopian_month' => 7,
             'ethiopian_day' => 1,
             'status' => 'pending',
@@ -518,9 +532,12 @@ class TelegramStaffPortalTest extends TestCase
         $this->assertArrayHasKey('pauline', $sections);
         $this->assertSame('የዕለቱ ርዕስ', $sections['title_description']['title_am']);
         $this->assertSame('የዕለቱ ገለፃ', $sections['title_description']['content_detail_am']);
+        $this->assertSame('Daily Title', $sections['title_description']['title_en']);
+        $this->assertSame('Daily Description', $sections['title_description']['content_detail_en']);
         $this->assertSame('5', $sections['pauline']['lectionary_chapter']);
         $this->assertSame('1-11', $sections['pauline']['lectionary_verse_range']);
         $this->assertSame('ጳውሎስ ጽሑፍ', $sections['pauline']['content_detail_am']);
+        $this->assertSame('Pauline text', $sections['pauline']['content_detail_en']);
         $this->assertSame('awaiting_continue', TelegramBotState::getActive($chat, 'suggest')?->step);
     }
 
