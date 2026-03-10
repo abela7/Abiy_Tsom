@@ -69,7 +69,8 @@ class ContentSuggestion extends Model
             return match ($this->content_area) {
                 'lectionary' => __('app.telegram_suggest_area_lectionary'),
                 'bible_reading' => __('app.telegram_suggest_area_bible_reading'),
-                'synaxarium' => __('app.telegram_suggest_area_synaxarium'),
+                'synaxarium' => __('app.telegram_suggest_area_sinksar'),
+                'synaxarium_celebration' => __('app.telegram_suggest_area_synaxarium_celebration'),
                 'daily_message' => __('app.telegram_suggest_area_daily_message'),
                 'mezmur' => __('app.telegram_suggest_area_mezmur'),
                 'spiritual_book' => __('app.telegram_suggest_area_spiritual_book'),
@@ -105,6 +106,10 @@ class ContentSuggestion extends Model
 
     public function ethiopianDateLabel(): ?string
     {
+        if ($this->content_area === 'synaxarium_celebration' && $this->entry_scope === 'monthly' && $this->ethiopian_day) {
+            return __('app.synaxarium_day_number_short', ['day' => $this->ethiopian_day]);
+        }
+
         if (! $this->ethiopian_month || ! $this->ethiopian_day) {
             return null;
         }
