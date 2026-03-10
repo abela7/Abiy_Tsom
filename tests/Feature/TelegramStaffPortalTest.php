@@ -100,7 +100,7 @@ class TelegramStaffPortalTest extends TestCase
         $this->assertSame('yearly', $suggestion->structuredValue('entry_scope'));
         $this->assertTrue((bool) $suggestion->structuredValue('is_main'));
         $this->assertSame('Saint Tekle Haymanot', $suggestion->structuredValue('title_en'));
-        $this->assertNull(TelegramBotState::getActive('writer-chat', 'suggest'));
+        $this->assertSame('awaiting_continue', TelegramBotState::getActive('writer-chat', 'suggest')?->step);
     }
 
     public function test_writer_can_submit_mezmur_suggestion_via_telegram_wizard(): void
@@ -152,7 +152,7 @@ class TelegramStaffPortalTest extends TestCase
         $this->assertSame('Amazing Grace', $suggestion->structuredValue('title_en'));
         $this->assertSame('https://example.com/mezmur', $suggestion->structuredValue('url_en'));
 
-        $this->assertNull(TelegramBotState::getActive('writer-mezmur-chat', 'suggest'));
+        $this->assertSame('awaiting_continue', TelegramBotState::getActive('writer-mezmur-chat', 'suggest')?->step);
     }
 
     public function test_writer_can_submit_bible_reading_with_both_languages(): void
@@ -212,7 +212,7 @@ class TelegramStaffPortalTest extends TestCase
         $this->assertSame('God so loved the world', $suggestion->structuredValue('summary_en'));
         $this->assertSame('ዮሐንስ 3:16', $suggestion->structuredValue('reference_am'));
         $this->assertSame('en', $suggestion->structuredValue('first_language'));
-        $this->assertNull(TelegramBotState::getActive($chat, 'suggest'));
+        $this->assertSame('awaiting_continue', TelegramBotState::getActive($chat, 'suggest')?->step);
     }
 
     public function test_writer_can_submit_spiritual_book_suggestion(): void
@@ -260,7 +260,7 @@ class TelegramStaffPortalTest extends TestCase
         $this->assertNotNull($suggestion);
         $this->assertSame('The Spiritual Combat', $suggestion->structuredValue('title_en'));
         $this->assertSame('https://example.com/book', $suggestion->structuredValue('url_en'));
-        $this->assertNull(TelegramBotState::getActive($chat, 'suggest'));
+        $this->assertSame('awaiting_continue', TelegramBotState::getActive($chat, 'suggest')?->step);
     }
 
     public function test_writer_can_submit_daily_message_suggestion(): void
@@ -308,7 +308,7 @@ class TelegramStaffPortalTest extends TestCase
         $this->assertSame('የዕለቱ መልዕክት', $suggestion->structuredValue('title_am'));
         $this->assertSame('ዛሬ ስለ ጸሎት ነው', $suggestion->structuredValue('content_detail_am'));
         $this->assertSame('am', $suggestion->structuredValue('first_language'));
-        $this->assertNull(TelegramBotState::getActive($chat, 'suggest'));
+        $this->assertSame('awaiting_continue', TelegramBotState::getActive($chat, 'suggest')?->step);
     }
 
     public function test_writer_can_submit_reference_resource_suggestion(): void
@@ -358,7 +358,7 @@ class TelegramStaffPortalTest extends TestCase
         $this->assertSame('Orthodox Teaching Video', $suggestion->structuredValue('title_en'));
         $this->assertSame('https://youtube.com/watch?v=123', $suggestion->structuredValue('url_en'));
         $this->assertSame('video', $suggestion->structuredValue('resource_type'));
-        $this->assertNull(TelegramBotState::getActive($chat, 'suggest'));
+        $this->assertSame('awaiting_continue', TelegramBotState::getActive($chat, 'suggest')?->step);
     }
 
     public function test_writer_can_submit_synaxarium_with_both_languages(): void
@@ -426,7 +426,7 @@ class TelegramStaffPortalTest extends TestCase
         $this->assertSame('ቅዱስ ገብርኤል', $suggestion->structuredValue('title_am'));
         $this->assertSame('የቅዱስ ገብርኤል በዓል', $suggestion->structuredValue('content_detail_am'));
         $this->assertTrue((bool) $suggestion->structuredValue('is_main'));
-        $this->assertNull(TelegramBotState::getActive($chat, 'suggest'));
+        $this->assertSame('awaiting_continue', TelegramBotState::getActive($chat, 'suggest')?->step);
     }
 
     /**

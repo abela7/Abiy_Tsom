@@ -2236,6 +2236,23 @@ class TelegramWebhookController extends Controller
                 return $this->startSuggestWizard($chatId, $messageId, $telegramService);
             }
 
+            $existingData = $state->data ?? [];
+
+            // If continuing from a previous submission, skip date selection
+            if (! empty($existingData['skip_date_selection']) && ! empty($existingData['ethiopian_month'])) {
+                $nextStep = $area === 'lectionary' ? 'choose_lectionary_section'
+                    : ($area === 'synaxarium' ? 'choose_scope'
+                    : ($area === 'reference_resource' ? 'choose_resource_type'
+                    : 'choose_first_language'));
+
+                $state->advance($nextStep, [
+                    'content_area' => $area,
+                    'skip_date_selection' => null,
+                ]);
+
+                return $this->advanceSuggestStep($chatId, $messageId, '', $state, $telegramService);
+            }
+
             $state->advance('choose_month', ['content_area' => $area]);
 
             return $this->replyOrEdit(
@@ -2543,6 +2560,84 @@ class TelegramWebhookController extends Controller
             return $this->handleSuggestBack($chatId, $messageId, $state, $telegramService);
         }
 
+        // Continue flow after submission — pick another lectionary section
+        if (str_starts_with($action, 'suggest_continue_lect_')) {
+            $section = str_replace('suggest_continue_lect_', '', $action);
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+            $preserved = $state->data ?? [];
+            $filledSections = (array) ($preserved['filled_lectionary_sections'] ?? []);
+
+            // Determine first step for this section
+            $firstStep = match ($section) {
+                'pauline', 'catholic', 'gospel' => 'choose_book',
+                'acts', 'mesbak' => 'enter_chapter',
+                default => 'choose_first_language', // title_description, qiddase
+            };
+
+            $state->update([
+                'step' => $firstStep,
+                'data' => [
+                    'content_area' => 'lectionary',
+                    'lectionary_section' => $section,
+                    'ethiopian_month' => $preserved['ethiopian_month'] ?? null,
+                    'ethiopian_day' => $preserved['ethiopian_day'] ?? null,
+                    'filled_lectionary_sections' => $filledSections,
+                ],
+            ]);
+
+            return $this->replyOrEdit(
+                $telegramService,
+                $chatId,
+                $this->structuredSuggestPrompt($firstStep, $state->data ?? []),
+                $this->structuredSuggestKeyboardForStep($firstStep, $state),
+                $messageId
+            );
+        }
+
+        // Continue flow — pick a different content area for same date
+        if ($action === 'suggest_continue_area') {
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+            $preserved = $state->data ?? [];
+
+            $state->update([
+                'step' => 'choose_area',
+                'data' => [
+                    'ethiopian_month' => $preserved['ethiopian_month'] ?? null,
+                    'ethiopian_day' => $preserved['ethiopian_day'] ?? null,
+                    'skip_date_selection' => true,
+                ],
+            ]);
+
+            return $this->replyOrEdit(
+                $telegramService,
+                $chatId,
+                '💡 '.__('app.telegram_suggest_choose_area'),
+                $this->structuredSuggestAreaKeyboard(),
+                $messageId
+            );
+        }
+
+        // Continue flow — done, go back to main menu
+        if ($action === 'suggest_continue_done') {
+            TelegramBotState::query()->where('chat_id', $chatId)->where('action', 'suggest')->delete();
+
+            $keyboard = $this->mainMenuKeyboard($actor, $telegramAuthService);
+
+            return $this->replyOrEdit(
+                $telegramService,
+                $chatId,
+                __('app.telegram_suggest_continue_finished'),
+                $keyboard,
+                $messageId
+            );
+        }
+
         if ($action === 'suggest_cancel') {
             TelegramBotState::query()->where('chat_id', $chatId)->where('action', 'suggest')->delete();
 
@@ -2580,8 +2675,8 @@ class TelegramWebhookController extends Controller
     {
         return ['inline_keyboard' => [
             [
-                ['text' => '🇬🇧 English', 'callback_data' => 'suggest_first_lang_en'],
                 ['text' => '🇪🇹 አማርኛ', 'callback_data' => 'suggest_first_lang_am'],
+                ['text' => '🇬🇧 English', 'callback_data' => 'suggest_first_lang_en'],
             ],
             [
                 ['text' => '⬅️ '.__('app.telegram_suggest_back'), 'callback_data' => 'suggest_back'],
@@ -2604,6 +2699,32 @@ class TelegramWebhookController extends Controller
         ]];
     }
 
+    private function suggestContinueKeyboard(string $contentArea, array $data): array
+    {
+        $rows = [];
+
+        if ($contentArea === 'lectionary') {
+            // Show remaining lectionary sections
+            $allSections = ['title_description', 'pauline', 'catholic', 'acts', 'mesbak', 'gospel', 'qiddase'];
+            $filled = array_merge(
+                (array) ($data['filled_lectionary_sections'] ?? []),
+                ! empty($data['lectionary_section']) ? [$data['lectionary_section']] : []
+            );
+            $remaining = array_diff($allSections, $filled);
+
+            foreach ($remaining as $section) {
+                $label = $this->structuredSuggestLectionarySectionLabel($section);
+                $rows[] = [['text' => $label, 'callback_data' => 'suggest_continue_lect_'.$section]];
+            }
+        }
+
+        // Always offer to suggest a different content area for same date
+        $rows[] = [['text' => '📝 '.__('app.telegram_suggest_continue_other_area'), 'callback_data' => 'suggest_continue_area']];
+        $rows[] = [['text' => '✅ '.__('app.telegram_suggest_continue_done'), 'callback_data' => 'suggest_continue_done']];
+
+        return ['inline_keyboard' => $rows];
+    }
+
     /**
      * Handles plain-text input during an active suggestion wizard step.
      */
@@ -2617,6 +2738,19 @@ class TelegramWebhookController extends Controller
     ): JsonResponse {
         // Delete user's text message and bot's previous prompt to keep chat clean
         $this->suggestDeleteStaleMessages($chatId, $userMessageId, $state, $telegramService);
+
+        // Ignore text input during continue prompt — user should tap a button
+        if ($state->step === 'awaiting_continue') {
+            $data = $state->data ?? [];
+            $contentArea = (string) ($data['content_area'] ?? '');
+            $dateLabel = $this->structuredSuggestDateLabel($data);
+
+            return $this->suggestReplyAndTrack(
+                $telegramService, $state, $chatId,
+                __('app.telegram_suggest_continue_prompt', ['date' => $dateLabel]),
+                $this->suggestContinueKeyboard($contentArea, $data)
+            );
+        }
 
         return $this->advanceSuggestStep($chatId, 0, $text, $state, $telegramService);
     }
@@ -2924,15 +3058,32 @@ class TelegramWebhookController extends Controller
             );
         }
 
-        $state->clear();
+        $dateLabel = $this->structuredSuggestDateLabel($data);
 
-        $keyboard = $this->mainMenuKeyboard($user, $telegramAuthService);
+        // Offer to continue suggesting for the same date
+        $continueKeyboard = $this->suggestContinueKeyboard($contentArea, $data);
+
+        // Preserve date info for potential continuation
+        $state->update([
+            'step' => 'awaiting_continue',
+            'data' => [
+                'ethiopian_month' => $data['ethiopian_month'] ?? null,
+                'ethiopian_day' => $data['ethiopian_day'] ?? null,
+                'content_area' => $contentArea,
+                'filled_lectionary_sections' => array_values(array_unique(array_merge(
+                    (array) ($data['filled_lectionary_sections'] ?? []),
+                    $contentArea === 'lectionary' && ! empty($data['lectionary_section'])
+                        ? [$data['lectionary_section']]
+                        : []
+                ))),
+            ],
+        ]);
 
         return $this->replyOrEdit(
             $telegramService,
             $chatId,
-            '✅ '.__('app.telegram_suggest_submitted'),
-            $keyboard,
+            '✅ '.__('app.telegram_suggest_submitted')."\n\n".__('app.telegram_suggest_continue_prompt', ['date' => $dateLabel]),
+            $continueKeyboard,
             $messageId
         );
     }
