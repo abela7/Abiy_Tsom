@@ -1,37 +1,12 @@
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}"
-      x-data="{
-        theme: (function(){var stored=localStorage.getItem('theme');var server='{{ $currentMember?->theme ?? 'sepia' }}';var t=(stored==='light'||stored==='sepia'||stored==='dark')?stored:((server==='light'||server==='sepia'||server==='dark')?server:'sepia');return t;})(),
-        locale: '{{ app()->getLocale() }}',
-        applyThemeClasses() {
-          document.documentElement.classList.toggle('dark', this.theme === 'dark');
-          document.documentElement.classList.toggle('theme-sepia', this.theme === 'sepia');
-        },
-        toggleTheme() {
-          const order = ['light', 'sepia', 'dark'];
-          const i = order.indexOf(this.theme);
-          this.theme = order[(i + 1) % 3];
-          localStorage.setItem('theme', this.theme);
-          this.applyThemeClasses();
-          if (window.AbiyTsom?.api) { AbiyTsom.api('/api/member/settings', { theme: this.theme }); }
-        },
-        setLocale(lang) {
-          this.locale = lang;
-          if (window.AbiyTsom?.api) { 
-            AbiyTsom.api('/api/member/settings', { locale: lang }).then(() => {
-              window.location.reload();
-            });
-          } else {
-            window.location.reload();
-          }
-        }
-      }"
-      :class="{ 'dark': theme === 'dark', 'theme-sepia': theme === 'sepia' }"
+      data-server-theme="{{ $currentMember?->theme ?? 'sepia' }}"
+      x-data
+      :class="{ 'dark': $store.app.theme === 'dark', 'theme-sepia': $store.app.theme === 'sepia' }"
       x-init="
-        if (!localStorage.getItem('theme')) { localStorage.setItem('theme', theme); }
-        document.documentElement.classList.toggle('dark', theme === 'dark');
-        document.documentElement.classList.toggle('theme-sepia', theme === 'sepia');
-        window.addEventListener('theme-changed', (e) => { if (e.detail && e.detail.theme) { theme = e.detail.theme; document.documentElement.classList.toggle('dark', theme === 'dark'); document.documentElement.classList.toggle('theme-sepia', theme === 'sepia'); } });
+        if (!localStorage.getItem('theme')) { localStorage.setItem('theme', $store.app.theme); }
+        $store.app.applyThemeClasses();
+        window.addEventListener('theme-changed', (e) => { if (e.detail && e.detail.theme) { $store.app.theme = e.detail.theme; $store.app.applyThemeClasses(); } });
       ">
 <head>
     <meta charset="UTF-8">
@@ -108,8 +83,8 @@
                             class="w-9 h-9 rounded-full bg-muted/70 border border-border/50 flex items-center justify-center hover:bg-muted transition active:scale-95 touch-manipulation"
                             :aria-label="'{{ __('app.language') }}'">
                         {{-- Show the OTHER language's flag as a hint to switch --}}
-                        <span x-show="locale === 'am'" x-cloak class="text-base leading-none">🇬🇧</span>
-                        <span x-show="locale === 'en'" x-cloak class="text-base leading-none">🇪🇹</span>
+                        <span x-show="$store.app.locale === 'am'" x-cloak class="text-base leading-none">🇬🇧</span>
+                        <span x-show="$store.app.locale === 'en'" x-cloak class="text-base leading-none">🇪🇹</span>
                     </button>
                     <div x-show="open"
                          x-transition:enter="transition ease-out duration-100"
@@ -121,41 +96,41 @@
                          @click.away="open = false"
                          class="absolute right-0 mt-2 w-48 bg-card border border-border rounded-xl shadow-2xl overflow-hidden"
                          style="display: none; z-index: 9999;">
-                        <button @click="setLocale('en'); open = false"
+                        <button @click="$store.app.setLocale('en'); open = false"
                                 class="w-full px-4 py-3 text-left text-sm hover:bg-muted transition flex items-center gap-3 touch-manipulation"
-                                :class="locale === 'en' ? 'bg-accent/10 text-accent font-semibold' : 'text-primary'">
+                                :class="$store.app.locale === 'en' ? 'bg-accent/10 text-accent font-semibold' : 'text-primary'">
                             <span class="text-lg">🇬🇧</span>
                             <span>English</span>
-                            <svg x-show="locale === 'en'" class="w-4 h-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg x-show="$store.app.locale === 'en'" class="w-4 h-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                             </svg>
                         </button>
-                        <button @click="setLocale('am'); open = false"
+                        <button @click="$store.app.setLocale('am'); open = false"
                                 class="w-full px-4 py-3 text-left text-sm hover:bg-muted transition flex items-center gap-3 touch-manipulation"
-                                :class="locale === 'am' ? 'bg-accent/10 text-accent font-semibold' : 'text-primary'">
+                                :class="$store.app.locale === 'am' ? 'bg-accent/10 text-accent font-semibold' : 'text-primary'">
                             <span class="text-lg">🇪🇹</span>
                             <span>አማርኛ</span>
-                            <svg x-show="locale === 'am'" class="w-4 h-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg x-show="$store.app.locale === 'am'" class="w-4 h-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                             </svg>
                         </button>
                     </div>
                 </div>
                 <button type="button"
-                        @click="toggleTheme()"
+                        @click="$store.app.toggleTheme()"
                         class="w-9 h-9 rounded-full bg-muted/70 border border-border/50 flex items-center justify-center hover:bg-muted transition active:scale-95"
-                        :aria-label="theme === 'light' ? '{{ __('app.theme_light') }}' : (theme === 'sepia' ? '{{ __('app.theme_sepia') }}' : '{{ __('app.theme_dark') }}')"
+                        :aria-label="$store.app.theme === 'light' ? '{{ __('app.theme_light') }}' : ($store.app.theme === 'sepia' ? '{{ __('app.theme_sepia') }}' : '{{ __('app.theme_dark') }}')"
                         data-tour="theme">
                     {{-- Sun: light theme --}}
-                    <svg x-show="theme === 'light'" x-cloak class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg x-show="$store.app.theme === 'light'" x-cloak class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
                     </svg>
                     {{-- Sepia: warm book-like icon --}}
-                    <svg x-show="theme === 'sepia'" x-cloak class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg x-show="$store.app.theme === 'sepia'" x-cloak class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
                     </svg>
                     {{-- Moon: dark theme --}}
-                    <svg x-show="theme === 'dark'" x-cloak class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg x-show="$store.app.theme === 'dark'" x-cloak class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
                     </svg>
                 </button>
