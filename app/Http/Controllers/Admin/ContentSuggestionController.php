@@ -171,6 +171,12 @@ class ContentSuggestionController extends Controller
             if (! empty($payload["title_{$lang}"])) {
                 $updates["sinksar_title_{$lang}"] = $payload["title_{$lang}"];
             }
+            if (! empty($payload["url_{$lang}"])) {
+                $updates["sinksar_url_{$lang}"] = $payload["url_{$lang}"];
+            }
+            if (! empty($payload["text_{$lang}"])) {
+                $updates["sinksar_text_{$lang}"] = $payload["text_{$lang}"];
+            }
             if (! empty($payload["content_detail_{$lang}"])) {
                 $updates["sinksar_description_{$lang}"] = $payload["content_detail_{$lang}"];
             }
@@ -179,16 +185,37 @@ class ContentSuggestionController extends Controller
             $daily->update($updates);
         }
 
-        // Add sinksar image if present
-        if (! empty($suggestion->image_path) && Storage::disk('public')->exists($suggestion->image_path)) {
-            $maxSort = $daily->sinksarImages()->max('sort_order') ?? 0;
-            DailyContentSinksarImage::create([
-                'daily_content_id' => $daily->id,
-                'image_path' => $suggestion->image_path,
+        $images = (array) ($payload['sinksar_images'] ?? []);
+        if ($images === [] && ! empty($suggestion->image_path)) {
+            $images[] = [
+                'path' => $suggestion->image_path,
                 'caption_en' => $payload['title_en'] ?? null,
                 'caption_am' => $payload['title_am'] ?? null,
-                'sort_order' => $maxSort + 1,
-            ]);
+            ];
+        }
+
+        if ($images !== []) {
+            $maxSort = $daily->sinksarImages()->max('sort_order') ?? 0;
+
+            foreach ($images as $image) {
+                if (! is_array($image)) {
+                    continue;
+                }
+
+                $path = trim((string) ($image['path'] ?? ''));
+                if ($path === '' || ! Storage::disk('public')->exists($path)) {
+                    continue;
+                }
+
+                $maxSort++;
+                DailyContentSinksarImage::create([
+                    'daily_content_id' => $daily->id,
+                    'image_path' => $path,
+                    'caption_en' => trim((string) ($image['caption_en'] ?? '')) ?: null,
+                    'caption_am' => trim((string) ($image['caption_am'] ?? '')) ?: null,
+                    'sort_order' => $maxSort,
+                ]);
+            }
         }
     }
 

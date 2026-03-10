@@ -125,7 +125,7 @@ class TelegramWebhookController extends Controller
                     $telegramService,
                     $chatId,
                     __('app.telegram_suggest_send_photo_or_skip'),
-                    $this->structuredSuggestStepKeyboard('await_image')
+                    $this->structuredSuggestStepKeyboard('await_image', $activeState)
                 );
             }
 
@@ -2348,6 +2348,30 @@ class TelegramWebhookController extends Controller
             return $this->showSuggestPreview($chatId, $messageId, $state, $telegramService);
         }
 
+        if ($action === 'suggest_add_more_images_yes' || $action === 'suggest_add_more_images_no') {
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+
+            $images = (array) $state->get('sinksar_images', []);
+            if ($action === 'suggest_add_more_images_yes' && count($images) < 5) {
+                $state->advance('await_image');
+
+                return $this->replyOrEdit(
+                    $telegramService,
+                    $chatId,
+                    $this->structuredSuggestPrompt('await_image', $state->data ?? []),
+                    $this->structuredSuggestKeyboardForStep('await_image', $state),
+                    $messageId
+                );
+            }
+
+            $state->advance('preview');
+
+            return $this->showSuggestPreview($chatId, $messageId, $state, $telegramService);
+        }
+
         if ($action === 'suggest_today' || $action === 'suggest_tomorrow') {
             $state = TelegramBotState::getActive($chatId, 'suggest');
             if (! $state) {
@@ -2792,6 +2816,20 @@ class TelegramWebhookController extends Controller
         ]];
     }
 
+    private function suggestAddMoreImagesKeyboard(): array
+    {
+        return ['inline_keyboard' => [
+            [
+                ['text' => 'âœ… '.__('app.telegram_suggest_add_another_image_yes'), 'callback_data' => 'suggest_add_more_images_yes'],
+                ['text' => 'âŒ '.__('app.telegram_suggest_add_another_image_no'), 'callback_data' => 'suggest_add_more_images_no'],
+            ],
+            [
+                ['text' => 'â¬…ï¸ '.__('app.telegram_suggest_back'), 'callback_data' => 'suggest_back'],
+                ['text' => 'âŒ '.__('app.telegram_suggest_cancel'), 'callback_data' => 'suggest_cancel'],
+            ],
+        ]];
+    }
+
     /**
      * Auto-set Amharic as first language, advance to first field step, and render its prompt.
      */
@@ -2807,6 +2845,28 @@ class TelegramWebhookController extends Controller
             'first_language' => 'am',
             'current_language' => 'am',
             'lang_phase' => 1,
+        ]));
+
+        return $this->replyOrEdit(
+            $telegramService,
+            $chatId,
+            $this->structuredSuggestPrompt($firstFieldStep, $state->data ?? []),
+            $this->structuredSuggestKeyboardForStep($firstFieldStep, $state),
+            $messageId
+        );
+    }
+
+    private function suggestStartSynaxariumEnglishPhase(
+        string $chatId,
+        int $messageId,
+        TelegramBotState $state,
+        TelegramService $telegramService,
+        array $extraData = []
+    ): JsonResponse {
+        $firstFieldStep = $this->structuredSuggestFirstFieldStep($state);
+        $state->advance($firstFieldStep, array_merge($extraData, [
+            'current_language' => 'en',
+            'lang_phase' => 2,
         ]));
 
         return $this->replyOrEdit(
@@ -3012,7 +3072,7 @@ class TelegramWebhookController extends Controller
         $this->suggestDeleteStaleMessages($chatId, $userMessageId, $state, $telegramService);
 
         // Ignore text input during button-only steps — re-show the step prompt
-        if (in_array($state->step, ['awaiting_continue', 'lect_section_intro'], true)) {
+        if (in_array($state->step, ['awaiting_continue', 'lect_section_intro', 'ask_more_images'], true)) {
             $useHtml = $state->step === 'lect_section_intro' ? 'HTML' : null;
 
             return $this->suggestReplyAndTrack(
@@ -3039,6 +3099,8 @@ class TelegramWebhookController extends Controller
     ): JsonResponse {
         $currentStep = $state->step;
         $input = trim($input);
+        $contentArea = (string) $state->get('content_area', '');
+        $langPhase = (int) $state->get('lang_phase', 1);
 
         $lang = (string) $state->get('current_language', 'en');
         $bilingualSteps = ['enter_reference', 'enter_summary', 'enter_text', 'enter_title', 'enter_url', 'enter_detail'];
@@ -3051,6 +3113,8 @@ class TelegramWebhookController extends Controller
             'enter_geez_1' => 'mesbak_geez_1',
             'enter_geez_2' => 'mesbak_geez_2',
             'enter_geez_3' => 'mesbak_geez_3',
+            'enter_image_caption_am' => 'pending_image_caption_am',
+            'enter_image_caption_en' => 'pending_image_caption_en',
         ];
         if ($isBilingual) {
             $fieldForStep[$currentStep] = match ($currentStep) {
@@ -3070,22 +3134,59 @@ class TelegramWebhookController extends Controller
                 return $this->suggestReplyAndTrack(
                     $telegramService, $state, $chatId,
                     __('app.telegram_suggest_invalid_chapter'),
-                    $this->structuredSuggestStepKeyboard($currentStep)
+                    $this->structuredSuggestStepKeyboard($currentStep, $state)
                 );
             }
             if ($currentStep === 'enter_verse_range' && $input !== '' && ! $this->suggestStepInputLooksVerseRange($input)) {
                 return $this->suggestReplyAndTrack(
                     $telegramService, $state, $chatId,
                     __('app.telegram_suggest_invalid_verse_range'),
-                    $this->structuredSuggestStepKeyboard($currentStep)
+                    $this->structuredSuggestStepKeyboard($currentStep, $state)
                 );
             }
             if ($input === '') {
                 if ($this->structuredSuggestStepIsOptional($state, $currentStep)) {
                     $nextStep = $this->structuredSuggestNextStep($state, $currentStep);
 
+                    if ($contentArea === 'synaxarium' && $langPhase === 1 && $nextStep === 'offer_other_language') {
+                        return $this->suggestStartSynaxariumEnglishPhase($chatId, $messageId, $state, $telegramService);
+                    }
+
                     if ($nextStep === 'lect_section_done') {
                         return $this->lectHandleSectionDone($chatId, $messageId, $state, $telegramService);
+                    }
+
+                    if ($currentStep === 'enter_image_caption_en') {
+                        $images = (array) $state->get('sinksar_images', []);
+                        $pendingPath = trim((string) $state->get('pending_image_path', ''));
+                        if ($pendingPath !== '') {
+                            $images[] = [
+                                'path' => $pendingPath,
+                                'caption_am' => trim((string) $state->get('pending_image_caption_am', '')) ?: null,
+                                'caption_en' => null,
+                            ];
+                        }
+
+                        $state->advance('ask_more_images', [
+                            'sinksar_images' => $images,
+                            'pending_image_path' => null,
+                            'pending_image_caption_am' => null,
+                            'pending_image_caption_en' => null,
+                        ]);
+
+                        if (count($images) >= 5) {
+                            $state->advance('preview');
+
+                            return $this->showSuggestPreview($chatId, $messageId, $state, $telegramService);
+                        }
+
+                        return $this->suggestReplyAndTrack(
+                            $telegramService,
+                            $state,
+                            $chatId,
+                            $this->structuredSuggestPrompt('ask_more_images', $state->data ?? []),
+                            $this->structuredSuggestKeyboardForStep('ask_more_images', $state)
+                        );
                     }
 
                     if ($nextStep === 'preview') {
@@ -3112,7 +3213,7 @@ class TelegramWebhookController extends Controller
                 return $this->suggestReplyAndTrack(
                     $telegramService, $state, $chatId,
                     __('app.telegram_suggest_value_required'),
-                    $this->structuredSuggestStepKeyboard($currentStep)
+                    $this->structuredSuggestStepKeyboard($currentStep, $state)
                 );
             }
 
@@ -3120,7 +3221,7 @@ class TelegramWebhookController extends Controller
                 return $this->suggestReplyAndTrack(
                     $telegramService, $state, $chatId,
                     __('app.telegram_suggest_invalid_url'),
-                    $this->structuredSuggestStepKeyboard($currentStep)
+                    $this->structuredSuggestStepKeyboard($currentStep, $state)
                 );
             }
 
@@ -3128,6 +3229,45 @@ class TelegramWebhookController extends Controller
         }
 
         $nextStep = $this->structuredSuggestNextStep($state, $currentStep);
+
+        if ($contentArea === 'synaxarium' && $langPhase === 1 && $nextStep === 'offer_other_language') {
+            $state->data = array_merge($state->data ?? [], $mergeData);
+
+            return $this->suggestStartSynaxariumEnglishPhase($chatId, $messageId, $state, $telegramService);
+        }
+
+        if ($currentStep === 'enter_image_caption_en') {
+            $images = (array) $state->get('sinksar_images', []);
+            $pendingPath = trim((string) $state->get('pending_image_path', ''));
+            if ($pendingPath !== '') {
+                $images[] = [
+                    'path' => $pendingPath,
+                    'caption_am' => trim((string) ($mergeData['pending_image_caption_am'] ?? $state->get('pending_image_caption_am', ''))) ?: null,
+                    'caption_en' => trim((string) ($mergeData['pending_image_caption_en'] ?? $state->get('pending_image_caption_en', ''))) ?: null,
+                ];
+            }
+
+            $state->advance('ask_more_images', [
+                'sinksar_images' => $images,
+                'pending_image_path' => null,
+                'pending_image_caption_am' => null,
+                'pending_image_caption_en' => null,
+            ]);
+
+            if (count($images) >= 5) {
+                $state->advance('preview');
+
+                return $this->showSuggestPreview($chatId, $messageId, $state, $telegramService);
+            }
+
+            return $this->suggestReplyAndTrack(
+                $telegramService,
+                $state,
+                $chatId,
+                $this->structuredSuggestPrompt('ask_more_images', $state->data ?? []),
+                $this->structuredSuggestKeyboardForStep('ask_more_images', $state)
+            );
+        }
 
         // Lectionary all-in-one: section phase completed
         if ($nextStep === 'lect_section_done') {
@@ -3247,6 +3387,30 @@ class TelegramWebhookController extends Controller
             );
         }
 
+        if ($contentArea === 'synaxarium' && ! empty($data['sinksar_images'])) {
+            $images = (array) $data['sinksar_images'];
+            $lines[] = '<b>Images:</b> '.count($images);
+
+            foreach ($images as $index => $image) {
+                if (! is_array($image)) {
+                    continue;
+                }
+
+                $captionAm = trim((string) ($image['caption_am'] ?? ''));
+                $captionEn = trim((string) ($image['caption_en'] ?? ''));
+                $parts = [];
+                if ($captionAm !== '') {
+                    $parts[] = 'AM: '.$captionAm;
+                }
+                if ($captionEn !== '') {
+                    $parts[] = 'EN: '.$captionEn;
+                }
+
+                $caption = $parts === [] ? __('app.telegram_suggest_no_image_caption') : implode(' | ', $parts);
+                $lines[] = '<i>#'.($index + 1).'</i> '.htmlspecialchars($caption, ENT_QUOTES, 'UTF-8');
+            }
+        }
+
         // Show bilingual content grouped by language (non-lectionary or legacy single-section)
         if ($contentArea !== 'lectionary' || empty($data['lect_sections'])) {
             $this->appendBilingualPreviewLines($lines, $data, $contentArea);
@@ -3280,6 +3444,8 @@ class TelegramWebhookController extends Controller
             ],
             'synaxarium' => [
                 'title' => 'Celebration',
+                'url' => 'Link',
+                'text' => 'Full Text',
                 'content_detail' => 'Description',
             ],
             'mezmur' => [
@@ -3363,8 +3529,8 @@ class TelegramWebhookController extends Controller
                 }
             }
         } else {
-            $hasEn = ! empty($data['reference_en']) || ! empty($data['title_en']) || ! empty($data['content_detail_en']);
-            $hasAm = ! empty($data['reference_am']) || ! empty($data['title_am']) || ! empty($data['content_detail_am']);
+            $hasEn = ! empty($data['reference_en']) || ! empty($data['title_en']) || ! empty($data['url_en']) || ! empty($data['text_en']) || ! empty($data['content_detail_en']);
+            $hasAm = ! empty($data['reference_am']) || ! empty($data['title_am']) || ! empty($data['url_am']) || ! empty($data['text_am']) || ! empty($data['content_detail_am']);
         }
         $language = ($hasEn && $hasAm) ? 'both' : ($hasAm ? 'am' : 'en');
 
@@ -3387,7 +3553,7 @@ class TelegramWebhookController extends Controller
                 'reference' => $this->structuredSuggestStoredReference($data),
                 'url' => $legacyUrl,
                 'content_detail' => $legacyDetail,
-                'image_path' => $data['image_path'] ?? null,
+                'image_path' => $this->structuredSuggestPrimaryImagePath($data),
                 'structured_payload' => $this->structuredSuggestPayload($data),
                 'submitter_name' => $user->name,
                 'status' => 'pending',
@@ -3537,6 +3703,8 @@ class TelegramWebhookController extends Controller
         $fieldForStep = [
             'enter_chapter' => 'lectionary_chapter',
             'enter_verse_range' => 'lectionary_verse_range',
+            'enter_image_caption_am' => 'pending_image_caption_am',
+            'enter_image_caption_en' => 'pending_image_caption_en',
         ];
         if (in_array($prevStep, $bilingualSteps, true)) {
             $fieldForStep[$prevStep] = match ($prevStep) {
@@ -3730,7 +3898,7 @@ class TelegramWebhookController extends Controller
             return $this->suggestReplyAndTrack(
                 $telegramService, $state, $chatId,
                 __('app.telegram_suggest_photo_upload_failed'),
-                $this->structuredSuggestStepKeyboard('await_image')
+                $this->structuredSuggestStepKeyboard('await_image', $state)
             );
         }
 
@@ -3739,7 +3907,7 @@ class TelegramWebhookController extends Controller
             return $this->suggestReplyAndTrack(
                 $telegramService, $state, $chatId,
                 __('app.telegram_suggest_photo_upload_failed'),
-                $this->structuredSuggestStepKeyboard('await_image')
+                $this->structuredSuggestStepKeyboard('await_image', $state)
             );
         }
 
@@ -3748,21 +3916,31 @@ class TelegramWebhookController extends Controller
             $extension = 'jpg';
         }
 
+        $pendingPath = trim((string) $state->get('pending_image_path', ''));
+        if ($pendingPath !== '' && str_starts_with($pendingPath, 'telegram-suggestions/')) {
+            Storage::disk('public')->delete($pendingPath);
+        }
+
         $path = 'telegram-suggestions/'.now()->format('Y/m').'/'.Str::uuid().'.'.$extension;
         if (! Storage::disk('public')->put($path, $download['contents'])) {
             return $this->suggestReplyAndTrack(
                 $telegramService, $state, $chatId,
                 __('app.telegram_suggest_photo_upload_failed'),
-                $this->structuredSuggestStepKeyboard('await_image')
+                $this->structuredSuggestStepKeyboard('await_image', $state)
             );
         }
 
-        $state->advance('enter_detail', ['image_path' => $path]);
+        $state->advance('enter_image_caption_am', [
+            'pending_image_path' => $path,
+            'pending_image_caption_am' => null,
+            'pending_image_caption_en' => null,
+            'image_path' => $path,
+        ]);
 
         return $this->suggestReplyAndTrack(
             $telegramService, $state, $chatId,
-            $this->structuredSuggestPrompt('enter_detail', $state->data ?? []),
-            $this->structuredSuggestKeyboardForStep('enter_detail', $state)
+            $this->structuredSuggestPrompt('enter_image_caption_am', $state->data ?? []),
+            $this->structuredSuggestKeyboardForStep('enter_image_caption_am', $state)
         );
     }
 
@@ -4021,6 +4199,7 @@ class TelegramWebhookController extends Controller
             'choose_book' => $this->structuredSuggestLectionaryBookKeyboard($state),
             'choose_resource_type' => $this->structuredSuggestResourceTypeKeyboard(),
             'choose_main' => $this->structuredSuggestMainChoiceKeyboard(),
+            'ask_more_images' => $this->suggestAddMoreImagesKeyboard(),
             'offer_other_language' => $this->suggestOfferOtherLanguageKeyboard(
                 ((string) $state->get('first_language', 'en')) === 'en' ? 'am' : 'en'
             ),
@@ -4031,15 +4210,7 @@ class TelegramWebhookController extends Controller
     private function structuredSuggestStepKeyboard(string $step, ?TelegramBotState $state = null): array
     {
         $rows = [];
-        $langPhase = $state ? (int) $state->get('lang_phase', 1) : 1;
-
-        $optionalSteps = ['await_image', 'enter_url', 'enter_detail', 'enter_summary', 'enter_text'];
-        // In lang_phase 2, all bilingual field steps are skippable
-        if ($langPhase === 2) {
-            $optionalSteps = array_merge($optionalSteps, ['enter_reference', 'enter_title']);
-        }
-
-        if (in_array($step, $optionalSteps, true)) {
+        if ($state && $this->structuredSuggestStepIsOptional($state, $step)) {
             $rows[] = [['text' => '⏭ '.__('app.telegram_suggest_skip'), 'callback_data' => 'suggest_skip']];
         }
 
@@ -4095,12 +4266,16 @@ class TelegramWebhookController extends Controller
             'enter_summary' => __('app.telegram_suggest_enter_bible_summary'),
             'enter_text' => __('app.telegram_suggest_enter_bible_text'),
             'enter_url' => match ($contentArea) {
+                'synaxarium' => __('app.telegram_suggest_enter_sinksar_link'),
                 'mezmur' => __('app.telegram_suggest_enter_mezmur_link'),
                 'spiritual_book' => __('app.telegram_suggest_enter_spiritual_book_link'),
                 'reference_resource' => __('app.telegram_suggest_enter_resource_link'),
                 default => __('app.telegram_suggest_enter_url'),
             },
             'await_image' => __('app.telegram_suggest_send_photo'),
+            'enter_image_caption_am' => __('app.telegram_suggest_enter_sinksar_image_caption', ['lang' => __('app.amharic')]),
+            'enter_image_caption_en' => __('app.telegram_suggest_enter_sinksar_image_caption', ['lang' => __('app.english')]),
+            'ask_more_images' => __('app.telegram_suggest_add_another_image_prompt'),
             'enter_detail' => match (true) {
                 $contentArea === 'synaxarium' => __('app.telegram_suggest_enter_saint_description'),
                 $contentArea === 'daily_message' => __('app.telegram_suggest_enter_daily_message_body'),
@@ -4108,7 +4283,8 @@ class TelegramWebhookController extends Controller
                 $contentArea === 'spiritual_book' => __('app.telegram_suggest_enter_spiritual_book_notes'),
                 $contentArea === 'reference_resource' => __('app.telegram_suggest_enter_resource_notes'),
                 $contentArea === 'lectionary' && in_array($data['lectionary_section'] ?? '', ['title_description', 'qiddase'], true) => __('app.telegram_suggest_enter_lectionary_description'),
-                $contentArea === 'bible_reading', $contentArea === 'lectionary' => __('app.telegram_suggest_enter_bible_reading_notes'),
+                $contentArea === 'lectionary' => __('app.telegram_suggest_enter_lectionary_text'),
+                $contentArea === 'bible_reading' => __('app.telegram_suggest_enter_bible_reading_notes'),
                 default => __('app.telegram_suggest_enter_detail'),
             },
             'offer_other_language' => $this->structuredSuggestOfferOtherLangPrompt($data),
@@ -4119,6 +4295,10 @@ class TelegramWebhookController extends Controller
         // Append language tag to bilingual field steps
         $bilingualSteps = ['enter_reference', 'enter_summary', 'enter_text', 'enter_title', 'enter_url', 'enter_detail'];
         if (in_array($step, $bilingualSteps, true) && ! empty($data['current_language'])) {
+            if ($contentArea === 'synaxarium' && $step === 'enter_text') {
+                $basePrompt = __('app.telegram_suggest_enter_sinksar_text');
+            }
+
             return $basePrompt.$langTag;
         }
 
@@ -4160,7 +4340,7 @@ class TelegramWebhookController extends Controller
         return match ($contentArea) {
             'bible_reading' => [...$base, 'choose_first_language', 'enter_reference', 'enter_summary', 'enter_text', 'offer_other_language', 'preview'],
             'mezmur' => [...$base, 'choose_first_language', 'enter_title', 'enter_url', 'enter_detail', 'offer_other_language', 'preview'],
-            'synaxarium' => [...$base, 'choose_scope', 'choose_first_language', 'enter_title', 'await_image', 'enter_detail', 'choose_main', 'offer_other_language', 'preview'],
+            'synaxarium' => [...$base, 'choose_scope', 'choose_first_language', 'enter_title', 'enter_url', 'enter_text', 'enter_detail', 'offer_other_language', 'await_image', 'preview'],
             'spiritual_book' => [...$base, 'choose_first_language', 'enter_title', 'enter_url', 'enter_detail', 'offer_other_language', 'preview'],
             'reference_resource' => [...$base, 'choose_resource_type', 'choose_first_language', 'enter_title', 'enter_url', 'enter_detail', 'offer_other_language', 'preview'],
             'daily_message' => [...$base, 'choose_first_language', 'enter_title', 'enter_detail', 'offer_other_language', 'preview'],
@@ -4172,18 +4352,20 @@ class TelegramWebhookController extends Controller
     {
         $contentArea = (string) $state->get('content_area', '');
         $langPhase = (int) $state->get('lang_phase', 1);
+        $lectionarySection = (string) $state->get('lectionary_section', '');
 
         // In the second language phase, all fields are optional (user can skip any)
-        if ($langPhase === 2 && in_array($step, ['enter_reference', 'enter_summary', 'enter_text', 'enter_title', 'enter_url', 'enter_detail', 'enter_geez_1', 'enter_geez_2', 'enter_geez_3'], true)) {
-            return true;
+        if ($langPhase === 2 && in_array($step, $this->structuredSuggestBilingualFieldSteps($contentArea, $lectionarySection), true)) {
+            return ! ($contentArea === 'synaxarium' && $step === 'enter_title');
         }
 
         return match ($step) {
             'await_image' => true,
             'enter_summary', 'enter_text' => true,
             'enter_geez_1', 'enter_geez_2', 'enter_geez_3' => true,
-            'enter_url' => in_array($contentArea, ['mezmur', 'spiritual_book'], true),
-            'enter_detail' => in_array($contentArea, ['mezmur', 'spiritual_book', 'reference_resource', 'bible_reading', 'lectionary'], true),
+            'enter_image_caption_am', 'enter_image_caption_en' => true,
+            'enter_url' => in_array($contentArea, ['synaxarium', 'mezmur', 'spiritual_book'], true),
+            'enter_detail' => in_array($contentArea, ['synaxarium', 'mezmur', 'spiritual_book', 'reference_resource', 'bible_reading', 'lectionary'], true),
             default => false,
         };
     }
@@ -4196,6 +4378,29 @@ class TelegramWebhookController extends Controller
 
         // In lang_phase 2, only navigate through bilingual field steps
         if ($langPhase === 2) {
+            if ($contentArea === 'synaxarium') {
+                $imageStep = match ($currentStep) {
+                    'await_image' => 'preview',
+                    'enter_image_caption_am' => 'enter_image_caption_en',
+                    'enter_image_caption_en' => 'ask_more_images',
+                    'ask_more_images' => 'preview',
+                    default => null,
+                };
+
+                if ($imageStep !== null) {
+                    return $imageStep;
+                }
+
+                $bilingualSteps = $this->structuredSuggestBilingualFieldSteps($contentArea, $lectionarySection);
+                $index = array_search($currentStep, $bilingualSteps, true);
+
+                if ($index !== false && isset($bilingualSteps[$index + 1])) {
+                    return $bilingualSteps[$index + 1];
+                }
+
+                return 'await_image';
+            }
+
             $bilingualSteps = $this->structuredSuggestBilingualFieldSteps($contentArea, $lectionarySection);
             $index = array_search($currentStep, $bilingualSteps, true);
 
@@ -4209,10 +4414,6 @@ class TelegramWebhookController extends Controller
             }
 
             return 'preview';
-        }
-
-        if ($currentStep === 'await_image') {
-            return 'enter_detail';
         }
 
         $flow = $this->structuredSuggestFlow($state);
@@ -4233,6 +4434,30 @@ class TelegramWebhookController extends Controller
 
         // In lang_phase 2, only navigate through bilingual field steps
         if ($langPhase === 2) {
+            if ($contentArea === 'synaxarium') {
+                $imageStep = match ($currentStep) {
+                    'preview' => 'await_image',
+                    'await_image' => 'enter_detail',
+                    'enter_image_caption_am' => 'await_image',
+                    'enter_image_caption_en' => 'enter_image_caption_am',
+                    'ask_more_images' => 'await_image',
+                    default => null,
+                };
+
+                if ($imageStep !== null) {
+                    return $imageStep;
+                }
+
+                $bilingualSteps = $this->structuredSuggestBilingualFieldSteps($contentArea, $lectionarySection);
+                $index = array_search($currentStep, $bilingualSteps, true);
+
+                if ($index !== false && $index > 0) {
+                    return $bilingualSteps[$index - 1];
+                }
+
+                return end($bilingualSteps) ?: 'enter_detail';
+            }
+
             $bilingualSteps = $this->structuredSuggestBilingualFieldSteps($contentArea, $lectionarySection);
 
             if ($currentStep === 'preview') {
@@ -4256,6 +4481,10 @@ class TelegramWebhookController extends Controller
                 $filtered = array_values(array_filter($flow, fn ($s) => $s !== 'lect_section_done'));
 
                 return end($filtered) ?: 'lect_section_intro';
+            }
+
+            if ($contentArea === 'synaxarium') {
+                return end($bilingualSteps) ?: 'enter_detail';
             }
 
             // At the first bilingual step in phase 2, go back to offer_other_language
@@ -4312,7 +4541,7 @@ class TelegramWebhookController extends Controller
 
         return match ($contentArea) {
             'bible_reading' => ['enter_reference', 'enter_summary', 'enter_text'],
-            'synaxarium' => ['enter_title', 'enter_detail'],
+            'synaxarium' => ['enter_title', 'enter_url', 'enter_text', 'enter_detail'],
             'mezmur' => ['enter_title', 'enter_url', 'enter_detail'],
             'spiritual_book' => ['enter_title', 'enter_url', 'enter_detail'],
             'reference_resource' => ['enter_title', 'enter_url', 'enter_detail'],
@@ -4493,6 +4722,24 @@ class TelegramWebhookController extends Controller
         return $parts === [] ? null : implode(' • ', $parts);
     }
 
+    private function structuredSuggestPrimaryImagePath(array $data): ?string
+    {
+        foreach ((array) ($data['sinksar_images'] ?? []) as $image) {
+            if (! is_array($image)) {
+                continue;
+            }
+
+            $path = trim((string) ($image['path'] ?? ''));
+            if ($path !== '') {
+                return $path;
+            }
+        }
+
+        $legacyPath = trim((string) ($data['image_path'] ?? ''));
+
+        return $legacyPath !== '' ? $legacyPath : null;
+    }
+
     private function structuredSuggestPayload(array $data): array
     {
         $payload = [
@@ -4515,6 +4762,7 @@ class TelegramWebhookController extends Controller
                 : null,
             'reference' => $this->structuredSuggestBuildLectionaryReference($data) ?? $data['reference_en'] ?? $data['reference_am'] ?? null,
             'is_main' => $data['is_main'] ?? null,
+            'sinksar_images' => $data['sinksar_images'] ?? [],
         ];
 
         // Lectionary all-in-one: include all sections

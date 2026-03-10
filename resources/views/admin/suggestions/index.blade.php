@@ -92,7 +92,7 @@
                                 @if($s->structured_payload)
                                     @foreach(['en' => '🇬🇧', 'am' => '🇪🇹'] as $lang => $flag)
                                         @php
-                                            $hasLang = $s->structuredValue("title_{$lang}") || $s->structuredValue("reference_{$lang}") || $s->structuredValue("content_detail_{$lang}");
+                                            $hasLang = $s->structuredValue("title_{$lang}") || $s->structuredValue("reference_{$lang}") || $s->structuredValue("url_{$lang}") || $s->structuredValue("text_{$lang}") || $s->structuredValue("content_detail_{$lang}");
                                         @endphp
                                         @if($hasLang)
                                             <div class="mt-2 pl-2 border-l-2 border-accent/30">
@@ -101,10 +101,31 @@
                                                 @if($s->structuredValue("title_{$lang}"))<p><span class="font-semibold text-muted-text">Title:</span> {{ $s->structuredValue("title_{$lang}") }}</p>@endif
                                                 @if($s->structuredValue("summary_{$lang}"))<p><span class="font-semibold text-muted-text">Summary:</span> {{ $s->structuredValue("summary_{$lang}") }}</p>@endif
                                                 @if($s->structuredValue("url_{$lang}"))<p><span class="font-semibold text-muted-text">Link:</span> <a href="{{ $s->structuredValue("url_{$lang}") }}" target="_blank" class="text-accent hover:underline break-all">{{ $s->structuredValue("url_{$lang}") }}</a></p>@endif
+                                                @if($s->structuredValue("text_{$lang}"))<p class="whitespace-pre-wrap leading-relaxed"><span class="font-semibold text-muted-text">Text:</span> {{ $s->structuredValue("text_{$lang}") }}</p>@endif
                                                 @if($s->structuredValue("content_detail_{$lang}"))<p class="whitespace-pre-wrap leading-relaxed">{{ $s->structuredValue("content_detail_{$lang}") }}</p>@endif
                                             </div>
                                         @endif
                                     @endforeach
+                                    @if($s->structuredValue('sinksar_images'))
+                                        <div class="mt-3">
+                                            <p class="font-semibold text-muted-text text-[10px]">Images</p>
+                                            <div class="mt-2 grid grid-cols-2 gap-2">
+                                                @foreach((array) $s->structuredValue('sinksar_images', []) as $img)
+                                                    @php
+                                                        $path = is_array($img) ? ($img['path'] ?? null) : null;
+                                                        $url = $path ? url(\Illuminate\Support\Facades\Storage::disk('public')->url($path)) : null;
+                                                    @endphp
+                                                    @if($url)
+                                                        <div class="rounded-lg border border-border p-2">
+                                                            <img src="{{ $url }}" alt="" class="w-full h-24 rounded object-cover border border-border">
+                                                            @if(!empty($img['caption_am']))<p class="mt-1 text-[11px] text-secondary">AM: {{ $img['caption_am'] }}</p>@endif
+                                                            @if(!empty($img['caption_en']))<p class="text-[11px] text-secondary">EN: {{ $img['caption_en'] }}</p>@endif
+                                                        </div>
+                                                    @endif
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
                                 @endif
                             </div>
                         </td>
@@ -261,7 +282,7 @@
                             @if($s->structured_payload)
                                 @foreach(['en' => '🇬🇧', 'am' => '🇪🇹'] as $lang => $flag)
                                     @php
-                                        $hasLang = $s->structuredValue("title_{$lang}") || $s->structuredValue("reference_{$lang}") || $s->structuredValue("content_detail_{$lang}");
+                                        $hasLang = $s->structuredValue("title_{$lang}") || $s->structuredValue("reference_{$lang}") || $s->structuredValue("url_{$lang}") || $s->structuredValue("text_{$lang}") || $s->structuredValue("content_detail_{$lang}");
                                     @endphp
                                     @if($hasLang)
                                         <div class="mt-2 pl-2 border-l-2 border-accent/30">
@@ -270,10 +291,29 @@
                                             @if($s->structuredValue("title_{$lang}"))<p class="text-xs"><span class="font-semibold text-muted-text">Title:</span> {{ $s->structuredValue("title_{$lang}") }}</p>@endif
                                             @if($s->structuredValue("summary_{$lang}"))<p class="text-xs"><span class="font-semibold text-muted-text">Summary:</span> {{ $s->structuredValue("summary_{$lang}") }}</p>@endif
                                             @if($s->structuredValue("url_{$lang}"))<p class="text-xs"><span class="font-semibold text-muted-text">Link:</span> <a href="{{ $s->structuredValue("url_{$lang}") }}" target="_blank" class="text-accent hover:underline break-all">{{ $s->structuredValue("url_{$lang}") }}</a></p>@endif
+                                            @if($s->structuredValue("text_{$lang}"))<p class="text-xs text-secondary whitespace-pre-wrap leading-relaxed"><span class="font-semibold text-muted-text">Text:</span> {{ $s->structuredValue("text_{$lang}") }}</p>@endif
                                             @if($s->structuredValue("content_detail_{$lang}"))<p class="text-xs text-secondary whitespace-pre-wrap leading-relaxed">{{ $s->structuredValue("content_detail_{$lang}") }}</p>@endif
                                         </div>
                                     @endif
                                 @endforeach
+                                @if($s->structuredValue('sinksar_images'))
+                                    <div class="mt-3 space-y-2">
+                                        <p class="font-semibold text-muted-text text-[10px]">Images</p>
+                                        @foreach((array) $s->structuredValue('sinksar_images', []) as $img)
+                                            @php
+                                                $path = is_array($img) ? ($img['path'] ?? null) : null;
+                                                $url = $path ? url(\Illuminate\Support\Facades\Storage::disk('public')->url($path)) : null;
+                                            @endphp
+                                            @if($url)
+                                                <div class="rounded-lg border border-border p-2">
+                                                    <img src="{{ $url }}" alt="" class="w-full h-24 rounded object-cover border border-border">
+                                                    @if(!empty($img['caption_am']))<p class="mt-1 text-[11px] text-secondary">AM: {{ $img['caption_am'] }}</p>@endif
+                                                    @if(!empty($img['caption_en']))<p class="text-[11px] text-secondary">EN: {{ $img['caption_en'] }}</p>@endif
+                                                </div>
+                                            @endif
+                                        @endforeach
+                                    </div>
+                                @endif
                             @endif
                         </div>
                     @endif
