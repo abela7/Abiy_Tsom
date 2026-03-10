@@ -379,7 +379,7 @@ class TelegramStaffPortalTest extends TestCase
         $header = ['X-Telegram-Bot-Api-Secret-Token' => 'telegram-secret'];
         $chat = 'writer-synax-chat';
 
-        // Flow: area → date → scope → (auto Amharic) → title → image → detail → is_main → offer_other_lang → title → detail → confirm
+        // Flow: area → date → scope → (auto Amharic) → title → url → text → detail → (auto English) → title → url → text → detail → image → preview → confirm
         $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest'))->assertOk();
         $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_area_synaxarium'))->assertOk();
         $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_month_3'))->assertOk();
@@ -389,17 +389,21 @@ class TelegramStaffPortalTest extends TestCase
         // No language choice — auto Amharic
 
         // Phase 1: Amharic fields
-        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->messagePayload($chat, 'ቅዱስ ገብርኤል'))->assertOk();
-        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_skip'))->assertOk(); // skip image
-        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->messagePayload($chat, 'የቅዱስ ገብርኤል በዓል'))->assertOk();
-        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_main_yes'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->messagePayload($chat, 'ቅዱስ ገብርኤል'))->assertOk(); // title
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_skip'))->assertOk(); // skip url
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_skip'))->assertOk(); // skip text
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->messagePayload($chat, 'የቅዱስ ገብርኤል በዓል'))->assertOk(); // detail
 
-        // Offer other language → yes (English)
-        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_other_lang_yes'))->assertOk();
+        // Auto English phase (no offer_other_lang button)
 
-        // Phase 2: English fields (only bilingual: title, detail — skips image and choose_main)
-        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->messagePayload($chat, 'Saint Gabriel'))->assertOk();
-        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->messagePayload($chat, 'Feast of Archangel Gabriel'))->assertOk();
+        // Phase 2: English fields (title, url, text, detail)
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->messagePayload($chat, 'Saint Gabriel'))->assertOk(); // title
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_skip'))->assertOk(); // skip url
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_skip'))->assertOk(); // skip text
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->messagePayload($chat, 'Feast of Archangel Gabriel'))->assertOk(); // detail
+
+        // Skip image → preview
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_skip'))->assertOk();
 
         // Confirm
         $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_confirm'))->assertOk();
@@ -422,7 +426,6 @@ class TelegramStaffPortalTest extends TestCase
         $this->assertSame('የቅዱስ ገብርኤል በዓል', $suggestion->structuredValue('content_detail_am'));
         $this->assertSame('Saint Gabriel', $suggestion->structuredValue('title_en'));
         $this->assertSame('Feast of Archangel Gabriel', $suggestion->structuredValue('content_detail_en'));
-        $this->assertTrue((bool) $suggestion->structuredValue('is_main'));
         $this->assertSame('awaiting_continue', TelegramBotState::getActive($chat, 'suggest')?->step);
     }
 
