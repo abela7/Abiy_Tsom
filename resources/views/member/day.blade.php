@@ -387,7 +387,7 @@
                             />
                         @endif
                         @if(localized($mezmur, 'lyrics'))
-                            <div x-data="{ showLyrics: false }" class="mt-2">
+                            <div x-data="{ showLyrics: true }" class="mt-2">
                                 <button type="button" @click="showLyrics = !showLyrics"
                                         class="flex items-center gap-1.5 text-xs font-medium text-accent-secondary hover:text-accent-secondary/80 transition">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -399,7 +399,6 @@
                                      x-transition:enter="transition ease-out duration-200"
                                      x-transition:enter-start="opacity-0 -translate-y-1"
                                      x-transition:enter-end="opacity-100 translate-y-0"
-                                     x-cloak
                                      class="mt-2 p-3 rounded-lg bg-accent-secondary/5 border border-accent-secondary/15">
                                     <p class="text-sm leading-relaxed text-primary whitespace-pre-line">{{ localized($mezmur, 'lyrics') }}</p>
                                 </div>
