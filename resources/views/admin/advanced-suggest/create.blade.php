@@ -728,7 +728,7 @@ document.addEventListener('alpine:init', function () {
                     reference: @js(__('app.suggest_reference_label')),
                     url: 'URL',
                     content_detail: @js(__('app.suggest_detail_label')),
-                    lyrics: @js(__('app.suggest_type_mezmur') + ' Lyrics'),
+                    lyrics: @js(__('app.suggest_type_mezmur') . ' Lyrics'),
                     text: 'Text',
                     summary: 'Summary',
                 };
