@@ -4922,13 +4922,14 @@ class TelegramWebhookController extends Controller
                 default => __('app.telegram_suggest_enter_chapter'),
             },
             'enter_verse_range' => __('app.telegram_suggest_enter_verse_range'),
-            'enter_title' => match ($contentArea) {
-                'synaxarium' => __('app.telegram_suggest_enter_saint_name'),
-                'daily_message' => __('app.telegram_suggest_enter_daily_message_title'),
-                'mezmur' => __('app.telegram_suggest_enter_mezmur_title'),
-                'spiritual_book' => __('app.telegram_suggest_enter_spiritual_book_title'),
-                'reference_resource' => __('app.telegram_suggest_enter_resource_title'),
-                'lectionary' => __('app.telegram_suggest_enter_lectionary_title'),
+            'enter_title' => match (true) {
+                $contentArea === 'synaxarium' => __('app.telegram_suggest_enter_saint_name'),
+                $contentArea === 'daily_message' => __('app.telegram_suggest_enter_daily_message_title'),
+                $contentArea === 'mezmur' => __('app.telegram_suggest_enter_mezmur_title'),
+                $contentArea === 'spiritual_book' => __('app.telegram_suggest_enter_spiritual_book_title'),
+                $contentArea === 'reference_resource' => __('app.telegram_suggest_enter_resource_title'),
+                $contentArea === 'lectionary' && ($data['lectionary_section'] ?? '') === 'qiddase' => __('app.telegram_suggest_enter_qiddase'),
+                $contentArea === 'lectionary' => __('app.telegram_suggest_enter_lectionary_title'),
                 default => __('app.telegram_suggest_enter_title'),
             },
             'enter_reference' => match ($contentArea) {
@@ -4957,7 +4958,7 @@ class TelegramWebhookController extends Controller
                 $contentArea === 'mezmur' => __('app.telegram_suggest_enter_mezmur_notes'),
                 $contentArea === 'spiritual_book' => __('app.telegram_suggest_enter_spiritual_book_notes'),
                 $contentArea === 'reference_resource' => __('app.telegram_suggest_enter_resource_notes'),
-                $contentArea === 'lectionary' && in_array($data['lectionary_section'] ?? '', ['title_description', 'qiddase'], true) => __('app.telegram_suggest_enter_lectionary_description'),
+                $contentArea === 'lectionary' && ($data['lectionary_section'] ?? '') === 'title_description' => __('app.telegram_suggest_enter_lectionary_description'),
                 $contentArea === 'lectionary' => __('app.telegram_suggest_enter_lectionary_text'),
                 $contentArea === 'bible_reading' => __('app.telegram_suggest_enter_bible_reading_notes'),
                 default => __('app.telegram_suggest_enter_detail'),
@@ -5005,9 +5006,11 @@ class TelegramWebhookController extends Controller
                 default => [],
             };
 
-            $contentSteps = in_array($lectionarySection, ['title_description', 'qiddase'], true)
-                ? ['enter_title', 'enter_detail']
-                : ['enter_detail'];
+            $contentSteps = match ($lectionarySection) {
+                'title_description' => ['enter_title', 'enter_detail'],
+                'qiddase' => ['enter_title'],
+                default => ['enter_detail'],
+            };
 
             return array_merge($base, ['lect_section_intro'], $refSteps, $contentSteps, ['lect_section_done']);
         }
@@ -5210,8 +5213,11 @@ class TelegramWebhookController extends Controller
      */
     private function structuredSuggestBilingualFieldSteps(string $contentArea, string $lectionarySection = ''): array
     {
-        if ($contentArea === 'lectionary' && in_array($lectionarySection, ['title_description', 'qiddase'], true)) {
+        if ($contentArea === 'lectionary' && $lectionarySection === 'title_description') {
             return ['enter_title', 'enter_detail'];
+        }
+        if ($contentArea === 'lectionary' && $lectionarySection === 'qiddase') {
+            return ['enter_title'];
         }
 
         return match ($contentArea) {
