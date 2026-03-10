@@ -1327,6 +1327,8 @@
                                 url_am: m.url_am || '',
                                 description_en: m.description_en || '',
                                 description_am: m.description_am || '',
+                                lyrics_en: m.lyrics_en || '',
+                                lyrics_am: m.lyrics_am || '',
                             })),
                             sinksar_title_en: f.sinksar_title_en || '',
                             sinksar_title_am: f.sinksar_title_am || '',
