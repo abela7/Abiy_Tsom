@@ -387,22 +387,14 @@
                             />
                         @endif
                         @if(localized($mezmur, 'lyrics'))
-                            <div x-data="{ showLyrics: false }" class="mt-2">
-                                <button type="button" @click="showLyrics = !showLyrics"
-                                        class="flex items-center gap-1.5 text-xs font-medium text-accent-secondary hover:text-accent-secondary/80 transition">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="mt-3 p-3 rounded-lg bg-accent-secondary/5 border border-accent-secondary/15">
+                                <div class="flex items-center gap-1.5 mb-2">
+                                    <svg class="w-4 h-4 text-accent-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z"/>
                                     </svg>
-                                    <span x-text="showLyrics ? '{{ __('app.hide_lyrics') }}' : '{{ __('app.show_lyrics') }}'"></span>
-                                </button>
-                                <div x-show="showLyrics"
-                                     x-transition:enter="transition ease-out duration-200"
-                                     x-transition:enter-start="opacity-0 -translate-y-1"
-                                     x-transition:enter-end="opacity-100 translate-y-0"
-                                     x-cloak
-                                     class="mt-2 p-3 rounded-lg bg-accent-secondary/5 border border-accent-secondary/15">
-                                    <p class="text-sm leading-relaxed text-primary whitespace-pre-line">{{ localized($mezmur, 'lyrics') }}</p>
+                                    <span class="text-xs font-semibold text-accent-secondary">{{ __('app.lyrics_label') }}</span>
                                 </div>
+                                <p class="text-sm leading-relaxed text-primary whitespace-pre-line">{{ localized($mezmur, 'lyrics') }}</p>
                             </div>
                         @endif
                     </div>
