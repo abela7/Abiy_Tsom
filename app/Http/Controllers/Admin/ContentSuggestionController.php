@@ -11,6 +11,7 @@ use App\Models\DailyContentBook;
 use App\Models\DailyContentMezmur;
 use App\Models\DailyContentReference;
 use App\Models\DailyContentSinksarImage;
+use App\Models\Lectionary;
 use App\Models\LentSeason;
 use App\Services\AbiyTsomStructure;
 use App\Services\EthiopianCalendarService;
@@ -117,16 +118,19 @@ class ContentSuggestionController extends Controller
         $payload = $suggestion->structured_payload ?? [];
         $area = (string) ($suggestion->content_area ?: $suggestion->type);
 
-        match ($area) {
-            'bible_reading' => $this->applyBibleReading($daily, $payload),
-            'synaxarium' => $this->applySynaxarium($daily, $payload, $suggestion),
-            'mezmur' => $this->applyMezmur($daily, $payload),
-            'spiritual_book' => $this->applyBook($daily, $payload),
-            'reference_resource' => $this->applyReference($daily, $payload),
-            'daily_message' => $this->applyDailyMessage($daily, $payload),
-            'lectionary' => $this->applyBibleReading($daily, $payload),
-            default => null,
-        };
+        if ($area === 'lectionary') {
+            $this->applyLectionary($suggestion, $payload);
+        } else {
+            match ($area) {
+                'bible_reading' => $this->applyBibleReading($daily, $payload),
+                'synaxarium' => $this->applySynaxarium($daily, $payload, $suggestion),
+                'mezmur' => $this->applyMezmur($daily, $payload),
+                'spiritual_book' => $this->applyBook($daily, $payload),
+                'reference_resource' => $this->applyReference($daily, $payload),
+                'daily_message' => $this->applyDailyMessage($daily, $payload),
+                default => null,
+            };
+        }
 
         $daily->update(['updated_by_id' => auth()->id()]);
 
@@ -245,6 +249,68 @@ class ContentSuggestionController extends Controller
         }
         if ($updates !== []) {
             $daily->update($updates);
+        }
+    }
+
+    private function applyLectionary(ContentSuggestion $suggestion, array $payload): void
+    {
+        $month = (int) $suggestion->ethiopian_month;
+        $day = (int) $suggestion->ethiopian_day;
+        $section = (string) ($payload['lectionary_section'] ?? '');
+
+        $lectionary = Lectionary::firstOrCreate(
+            ['month' => $month, 'day' => $day],
+        );
+
+        $updates = match ($section) {
+            'title_description' => array_filter([
+                'title_en' => $payload['title_en'] ?? null,
+                'title_am' => $payload['title_am'] ?? null,
+                'description_en' => $payload['content_detail_en'] ?? null,
+                'description_am' => $payload['content_detail_am'] ?? null,
+            ]),
+            'pauline' => array_filter([
+                'pauline_chapter' => $payload['lectionary_chapter'] ?? null,
+                'pauline_verses' => $payload['lectionary_verse_range'] ?? null,
+                'pauline_book_en' => $payload['lectionary_book_label'] ?? null,
+                'pauline_text_en' => $payload['content_detail_en'] ?? null,
+                'pauline_text_am' => $payload['content_detail_am'] ?? null,
+            ]),
+            'catholic' => array_filter([
+                'catholic_chapter' => $payload['lectionary_chapter'] ?? null,
+                'catholic_verses' => $payload['lectionary_verse_range'] ?? null,
+                'catholic_book_en' => $payload['lectionary_book_label'] ?? null,
+                'catholic_text_en' => $payload['content_detail_en'] ?? null,
+                'catholic_text_am' => $payload['content_detail_am'] ?? null,
+            ]),
+            'acts' => array_filter([
+                'acts_chapter' => $payload['lectionary_chapter'] ?? null,
+                'acts_verses' => $payload['lectionary_verse_range'] ?? null,
+                'acts_text_en' => $payload['content_detail_en'] ?? null,
+                'acts_text_am' => $payload['content_detail_am'] ?? null,
+            ]),
+            'mesbak' => array_filter([
+                'mesbak_psalm' => $payload['lectionary_chapter'] ?? null,
+                'mesbak_verses' => $payload['lectionary_verse_range'] ?? null,
+                'mesbak_text_en' => $payload['content_detail_en'] ?? null,
+                'mesbak_text_am' => $payload['content_detail_am'] ?? null,
+            ]),
+            'gospel' => array_filter([
+                'gospel_chapter' => $payload['lectionary_chapter'] ?? null,
+                'gospel_verses' => $payload['lectionary_verse_range'] ?? null,
+                'gospel_book_en' => $payload['lectionary_book_label'] ?? null,
+                'gospel_text_en' => $payload['content_detail_en'] ?? null,
+                'gospel_text_am' => $payload['content_detail_am'] ?? null,
+            ]),
+            'qiddase' => array_filter([
+                'qiddase_en' => $payload['title_en'] ?? $payload['content_detail_en'] ?? null,
+                'qiddase_am' => $payload['title_am'] ?? $payload['content_detail_am'] ?? null,
+            ]),
+            default => [],
+        };
+
+        if ($updates !== []) {
+            $lectionary->update($updates);
         }
     }
 

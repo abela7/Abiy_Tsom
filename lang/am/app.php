@@ -1336,6 +1336,8 @@ return [
     'telegram_suggest_enter_saint_description' => 'Type the saint description:',
     'telegram_suggest_enter_bible_reading_reference' => 'Type the Bible reading reference:',
     'telegram_suggest_enter_bible_reading_notes' => 'Add any notes or summary for this Bible reading, or tap Skip:',
+    'telegram_suggest_enter_lectionary_title' => 'የቅዳሴ ንባብ ርዕስ ይጻፉ፦',
+    'telegram_suggest_enter_lectionary_description' => 'የቅዳሴ ንባብ ዝርዝር ይጻፉ፦',
     'telegram_suggest_enter_mezmur_title' => 'Type the Mezmur title:',
     'telegram_suggest_enter_mezmur_link' => 'Paste the Mezmur link, or tap Skip if you do not have one yet:',
     'telegram_suggest_enter_mezmur_notes' => 'Add any Mezmur notes or description, or tap Skip:',

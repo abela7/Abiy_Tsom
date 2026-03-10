@@ -3579,6 +3579,7 @@ class TelegramWebhookController extends Controller
                 'mezmur' => __('app.telegram_suggest_enter_mezmur_title'),
                 'spiritual_book' => __('app.telegram_suggest_enter_spiritual_book_title'),
                 'reference_resource' => __('app.telegram_suggest_enter_resource_title'),
+                'lectionary' => __('app.telegram_suggest_enter_lectionary_title'),
                 default => __('app.telegram_suggest_enter_title'),
             },
             'enter_reference' => match ($contentArea) {
@@ -3595,13 +3596,14 @@ class TelegramWebhookController extends Controller
                 default => __('app.telegram_suggest_enter_url'),
             },
             'await_image' => __('app.telegram_suggest_send_photo'),
-            'enter_detail' => match ($contentArea) {
-                'synaxarium' => __('app.telegram_suggest_enter_saint_description'),
-                'daily_message' => __('app.telegram_suggest_enter_daily_message_body'),
-                'mezmur' => __('app.telegram_suggest_enter_mezmur_notes'),
-                'spiritual_book' => __('app.telegram_suggest_enter_spiritual_book_notes'),
-                'reference_resource' => __('app.telegram_suggest_enter_resource_notes'),
-                'bible_reading', 'lectionary' => __('app.telegram_suggest_enter_bible_reading_notes'),
+            'enter_detail' => match (true) {
+                $contentArea === 'synaxarium' => __('app.telegram_suggest_enter_saint_description'),
+                $contentArea === 'daily_message' => __('app.telegram_suggest_enter_daily_message_body'),
+                $contentArea === 'mezmur' => __('app.telegram_suggest_enter_mezmur_notes'),
+                $contentArea === 'spiritual_book' => __('app.telegram_suggest_enter_spiritual_book_notes'),
+                $contentArea === 'reference_resource' => __('app.telegram_suggest_enter_resource_notes'),
+                $contentArea === 'lectionary' && in_array($data['lectionary_section'] ?? '', ['title_description', 'qiddase'], true) => __('app.telegram_suggest_enter_lectionary_description'),
+                $contentArea === 'bible_reading', $contentArea === 'lectionary' => __('app.telegram_suggest_enter_bible_reading_notes'),
                 default => __('app.telegram_suggest_enter_detail'),
             },
             'offer_other_language' => $this->structuredSuggestOfferOtherLangPrompt($data),
@@ -3642,7 +3644,11 @@ class TelegramWebhookController extends Controller
                 default => ['enter_reference'],
             };
 
-            return array_merge($base, ['choose_lectionary_section'], $refSteps, ['choose_first_language', 'enter_detail', 'offer_other_language', 'preview']);
+            $contentSteps = in_array($lectionarySection, ['title_description', 'qiddase'], true)
+                ? ['enter_title', 'enter_detail']
+                : ['enter_detail'];
+
+            return array_merge($base, ['choose_lectionary_section'], $refSteps, ['choose_first_language'], $contentSteps, ['offer_other_language', 'preview']);
         }
 
         return match ($contentArea) {
@@ -3679,10 +3685,11 @@ class TelegramWebhookController extends Controller
     {
         $langPhase = (int) $state->get('lang_phase', 1);
         $contentArea = (string) $state->get('content_area', '');
+        $lectionarySection = (string) $state->get('lectionary_section', '');
 
         // In lang_phase 2, only navigate through bilingual field steps
         if ($langPhase === 2) {
-            $bilingualSteps = $this->structuredSuggestBilingualFieldSteps($contentArea);
+            $bilingualSteps = $this->structuredSuggestBilingualFieldSteps($contentArea, $lectionarySection);
             $index = array_search($currentStep, $bilingualSteps, true);
 
             if ($index !== false && isset($bilingualSteps[$index + 1])) {
@@ -3710,10 +3717,11 @@ class TelegramWebhookController extends Controller
     {
         $langPhase = (int) $state->get('lang_phase', 1);
         $contentArea = (string) $state->get('content_area', '');
+        $lectionarySection = (string) $state->get('lectionary_section', '');
 
         // In lang_phase 2, only navigate through bilingual field steps
         if ($langPhase === 2) {
-            $bilingualSteps = $this->structuredSuggestBilingualFieldSteps($contentArea);
+            $bilingualSteps = $this->structuredSuggestBilingualFieldSteps($contentArea, $lectionarySection);
 
             if ($currentStep === 'preview') {
                 return end($bilingualSteps) ?: 'offer_other_language';
@@ -3764,8 +3772,12 @@ class TelegramWebhookController extends Controller
     /**
      * Returns the bilingual field steps for a content area (steps that get language suffix).
      */
-    private function structuredSuggestBilingualFieldSteps(string $contentArea): array
+    private function structuredSuggestBilingualFieldSteps(string $contentArea, string $lectionarySection = ''): array
     {
+        if ($contentArea === 'lectionary' && in_array($lectionarySection, ['title_description', 'qiddase'], true)) {
+            return ['enter_title', 'enter_detail'];
+        }
+
         return match ($contentArea) {
             'bible_reading' => ['enter_reference', 'enter_summary', 'enter_text'],
             'synaxarium' => ['enter_title', 'enter_detail'],
