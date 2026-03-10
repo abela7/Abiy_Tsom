@@ -11,6 +11,8 @@ use App\Models\DailyContentBook;
 use App\Models\DailyContentMezmur;
 use App\Models\DailyContentReference;
 use App\Models\DailyContentSinksarImage;
+use App\Models\EthiopianSynaxariumAnnual;
+use App\Models\EthiopianSynaxariumMonthly;
 use App\Models\Lectionary;
 use App\Models\LentSeason;
 use App\Services\AbiyTsomStructure;
@@ -88,6 +90,29 @@ class ContentSuggestionController extends Controller
      */
     public function apply(ContentSuggestion $suggestion, EthiopianCalendarService $calendar): RedirectResponse
     {
+        $payload = $suggestion->structured_payload ?? [];
+        $area = (string) ($suggestion->content_area ?: $suggestion->type);
+
+        if ($area === 'synaxarium_celebration') {
+            if (! $suggestion->ethiopian_day) {
+                return back()->with('error', __('app.suggest_apply_no_date'));
+            }
+
+            if (! $this->applySynaxariumCelebration($suggestion, $payload)) {
+                return back()->with('error', __('app.suggest_apply_no_date'));
+            }
+
+            $suggestion->update([
+                'status' => 'approved',
+                'used_at' => now(),
+                'used_by_id' => auth()->id(),
+            ]);
+
+            return back()->with('success', __('app.suggest_applied', [
+                'date' => $suggestion->ethiopianDateLabel() ?? __('app.telegram_suggest_unknown_date'),
+            ]));
+        }
+
         if (! $suggestion->ethiopian_month || ! $suggestion->ethiopian_day) {
             return back()->with('error', __('app.suggest_apply_no_date'));
         }
@@ -115,9 +140,6 @@ class ContentSuggestionController extends Controller
             }
         }
 
-        $payload = $suggestion->structured_payload ?? [];
-        $area = (string) ($suggestion->content_area ?: $suggestion->type);
-
         if ($area === 'lectionary') {
             $this->applyLectionary($suggestion, $payload);
         } else {
@@ -143,6 +165,58 @@ class ContentSuggestionController extends Controller
         return back()->with('success', __('app.suggest_applied', [
             'date' => $suggestion->ethiopianDateLabel() ?? $gregorianDate->format('M d'),
         ]));
+    }
+
+    private function applySynaxariumCelebration(ContentSuggestion $suggestion, array $payload): bool
+    {
+        $scope = (string) ($payload['entry_scope'] ?? $suggestion->entry_scope ?? 'monthly');
+        $day = (int) ($payload['ethiopian_day'] ?? $suggestion->ethiopian_day ?? 0);
+        $month = (int) ($payload['ethiopian_month'] ?? $suggestion->ethiopian_month ?? 0);
+        $isMain = (bool) ($payload['is_main'] ?? false);
+        $sortOrder = max(0, min(255, (int) ($payload['sort_order'] ?? 0)));
+        $imagePath = trim((string) ($suggestion->image_path ?? '')) ?: null;
+
+        $record = [
+            'day' => $day,
+            'celebration_en' => (string) ($payload['title_en'] ?? $payload['title_am'] ?? $suggestion->title ?? ''),
+            'celebration_am' => $payload['title_am'] ?? null,
+            'description_en' => $payload['content_detail_en'] ?? null,
+            'description_am' => $payload['content_detail_am'] ?? null,
+            'image_path' => $imagePath,
+            'is_main' => $isMain,
+            'sort_order' => $sortOrder,
+        ];
+
+        if ($scope === 'yearly') {
+            if ($month < 1 || $day < 1) {
+                return false;
+            }
+
+            if ($isMain) {
+                EthiopianSynaxariumAnnual::where('month', $month)
+                    ->where('day', $day)
+                    ->where('is_main', true)
+                    ->update(['is_main' => false]);
+            }
+
+            EthiopianSynaxariumAnnual::create(array_merge($record, ['month' => $month]));
+
+            return true;
+        }
+
+        if ($day < 1) {
+            return false;
+        }
+
+        if ($isMain) {
+            EthiopianSynaxariumMonthly::where('day', $day)
+                ->where('is_main', true)
+                ->update(['is_main' => false]);
+        }
+
+        EthiopianSynaxariumMonthly::create($record);
+
+        return true;
     }
 
     private function applyBibleReading(DailyContent $daily, array $payload): void

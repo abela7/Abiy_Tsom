@@ -3140,18 +3140,6 @@ class TelegramWebhookController extends Controller
         $data = $state->data ?? [];
         $contentArea = (string) ($data['content_area'] ?? '');
         $rows = [];
-        if (
-            $step === 'await_image'
-            && $state
-            && $state->get('editing_from_preview')
-            && (string) $state->get('content_area', '') === 'synaxarium_celebration'
-            && filled($state->get('image_path'))
-        ) {
-            $rows[] = [[
-                'text' => '🗑️ '.__('app.telegram_suggest_remove_current_image'),
-                'callback_data' => 'suggest_remove_image',
-            ]];
-        }
 
         if ($contentArea === 'lectionary' && ! empty($data['lect_sections'])) {
             // For lectionary, show each filled section as an edit target
@@ -3200,7 +3188,7 @@ class TelegramWebhookController extends Controller
 
             if ($contentArea === 'synaxarium_celebration') {
                 $rows[] = [[
-                    'text' => 'Image',
+                    'text' => __('app.telegram_suggest_edit_image'),
                     'callback_data' => 'suggest_edit_image',
                 ]];
                 $rows[] = [[
@@ -5784,7 +5772,9 @@ class TelegramWebhookController extends Controller
     private function structuredSuggestStoredTitle(array $data): ?string
     {
         return match ((string) ($data['content_area'] ?? '')) {
-            'lectionary' => __('app.telegram_suggest_area_lectionary').': '.$this->structuredSuggestLectionarySectionLabel((string) ($data['lectionary_section'] ?? '')),
+            'lectionary' => ! empty($data['lect_sections'])
+                ? __('app.telegram_suggest_area_lectionary').' ('.count((array) $data['lect_sections']).' sections)'
+                : __('app.telegram_suggest_area_lectionary').': '.$this->structuredSuggestLectionarySectionLabel((string) ($data['lectionary_section'] ?? '')),
             'bible_reading' => $data['reference_en'] ?? $data['reference_am'] ?? __('app.telegram_suggest_area_bible_reading'),
             default => $data['title_en'] ?? $data['title_am'] ?? null,
         };

@@ -81,6 +81,10 @@
                             <div x-show="expanded" x-cloak x-transition class="mt-2 space-y-1 text-xs text-secondary max-w-md">
                                 @if($s->ethiopianDateLabel())<p><span class="font-semibold text-muted-text">Date:</span> {{ $s->ethiopianDateLabel() }}</p>@endif
                                 @if($s->entryScopeLabel())<p><span class="font-semibold text-muted-text">Scope:</span> {{ $s->entryScopeLabel() }}</p>@endif
+                                @if($s->content_area === 'synaxarium_celebration')
+                                    <p><span class="font-semibold text-muted-text">Main:</span> {{ $s->structuredValue('is_main') ? __('app.yes') : __('app.no') }}</p>
+                                    <p><span class="font-semibold text-muted-text">Order:</span> {{ $s->structuredValue('sort_order', 0) }}</p>
+                                @endif
                                 @if($s->structuredValue('lectionary_section_label'))<p><span class="font-semibold text-muted-text">Section:</span> {{ $s->structuredValue('lectionary_section_label') }}</p>@endif
                                 @if($s->structuredValue('resource_type_label'))<p><span class="font-semibold text-muted-text">Resource:</span> {{ $s->structuredValue('resource_type_label') }}</p>@endif
                                 @if($s->reference)<p><span class="font-semibold text-muted-text">Ref:</span> {{ $s->reference }}</p>@endif
@@ -155,7 +159,7 @@
                                         <button type="submit" class="px-2.5 py-1 rounded-lg text-xs font-medium border border-border text-muted-text hover:bg-muted hover:text-primary transition">{{ __('app.suggest_unmark_used') }}</button>
                                     </form>
                                 @else
-                                    @if($s->ethiopian_month && $s->ethiopian_day)
+                                    @if(($s->content_area === 'synaxarium_celebration' && $s->ethiopian_day) || ($s->ethiopian_month && $s->ethiopian_day))
                                         <form method="POST" action="{{ route('admin.suggestions.apply', $s) }}"
                                               onsubmit="return confirm('{{ __('app.suggest_apply_confirm') }}')">
                                             @csrf
@@ -255,6 +259,10 @@
                             @if($s->entryScopeLabel())
                                 <p class="text-xs"><span class="font-semibold text-muted-text">Scope:</span> <span class="text-secondary">{{ $s->entryScopeLabel() }}</span></p>
                             @endif
+                            @if($s->content_area === 'synaxarium_celebration')
+                                <p class="text-xs"><span class="font-semibold text-muted-text">Main:</span> <span class="text-secondary">{{ $s->structuredValue('is_main') ? __('app.yes') : __('app.no') }}</span></p>
+                                <p class="text-xs"><span class="font-semibold text-muted-text">Order:</span> <span class="text-secondary">{{ $s->structuredValue('sort_order', 0) }}</span></p>
+                            @endif
                             @if($s->structuredValue('lectionary_section_label'))
                                 <p class="text-xs"><span class="font-semibold text-muted-text">Section:</span> <span class="text-secondary">{{ $s->structuredValue('lectionary_section_label') }}</span></p>
                             @endif
@@ -339,7 +347,7 @@
                                 </button>
                             </form>
                         @else
-                            @if($s->ethiopian_month && $s->ethiopian_day)
+                            @if(($s->content_area === 'synaxarium_celebration' && $s->ethiopian_day) || ($s->ethiopian_month && $s->ethiopian_day))
                                 <form method="POST" action="{{ route('admin.suggestions.apply', $s) }}" class="flex-1"
                                       onsubmit="return confirm('{{ __('app.suggest_apply_confirm') }}')">
                                     @csrf
