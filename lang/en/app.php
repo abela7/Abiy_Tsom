@@ -1295,7 +1295,7 @@ return [
     'suggest_apply_confirm' => 'Apply this suggestion as real content for the intended day?',
     'suggest_apply_no_date' => 'This suggestion has no Ethiopian date set.',
     'suggest_apply_no_season' => 'No active lent season found.',
-    'suggest_apply_no_daily' => 'No daily content entry found for :date. Create the day first.',
+    'suggest_apply_no_daily' => ':date is outside the current season\'s date range.',
     'suggest_status_pending' => 'Pending',
     'suggest_status_used' => 'Used',
     'suggest_status_rejected' => 'Rejected',

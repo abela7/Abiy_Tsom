@@ -12,9 +12,11 @@ use App\Models\DailyContentMezmur;
 use App\Models\DailyContentReference;
 use App\Models\DailyContentSinksarImage;
 use App\Models\LentSeason;
+use App\Services\AbiyTsomStructure;
 use App\Services\EthiopianCalendarService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -104,9 +106,12 @@ class ContentSuggestionController extends Controller
             ->first();
 
         if (! $daily) {
-            return back()->with('error', __('app.suggest_apply_no_daily', [
-                'date' => $suggestion->ethiopianDateLabel() ?? $gregorianDate->format('M d, Y'),
-            ]));
+            $daily = $this->autoCreateDailyContent($season, $gregorianDate);
+            if (! $daily) {
+                return back()->with('error', __('app.suggest_apply_no_daily', [
+                    'date' => $suggestion->ethiopianDateLabel() ?? $gregorianDate->format('M d, Y'),
+                ]));
+            }
         }
 
         $payload = $suggestion->structured_payload ?? [];
@@ -241,6 +246,57 @@ class ContentSuggestionController extends Controller
         if ($updates !== []) {
             $daily->update($updates);
         }
+    }
+
+    /**
+     * Auto-create a DailyContent entry for the given date within the active season.
+     */
+    private function autoCreateDailyContent(LentSeason $season, Carbon $gregorianDate): ?DailyContent
+    {
+        $themes = $season->weeklyThemes()->orderBy('week_number')->get()->keyBy('week_number');
+        if ($themes->isEmpty()) {
+            return null;
+        }
+
+        $targetDate = $gregorianDate->format('Y-m-d');
+        $dayMeta = null;
+
+        foreach (AbiyTsomStructure::buildDayMetadata($season->start_date) as $meta) {
+            if ($meta['date'] === $targetDate) {
+                $dayMeta = $meta;
+                break;
+            }
+        }
+
+        if (! $dayMeta) {
+            return null;
+        }
+
+        $metaDate = Carbon::parse($dayMeta['date'])->startOfDay();
+        $theme = $themes->first(function ($item) use ($metaDate): bool {
+            if (! $item->week_start_date || ! $item->week_end_date) {
+                return false;
+            }
+
+            return $metaDate->betweenIncluded(
+                $item->week_start_date->copy()->startOfDay(),
+                $item->week_end_date->copy()->endOfDay()
+            );
+        });
+
+        if (! $theme) {
+            return null;
+        }
+
+        return DailyContent::create([
+            'lent_season_id' => $season->id,
+            'weekly_theme_id' => $theme->id,
+            'day_number' => $dayMeta['day_number'],
+            'date' => $dayMeta['date'],
+            'is_published' => false,
+            'created_by_id' => auth()->id(),
+            'updated_by_id' => auth()->id(),
+        ]);
     }
 
     /**

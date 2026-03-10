@@ -1275,7 +1275,7 @@ return [
     'suggest_apply_confirm' => 'ይህን ጥቆማ ለታሰበው ቀን እንደ እውነተኛ ይዘት ተግብር?',
     'suggest_apply_no_date' => 'ይህ ጥቆማ የኢትዮጵያ ቀን አልተቀመጠም።',
     'suggest_apply_no_season' => 'ንቁ የጾም ወቅት አልተገኘም።',
-    'suggest_apply_no_daily' => 'ለ:date ቀን ይዘት አልተገኘም። ቀኑን ቀድሞ ይፍጠሩ።',
+    'suggest_apply_no_daily' => ':date ከአሁኑ የጾም ወቅት ቀናት ውጭ ነው።',
     'suggest_status_pending' => 'Pending',
     'suggest_status_used' => 'Used',
     'suggest_status_rejected' => 'Rejected',
