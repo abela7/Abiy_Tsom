@@ -12,7 +12,8 @@
       "Bash(php artisan test --filter=test_writer_can_submit_lectionary_all_in_one)",
       "Bash(php -r \":*)",
       "WebFetch(domain:abiytsom.abuneteklehaymanot.org)",
-      "Bash(php artisan test --filter=test_writer_can_submit_synaxarium_with_both_languages)"
+      "Bash(php artisan test --filter=test_writer_can_submit_synaxarium_with_both_languages)",
+      "Bash(grep -n \"if \\($action === ''suggest_back''\\)\" \"c:/xampp/htdocs/Abiy_Tsom/app/Http/Controllers/Webhook/TelegramWebhookController.php\")"
     ]
   }
 }

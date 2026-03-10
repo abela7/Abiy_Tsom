@@ -2372,6 +2372,168 @@ class TelegramWebhookController extends Controller
             return $this->showSuggestPreview($chatId, $messageId, $state, $telegramService);
         }
 
+        if ($action === 'suggest_review_summary') {
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+
+            $state->advance('preview');
+
+            return $this->showSuggestPreview($chatId, $messageId, $state, $telegramService);
+        }
+
+        if ($action === 'suggest_manage_images') {
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+
+            return $this->showSuggestImageManager($chatId, $messageId, $state, $telegramService);
+        }
+
+        if ($action === 'suggest_manage_images_back_summary') {
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+
+            $state->advance('preview');
+
+            return $this->showSuggestPreview($chatId, $messageId, $state, $telegramService);
+        }
+
+        // Edit menu from preview
+        if ($action === 'suggest_edit') {
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+
+            return $this->replyOrEdit(
+                $telegramService, $chatId,
+                '<b>✏️ '.__('app.telegram_suggest_edit_which').'</b>',
+                $this->suggestEditFieldsKeyboard($state),
+                $messageId, 'HTML'
+            );
+        }
+
+        // Back to preview from edit menu
+        if ($action === 'suggest_back_to_preview') {
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+            $state->advance('preview', ['editing_from_preview' => null]);
+
+            return $this->showSuggestPreview($chatId, $messageId, $state, $telegramService);
+        }
+
+        // Edit a specific field from preview (suggest_edit_{step}_{lang} or suggest_edit_lect_{section})
+        if (str_starts_with($action, 'suggest_edit_')) {
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+
+            return $this->handleSuggestEditField($chatId, $messageId, $action, $state, $telegramService);
+        }
+
+        if ($action === 'suggest_image_back_list') {
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+
+            return $this->showSuggestImageManager($chatId, $messageId, $state, $telegramService);
+        }
+
+        if (str_starts_with($action, 'suggest_manage_image_')) {
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+
+            $index = (int) str_replace('suggest_manage_image_', '', $action);
+
+            return $this->showSuggestImageActions($chatId, $messageId, $state, $telegramService, $index);
+        }
+
+        if (str_starts_with($action, 'suggest_image_edit_am_')) {
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+
+            $index = (int) str_replace('suggest_image_edit_am_', '', $action);
+            $state->advance('edit_image_caption_am', ['edit_image_index' => $index]);
+
+            return $this->replyOrEdit(
+                $telegramService,
+                $chatId,
+                $this->suggestImageCaptionEditPrompt($state, $index, 'caption_am'),
+                $this->structuredSuggestKeyboardForStep('edit_image_caption_am', $state),
+                $messageId
+            );
+        }
+
+        if (str_starts_with($action, 'suggest_image_edit_en_')) {
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+
+            $index = (int) str_replace('suggest_image_edit_en_', '', $action);
+            $state->advance('edit_image_caption_en', ['edit_image_index' => $index]);
+
+            return $this->replyOrEdit(
+                $telegramService,
+                $chatId,
+                $this->suggestImageCaptionEditPrompt($state, $index, 'caption_en'),
+                $this->structuredSuggestKeyboardForStep('edit_image_caption_en', $state),
+                $messageId
+            );
+        }
+
+        if (str_starts_with($action, 'suggest_image_remove_')) {
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+
+            $index = (int) str_replace('suggest_image_remove_', '', $action);
+            $images = (array) $state->get('sinksar_images', []);
+            if (isset($images[$index]) && is_array($images[$index])) {
+                $path = trim((string) ($images[$index]['path'] ?? ''));
+                if ($path !== '' && str_starts_with($path, 'telegram-suggestions/')) {
+                    Storage::disk('public')->delete($path);
+                }
+                array_splice($images, $index, 1);
+                $this->syncSuggestSinksarImagesState($state, $images);
+            }
+
+            return $this->showSuggestImageManager($chatId, $messageId, $state, $telegramService);
+        }
+
+        if (str_starts_with($action, 'suggest_image_up_') || str_starts_with($action, 'suggest_image_down_')) {
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+
+            $moveUp = str_starts_with($action, 'suggest_image_up_');
+            $index = (int) str_replace($moveUp ? 'suggest_image_up_' : 'suggest_image_down_', '', $action);
+            $images = array_values((array) $state->get('sinksar_images', []));
+            $swapIndex = $moveUp ? $index - 1 : $index + 1;
+
+            if (isset($images[$index], $images[$swapIndex])) {
+                [$images[$index], $images[$swapIndex]] = [$images[$swapIndex], $images[$index]];
+                $this->syncSuggestSinksarImagesState($state, $images);
+            }
+
+            return $this->showSuggestImageActions($chatId, $messageId, $state, $telegramService, max(0, min($swapIndex, max(0, count($images) - 1))));
+        }
+
         if ($action === 'suggest_today' || $action === 'suggest_tomorrow') {
             $state = TelegramBotState::getActive($chatId, 'suggest');
             if (! $state) {
@@ -2820,14 +2982,161 @@ class TelegramWebhookController extends Controller
     {
         return ['inline_keyboard' => [
             [
-                ['text' => 'âœ… '.__('app.telegram_suggest_add_another_image_yes'), 'callback_data' => 'suggest_add_more_images_yes'],
-                ['text' => 'âŒ '.__('app.telegram_suggest_add_another_image_no'), 'callback_data' => 'suggest_add_more_images_no'],
+                ['text' => '✅ '.__('app.telegram_suggest_add_another_image_yes'), 'callback_data' => 'suggest_add_more_images_yes'],
+                ['text' => '📋 '.__('app.telegram_suggest_review_now'), 'callback_data' => 'suggest_review_summary'],
             ],
             [
-                ['text' => 'â¬…ï¸ '.__('app.telegram_suggest_back'), 'callback_data' => 'suggest_back'],
-                ['text' => 'âŒ '.__('app.telegram_suggest_cancel'), 'callback_data' => 'suggest_cancel'],
+                ['text' => '➡️ '.__('app.telegram_suggest_add_another_image_no'), 'callback_data' => 'suggest_add_more_images_no'],
+            ],
+            [
+                ['text' => '⬅️ '.__('app.telegram_suggest_back'), 'callback_data' => 'suggest_back'],
+                ['text' => '❌ '.__('app.telegram_suggest_cancel'), 'callback_data' => 'suggest_cancel'],
             ],
         ]];
+    }
+
+    private function suggestPreviewKeyboard(TelegramBotState $state): array
+    {
+        $rows = [
+            [['text' => '✅ '.__('app.telegram_suggest_confirm'), 'callback_data' => 'suggest_confirm']],
+        ];
+
+        if ((string) $state->get('content_area', '') === 'synaxarium') {
+            $rows[] = [['text' => '🖼️ '.__('app.telegram_suggest_manage_images'), 'callback_data' => 'suggest_manage_images']];
+        }
+
+        $rows[] = [
+            ['text' => '✏️ '.__('app.telegram_suggest_edit'), 'callback_data' => 'suggest_edit'],
+            ['text' => '❌ '.__('app.telegram_suggest_cancel'), 'callback_data' => 'suggest_cancel'],
+        ];
+
+        return ['inline_keyboard' => $rows];
+    }
+
+    /**
+     * Build inline keyboard for selecting which field to edit from preview.
+     */
+    private function suggestEditFieldsKeyboard(TelegramBotState $state): array
+    {
+        $data = $state->data ?? [];
+        $contentArea = (string) ($data['content_area'] ?? '');
+        $rows = [];
+
+        if ($contentArea === 'lectionary' && ! empty($data['lect_sections'])) {
+            // For lectionary, show each filled section as an edit target
+            $sections = (array) $data['lect_sections'];
+            $filledOrder = (array) ($data['lect_filled_order'] ?? array_keys($sections));
+            foreach ($filledOrder as $section) {
+                if (empty($sections[$section])) {
+                    continue;
+                }
+                $label = $this->structuredSuggestLectionarySectionLabel((string) $section);
+                $rows[] = [['text' => "📖 {$label}", 'callback_data' => "suggest_edit_lect_{$section}"]];
+            }
+        } else {
+            // For other content areas, show editable bilingual fields
+            $lectionarySection = (string) ($data['lectionary_section'] ?? '');
+            $bilingualSteps = $this->structuredSuggestBilingualFieldSteps($contentArea, $lectionarySection);
+
+            $stepLabels = [
+                'enter_title' => __('app.telegram_suggest_edit_title'),
+                'enter_url' => __('app.telegram_suggest_edit_url'),
+                'enter_text' => __('app.telegram_suggest_edit_text'),
+                'enter_detail' => __('app.telegram_suggest_edit_detail'),
+                'enter_reference' => __('app.telegram_suggest_edit_reference'),
+                'enter_summary' => __('app.telegram_suggest_edit_summary'),
+            ];
+
+            foreach ($bilingualSteps as $step) {
+                $label = $stepLabels[$step] ?? ucfirst(str_replace('enter_', '', $step));
+                // Show both languages in a row
+                $row = [];
+                $row[] = ['text' => "🇪🇹 {$label}", 'callback_data' => "suggest_edit_{$step}_am"];
+                $row[] = ['text' => "🇬🇧 {$label}", 'callback_data' => "suggest_edit_{$step}_en"];
+                $rows[] = $row;
+            }
+        }
+
+        $rows[] = [['text' => '⬅️ '.__('app.telegram_suggest_back'), 'callback_data' => 'suggest_back_to_preview']];
+
+        return ['inline_keyboard' => $rows];
+    }
+
+    private function suggestImageManagerKeyboard(array $images): array
+    {
+        $rows = [];
+
+        foreach ($images as $index => $_image) {
+            $rows[] = [[
+                'text' => __('app.telegram_suggest_image_item', ['n' => $index + 1]),
+                'callback_data' => 'suggest_manage_image_'.$index,
+            ]];
+        }
+
+        if (count($images) < 5) {
+            $rows[] = [[
+                'text' => '➕ '.__('app.telegram_suggest_add_another_image_yes'),
+                'callback_data' => 'suggest_add_more_images_yes',
+            ]];
+        }
+
+        $rows[] = [[
+            'text' => '📋 '.__('app.telegram_suggest_review_now'),
+            'callback_data' => 'suggest_review_summary',
+        ]];
+        $rows[] = [[
+            'text' => '⬅️ '.__('app.telegram_suggest_back_to_summary'),
+            'callback_data' => 'suggest_manage_images_back_summary',
+        ]];
+        $rows[] = [[
+            'text' => '❌ '.__('app.telegram_suggest_cancel'),
+            'callback_data' => 'suggest_cancel',
+        ]];
+
+        return ['inline_keyboard' => $rows];
+    }
+
+    private function suggestImageActionsKeyboard(int $index, int $count): array
+    {
+        $rows = [
+            [[
+                'text' => '🇪🇹 '.__('app.telegram_suggest_edit_caption_am'),
+                'callback_data' => 'suggest_image_edit_am_'.$index,
+            ]],
+            [[
+                'text' => '🇬🇧 '.__('app.telegram_suggest_edit_caption_en'),
+                'callback_data' => 'suggest_image_edit_en_'.$index,
+            ]],
+        ];
+
+        if ($index > 0) {
+            $rows[] = [[
+                'text' => '⬆️ '.__('app.telegram_suggest_move_up'),
+                'callback_data' => 'suggest_image_up_'.$index,
+            ]];
+        }
+
+        if ($index < ($count - 1)) {
+            $rows[] = [[
+                'text' => '⬇️ '.__('app.telegram_suggest_move_down'),
+                'callback_data' => 'suggest_image_down_'.$index,
+            ]];
+        }
+
+        $rows[] = [[
+            'text' => '🗑️ '.__('app.telegram_suggest_remove_image'),
+            'callback_data' => 'suggest_image_remove_'.$index,
+        ]];
+        $rows[] = [[
+            'text' => '⬅️ '.__('app.telegram_suggest_back_to_images'),
+            'callback_data' => 'suggest_image_back_list',
+        ]];
+        $rows[] = [[
+            'text' => '❌ '.__('app.telegram_suggest_cancel'),
+            'callback_data' => 'suggest_cancel',
+        ]];
+
+        return ['inline_keyboard' => $rows];
     }
 
     /**
@@ -2959,6 +3268,18 @@ class TelegramWebhookController extends Controller
         $data['lect_sections'] = $sections;
         $data['lect_filled_order'] = $filledOrder;
 
+        // If editing a specific section from preview, save and return to preview
+        if (! empty($data['editing_from_preview'])) {
+            $data['editing_from_preview'] = null;
+            $data['editing_lect_section'] = null;
+            $state->step = 'preview';
+            $state->data = $data;
+            $state->expires_at = now()->addHour();
+            $state->save();
+
+            return $this->showSuggestPreview($chatId, $messageId, $state, $telegramService);
+        }
+
         // Compute next section
         $idx = array_search($section, self::LECTIONARY_SECTIONS, true);
         $nextSection = ($idx !== false && isset(self::LECTIONARY_SECTIONS[$idx + 1]))
@@ -3057,6 +3378,121 @@ class TelegramWebhookController extends Controller
         return ['inline_keyboard' => $rows];
     }
 
+    private function showSuggestImageManager(
+        string $chatId,
+        int $messageId,
+        TelegramBotState $state,
+        TelegramService $telegramService
+    ): JsonResponse {
+        $images = array_values((array) $state->get('sinksar_images', []));
+        $this->syncSuggestSinksarImagesState($state, $images);
+
+        $state->advance('manage_images');
+
+        $lines = ['<b>🖼️ '.__('app.telegram_suggest_manage_images').'</b>', ''];
+        if ($images === []) {
+            $lines[] = __('app.telegram_suggest_no_images_yet');
+        } else {
+            foreach ($images as $index => $image) {
+                if (! is_array($image)) {
+                    continue;
+                }
+
+                $captionAm = trim((string) ($image['caption_am'] ?? '')) ?: __('app.telegram_suggest_no_image_caption');
+                $captionEn = trim((string) ($image['caption_en'] ?? '')) ?: __('app.telegram_suggest_no_image_caption');
+                $lines[] = '<b>'.__('app.telegram_suggest_image_item', ['n' => $index + 1]).'</b>';
+                $lines[] = 'AM: '.htmlspecialchars($captionAm, ENT_QUOTES, 'UTF-8');
+                $lines[] = 'EN: '.htmlspecialchars($captionEn, ENT_QUOTES, 'UTF-8');
+                $lines[] = '';
+            }
+        }
+
+        return $this->replyOrEdit(
+            $telegramService,
+            $chatId,
+            implode("\n", $lines),
+            $this->suggestImageManagerKeyboard($images),
+            $messageId,
+            'HTML'
+        );
+    }
+
+    private function showSuggestImageActions(
+        string $chatId,
+        int $messageId,
+        TelegramBotState $state,
+        TelegramService $telegramService,
+        int $index
+    ): JsonResponse {
+        $images = array_values((array) $state->get('sinksar_images', []));
+        if (! isset($images[$index]) || ! is_array($images[$index])) {
+            return $this->showSuggestImageManager($chatId, $messageId, $state, $telegramService);
+        }
+
+        $this->syncSuggestSinksarImagesState($state, $images);
+        $state->advance('manage_image', ['edit_image_index' => $index]);
+
+        $image = $images[$index];
+        $captionAm = trim((string) ($image['caption_am'] ?? '')) ?: __('app.telegram_suggest_no_image_caption');
+        $captionEn = trim((string) ($image['caption_en'] ?? '')) ?: __('app.telegram_suggest_no_image_caption');
+
+        $lines = [
+            '<b>'.__('app.telegram_suggest_image_item', ['n' => $index + 1]).'</b>',
+            '',
+            'AM: '.htmlspecialchars($captionAm, ENT_QUOTES, 'UTF-8'),
+            'EN: '.htmlspecialchars($captionEn, ENT_QUOTES, 'UTF-8'),
+        ];
+
+        return $this->replyOrEdit(
+            $telegramService,
+            $chatId,
+            implode("\n", $lines),
+            $this->suggestImageActionsKeyboard($index, count($images)),
+            $messageId,
+            'HTML'
+        );
+    }
+
+    private function syncSuggestSinksarImagesState(TelegramBotState $state, array $images): void
+    {
+        $images = array_values(array_filter($images, fn ($image) => is_array($image) && trim((string) ($image['path'] ?? '')) !== ''));
+        $firstPath = null;
+        foreach ($images as $image) {
+            $path = trim((string) ($image['path'] ?? ''));
+            if ($path !== '') {
+                $firstPath = $path;
+                break;
+            }
+        }
+
+        $state->data = array_merge($state->data ?? [], [
+            'sinksar_images' => $images,
+            'image_path' => $firstPath,
+        ]);
+        $state->expires_at = now()->addHour();
+        $state->save();
+    }
+
+    private function suggestImageCaptionEditPrompt(TelegramBotState $state, int $index, string $field): string
+    {
+        $prompt = $this->structuredSuggestPrompt(
+            $field === 'caption_am' ? 'edit_image_caption_am' : 'edit_image_caption_en',
+            $state->data ?? []
+        );
+
+        $images = array_values((array) $state->get('sinksar_images', []));
+        $existing = isset($images[$index]) && is_array($images[$index])
+            ? trim((string) ($images[$index][$field] ?? ''))
+            : '';
+
+        if ($existing !== '') {
+            $prompt .= "\n\n<i>".__('app.telegram_suggest_current').' '.htmlspecialchars($existing, ENT_QUOTES, 'UTF-8').'</i>';
+            $prompt .= "\n".__('app.telegram_suggest_type_to_replace');
+        }
+
+        return $prompt;
+    }
+
     /**
      * Handles plain-text input during an active suggestion wizard step.
      */
@@ -3072,7 +3508,7 @@ class TelegramWebhookController extends Controller
         $this->suggestDeleteStaleMessages($chatId, $userMessageId, $state, $telegramService);
 
         // Ignore text input during button-only steps — re-show the step prompt
-        if (in_array($state->step, ['awaiting_continue', 'lect_section_intro', 'ask_more_images'], true)) {
+        if (in_array($state->step, ['awaiting_continue', 'lect_section_intro', 'ask_more_images', 'manage_images', 'manage_image'], true)) {
             $useHtml = $state->step === 'lect_section_intro' ? 'HTML' : null;
 
             return $this->suggestReplyAndTrack(
@@ -3101,6 +3537,20 @@ class TelegramWebhookController extends Controller
         $input = trim($input);
         $contentArea = (string) $state->get('content_area', '');
         $langPhase = (int) $state->get('lang_phase', 1);
+
+        if (in_array($currentStep, ['edit_image_caption_am', 'edit_image_caption_en'], true)) {
+            $images = array_values((array) $state->get('sinksar_images', []));
+            $index = (int) $state->get('edit_image_index', -1);
+            if (! isset($images[$index]) || ! is_array($images[$index])) {
+                return $this->showSuggestImageManager($chatId, $messageId, $state, $telegramService);
+            }
+
+            $field = $currentStep === 'edit_image_caption_am' ? 'caption_am' : 'caption_en';
+            $images[$index][$field] = $input !== '' ? $input : null;
+            $this->syncSuggestSinksarImagesState($state, $images);
+
+            return $this->showSuggestImageActions($chatId, $messageId, $state, $telegramService, $index);
+        }
 
         $lang = (string) $state->get('current_language', 'en');
         $bilingualSteps = ['enter_reference', 'enter_summary', 'enter_text', 'enter_title', 'enter_url', 'enter_detail'];
@@ -3145,6 +3595,17 @@ class TelegramWebhookController extends Controller
                 );
             }
             if ($input === '') {
+                // Skip during edit-from-preview: clear the field and return to preview
+                if ($state->get('editing_from_preview') && $this->structuredSuggestStepIsOptional($state, $currentStep)) {
+                    $clearData = ['editing_from_preview' => null];
+                    if (isset($fieldForStep[$currentStep])) {
+                        $clearData[$fieldForStep[$currentStep]] = null;
+                    }
+                    $state->advance('preview', $clearData);
+
+                    return $this->showSuggestPreview($chatId, $messageId, $state, $telegramService);
+                }
+
                 if ($this->structuredSuggestStepIsOptional($state, $currentStep)) {
                     $nextStep = $this->structuredSuggestNextStep($state, $currentStep);
 
@@ -3226,6 +3687,14 @@ class TelegramWebhookController extends Controller
             }
 
             $mergeData[$fieldForStep[$currentStep]] = $input;
+        }
+
+        // If editing a single field from preview, save and return to preview
+        if ($state->get('editing_from_preview') && $mergeData !== []) {
+            $mergeData['editing_from_preview'] = null;
+            $state->advance('preview', $mergeData);
+
+            return $this->showSuggestPreview($chatId, $messageId, $state, $telegramService);
         }
 
         $nextStep = $this->structuredSuggestNextStep($state, $currentStep);
@@ -3324,6 +3793,10 @@ class TelegramWebhookController extends Controller
                 'UTF-8'
             );
         }
+
+        if ($contentArea === 'synaxarium') {
+            $lines = array_merge($lines, $this->renderSynaxariumSummaryLines($data));
+        }
         // Lectionary all-in-one: show all filled sections
         if ($contentArea === 'lectionary' && ! empty($data['lect_sections'])) {
             $sections = (array) $data['lect_sections'];
@@ -3376,7 +3849,7 @@ class TelegramWebhookController extends Controller
                 'UTF-8'
             );
         }
-        if (! empty($data['image_path'])) {
+        if ($contentArea !== 'synaxarium' && ! empty($data['image_path'])) {
             $lines[] = '<b>Image:</b> '.htmlspecialchars(__('app.telegram_suggest_image_attached'), ENT_QUOTES, 'UTF-8');
         }
         if ($contentArea === 'synaxarium' && array_key_exists('is_main', $data)) {
@@ -3387,42 +3860,13 @@ class TelegramWebhookController extends Controller
             );
         }
 
-        if ($contentArea === 'synaxarium' && ! empty($data['sinksar_images'])) {
-            $images = (array) $data['sinksar_images'];
-            $lines[] = '<b>Images:</b> '.count($images);
-
-            foreach ($images as $index => $image) {
-                if (! is_array($image)) {
-                    continue;
-                }
-
-                $captionAm = trim((string) ($image['caption_am'] ?? ''));
-                $captionEn = trim((string) ($image['caption_en'] ?? ''));
-                $parts = [];
-                if ($captionAm !== '') {
-                    $parts[] = 'AM: '.$captionAm;
-                }
-                if ($captionEn !== '') {
-                    $parts[] = 'EN: '.$captionEn;
-                }
-
-                $caption = $parts === [] ? __('app.telegram_suggest_no_image_caption') : implode(' | ', $parts);
-                $lines[] = '<i>#'.($index + 1).'</i> '.htmlspecialchars($caption, ENT_QUOTES, 'UTF-8');
-            }
-        }
-
         // Show bilingual content grouped by language (non-lectionary or legacy single-section)
-        if ($contentArea !== 'lectionary' || empty($data['lect_sections'])) {
+        if (($contentArea !== 'lectionary' && $contentArea !== 'synaxarium')
+            || ($contentArea === 'lectionary' && empty($data['lect_sections']))) {
             $this->appendBilingualPreviewLines($lines, $data, $contentArea);
         }
 
-        $keyboard = ['inline_keyboard' => [
-            [['text' => '✅ '.__('app.telegram_suggest_confirm'), 'callback_data' => 'suggest_confirm']],
-            [
-                ['text' => '✏️ '.__('app.telegram_suggest_back'), 'callback_data' => 'suggest_back'],
-                ['text' => '❌ '.__('app.telegram_suggest_cancel'), 'callback_data' => 'suggest_cancel'],
-            ],
-        ]];
+        $keyboard = $this->suggestPreviewKeyboard($state);
 
         $text = implode("\n", $lines);
 
@@ -3432,6 +3876,53 @@ class TelegramWebhookController extends Controller
         }
 
         return $this->replyOrEdit($telegramService, $chatId, $text, $keyboard, $messageId, 'HTML');
+    }
+
+    private function renderSynaxariumSummaryLines(array $data): array
+    {
+        $lines = [''];
+        $sections = [
+            'title' => __('app.title_label'),
+            'url' => __('app.url_video_label'),
+            'text' => __('app.sinksar_text_label'),
+            'content_detail' => __('app.sinksar_description_label'),
+        ];
+
+        foreach ($sections as $field => $label) {
+            $lines[] = '<b>'.htmlspecialchars($label, ENT_QUOTES, 'UTF-8').'</b>';
+            foreach (['am' => __('app.amharic'), 'en' => __('app.english')] as $lang => $langLabel) {
+                $value = trim((string) ($data["{$field}_{$lang}"] ?? ''));
+                if ($value === '') {
+                    continue;
+                }
+
+                $display = mb_strlen($value) > 240
+                    ? mb_substr($value, 0, 237).'...'
+                    : $value;
+                $lines[] = htmlspecialchars($langLabel, ENT_QUOTES, 'UTF-8').': '.htmlspecialchars($display, ENT_QUOTES, 'UTF-8');
+            }
+            $lines[] = '';
+        }
+
+        $images = array_values((array) ($data['sinksar_images'] ?? []));
+        $lines[] = '<b>'.__('app.sinksar_images_label').'</b>';
+        if ($images === []) {
+            $lines[] = __('app.no_content');
+        } else {
+            foreach ($images as $index => $image) {
+                if (! is_array($image)) {
+                    continue;
+                }
+
+                $lines[] = htmlspecialchars(__('app.telegram_suggest_image_item', ['n' => $index + 1]), ENT_QUOTES, 'UTF-8');
+                $captionAm = trim((string) ($image['caption_am'] ?? '')) ?: __('app.telegram_suggest_no_image_caption');
+                $captionEn = trim((string) ($image['caption_en'] ?? '')) ?: __('app.telegram_suggest_no_image_caption');
+                $lines[] = '  '.htmlspecialchars(__('app.amharic'), ENT_QUOTES, 'UTF-8').': '.htmlspecialchars($captionAm, ENT_QUOTES, 'UTF-8');
+                $lines[] = '  '.htmlspecialchars(__('app.english'), ENT_QUOTES, 'UTF-8').': '.htmlspecialchars($captionEn, ENT_QUOTES, 'UTF-8');
+            }
+        }
+
+        return $lines;
     }
 
     private function appendBilingualPreviewLines(array &$lines, array $data, string $contentArea): void
@@ -3680,6 +4171,95 @@ class TelegramWebhookController extends Controller
 
     // ---- Suggestion wizard step helpers ─────────────────────────────────────
 
+    /**
+     * Handle edit of a specific field from the preview screen.
+     * Sets editing_from_preview so we return to preview after input.
+     */
+    private function handleSuggestEditField(
+        string $chatId,
+        int $messageId,
+        string $action,
+        TelegramBotState $state,
+        TelegramService $telegramService
+    ): JsonResponse {
+        $contentArea = (string) $state->get('content_area', '');
+        $editPart = substr($action, strlen('suggest_edit_'));
+
+        // Lectionary section edit: suggest_edit_lect_{section}
+        if (str_starts_with($editPart, 'lect_')) {
+            $section = substr($editPart, strlen('lect_'));
+            $sections = (array) $state->get('lect_sections', []);
+            $sectionData = (array) ($sections[$section] ?? []);
+
+            // Restore section data into flat state for editing
+            $restoreKeys = ['lectionary_chapter', 'lectionary_verse_range', 'lectionary_book',
+                'lectionary_book_label', 'mesbak_geez_1', 'mesbak_geez_2', 'mesbak_geez_3'];
+            $restore = ['editing_from_preview' => true, 'editing_lect_section' => $section];
+            foreach ($restoreKeys as $key) {
+                $restore[$key] = $sectionData[$key] ?? null;
+            }
+            foreach (['title', 'content_detail'] as $field) {
+                foreach (['am', 'en'] as $lang) {
+                    $restore["{$field}_{$lang}"] = $sectionData["{$field}_{$lang}"] ?? null;
+                }
+            }
+
+            $state->advance('lect_section_intro', array_merge($restore, [
+                'lect_current_section' => $section,
+                'lectionary_section' => $section,
+                'lang_phase' => 1,
+                'current_language' => (string) $state->get('first_language', 'am'),
+            ]));
+
+            return $this->replyOrEdit(
+                $telegramService, $chatId,
+                $this->structuredSuggestPrompt('lect_section_intro', $state->data ?? []),
+                $this->structuredSuggestKeyboardForStep('lect_section_intro', $state),
+                $messageId, 'HTML'
+            );
+        }
+
+        // Field edit: suggest_edit_{step}_{lang}
+        if (preg_match('/^(enter_\w+)_(am|en)$/', $editPart, $m)) {
+            $step = $m[1];
+            $lang = $m[2];
+            $langPhase = $lang === 'en' ? 2 : 1;
+
+            $state->advance($step, [
+                'editing_from_preview' => true,
+                'current_language' => $lang,
+                'lang_phase' => $langPhase,
+            ]);
+
+            $fieldForStep = match ($step) {
+                'enter_reference' => "reference_{$lang}",
+                'enter_summary' => "summary_{$lang}",
+                'enter_text' => "text_{$lang}",
+                'enter_title' => "title_{$lang}",
+                'enter_url' => "url_{$lang}",
+                'enter_detail' => "content_detail_{$lang}",
+                default => null,
+            };
+
+            $existing = $fieldForStep ? ((string) $state->get($fieldForStep, '')) : '';
+            $prompt = $this->structuredSuggestPrompt($step, $state->data ?? []);
+            if ($existing !== '') {
+                $prompt .= "\n\n<i>".__('app.telegram_suggest_current')." ".htmlspecialchars($existing, ENT_QUOTES, 'UTF-8')."</i>";
+                $prompt .= "\n".__('app.telegram_suggest_type_to_replace');
+            }
+
+            return $this->replyOrEdit(
+                $telegramService, $chatId,
+                $prompt,
+                $this->structuredSuggestKeyboardForStep($step, $state),
+                $messageId, 'HTML'
+            );
+        }
+
+        // Fallback: return to preview
+        return $this->showSuggestPreview($chatId, $messageId, $state, $telegramService);
+    }
+
     /** Go back one step in the wizard, re-prompting with existing value pre-filled. */
     private function handleSuggestBack(
         string $chatId,
@@ -3687,7 +4267,39 @@ class TelegramWebhookController extends Controller
         TelegramBotState $state,
         TelegramService $telegramService
     ): JsonResponse {
-        $prevStep = $this->structuredSuggestPreviousStep($state, $state->step);
+        if ($state->step === 'manage_images') {
+            $state->advance('preview');
+
+            return $this->showSuggestPreview($chatId, $messageId, $state, $telegramService);
+        }
+
+        if ($state->step === 'manage_image') {
+            return $this->showSuggestImageManager($chatId, $messageId, $state, $telegramService);
+        }
+
+        if (in_array($state->step, ['edit_image_caption_am', 'edit_image_caption_en'], true)) {
+            return $this->showSuggestImageActions(
+                $chatId,
+                $messageId,
+                $state,
+                $telegramService,
+                (int) $state->get('edit_image_index', 0)
+            );
+        }
+
+        $currentStep = $state->step;
+        $contentArea = (string) $state->get('content_area', '');
+        $langPhase = (int) $state->get('lang_phase', 1);
+        $lectionarySection = (string) $state->get('lectionary_section', '');
+
+        // If editing from preview, cancel the edit and return to preview
+        if ($state->get('editing_from_preview')) {
+            $state->advance('preview', ['editing_from_preview' => null]);
+
+            return $this->showSuggestPreview($chatId, $messageId, $state, $telegramService);
+        }
+
+        $prevStep = $this->structuredSuggestPreviousStep($state, $currentStep);
 
         // Skip choose_first_language when going back — go to the step before it
         if ($prevStep === 'choose_first_language') {
@@ -3695,14 +4307,77 @@ class TelegramWebhookController extends Controller
             $prevStep = $this->structuredSuggestPreviousStep($state, $prevStep);
         }
 
-        $state->advance($prevStep);
+        // Determine correct lang_phase and current_language for the target step
+        $bilingualFieldSteps = $this->structuredSuggestBilingualFieldSteps($contentArea, $lectionarySection);
+        $targetLangPhase = $langPhase;
+        $targetLang = (string) $state->get('current_language', 'am');
 
-        $lang = (string) $state->get('current_language', 'en');
+        if ($langPhase === 2 && in_array($prevStep, $bilingualFieldSteps, true)) {
+            $targetLang = 'en';
+        } elseif ($langPhase === 2 && ! in_array($prevStep, $bilingualFieldSteps, true)
+            && ! in_array($prevStep, ['await_image', 'enter_image_caption_am', 'enter_image_caption_en', 'ask_more_images'], true)) {
+            $targetLangPhase = 1;
+            $targetLang = (string) $state->get('first_language', 'am');
+        }
+
+        // Lectionary: back from section intro goes to previous section's intro or date confirm
+        if ($currentStep === 'lect_section_intro') {
+            $allSections = ['title_description', 'pauline', 'catholic', 'acts', 'mesbak', 'gospel', 'qiddase'];
+            $currentSection = (string) $state->get('lect_current_section', '');
+            $currentIdx = array_search($currentSection, $allSections, true);
+
+            if ($currentIdx !== false && $currentIdx > 0) {
+                $prevSection = $allSections[$currentIdx - 1];
+                $state->advance('lect_section_intro', [
+                    'lect_current_section' => $prevSection,
+                    'lectionary_section' => $prevSection,
+                    'lang_phase' => 1,
+                    'current_language' => (string) $state->get('first_language', 'am'),
+                ]);
+
+                return $this->replyOrEdit(
+                    $telegramService, $chatId,
+                    $this->structuredSuggestPrompt('lect_section_intro', $state->data ?? []),
+                    $this->structuredSuggestKeyboardForStep('lect_section_intro', $state),
+                    $messageId, 'HTML'
+                );
+            }
+
+            $prevStep = 'confirm_date';
+            $targetLangPhase = 1;
+            $targetLang = (string) $state->get('first_language', 'am');
+        }
+
+        $state->advance($prevStep, [
+            'lang_phase' => $targetLangPhase,
+            'current_language' => $targetLang,
+        ]);
+
+        // For non-text-input steps, just show the keyboard
+        $callbackSteps = [
+            'choose_area', 'choose_month', 'choose_day', 'confirm_date', 'choose_scope',
+            'choose_first_language', 'choose_book', 'choose_resource_type', 'choose_main',
+            'offer_other_language', 'lect_section_intro', 'ask_more_images', 'await_image',
+        ];
+        if (in_array($prevStep, $callbackSteps, true)) {
+            return $this->replyOrEdit(
+                $telegramService, $chatId,
+                $this->structuredSuggestPrompt($prevStep, $state->data ?? []),
+                $this->structuredSuggestKeyboardForStep($prevStep, $state),
+                $messageId, 'HTML'
+            );
+        }
+
+        // For text-input steps, show current value if any
+        $lang = $targetLang;
         $bilingualSteps = ['enter_reference', 'enter_summary', 'enter_text', 'enter_title', 'enter_url', 'enter_detail'];
 
         $fieldForStep = [
             'enter_chapter' => 'lectionary_chapter',
             'enter_verse_range' => 'lectionary_verse_range',
+            'enter_geez_1' => 'mesbak_geez_1',
+            'enter_geez_2' => 'mesbak_geez_2',
+            'enter_geez_3' => 'mesbak_geez_3',
             'enter_image_caption_am' => 'pending_image_caption_am',
             'enter_image_caption_en' => 'pending_image_caption_en',
         ];
@@ -3726,12 +4401,10 @@ class TelegramWebhookController extends Controller
         }
 
         return $this->replyOrEdit(
-            $telegramService,
-            $chatId,
+            $telegramService, $chatId,
             $prompt,
             $this->structuredSuggestKeyboardForStep($prevStep, $state),
-            $messageId,
-            'HTML'
+            $messageId, 'HTML'
         );
     }
 
@@ -4275,6 +4948,8 @@ class TelegramWebhookController extends Controller
             'await_image' => __('app.telegram_suggest_send_photo'),
             'enter_image_caption_am' => __('app.telegram_suggest_enter_sinksar_image_caption', ['lang' => __('app.amharic')]),
             'enter_image_caption_en' => __('app.telegram_suggest_enter_sinksar_image_caption', ['lang' => __('app.english')]),
+            'edit_image_caption_am' => __('app.telegram_suggest_enter_sinksar_image_caption', ['lang' => __('app.amharic')]),
+            'edit_image_caption_en' => __('app.telegram_suggest_enter_sinksar_image_caption', ['lang' => __('app.english')]),
             'ask_more_images' => __('app.telegram_suggest_add_another_image_prompt'),
             'enter_detail' => match (true) {
                 $contentArea === 'synaxarium' => __('app.telegram_suggest_enter_saint_description'),
@@ -4436,7 +5111,7 @@ class TelegramWebhookController extends Controller
         if ($langPhase === 2) {
             if ($contentArea === 'synaxarium') {
                 $imageStep = match ($currentStep) {
-                    'preview' => 'await_image',
+                    'preview' => ((array) $state->get('sinksar_images', [])) === [] ? 'await_image' : 'manage_images',
                     'await_image' => 'enter_detail',
                     'enter_image_caption_am' => 'await_image',
                     'enter_image_caption_en' => 'enter_image_caption_am',
@@ -4632,7 +5307,10 @@ class TelegramWebhookController extends Controller
                 ['text' => '📝 '.__('app.telegram_suggest_lect_fill'), 'callback_data' => 'lect_fill'],
                 ['text' => '⏭ '.__('app.telegram_suggest_skip'), 'callback_data' => 'lect_skip'],
             ],
-            [['text' => '❌ '.__('app.telegram_suggest_cancel'), 'callback_data' => 'suggest_cancel']],
+            [
+                ['text' => '⬅️ '.__('app.telegram_suggest_back'), 'callback_data' => 'suggest_back'],
+                ['text' => '❌ '.__('app.telegram_suggest_cancel'), 'callback_data' => 'suggest_cancel'],
+            ],
         ]];
     }
 
