@@ -94,7 +94,7 @@ class ContentSuggestionController extends Controller
             (int) $suggestion->ethiopian_day
         );
 
-        $season = LentSeason::activeSeason();
+        $season = LentSeason::active();
         if (! $season) {
             return back()->with('error', __('app.suggest_apply_no_season'));
         }
