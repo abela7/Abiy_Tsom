@@ -256,62 +256,81 @@ class ContentSuggestionController extends Controller
     {
         $month = (int) $suggestion->ethiopian_month;
         $day = (int) $suggestion->ethiopian_day;
-        $section = (string) ($payload['lectionary_section'] ?? '');
 
         $lectionary = Lectionary::firstOrCreate(
             ['month' => $month, 'day' => $day],
         );
 
-        $updates = match ($section) {
-            'title_description' => array_filter([
-                'title_en' => $payload['title_en'] ?? null,
-                'title_am' => $payload['title_am'] ?? null,
-                'description_en' => $payload['content_detail_en'] ?? null,
-                'description_am' => $payload['content_detail_am'] ?? null,
-            ]),
-            'pauline' => array_filter([
-                'pauline_chapter' => $payload['lectionary_chapter'] ?? null,
-                'pauline_verses' => $payload['lectionary_verse_range'] ?? null,
-                'pauline_book_en' => $payload['lectionary_book_label'] ?? null,
-                'pauline_text_en' => $payload['content_detail_en'] ?? null,
-                'pauline_text_am' => $payload['content_detail_am'] ?? null,
-            ]),
-            'catholic' => array_filter([
-                'catholic_chapter' => $payload['lectionary_chapter'] ?? null,
-                'catholic_verses' => $payload['lectionary_verse_range'] ?? null,
-                'catholic_book_en' => $payload['lectionary_book_label'] ?? null,
-                'catholic_text_en' => $payload['content_detail_en'] ?? null,
-                'catholic_text_am' => $payload['content_detail_am'] ?? null,
-            ]),
-            'acts' => array_filter([
-                'acts_chapter' => $payload['lectionary_chapter'] ?? null,
-                'acts_verses' => $payload['lectionary_verse_range'] ?? null,
-                'acts_text_en' => $payload['content_detail_en'] ?? null,
-                'acts_text_am' => $payload['content_detail_am'] ?? null,
-            ]),
-            'mesbak' => array_filter([
-                'mesbak_psalm' => $payload['lectionary_chapter'] ?? null,
-                'mesbak_verses' => $payload['lectionary_verse_range'] ?? null,
-                'mesbak_text_en' => $payload['content_detail_en'] ?? null,
-                'mesbak_text_am' => $payload['content_detail_am'] ?? null,
-            ]),
-            'gospel' => array_filter([
-                'gospel_chapter' => $payload['lectionary_chapter'] ?? null,
-                'gospel_verses' => $payload['lectionary_verse_range'] ?? null,
-                'gospel_book_en' => $payload['lectionary_book_label'] ?? null,
-                'gospel_text_en' => $payload['content_detail_en'] ?? null,
-                'gospel_text_am' => $payload['content_detail_am'] ?? null,
-            ]),
-            'qiddase' => array_filter([
-                'qiddase_en' => $payload['title_en'] ?? $payload['content_detail_en'] ?? null,
-                'qiddase_am' => $payload['title_am'] ?? $payload['content_detail_am'] ?? null,
-            ]),
-            default => [],
-        };
+        // Multi-section payload (all-in-one flow)
+        if (! empty($payload['sections'])) {
+            $allUpdates = [];
+            foreach ((array) $payload['sections'] as $section => $sData) {
+                $allUpdates = array_merge($allUpdates, $this->lectSectionUpdates((string) $section, (array) $sData));
+            }
+            if ($allUpdates !== []) {
+                $lectionary->update($allUpdates);
+            }
+
+            return;
+        }
+
+        // Single-section payload (legacy)
+        $section = (string) ($payload['lectionary_section'] ?? '');
+        $updates = $this->lectSectionUpdates($section, $payload);
 
         if ($updates !== []) {
             $lectionary->update($updates);
         }
+    }
+
+    private function lectSectionUpdates(string $section, array $data): array
+    {
+        return match ($section) {
+            'title_description' => array_filter([
+                'title_en' => $data['title_en'] ?? null,
+                'title_am' => $data['title_am'] ?? null,
+                'description_en' => $data['content_detail_en'] ?? null,
+                'description_am' => $data['content_detail_am'] ?? null,
+            ]),
+            'pauline' => array_filter([
+                'pauline_chapter' => $data['lectionary_chapter'] ?? null,
+                'pauline_verses' => $data['lectionary_verse_range'] ?? null,
+                'pauline_book_en' => $data['lectionary_book_label'] ?? null,
+                'pauline_text_en' => $data['content_detail_en'] ?? null,
+                'pauline_text_am' => $data['content_detail_am'] ?? null,
+            ]),
+            'catholic' => array_filter([
+                'catholic_chapter' => $data['lectionary_chapter'] ?? null,
+                'catholic_verses' => $data['lectionary_verse_range'] ?? null,
+                'catholic_book_en' => $data['lectionary_book_label'] ?? null,
+                'catholic_text_en' => $data['content_detail_en'] ?? null,
+                'catholic_text_am' => $data['content_detail_am'] ?? null,
+            ]),
+            'acts' => array_filter([
+                'acts_chapter' => $data['lectionary_chapter'] ?? null,
+                'acts_verses' => $data['lectionary_verse_range'] ?? null,
+                'acts_text_en' => $data['content_detail_en'] ?? null,
+                'acts_text_am' => $data['content_detail_am'] ?? null,
+            ]),
+            'mesbak' => array_filter([
+                'mesbak_psalm' => $data['lectionary_chapter'] ?? null,
+                'mesbak_verses' => $data['lectionary_verse_range'] ?? null,
+                'mesbak_text_en' => $data['content_detail_en'] ?? null,
+                'mesbak_text_am' => $data['content_detail_am'] ?? null,
+            ]),
+            'gospel' => array_filter([
+                'gospel_chapter' => $data['lectionary_chapter'] ?? null,
+                'gospel_verses' => $data['lectionary_verse_range'] ?? null,
+                'gospel_book_en' => $data['lectionary_book_label'] ?? null,
+                'gospel_text_en' => $data['content_detail_en'] ?? null,
+                'gospel_text_am' => $data['content_detail_am'] ?? null,
+            ]),
+            'qiddase' => array_filter([
+                'qiddase_en' => $data['title_en'] ?? $data['content_detail_en'] ?? null,
+                'qiddase_am' => $data['title_am'] ?? $data['content_detail_am'] ?? null,
+            ]),
+            default => [],
+        };
     }
 
     /**

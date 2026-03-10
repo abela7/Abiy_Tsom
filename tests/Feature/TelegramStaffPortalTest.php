@@ -426,6 +426,104 @@ class TelegramStaffPortalTest extends TestCase
         $this->assertSame('awaiting_continue', TelegramBotState::getActive($chat, 'suggest')?->step);
     }
 
+    public function test_writer_can_submit_lectionary_all_in_one(): void
+    {
+        config()->set('services.telegram.bot_token', 'test-bot-token');
+        config()->set('services.telegram.webhook_secret', 'telegram-secret');
+
+        $writer = User::create([
+            'name' => 'Writer Lect',
+            'username' => 'writerlect',
+            'email' => 'lect@example.com',
+            'password' => 'password',
+            'role' => 'writer',
+            'telegram_chat_id' => 'writer-lect-chat',
+        ]);
+
+        Http::fake([
+            'https://api.telegram.org/*' => Http::response(['ok' => true, 'result' => ['message_id' => 1]], 200),
+        ]);
+
+        $header = ['X-Telegram-Bot-Api-Secret-Token' => 'telegram-secret'];
+        $chat = 'writer-lect-chat';
+
+        // Start wizard → choose lectionary → date → confirm
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_area_lectionary'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_month_7'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_day_1'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_confirm_date_yes'))->assertOk();
+
+        // Now at lect_section_intro for title_description
+        $state = TelegramBotState::getActive($chat, 'suggest');
+        $this->assertSame('lect_section_intro', $state->step);
+        $this->assertSame('title_description', $state->get('lect_current_section'));
+
+        // Fill title_description section
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'lect_fill'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->messagePayload($chat, 'የዕለቱ ርዕስ'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->messagePayload($chat, 'የዕለቱ ገለፃ'))->assertOk();
+
+        // Auto-advanced to next section intro (pauline)
+        $state->refresh();
+        $this->assertSame('lect_section_intro', $state->step);
+        $this->assertSame('pauline', $state->get('lect_current_section'));
+
+        // Fill pauline section (choose book → chapter → verse → detail)
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'lect_fill'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_book_ሮሜ'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->messagePayload($chat, '5'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->messagePayload($chat, '1-11'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->messagePayload($chat, 'ጳውሎስ ጽሑፍ'))->assertOk();
+
+        // Auto-advanced to catholic section intro
+        $state->refresh();
+        $this->assertSame('lect_section_intro', $state->step);
+        $this->assertSame('catholic', $state->get('lect_current_section'));
+
+        // Skip remaining sections (catholic through qiddase)
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'lect_skip'))->assertOk(); // skip catholic
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'lect_skip'))->assertOk(); // skip acts
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'lect_skip'))->assertOk(); // skip mesbak
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'lect_skip'))->assertOk(); // skip gospel
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'lect_skip'))->assertOk(); // skip qiddase
+
+        // Now at lect_offer_english
+        $state->refresh();
+        $this->assertSame('lect_offer_english', $state->step);
+
+        // Skip English → preview → confirm
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'lect_english_skip'))->assertOk();
+        $this->withHeaders($header)->postJson(route('webhooks.telegram'), $this->callbackPayload($chat, 'suggest_confirm'))->assertOk();
+
+        // Verify suggestion created
+        $this->assertDatabaseHas('content_suggestions', [
+            'user_id' => $writer->id,
+            'source' => 'telegram',
+            'type' => 'bible',
+            'content_area' => 'lectionary',
+            'language' => 'am',
+            'ethiopian_month' => 7,
+            'ethiopian_day' => 1,
+            'status' => 'pending',
+        ]);
+
+        $suggestion = ContentSuggestion::query()->latest()->first();
+        $this->assertNotNull($suggestion);
+
+        // Verify sections in payload
+        $sections = $suggestion->structuredValue('sections');
+        $this->assertIsArray($sections);
+        $this->assertArrayHasKey('title_description', $sections);
+        $this->assertArrayHasKey('pauline', $sections);
+        $this->assertSame('የዕለቱ ርዕስ', $sections['title_description']['title_am']);
+        $this->assertSame('የዕለቱ ገለፃ', $sections['title_description']['content_detail_am']);
+        $this->assertSame('5', $sections['pauline']['lectionary_chapter']);
+        $this->assertSame('1-11', $sections['pauline']['lectionary_verse_range']);
+        $this->assertSame('ጳውሎስ ጽሑፍ', $sections['pauline']['content_detail_am']);
+        $this->assertSame('awaiting_continue', TelegramBotState::getActive($chat, 'suggest')?->step);
+    }
+
     /**
      * @return array<string, mixed>
      */

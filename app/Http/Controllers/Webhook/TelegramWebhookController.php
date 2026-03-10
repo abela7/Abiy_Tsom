@@ -55,6 +55,9 @@ class TelegramWebhookController extends Controller
     private const GOSPEL_BOOKS = [
         'ማቴዎስ' => 'Matthew', 'ማርቆስ' => 'Mark', 'ሉቃስ' => 'Luke', 'ዮሐንስ' => 'John',
     ];
+
+    /** Lectionary section order for all-in-one flow */
+    private const LECTIONARY_SECTIONS = ['title_description', 'pauline', 'catholic', 'acts', 'mesbak', 'gospel', 'qiddase'];
     public function __construct(
         private readonly TelegramBotBuilderService $telegramBotBuilder,
         private readonly TelegramContentFormatter $contentFormatter,
@@ -194,7 +197,7 @@ class TelegramWebhookController extends Controller
             return $this->handleLanguageChange($chatId, $messageId, $action, $telegramAuthService, $telegramService);
         }
 
-        if (str_starts_with($action, 'suggest_') || $action === 'suggest' || $action === 'my_suggestions') {
+        if (str_starts_with($action, 'suggest_') || str_starts_with($action, 'lect_') || $action === 'suggest' || $action === 'my_suggestions') {
             return $this->handleSuggestCallback($chatId, $messageId, $action, $telegramAuthService, $telegramService);
         }
 
@@ -1892,6 +1895,12 @@ class TelegramWebhookController extends Controller
         array $replyMarkup = [],
         ?string $parseMode = null
     ): JsonResponse {
+        // Delete previous bot message to prevent double messages (e.g. after callback-triggered advances)
+        $prevBotMsgId = (int) $state->get('last_bot_message_id', 0);
+        if ($prevBotMsgId > 0) {
+            $telegramService->deleteMessage($chatId, $prevBotMsgId);
+        }
+
         $options = [];
         if (! empty($replyMarkup)) {
             $options['reply_markup'] = $replyMarkup;
@@ -2410,10 +2419,26 @@ class TelegramWebhookController extends Controller
             $contentArea = (string) $state->get('content_area', '');
 
             // Areas with extra steps before content entry
-            if (in_array($contentArea, ['synaxarium', 'lectionary', 'reference_resource'], true)) {
+            if ($contentArea === 'lectionary') {
+                // All-in-one lectionary: start with first section intro
+                $state->advance('lect_section_intro', [
+                    'lect_current_section' => self::LECTIONARY_SECTIONS[0],
+                    'lect_sections' => [],
+                    'lect_filled_order' => [],
+                ]);
+
+                return $this->replyOrEdit(
+                    $telegramService,
+                    $chatId,
+                    $this->structuredSuggestPrompt('lect_section_intro', $state->data ?? []),
+                    $this->structuredSuggestKeyboardForStep('lect_section_intro', $state),
+                    $messageId
+                );
+            }
+
+            if (in_array($contentArea, ['synaxarium', 'reference_resource'], true)) {
                 $nextStep = match ($contentArea) {
                     'synaxarium' => 'choose_scope',
-                    'lectionary' => 'choose_lectionary_section',
                     'reference_resource' => 'choose_resource_type',
                 };
 
@@ -2492,6 +2517,74 @@ class TelegramWebhookController extends Controller
             $state->advance('choose_first_language', ['lectionary_section' => $section]);
 
             return $this->suggestAutoStartAmharic($chatId, $messageId, $state, $telegramService);
+        }
+
+        // All-in-one lectionary: Fill current section
+        if ($action === 'lect_fill') {
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+
+            $section = (string) $state->get('lect_current_section', '');
+            $hasRefSteps = in_array($section, ['pauline', 'catholic', 'gospel', 'acts', 'mesbak'], true);
+
+            if ($hasRefSteps) {
+                $nextStep = match ($section) {
+                    'pauline', 'catholic', 'gospel' => 'choose_book',
+                    default => 'enter_chapter',
+                };
+                $state->advance($nextStep, [
+                    'lectionary_section' => $section,
+                    'first_language' => 'am',
+                    'current_language' => 'am',
+                    'lang_phase' => 1,
+                ]);
+
+                return $this->replyOrEdit(
+                    $telegramService, $chatId,
+                    $this->structuredSuggestPrompt($nextStep, $state->data ?? []),
+                    $this->structuredSuggestKeyboardForStep($nextStep, $state),
+                    $messageId
+                );
+            }
+
+            // title_description / qiddase: start bilingual with Amharic
+            $state->advance('choose_first_language', ['lectionary_section' => $section]);
+
+            return $this->suggestAutoStartAmharic($chatId, $messageId, $state, $telegramService);
+        }
+
+        // All-in-one lectionary: Skip current section
+        if ($action === 'lect_skip') {
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+
+            return $this->lectAdvanceToNextSection($chatId, $messageId, $state, $telegramService);
+        }
+
+        // All-in-one lectionary: Add English translations
+        if ($action === 'lect_english_yes') {
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+
+            return $this->lectStartEnglishPhase($chatId, $messageId, $state, $telegramService);
+        }
+
+        // All-in-one lectionary: Skip English, go to preview
+        if ($action === 'lect_english_skip') {
+            $state = TelegramBotState::getActive($chatId, 'suggest');
+            if (! $state) {
+                return $this->startSuggestWizard($chatId, $messageId, $telegramService);
+            }
+
+            $state->advance('preview');
+
+            return $this->showSuggestPreview($chatId, $messageId, $state, $telegramService);
         }
 
         if (str_starts_with($action, 'suggest_book_')) {
@@ -2764,6 +2857,233 @@ class TelegramWebhookController extends Controller
         );
     }
 
+    /**
+     * Save current lectionary section's data and advance to the next section intro or offer English.
+     */
+    private function lectSaveSectionAndAdvance(
+        string $chatId,
+        int $messageId,
+        TelegramBotState $state,
+        TelegramService $telegramService
+    ): JsonResponse {
+        $data = $state->data ?? [];
+        $section = (string) ($data['lect_current_section'] ?? '');
+
+        // Extract section data from flat fields into lect_sections
+        $sectionData = [];
+        $refKeys = ['lectionary_chapter', 'lectionary_verse_range', 'lectionary_book', 'lectionary_book_label', 'lectionary_geez_line'];
+        foreach ($refKeys as $key) {
+            if (! empty($data[$key])) {
+                $sectionData[$key] = $data[$key];
+            }
+        }
+        $bilingualKeys = ['title_am', 'title_en', 'content_detail_am', 'content_detail_en'];
+        foreach ($bilingualKeys as $key) {
+            if (! empty($data[$key])) {
+                $sectionData[$key] = $data[$key];
+            }
+        }
+
+        $sections = $data['lect_sections'] ?? [];
+        $sections[$section] = $sectionData;
+
+        $filledOrder = $data['lect_filled_order'] ?? [];
+        if (! in_array($section, $filledOrder, true)) {
+            $filledOrder[] = $section;
+        }
+
+        // Clear flat fields and update sections in data
+        foreach (array_merge($refKeys, $bilingualKeys) as $key) {
+            unset($data[$key]);
+        }
+        unset($data['lectionary_section']);
+        $data['lect_sections'] = $sections;
+        $data['lect_filled_order'] = $filledOrder;
+
+        // Compute next section
+        $idx = array_search($section, self::LECTIONARY_SECTIONS, true);
+        $nextSection = ($idx !== false && isset(self::LECTIONARY_SECTIONS[$idx + 1]))
+            ? self::LECTIONARY_SECTIONS[$idx + 1]
+            : null;
+
+        if ($nextSection !== null) {
+            $data['lect_current_section'] = $nextSection;
+            $state->step = 'lect_section_intro';
+            $state->data = $data;
+            $state->expires_at = now()->addHour();
+            $state->save();
+
+            return $this->replyOrEdit(
+                $telegramService, $chatId,
+                $this->structuredSuggestPrompt('lect_section_intro', $data),
+                $this->structuredSuggestKeyboardForStep('lect_section_intro', $state),
+                $messageId
+            );
+        }
+
+        return $this->lectFinishAllSections($chatId, $messageId, $state, $telegramService, $data);
+    }
+
+    /**
+     * Advance to the next lectionary section intro, or to lect_offer_english if all done.
+     * Called from lect_skip callback (no section data to save).
+     */
+    private function lectAdvanceToNextSection(
+        string $chatId,
+        int $messageId,
+        TelegramBotState $state,
+        TelegramService $telegramService
+    ): JsonResponse {
+        $data = $state->data ?? [];
+        $current = (string) ($data['lect_current_section'] ?? '');
+        $idx = array_search($current, self::LECTIONARY_SECTIONS, true);
+        $nextSection = ($idx !== false && isset(self::LECTIONARY_SECTIONS[$idx + 1]))
+            ? self::LECTIONARY_SECTIONS[$idx + 1]
+            : null;
+
+        if ($nextSection !== null) {
+            $state->advance('lect_section_intro', ['lect_current_section' => $nextSection]);
+
+            return $this->replyOrEdit(
+                $telegramService, $chatId,
+                $this->structuredSuggestPrompt('lect_section_intro', $state->data ?? []),
+                $this->structuredSuggestKeyboardForStep('lect_section_intro', $state),
+                $messageId
+            );
+        }
+
+        return $this->lectFinishAllSections($chatId, $messageId, $state, $telegramService, $data);
+    }
+
+    /**
+     * All sections processed — offer English or preview.
+     */
+    private function lectFinishAllSections(
+        string $chatId,
+        int $messageId,
+        TelegramBotState $state,
+        TelegramService $telegramService,
+        array $data
+    ): JsonResponse {
+        $filledOrder = (array) ($data['lect_filled_order'] ?? []);
+        if (empty($filledOrder)) {
+            $state->advance('preview');
+
+            return $this->showSuggestPreview($chatId, $messageId, $state, $telegramService);
+        }
+
+        $state->advance('lect_offer_english');
+
+        return $this->replyOrEdit(
+            $telegramService, $chatId,
+            $this->structuredSuggestPrompt('lect_offer_english', $state->data ?? []),
+            $this->structuredSuggestKeyboardForStep('lect_offer_english', $state),
+            $messageId
+        );
+    }
+
+    /**
+     * Start the English phase for all filled lectionary sections.
+     */
+    private function lectStartEnglishPhase(
+        string $chatId,
+        int $messageId,
+        TelegramBotState $state,
+        TelegramService $telegramService
+    ): JsonResponse {
+        $data = $state->data ?? [];
+        $filledOrder = (array) ($data['lect_filled_order'] ?? []);
+        if (empty($filledOrder)) {
+            $state->advance('preview');
+
+            return $this->showSuggestPreview($chatId, $messageId, $state, $telegramService);
+        }
+
+        $section = $filledOrder[0];
+        $lectionarySection = $section;
+        $bilingualSteps = $this->structuredSuggestBilingualFieldSteps('lectionary', $lectionarySection);
+        $firstStep = $bilingualSteps[0] ?? 'enter_detail';
+
+        $state->advance($firstStep, [
+            'lect_english_idx' => 0,
+            'lectionary_section' => $lectionarySection,
+            'current_language' => 'en',
+            'lang_phase' => 2,
+        ]);
+
+        return $this->replyOrEdit(
+            $telegramService, $chatId,
+            $this->lectEnglishSectionHeader($lectionarySection)."\n\n"
+                .$this->structuredSuggestPrompt($firstStep, $state->data ?? []),
+            $this->structuredSuggestKeyboardForStep($firstStep, $state),
+            $messageId
+        );
+    }
+
+    /**
+     * Save English data for current section and advance to next section's English or preview.
+     */
+    private function lectSaveEnglishAndAdvance(
+        string $chatId,
+        int $messageId,
+        TelegramBotState $state,
+        TelegramService $telegramService
+    ): JsonResponse {
+        $data = $state->data ?? [];
+        $filledOrder = (array) ($data['lect_filled_order'] ?? []);
+        $englishIdx = (int) ($data['lect_english_idx'] ?? 0);
+        $section = $filledOrder[$englishIdx] ?? '';
+
+        // Save English bilingual data back to lect_sections
+        $sections = $data['lect_sections'] ?? [];
+        foreach (['title_en', 'content_detail_en'] as $key) {
+            if (! empty($data[$key])) {
+                $sections[$section][$key] = $data[$key];
+            }
+        }
+        $data['lect_sections'] = $sections;
+        $data['title_en'] = null;
+        $data['content_detail_en'] = null;
+
+        $nextIdx = $englishIdx + 1;
+        if (isset($filledOrder[$nextIdx])) {
+            // More sections for English
+            $nextSection = $filledOrder[$nextIdx];
+            $bilingualSteps = $this->structuredSuggestBilingualFieldSteps('lectionary', $nextSection);
+            $firstStep = $bilingualSteps[0] ?? 'enter_detail';
+
+            $data['lect_english_idx'] = $nextIdx;
+            $data['lectionary_section'] = $nextSection;
+            $state->step = $firstStep;
+            $state->data = $data;
+            $state->expires_at = now()->addHour();
+            $state->save();
+
+            return $this->replyOrEdit(
+                $telegramService, $chatId,
+                $this->lectEnglishSectionHeader($nextSection)."\n\n"
+                    .$this->structuredSuggestPrompt($firstStep, $data),
+                $this->structuredSuggestKeyboardForStep($firstStep, $state),
+                $messageId
+            );
+        }
+
+        // All English done — go to preview
+        $state->step = 'preview';
+        $state->data = $data;
+        $state->expires_at = now()->addHour();
+        $state->save();
+
+        return $this->showSuggestPreview($chatId, $messageId, $state, $telegramService);
+    }
+
+    private function lectEnglishSectionHeader(string $section): string
+    {
+        $label = $this->structuredSuggestLectionarySectionLabel($section);
+
+        return "📖 <b>{$label}</b> [🇬🇧 English]";
+    }
+
     private function suggestContinueKeyboard(string $contentArea, array $data): array
     {
         $rows = [];
@@ -2804,16 +3124,12 @@ class TelegramWebhookController extends Controller
         // Delete user's text message and bot's previous prompt to keep chat clean
         $this->suggestDeleteStaleMessages($chatId, $userMessageId, $state, $telegramService);
 
-        // Ignore text input during continue prompt — user should tap a button
-        if ($state->step === 'awaiting_continue') {
-            $data = $state->data ?? [];
-            $contentArea = (string) ($data['content_area'] ?? '');
-            $dateLabel = $this->structuredSuggestDateLabel($data);
-
+        // Ignore text input during button-only steps — re-show the step prompt
+        if (in_array($state->step, ['awaiting_continue', 'lect_section_intro', 'lect_offer_english'], true)) {
             return $this->suggestReplyAndTrack(
                 $telegramService, $state, $chatId,
-                __('app.telegram_suggest_continue_prompt', ['date' => $dateLabel]),
-                $this->suggestContinueKeyboard($contentArea, $data)
+                $this->structuredSuggestPrompt($state->step, $state->data ?? []),
+                $this->structuredSuggestKeyboardForStep($state->step, $state)
             );
         }
 
@@ -2875,6 +3191,14 @@ class TelegramWebhookController extends Controller
                 if ($this->structuredSuggestStepIsOptional($state, $currentStep)) {
                     $nextStep = $this->structuredSuggestNextStep($state, $currentStep);
 
+                    if ($nextStep === 'lect_section_done') {
+                        return $this->lectSaveSectionAndAdvance($chatId, $messageId, $state, $telegramService);
+                    }
+
+                    if ($nextStep === 'lect_english_section_done') {
+                        return $this->lectSaveEnglishAndAdvance($chatId, $messageId, $state, $telegramService);
+                    }
+
                     if ($nextStep === 'preview') {
                         $state->advance('preview');
 
@@ -2915,6 +3239,21 @@ class TelegramWebhookController extends Controller
         }
 
         $nextStep = $this->structuredSuggestNextStep($state, $currentStep);
+
+        // Lectionary all-in-one: section completed → save and advance to next section
+        if ($nextStep === 'lect_section_done') {
+            // Merge input data in memory without saving — lectSaveSectionAndAdvance does a single save
+            $state->data = array_merge($state->data ?? [], $mergeData);
+
+            return $this->lectSaveSectionAndAdvance($chatId, $messageId, $state, $telegramService);
+        }
+
+        // Lectionary all-in-one: English for current section done → save and advance
+        if ($nextStep === 'lect_english_section_done') {
+            $state->data = array_merge($state->data ?? [], $mergeData);
+
+            return $this->lectSaveEnglishAndAdvance($chatId, $messageId, $state, $telegramService);
+        }
 
         if ($nextStep === 'preview') {
             $state->advance('preview', $mergeData);
@@ -2964,7 +3303,34 @@ class TelegramWebhookController extends Controller
                 'UTF-8'
             );
         }
-        if ($contentArea === 'lectionary' && ! empty($data['lectionary_section'])) {
+        // Lectionary all-in-one: show all filled sections
+        if ($contentArea === 'lectionary' && ! empty($data['lect_sections'])) {
+            $sections = (array) $data['lect_sections'];
+            $filledOrder = (array) ($data['lect_filled_order'] ?? array_keys($sections));
+            foreach ($filledOrder as $section) {
+                if (empty($sections[$section])) {
+                    continue;
+                }
+                $sData = (array) $sections[$section];
+                $label = $this->structuredSuggestLectionarySectionLabel((string) $section);
+                $lines[] = '';
+                $lines[] = "📖 <b>{$label}</b>";
+                $ref = $this->structuredSuggestBuildLectionaryReference($sData);
+                if ($ref !== null) {
+                    $lines[] = '<b>Ref:</b> '.htmlspecialchars($ref, ENT_QUOTES, 'UTF-8');
+                }
+                foreach (['am' => '🇪🇹', 'en' => '🇬🇧'] as $lang => $flag) {
+                    foreach (['title', 'content_detail'] as $field) {
+                        $val = (string) ($sData["{$field}_{$lang}"] ?? '');
+                        if ($val !== '') {
+                            $fieldLabel = $field === 'title' ? 'Title' : 'Text';
+                            $display = mb_strlen($val) > 150 ? mb_substr($val, 0, 147).'…' : $val;
+                            $lines[] = "{$flag} <b>{$fieldLabel}:</b> ".htmlspecialchars($display, ENT_QUOTES, 'UTF-8');
+                        }
+                    }
+                }
+            }
+        } elseif ($contentArea === 'lectionary' && ! empty($data['lectionary_section'])) {
             $lines[] = '<b>Section:</b> '.htmlspecialchars(
                 $this->structuredSuggestLectionarySectionLabel((string) $data['lectionary_section']),
                 ENT_QUOTES,
@@ -2993,8 +3359,10 @@ class TelegramWebhookController extends Controller
             );
         }
 
-        // Show bilingual content grouped by language
-        $this->appendBilingualPreviewLines($lines, $data, $contentArea);
+        // Show bilingual content grouped by language (non-lectionary or legacy single-section)
+        if ($contentArea !== 'lectionary' || empty($data['lect_sections'])) {
+            $this->appendBilingualPreviewLines($lines, $data, $contentArea);
+        }
 
         $keyboard = ['inline_keyboard' => [
             [['text' => '✅ '.__('app.telegram_suggest_confirm'), 'callback_data' => 'suggest_confirm']],
@@ -3092,9 +3460,24 @@ class TelegramWebhookController extends Controller
         $contentArea = (string) ($data['content_area'] ?? 'daily_message');
         $firstLang = (string) ($data['first_language'] ?? 'en');
 
-        // Determine which languages have content
-        $hasEn = ! empty($data['reference_en']) || ! empty($data['title_en']) || ! empty($data['content_detail_en']);
-        $hasAm = ! empty($data['reference_am']) || ! empty($data['title_am']) || ! empty($data['content_detail_am']);
+        // Lectionary all-in-one: determine language from sections
+        $hasEn = false;
+        $hasAm = false;
+        if ($contentArea === 'lectionary' && ! empty($data['lect_sections'])) {
+            foreach ((array) $data['lect_sections'] as $sData) {
+                foreach (['title', 'content_detail'] as $f) {
+                    if (! empty($sData["{$f}_en"])) {
+                        $hasEn = true;
+                    }
+                    if (! empty($sData["{$f}_am"])) {
+                        $hasAm = true;
+                    }
+                }
+            }
+        } else {
+            $hasEn = ! empty($data['reference_en']) || ! empty($data['title_en']) || ! empty($data['content_detail_en']);
+            $hasAm = ! empty($data['reference_am']) || ! empty($data['title_am']) || ! empty($data['content_detail_am']);
+        }
         $language = ($hasEn && $hasAm) ? 'both' : ($hasAm ? 'am' : 'en');
 
         // Use first available title/reference for the legacy columns
@@ -3142,18 +3525,21 @@ class TelegramWebhookController extends Controller
         $continueKeyboard = $this->suggestContinueKeyboard($contentArea, $data);
 
         // Preserve date info for potential continuation
+        $filledSections = $contentArea === 'lectionary' && ! empty($data['lect_filled_order'])
+            ? (array) $data['lect_filled_order']
+            : array_values(array_unique(array_merge(
+                (array) ($data['filled_lectionary_sections'] ?? []),
+                $contentArea === 'lectionary' && ! empty($data['lectionary_section'])
+                    ? [$data['lectionary_section']]
+                    : []
+            )));
         $state->update([
             'step' => 'awaiting_continue',
             'data' => [
                 'ethiopian_month' => $data['ethiopian_month'] ?? null,
                 'ethiopian_day' => $data['ethiopian_day'] ?? null,
                 'content_area' => $contentArea,
-                'filled_lectionary_sections' => array_values(array_unique(array_merge(
-                    (array) ($data['filled_lectionary_sections'] ?? []),
-                    $contentArea === 'lectionary' && ! empty($data['lectionary_section'])
-                        ? [$data['lectionary_section']]
-                        : []
-                ))),
+                'filled_lectionary_sections' => $filledSections,
             ],
         ]);
 
@@ -3253,6 +3639,18 @@ class TelegramWebhookController extends Controller
         if ($prevStep === 'choose_first_language') {
             $state->advance($prevStep);
             $prevStep = $this->structuredSuggestPreviousStep($state, $prevStep);
+        }
+
+        // Lectionary all-in-one: going back to lect_offer_english
+        if ($prevStep === 'lect_offer_english') {
+            $state->advance('lect_offer_english');
+
+            return $this->replyOrEdit(
+                $telegramService, $chatId,
+                $this->structuredSuggestPrompt('lect_offer_english', $state->data ?? []),
+                $this->structuredSuggestKeyboardForStep('lect_offer_english', $state),
+                $messageId
+            );
         }
 
         $state->advance($prevStep);
@@ -3751,6 +4149,12 @@ class TelegramWebhookController extends Controller
             'choose_scope' => $this->structuredSuggestScopeKeyboard(),
             'choose_first_language' => $this->suggestFirstLanguageKeyboard(),
             'choose_lectionary_section' => $this->structuredSuggestLectionarySectionKeyboard(),
+            'lect_section_intro' => $this->lectSectionIntroKeyboard(),
+            'lect_offer_english' => $this->lectOfferEnglishKeyboard(),
+            'awaiting_continue' => $this->suggestContinueKeyboard(
+                (string) $state->get('content_area', ''),
+                $state->data ?? []
+            ),
             'confirm_date' => $this->structuredSuggestConfirmDateKeyboard(),
             'choose_book' => $this->structuredSuggestLectionaryBookKeyboard($state),
             'choose_geez_line' => $this->structuredSuggestGeezLineKeyboard(),
@@ -3800,6 +4204,9 @@ class TelegramWebhookController extends Controller
             'choose_scope' => __('app.telegram_suggest_choose_scope'),
             'choose_first_language' => __('app.telegram_suggest_choose_first_language'),
             'choose_lectionary_section' => __('app.telegram_suggest_choose_lectionary_section'),
+            'lect_section_intro' => $this->lectSectionIntroPrompt($data),
+            'lect_offer_english' => __('app.telegram_suggest_lect_offer_english'),
+            'awaiting_continue' => __('app.telegram_suggest_continue_prompt', ['date' => $this->structuredSuggestDateLabel($data)]),
             'confirm_date' => $this->structuredSuggestConfirmDatePrompt($data),
             'choose_book' => __('app.telegram_suggest_choose_book'),
             'choose_geez_line' => __('app.telegram_suggest_choose_geez_line'),
@@ -3872,19 +4279,20 @@ class TelegramWebhookController extends Controller
         $base = ['choose_area', 'choose_month', 'choose_day', 'confirm_date'];
 
         if ($contentArea === 'lectionary') {
+            // All-in-one flow: section steps end at lect_section_done (no per-section offer_other_language)
             $refSteps = match ($lectionarySection) {
                 'pauline', 'catholic', 'gospel' => ['choose_book', 'enter_chapter', 'enter_verse_range'],
                 'acts' => ['enter_chapter', 'enter_verse_range'],
                 'mesbak' => ['enter_chapter', 'enter_verse_range', 'choose_geez_line'],
                 'qiddase', 'title_description' => [],
-                default => ['enter_reference'],
+                default => [],
             };
 
             $contentSteps = in_array($lectionarySection, ['title_description', 'qiddase'], true)
                 ? ['enter_title', 'enter_detail']
                 : ['enter_detail'];
 
-            return array_merge($base, ['choose_lectionary_section'], $refSteps, ['choose_first_language'], $contentSteps, ['offer_other_language', 'preview']);
+            return array_merge($base, ['lect_section_intro'], $refSteps, $contentSteps, ['lect_section_done']);
         }
 
         return match ($contentArea) {
@@ -3932,6 +4340,11 @@ class TelegramWebhookController extends Controller
                 return $bilingualSteps[$index + 1];
             }
 
+            // Lectionary all-in-one: check if more sections need English
+            if ($contentArea === 'lectionary' && $state->get('lect_sections') !== null) {
+                return 'lect_english_section_done';
+            }
+
             return 'preview';
         }
 
@@ -3960,6 +4373,11 @@ class TelegramWebhookController extends Controller
             $bilingualSteps = $this->structuredSuggestBilingualFieldSteps($contentArea, $lectionarySection);
 
             if ($currentStep === 'preview') {
+                // Lectionary all-in-one: go back to lect_offer_english
+                if ($contentArea === 'lectionary' && $state->get('lect_sections') !== null) {
+                    return 'lect_offer_english';
+                }
+
                 return end($bilingualSteps) ?: 'offer_other_language';
             }
 
@@ -3969,6 +4387,11 @@ class TelegramWebhookController extends Controller
                 return $bilingualSteps[$index - 1];
             }
 
+            // Lectionary all-in-one: at first bilingual step, go back to lect_offer_english
+            if ($contentArea === 'lectionary' && $state->get('lect_sections') !== null) {
+                return 'lect_offer_english';
+            }
+
             // At the first bilingual step in phase 2, go back to offer_other_language
             return 'offer_other_language';
         }
@@ -3976,7 +4399,11 @@ class TelegramWebhookController extends Controller
         $flow = $this->structuredSuggestFlow($state);
 
         if ($currentStep === 'preview') {
-            $steps = array_values(array_filter($flow, fn ($step) => $step !== 'preview'));
+            // Lectionary all-in-one: go back to lect_offer_english
+            if ($contentArea === 'lectionary' && ! empty($state->get('lect_sections'))) {
+                return 'lect_offer_english';
+            }
+            $steps = array_values(array_filter($flow, fn ($step) => $step !== 'preview' && $step !== 'lect_section_done'));
 
             return end($steps) ?: 'choose_area';
         }
@@ -4000,7 +4427,10 @@ class TelegramWebhookController extends Controller
             'bible_reading' => 'enter_reference',
             'synaxarium' => 'enter_title',
             'mezmur', 'spiritual_book', 'daily_message', 'reference_resource' => 'enter_title',
-            'lectionary' => 'enter_detail',
+            'lectionary' => match ((string) $state->get('lectionary_section', '')) {
+                'title_description', 'qiddase' => 'enter_title',
+                default => 'enter_detail',
+            },
             default => 'enter_title',
         };
     }
@@ -4087,6 +4517,36 @@ class TelegramWebhookController extends Controller
             'qiddase' => __('app.telegram_suggest_lectionary_section_qiddase'),
             default => ucfirst(str_replace('_', ' ', $section)),
         };
+    }
+
+    private function lectSectionIntroPrompt(array $data): string
+    {
+        $section = (string) ($data['lect_current_section'] ?? '');
+        $label = $this->structuredSuggestLectionarySectionLabel($section);
+        $idx = array_search($section, self::LECTIONARY_SECTIONS, true);
+        $num = ($idx !== false) ? ($idx + 1) : 0;
+        $total = count(self::LECTIONARY_SECTIONS);
+
+        return "📖 <b>{$label}</b> ({$num}/{$total})\n\n".__('app.telegram_suggest_lect_section_fill_or_skip');
+    }
+
+    private function lectSectionIntroKeyboard(): array
+    {
+        return ['inline_keyboard' => [
+            [
+                ['text' => '📝 '.__('app.telegram_suggest_lect_fill'), 'callback_data' => 'lect_fill'],
+                ['text' => '⏭ '.__('app.telegram_suggest_skip'), 'callback_data' => 'lect_skip'],
+            ],
+            [['text' => '❌ '.__('app.telegram_suggest_cancel'), 'callback_data' => 'suggest_cancel']],
+        ]];
+    }
+
+    private function lectOfferEnglishKeyboard(): array
+    {
+        return ['inline_keyboard' => [
+            [['text' => '🇬🇧 '.__('app.telegram_suggest_lect_add_english'), 'callback_data' => 'lect_english_yes']],
+            [['text' => '⏭ '.__('app.telegram_suggest_skip'), 'callback_data' => 'lect_english_skip']],
+        ]];
     }
 
     private function structuredSuggestLegacyType(string $contentArea): string
@@ -4203,6 +4663,34 @@ class TelegramWebhookController extends Controller
             'reference' => $this->structuredSuggestBuildLectionaryReference($data) ?? $data['reference_en'] ?? $data['reference_am'] ?? null,
             'is_main' => $data['is_main'] ?? null,
         ];
+
+        // Lectionary all-in-one: include all sections
+        if (! empty($data['lect_sections'])) {
+            $sections = [];
+            foreach ((array) $data['lect_sections'] as $section => $sData) {
+                $sPayload = [];
+                foreach (['lectionary_book', 'lectionary_book_label', 'lectionary_chapter', 'lectionary_verse_range', 'lectionary_geez_line'] as $key) {
+                    if (! empty($sData[$key])) {
+                        $sPayload[$key] = $sData[$key];
+                    }
+                }
+                foreach (['en', 'am'] as $lang) {
+                    foreach (['title', 'content_detail'] as $field) {
+                        $key = "{$field}_{$lang}";
+                        if (! empty($sData[$key])) {
+                            $sPayload[$key] = $sData[$key];
+                        }
+                    }
+                }
+                $sPayload['section_label'] = $this->structuredSuggestLectionarySectionLabel((string) $section);
+                $ref = $this->structuredSuggestBuildLectionaryReference($sData);
+                if ($ref !== null) {
+                    $sPayload['reference'] = $ref;
+                }
+                $sections[$section] = $sPayload;
+            }
+            $payload['sections'] = $sections;
+        }
 
         // Add all bilingual fields
         foreach (['en', 'am'] as $lang) {
