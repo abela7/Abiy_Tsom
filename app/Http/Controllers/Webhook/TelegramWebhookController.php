@@ -2240,17 +2240,36 @@ class TelegramWebhookController extends Controller
 
             // If continuing from a previous submission, skip date selection
             if (! empty($existingData['skip_date_selection']) && ! empty($existingData['ethiopian_month'])) {
-                $nextStep = $area === 'lectionary' ? 'choose_lectionary_section'
-                    : ($area === 'synaxarium' ? 'choose_scope'
-                    : ($area === 'reference_resource' ? 'choose_resource_type'
-                    : 'choose_first_language'));
+                $hasExtraSteps = in_array($area, ['lectionary', 'synaxarium', 'reference_resource'], true);
 
-                $state->advance($nextStep, [
+                if ($hasExtraSteps) {
+                    $nextStep = match ($area) {
+                        'lectionary' => 'choose_lectionary_section',
+                        'synaxarium' => 'choose_scope',
+                        'reference_resource' => 'choose_resource_type',
+                    };
+
+                    $state->advance($nextStep, [
+                        'content_area' => $area,
+                        'skip_date_selection' => null,
+                    ]);
+
+                    return $this->replyOrEdit(
+                        $telegramService,
+                        $chatId,
+                        $this->structuredSuggestPrompt($nextStep, $state->data ?? []),
+                        $this->structuredSuggestKeyboardForStep($nextStep, $state),
+                        $messageId
+                    );
+                }
+
+                // Direct to content entry with Amharic
+                $state->advance('choose_first_language', [
                     'content_area' => $area,
                     'skip_date_selection' => null,
                 ]);
 
-                return $this->advanceSuggestStep($chatId, $messageId, '', $state, $telegramService);
+                return $this->suggestAutoStartAmharic($chatId, $messageId, $state, $telegramService);
             }
 
             $state->advance('choose_month', ['content_area' => $area]);
@@ -2388,21 +2407,29 @@ class TelegramWebhookController extends Controller
                 return $this->startSuggestWizard($chatId, $messageId, $telegramService);
             }
 
-            $nextStep = match ((string) $state->get('content_area', '')) {
-                'synaxarium' => 'choose_scope',
-                'lectionary' => 'choose_lectionary_section',
-                default => 'choose_first_language',
-            };
+            $contentArea = (string) $state->get('content_area', '');
 
-            $state->advance($nextStep);
+            // Areas with extra steps before content entry
+            if (in_array($contentArea, ['synaxarium', 'lectionary', 'reference_resource'], true)) {
+                $nextStep = match ($contentArea) {
+                    'synaxarium' => 'choose_scope',
+                    'lectionary' => 'choose_lectionary_section',
+                    'reference_resource' => 'choose_resource_type',
+                };
 
-            return $this->replyOrEdit(
-                $telegramService,
-                $chatId,
-                $this->structuredSuggestPrompt($nextStep, $state->data ?? []),
-                $this->structuredSuggestKeyboardForStep($nextStep, $state),
-                $messageId
-            );
+                $state->advance($nextStep);
+
+                return $this->replyOrEdit(
+                    $telegramService,
+                    $chatId,
+                    $this->structuredSuggestPrompt($nextStep, $state->data ?? []),
+                    $this->structuredSuggestKeyboardForStep($nextStep, $state),
+                    $messageId
+                );
+            }
+
+            // All other areas: auto-start with Amharic
+            return $this->suggestAutoStartAmharic($chatId, $messageId, $state, $telegramService);
         }
 
         if ($action === 'suggest_confirm_date_change') {
@@ -2431,13 +2458,7 @@ class TelegramWebhookController extends Controller
 
             $state->advance('choose_first_language', ['entry_scope' => $scope]);
 
-            return $this->replyOrEdit(
-                $telegramService,
-                $chatId,
-                __('app.telegram_suggest_choose_first_language'),
-                $this->suggestFirstLanguageKeyboard(),
-                $messageId
-            );
+            return $this->suggestAutoStartAmharic($chatId, $messageId, $state, $telegramService);
         }
 
         if (str_starts_with($action, 'suggest_lectionary_section_')) {
@@ -2447,21 +2468,30 @@ class TelegramWebhookController extends Controller
                 return $this->startSuggestWizard($chatId, $messageId, $telegramService);
             }
 
-            $nextStep = match ($section) {
-                'pauline', 'catholic', 'gospel' => 'choose_book',
-                'acts', 'mesbak' => 'enter_chapter',
-                'qiddase', 'title_description' => 'enter_detail',
-                default => 'enter_reference',
-            };
-            $state->advance($nextStep, ['lectionary_section' => $section]);
+            $hasRefSteps = in_array($section, ['pauline', 'catholic', 'gospel', 'acts', 'mesbak'], true);
 
-            return $this->replyOrEdit(
-                $telegramService,
-                $chatId,
-                $this->structuredSuggestPrompt($nextStep, $state->data ?? []),
-                $this->structuredSuggestKeyboardForStep($nextStep, $state),
-                $messageId
-            );
+            if ($hasRefSteps) {
+                // Sections with ref steps: go to ref step first, language set later via flow
+                $nextStep = match ($section) {
+                    'pauline', 'catholic', 'gospel' => 'choose_book',
+                    'acts', 'mesbak' => 'enter_chapter',
+                    default => 'enter_reference',
+                };
+                $state->advance($nextStep, ['lectionary_section' => $section]);
+
+                return $this->replyOrEdit(
+                    $telegramService,
+                    $chatId,
+                    $this->structuredSuggestPrompt($nextStep, $state->data ?? []),
+                    $this->structuredSuggestKeyboardForStep($nextStep, $state),
+                    $messageId
+                );
+            }
+
+            // title_description / qiddase: go directly to bilingual content with Amharic
+            $state->advance('choose_first_language', ['lectionary_section' => $section]);
+
+            return $this->suggestAutoStartAmharic($chatId, $messageId, $state, $telegramService);
         }
 
         if (str_starts_with($action, 'suggest_book_')) {
@@ -2512,15 +2542,9 @@ class TelegramWebhookController extends Controller
                 return $this->startSuggestWizard($chatId, $messageId, $telegramService);
             }
 
-            $state->advance('enter_title', ['resource_type' => $resourceType]);
+            $state->advance('choose_first_language', ['resource_type' => $resourceType]);
 
-            return $this->replyOrEdit(
-                $telegramService,
-                $chatId,
-                $this->structuredSuggestPrompt('enter_title', $state->data ?? []),
-                $this->structuredSuggestKeyboardForStep('enter_title', $state),
-                $messageId
-            );
+            return $this->suggestAutoStartAmharic($chatId, $messageId, $state, $telegramService);
         }
 
         if ($action === 'suggest_main_yes' || $action === 'suggest_main_no') {
@@ -2569,16 +2593,37 @@ class TelegramWebhookController extends Controller
             }
             $preserved = $state->data ?? [];
             $filledSections = (array) ($preserved['filled_lectionary_sections'] ?? []);
+            $hasRefSteps = in_array($section, ['pauline', 'catholic', 'gospel', 'acts', 'mesbak'], true);
 
-            // Determine first step for this section
-            $firstStep = match ($section) {
-                'pauline', 'catholic', 'gospel' => 'choose_book',
-                'acts', 'mesbak' => 'enter_chapter',
-                default => 'choose_first_language', // title_description, qiddase
-            };
+            if ($hasRefSteps) {
+                $firstStep = match ($section) {
+                    'pauline', 'catholic', 'gospel' => 'choose_book',
+                    default => 'enter_chapter',
+                };
 
+                $state->update([
+                    'step' => $firstStep,
+                    'data' => [
+                        'content_area' => 'lectionary',
+                        'lectionary_section' => $section,
+                        'ethiopian_month' => $preserved['ethiopian_month'] ?? null,
+                        'ethiopian_day' => $preserved['ethiopian_day'] ?? null,
+                        'filled_lectionary_sections' => $filledSections,
+                    ],
+                ]);
+
+                return $this->replyOrEdit(
+                    $telegramService,
+                    $chatId,
+                    $this->structuredSuggestPrompt($firstStep, $state->data ?? []),
+                    $this->structuredSuggestKeyboardForStep($firstStep, $state),
+                    $messageId
+                );
+            }
+
+            // title_description / qiddase: auto-start with Amharic
             $state->update([
-                'step' => $firstStep,
+                'step' => 'choose_first_language',
                 'data' => [
                     'content_area' => 'lectionary',
                     'lectionary_section' => $section,
@@ -2588,13 +2633,7 @@ class TelegramWebhookController extends Controller
                 ],
             ]);
 
-            return $this->replyOrEdit(
-                $telegramService,
-                $chatId,
-                $this->structuredSuggestPrompt($firstStep, $state->data ?? []),
-                $this->structuredSuggestKeyboardForStep($firstStep, $state),
-                $messageId
-            );
+            return $this->suggestAutoStartAmharic($chatId, $messageId, $state, $telegramService);
         }
 
         // Continue flow — pick a different content area for same date
@@ -2697,6 +2736,32 @@ class TelegramWebhookController extends Controller
                 ['text' => '❌ '.__('app.telegram_suggest_cancel'), 'callback_data' => 'suggest_cancel'],
             ],
         ]];
+    }
+
+    /**
+     * Auto-set Amharic as first language, advance to first field step, and render its prompt.
+     */
+    private function suggestAutoStartAmharic(
+        string $chatId,
+        int $messageId,
+        TelegramBotState $state,
+        TelegramService $telegramService,
+        array $extraData = []
+    ): JsonResponse {
+        $firstFieldStep = $this->structuredSuggestFirstFieldStep($state);
+        $state->advance($firstFieldStep, array_merge($extraData, [
+            'first_language' => 'am',
+            'current_language' => 'am',
+            'lang_phase' => 1,
+        ]));
+
+        return $this->replyOrEdit(
+            $telegramService,
+            $chatId,
+            $this->structuredSuggestPrompt($firstFieldStep, $state->data ?? []),
+            $this->structuredSuggestKeyboardForStep($firstFieldStep, $state),
+            $messageId
+        );
     }
 
     private function suggestContinueKeyboard(string $contentArea, array $data): array
@@ -2816,6 +2881,12 @@ class TelegramWebhookController extends Controller
                         return $this->showSuggestPreview($chatId, $messageId, $state, $telegramService);
                     }
 
+                    if ($nextStep === 'choose_first_language') {
+                        $state->advance('choose_first_language');
+
+                        return $this->suggestAutoStartAmharic($chatId, 0, $state, $telegramService);
+                    }
+
                     $state->advance($nextStep);
 
                     return $this->suggestReplyAndTrack(
@@ -2849,6 +2920,13 @@ class TelegramWebhookController extends Controller
             $state->advance('preview', $mergeData);
 
             return $this->showSuggestPreview($chatId, $messageId, $state, $telegramService);
+        }
+
+        // Auto-skip choose_first_language — always use Amharic
+        if ($nextStep === 'choose_first_language') {
+            $state->advance('choose_first_language', $mergeData);
+
+            return $this->suggestAutoStartAmharic($chatId, 0, $state, $telegramService);
         }
 
         $state->advance($nextStep, $mergeData);
@@ -3170,6 +3248,13 @@ class TelegramWebhookController extends Controller
         TelegramService $telegramService
     ): JsonResponse {
         $prevStep = $this->structuredSuggestPreviousStep($state, $state->step);
+
+        // Skip choose_first_language when going back — go to the step before it
+        if ($prevStep === 'choose_first_language') {
+            $state->advance($prevStep);
+            $prevStep = $this->structuredSuggestPreviousStep($state, $prevStep);
+        }
+
         $state->advance($prevStep);
 
         $lang = (string) $state->get('current_language', 'en');
