@@ -58,43 +58,71 @@
                 );
             @endphp
 
-            <section class="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-                <div class="border-b border-border bg-muted/70 px-4 py-3 sm:px-5">
-                    <div class="flex items-center justify-between gap-3">
-                        <div>
-                            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-muted-text">{{ __('app.date_label') }}</p>
-                            <h2 class="text-lg font-bold text-primary sm:text-xl">{{ $monthGroup['label'] }}</h2>
-                        </div>
+            <section class="overflow-hidden rounded-2xl border border-border bg-card shadow-sm" x-data="{ openMonth: {{ $loop->first ? 'true' : 'false' }} }">
+                <button type="button"
+                        @click="openMonth = !openMonth"
+                        class="flex w-full items-center justify-between gap-3 bg-muted/70 px-4 py-3 text-left transition hover:bg-muted sm:px-5">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-[0.24em] text-muted-text">{{ __('app.date_label') }}</p>
+                        <h2 class="text-lg font-bold text-primary sm:text-xl">{{ $monthGroup['label'] }}</h2>
+                    </div>
+                    <div class="flex items-center gap-3">
                         <span class="shrink-0 rounded-full border border-border bg-card px-3 py-1 text-xs font-semibold text-secondary">
                             {{ $monthCount }}
                         </span>
+                        <svg class="h-4 w-4 shrink-0 text-muted-text transition-transform" :class="openMonth && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
                     </div>
-                </div>
+                </button>
 
-                <div class="space-y-5 p-4 sm:p-5">
+                <div x-show="openMonth" x-cloak x-collapse class="space-y-5 border-t border-border p-4 sm:p-5">
                     @foreach($monthGroup['days'] as $dayGroup)
-                        <div class="space-y-3">
-                            <div class="flex items-center gap-3">
-                                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-reflection-bg text-sm font-bold text-accent-secondary">
-                                    {{ preg_replace('/\D+/', '', $dayGroup['label']) ?: '?' }}
-                                </div>
-                                <div>
-                                    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-muted-text">{{ __('app.date_label') }}</p>
-                                    <h3 class="text-base font-semibold text-primary sm:text-lg">{{ $dayGroup['label'] }}</h3>
-                                </div>
-                            </div>
+                        @php
+                            $dayCount = collect($dayGroup['types'])->sum(fn ($typeGroup) => count($typeGroup['items']));
+                        @endphp
 
-                            <div class="space-y-4 border-l border-border pl-3 sm:pl-5">
+                        <div class="space-y-3 rounded-xl border border-border bg-background p-3 sm:p-4" x-data="{ openDay: {{ $loop->first ? 'true' : 'false' }} }">
+                            <button type="button"
+                                    @click="openDay = !openDay"
+                                    class="flex w-full items-center justify-between gap-3 text-left">
+                                <div class="flex items-center gap-3">
+                                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-reflection-bg text-sm font-bold text-accent-secondary">
+                                        {{ preg_replace('/\D+/', '', $dayGroup['label']) ?: '?' }}
+                                    </div>
+                                    <div>
+                                        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-muted-text">{{ __('app.date_label') }}</p>
+                                        <h3 class="text-base font-semibold text-primary sm:text-lg">{{ $dayGroup['label'] }}</h3>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold text-muted-text">
+                                        {{ $dayCount }}
+                                    </span>
+                                    <svg class="h-4 w-4 shrink-0 text-muted-text transition-transform" :class="openDay && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </div>
+                            </button>
+
+                            <div x-show="openDay" x-cloak x-collapse class="space-y-4 border-t border-border pt-3">
                                 @foreach($dayGroup['types'] as $typeGroup)
-                                    <div class="space-y-2.5">
-                                        <div class="flex items-center justify-between gap-3">
+                                    <div class="space-y-2.5 rounded-lg border border-border bg-card" x-data="{ openType: {{ $loop->first ? 'true' : 'false' }} }">
+                                        <button type="button"
+                                                @click="openType = !openType"
+                                                class="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left transition hover:bg-muted/40">
                                             <h4 class="text-sm font-semibold text-accent">{{ $typeGroup['label'] }}</h4>
-                                            <span class="rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold text-muted-text">
-                                                {{ count($typeGroup['items']) }}
-                                            </span>
-                                        </div>
+                                            <div class="flex items-center gap-3">
+                                                <span class="rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold text-muted-text">
+                                                    {{ count($typeGroup['items']) }}
+                                                </span>
+                                                <svg class="h-4 w-4 shrink-0 text-muted-text transition-transform" :class="openType && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                                </svg>
+                                            </div>
+                                        </button>
 
-                                        <div class="grid gap-3 xl:grid-cols-2">
+                                        <div x-show="openType" x-cloak x-collapse class="grid gap-3 border-t border-border p-3 xl:grid-cols-2">
                                             @foreach($typeGroup['items'] as $s)
                                                 <div class="overflow-hidden rounded-xl border border-border bg-background shadow-sm" x-data="{ open: false }">
                                                     <button type="button"
