@@ -242,6 +242,7 @@ Route::middleware(['auth', 'admin.audit'])->prefix('admin')->name('admin.')->gro
         Route::delete('/suggestions/clear-all', [Admin\ContentSuggestionController::class, 'clearAll'])->name('suggestions.clear-all');
         Route::post('/suggestions/{suggestion}/use', [Admin\ContentSuggestionController::class, 'markUsed'])->name('suggestions.mark-used');
         Route::post('/suggestions/{suggestion}/unuse', [Admin\ContentSuggestionController::class, 'unmarkUsed'])->name('suggestions.unmark-used');
+        Route::post('/suggestions/{suggestion}/apply', [Admin\ContentSuggestionController::class, 'apply'])->name('suggestions.apply');
         Route::post('/suggestions/{suggestion}/reject', [Admin\ContentSuggestionController::class, 'reject'])->name('suggestions.reject');
 
         // Seasons

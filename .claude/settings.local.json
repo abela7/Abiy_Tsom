@@ -6,7 +6,9 @@
       "Bash(php -l app/Http/Controllers/Webhook/TelegramWebhookController.php)",
       "Bash(php artisan make:migration add_both_language_to_content_suggestions --table=content_suggestions)",
       "Bash(php artisan test --filter=TelegramStaffPortalTest)",
-      "Bash(php artisan test --filter=Telegram)"
+      "Bash(php artisan test --filter=Telegram)",
+      "Bash(php artisan route:list --name=suggestions)",
+      "Bash(php artisan test)"
     ]
   }
 }

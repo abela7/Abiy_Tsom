@@ -89,6 +89,23 @@
                                 @if($s->imageUrl())<img src="{{ $s->imageUrl() }}" alt="" class="mt-2 w-28 h-28 rounded-lg object-cover border border-border">@endif
                                 @if($s->content_detail)<p class="whitespace-pre-wrap leading-relaxed">{{ $s->content_detail }}</p>@endif
                                 @if($s->notes)<p class="text-muted-text italic">{{ $s->notes }}</p>@endif
+                                @if($s->structured_payload)
+                                    @foreach(['en' => '🇬🇧', 'am' => '🇪🇹'] as $lang => $flag)
+                                        @php
+                                            $hasLang = $s->structuredValue("title_{$lang}") || $s->structuredValue("reference_{$lang}") || $s->structuredValue("content_detail_{$lang}");
+                                        @endphp
+                                        @if($hasLang)
+                                            <div class="mt-2 pl-2 border-l-2 border-accent/30">
+                                                <p class="font-semibold text-muted-text text-[10px]">{{ $flag }} {{ $lang === 'en' ? 'English' : 'አማርኛ' }}</p>
+                                                @if($s->structuredValue("reference_{$lang}"))<p><span class="font-semibold text-muted-text">Ref:</span> {{ $s->structuredValue("reference_{$lang}") }}</p>@endif
+                                                @if($s->structuredValue("title_{$lang}"))<p><span class="font-semibold text-muted-text">Title:</span> {{ $s->structuredValue("title_{$lang}") }}</p>@endif
+                                                @if($s->structuredValue("summary_{$lang}"))<p><span class="font-semibold text-muted-text">Summary:</span> {{ $s->structuredValue("summary_{$lang}") }}</p>@endif
+                                                @if($s->structuredValue("url_{$lang}"))<p><span class="font-semibold text-muted-text">Link:</span> <a href="{{ $s->structuredValue("url_{$lang}") }}" target="_blank" class="text-accent hover:underline break-all">{{ $s->structuredValue("url_{$lang}") }}</a></p>@endif
+                                                @if($s->structuredValue("content_detail_{$lang}"))<p class="whitespace-pre-wrap leading-relaxed">{{ $s->structuredValue("content_detail_{$lang}") }}</p>@endif
+                                            </div>
+                                        @endif
+                                    @endforeach
+                                @endif
                             </div>
                         </td>
                         <td class="px-4 py-3 text-secondary uppercase text-xs font-bold">{{ $s->language }}</td>
@@ -117,6 +134,15 @@
                                         <button type="submit" class="px-2.5 py-1 rounded-lg text-xs font-medium border border-border text-muted-text hover:bg-muted hover:text-primary transition">{{ __('app.suggest_unmark_used') }}</button>
                                     </form>
                                 @else
+                                    @if($s->ethiopian_month && $s->ethiopian_day)
+                                        <form method="POST" action="{{ route('admin.suggestions.apply', $s) }}"
+                                              onsubmit="return confirm('{{ __('app.suggest_apply_confirm') }}')">
+                                            @csrf
+                                            <button type="submit" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-success-bg text-success hover:bg-green-100 transition" title="{{ $s->ethiopianDateLabel() }}">
+                                                ✦ {{ __('app.suggest_apply_btn') }}
+                                            </button>
+                                        </form>
+                                    @endif
                                     <form method="POST" action="{{ route('admin.suggestions.mark-used', $s) }}">
                                         @csrf
                                         <button type="submit" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-accent text-on-accent hover:bg-accent-hover transition">{{ __('app.suggest_mark_used') }}</button>
@@ -200,7 +226,7 @@
                 {{-- Expanded detail + actions --}}
                 <div x-show="open" x-cloak x-collapse>
                     {{-- Content details --}}
-                    @if($s->reference || $s->author || $s->url || $s->content_detail || $s->notes)
+                    @if($s->reference || $s->author || $s->url || $s->content_detail || $s->notes || $s->structured_payload)
                         <div class="px-3.5 sm:px-4 space-y-1.5 border-t border-border pt-3 ml-[52px]">
                             @if($s->ethiopianDateLabel())
                                 <p class="text-xs"><span class="font-semibold text-muted-text">Date:</span> <span class="text-secondary">{{ $s->ethiopianDateLabel() }}</span></p>
@@ -232,6 +258,23 @@
                             @if($s->notes)
                                 <p class="text-xs text-muted-text italic">{{ $s->notes }}</p>
                             @endif
+                            @if($s->structured_payload)
+                                @foreach(['en' => '🇬🇧', 'am' => '🇪🇹'] as $lang => $flag)
+                                    @php
+                                        $hasLang = $s->structuredValue("title_{$lang}") || $s->structuredValue("reference_{$lang}") || $s->structuredValue("content_detail_{$lang}");
+                                    @endphp
+                                    @if($hasLang)
+                                        <div class="mt-2 pl-2 border-l-2 border-accent/30">
+                                            <p class="font-semibold text-muted-text text-[10px]">{{ $flag }} {{ $lang === 'en' ? 'English' : 'አማርኛ' }}</p>
+                                            @if($s->structuredValue("reference_{$lang}"))<p class="text-xs"><span class="font-semibold text-muted-text">Ref:</span> {{ $s->structuredValue("reference_{$lang}") }}</p>@endif
+                                            @if($s->structuredValue("title_{$lang}"))<p class="text-xs"><span class="font-semibold text-muted-text">Title:</span> {{ $s->structuredValue("title_{$lang}") }}</p>@endif
+                                            @if($s->structuredValue("summary_{$lang}"))<p class="text-xs"><span class="font-semibold text-muted-text">Summary:</span> {{ $s->structuredValue("summary_{$lang}") }}</p>@endif
+                                            @if($s->structuredValue("url_{$lang}"))<p class="text-xs"><span class="font-semibold text-muted-text">Link:</span> <a href="{{ $s->structuredValue("url_{$lang}") }}" target="_blank" class="text-accent hover:underline break-all">{{ $s->structuredValue("url_{$lang}") }}</a></p>@endif
+                                            @if($s->structuredValue("content_detail_{$lang}"))<p class="text-xs text-secondary whitespace-pre-wrap leading-relaxed">{{ $s->structuredValue("content_detail_{$lang}") }}</p>@endif
+                                        </div>
+                                    @endif
+                                @endforeach
+                            @endif
                         </div>
                     @endif
 
@@ -256,6 +299,16 @@
                                 </button>
                             </form>
                         @else
+                            @if($s->ethiopian_month && $s->ethiopian_day)
+                                <form method="POST" action="{{ route('admin.suggestions.apply', $s) }}" class="flex-1"
+                                      onsubmit="return confirm('{{ __('app.suggest_apply_confirm') }}')">
+                                    @csrf
+                                    <button type="submit" class="w-full h-10 rounded-xl text-sm font-bold bg-success-bg text-success hover:bg-green-100 active:scale-[0.97] transition touch-manipulation flex items-center justify-center gap-1.5">
+                                        ✦ {{ __('app.suggest_apply_btn') }}
+                                        <span class="text-xs font-normal opacity-70">({{ $s->ethiopianDateLabel() }})</span>
+                                    </button>
+                                </form>
+                            @endif
                             <form method="POST" action="{{ route('admin.suggestions.mark-used', $s) }}" class="flex-1">
                                 @csrf
                                 <button type="submit" class="w-full h-10 rounded-xl text-sm font-bold bg-accent text-on-accent hover:bg-accent-hover active:scale-[0.97] transition touch-manipulation flex items-center justify-center gap-1.5">
