@@ -1312,9 +1312,9 @@ return [
     'telegram_suggest_area_daily_message' => 'Daily Message',
 
     // Advanced Suggestion (web wizard)
-    'advanced_suggest_nav'             => 'የላቀ ሃሳብ',
-    'advanced_suggest_title'           => 'የላቀ ሃሳብ',
-    'advanced_suggest_subtitle'        => 'ቀን፣ ሁለት ቋንቋ እና ዝርዝር መረጃ ጨምሮ ሃሳብ ያስገቡ።',
+    'advanced_suggest_nav'             => 'ዝርዝር ጥቆማ',
+    'advanced_suggest_title'           => 'ዝርዝር ጥቆማ',
+    'advanced_suggest_subtitle'        => 'ቀን፣ ሁለት ቋንቋ እና ዝርዝር መረጃ ጨምሮ ጥቆማ ያስገቡ።',
     'advanced_suggest_bilingual_hint'  => 'ሌላ ቋንቋ በኋላ ማከል ይችላሉ።',
     'advanced_suggest_optional_hint'   => 'አስፈላጊ አይደለም — ባዶ መተው ይቻላል።',
     'advanced_suggest_skip_or_continue'=> 'ዝለል / ቀጥል →',
@@ -1323,8 +1323,8 @@ return [
     'advanced_suggest_other_lang_prompt' => 'የ :lang ስሪት ማከል ይፈልጋሉ?',
     'advanced_suggest_preview_title'   => 'ከማስገባትዎ በፊት ያረጋግጡ',
     'advanced_suggest_preview_hint'    => 'ሁሉም ትክክል መሆኑን ያረጋግጡ።',
-    'advanced_suggest_submit'          => 'ሃሳብ ያስገቡ',
-    'advanced_suggest_submitted'       => 'የላቀ ሃሳብዎ ተልኳል!',
+    'advanced_suggest_submit'          => 'ጥቆማ ያስገቡ',
+    'advanced_suggest_submitted'       => 'ዝርዝር ጥቆማዎ ተልኳል!',
     'advanced_suggest_field_area'      => 'የይዘት ክፍል',
     'advanced_suggest_field_date'      => 'ቀን',
     'advanced_suggest_field_scope'     => 'ወሰን',
