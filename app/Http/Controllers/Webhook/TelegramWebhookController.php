@@ -2432,7 +2432,8 @@ class TelegramWebhookController extends Controller
                     $chatId,
                     $this->structuredSuggestPrompt('lect_section_intro', $state->data ?? []),
                     $this->structuredSuggestKeyboardForStep('lect_section_intro', $state),
-                    $messageId
+                    $messageId,
+                    'HTML'
                 );
             }
 
@@ -2917,7 +2918,8 @@ class TelegramWebhookController extends Controller
                 $telegramService, $chatId,
                 $this->structuredSuggestPrompt('lect_section_intro', $data),
                 $this->structuredSuggestKeyboardForStep('lect_section_intro', $state),
-                $messageId
+                $messageId,
+                'HTML'
             );
         }
 
@@ -2948,7 +2950,8 @@ class TelegramWebhookController extends Controller
                 $telegramService, $chatId,
                 $this->structuredSuggestPrompt('lect_section_intro', $state->data ?? []),
                 $this->structuredSuggestKeyboardForStep('lect_section_intro', $state),
-                $messageId
+                $messageId,
+                'HTML'
             );
         }
 
@@ -3016,7 +3019,8 @@ class TelegramWebhookController extends Controller
             $this->lectEnglishSectionHeader($lectionarySection)."\n\n"
                 .$this->structuredSuggestPrompt($firstStep, $state->data ?? []),
             $this->structuredSuggestKeyboardForStep($firstStep, $state),
-            $messageId
+            $messageId,
+            'HTML'
         );
     }
 
@@ -3064,7 +3068,8 @@ class TelegramWebhookController extends Controller
                 $this->lectEnglishSectionHeader($nextSection)."\n\n"
                     .$this->structuredSuggestPrompt($firstStep, $data),
                 $this->structuredSuggestKeyboardForStep($firstStep, $state),
-                $messageId
+                $messageId,
+                'HTML'
             );
         }
 
@@ -3126,10 +3131,13 @@ class TelegramWebhookController extends Controller
 
         // Ignore text input during button-only steps — re-show the step prompt
         if (in_array($state->step, ['awaiting_continue', 'lect_section_intro', 'lect_offer_english'], true)) {
+            $useHtml = $state->step === 'lect_section_intro' ? 'HTML' : null;
+
             return $this->suggestReplyAndTrack(
                 $telegramService, $state, $chatId,
                 $this->structuredSuggestPrompt($state->step, $state->data ?? []),
-                $this->structuredSuggestKeyboardForStep($state->step, $state)
+                $this->structuredSuggestKeyboardForStep($state->step, $state),
+                $useHtml
             );
         }
 
