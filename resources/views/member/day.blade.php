@@ -205,7 +205,9 @@
                 loadAudio() {
                     if (this.loaded) return;
                     const a = this.$refs.audio;
-                    a.src = this.urls[this.activeLocale] || '';
+                    const src = this.urls[this.activeLocale] || this.urls.am || this.urls.en || '';
+                    if (!src) return;
+                    a.src = src;
                     a.load();
                     this.loaded = true;
                 },
@@ -213,11 +215,13 @@
                     this.$watch('activeLocale', () => {
                         const a = this.$refs.audio;
                         if (!this.loaded) return;
+                        const src = this.urls[this.activeLocale] || this.urls.am || this.urls.en || '';
+                        if (!src) return;
                         const wasPlaying = this.playing;
                         a.pause();
                         this.playing = false; this.currentTime = 0; this.duration = 0;
                         if (this.rafId) { cancelAnimationFrame(this.rafId); this.rafId = null; }
-                        a.src = this.urls[this.activeLocale] || '';
+                        a.src = src;
                         a.load();
                         if (wasPlaying) a.play().catch(() => {});
                     });
