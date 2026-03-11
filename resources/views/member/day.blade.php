@@ -146,8 +146,11 @@
     {{-- Bible Reading --}}
     @if(localized($daily, 'bible_reference'))
     @php
-        $bibleText = localized($daily, 'bible_text');
+        $bibleText     = localized($daily, 'bible_text');
+        $bibleAudioAm  = $daily->bible_audio_url_am ?: null;
+        $bibleAudioEn  = $daily->bible_audio_url_en ?: null;
         $bibleAudioUrl = $daily->bibleAudioUrl();
+        $bibleAudioInitLocale = ($bibleAudioAm && $locale === 'am') ? 'am' : ($bibleAudioEn ? 'en' : 'am');
     @endphp
     <div data-tour="day-bible" class="bg-card rounded-2xl shadow-sm border border-border overflow-hidden"
          x-data="{
@@ -179,24 +182,148 @@
             @endif
         </div>
 
-        @if($bibleAudioUrl)
-        {{-- Audio player --}}
-        <div class="px-4 pb-4" x-data="{ audioOpen: false }">
-            <button type="button" @click="audioOpen = !audioOpen"
-                    class="w-full flex items-center justify-between gap-2 py-2.5 px-3 rounded-xl bg-muted/70 hover:bg-muted transition mb-2">
-                <div class="flex items-center gap-2">
-                    <svg class="w-4 h-4 shrink-0 text-accent" fill="currentColor" viewBox="0 0 20 20"><path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v6.499a2.5 2.5 0 10.99 1.98L7 7.22l8-1.6v4.879a2.5 2.5 0 10.99 1.98L16 5.72V3z"/></svg>
-                    <span class="text-sm font-semibold text-primary">{{ $locale === 'am' ? 'ድምፅ ያዳምጡ' : 'Listen to Audio' }}</span>
+        @if($bibleAudioAm || $bibleAudioEn)
+        {{-- Modern Bible Audio Player --}}
+        <div class="px-4 pb-4"
+             x-data="{
+                playing: false,
+                currentTime: 0,
+                duration: 0,
+                muted: false,
+                speed: 1,
+                loaded: false,
+                rafId: null,
+                activeLocale: '{{ $bibleAudioInitLocale }}',
+                urls: { am: @js($bibleAudioAm), en: @js($bibleAudioEn) },
+                get hasBoth() { return !!(this.urls.am && this.urls.en); },
+                get progress() { return this.duration ? (this.currentTime / this.duration) * 100 : 0; },
+                fmt(s) {
+                    if (!s || isNaN(s)) return '0:00';
+                    const m = Math.floor(s / 60), sec = Math.floor(s % 60);
+                    return m + ':' + String(sec).padStart(2, '0');
+                },
+                init() {
+                    this.$watch('activeLocale', () => {
+                        const a = this.$refs.audio;
+                        const wasPlaying = this.playing;
+                        a.pause();
+                        this.playing = false; this.currentTime = 0; this.duration = 0;
+                        if (this.rafId) { cancelAnimationFrame(this.rafId); this.rafId = null; }
+                        a.src = this.urls[this.activeLocale] || '';
+                        a.load(); this.loaded = true;
+                        if (wasPlaying) a.play().catch(() => {});
+                    });
+                },
+                async togglePlay() {
+                    const a = this.$refs.audio;
+                    if (!this.loaded) { a.src = this.urls[this.activeLocale] || ''; a.load(); this.loaded = true; }
+                    if (this.playing) { a.pause(); } else { await a.play().catch(() => {}); }
+                },
+                onPlay()  { this.playing = true;  this.tick(); },
+                onPause() { this.playing = false; if (this.rafId) { cancelAnimationFrame(this.rafId); this.rafId = null; } },
+                onEnded() { this.playing = false; this.currentTime = 0; if (this.rafId) { cancelAnimationFrame(this.rafId); this.rafId = null; } },
+                onMeta()  { this.duration = this.$refs.audio.duration || 0; },
+                tick() {
+                    this.currentTime = this.$refs.audio.currentTime;
+                    if (this.playing) this.rafId = requestAnimationFrame(() => this.tick());
+                },
+                seek(e) {
+                    const a = this.$refs.audio;
+                    a.currentTime = (e.target.value / 100) * (this.duration || 0);
+                    this.currentTime = a.currentTime;
+                },
+                setSpeed(s) { this.speed = s; this.$refs.audio.playbackRate = s; },
+                toggleMute() { this.muted = !this.muted; this.$refs.audio.muted = this.muted; }
+             }">
+
+            {{-- Hidden audio element --}}
+            <audio x-ref="audio" preload="none"
+                   @play="onPlay()" @pause="onPause()" @ended="onEnded()" @loadedmetadata="onMeta()">
+            </audio>
+
+            <div class="rounded-2xl border border-border bg-gradient-to-br from-accent/5 to-transparent overflow-hidden">
+
+                {{-- Header row --}}
+                <div class="flex items-center justify-between px-4 pt-3 pb-1">
+                    <div class="flex items-center gap-2">
+                        <div class="w-7 h-7 rounded-lg bg-accent/15 flex items-center justify-center shrink-0">
+                            <svg class="w-3.5 h-3.5 text-accent" fill="currentColor" viewBox="0 0 20 20"><path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v6.499a2.5 2.5 0 10.99 1.98L7 7.22l8-1.6v4.879a2.5 2.5 0 10.99 1.98L16 5.72V3z"/></svg>
+                        </div>
+                        <span class="text-sm font-semibold text-primary">{{ $locale === 'am' ? 'ድምፅ ያዳምጡ' : 'Listen to Audio' }}</span>
+                    </div>
+                    {{-- Language toggle — only if both locales exist --}}
+                    <div x-show="hasBoth" class="flex bg-muted rounded-lg p-0.5 gap-0.5">
+                        <button type="button" @click="activeLocale='am'"
+                                :class="activeLocale==='am' ? 'bg-card text-primary shadow-sm' : 'text-muted-text hover:text-secondary'"
+                                class="px-2.5 py-1 rounded-md text-[11px] font-bold transition touch-manipulation">አማ</button>
+                        <button type="button" @click="activeLocale='en'"
+                                :class="activeLocale==='en' ? 'bg-card text-primary shadow-sm' : 'text-muted-text hover:text-secondary'"
+                                class="px-2.5 py-1 rounded-md text-[11px] font-bold transition touch-manipulation">EN</button>
+                    </div>
                 </div>
-                <svg class="w-4 h-4 text-muted-text transition-transform duration-200" :class="audioOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-            </button>
-            <div x-show="audioOpen" x-cloak
-                 x-transition:enter="transition ease-out duration-150"
-                 x-transition:enter-start="opacity-0 -translate-y-1"
-                 x-transition:enter-end="opacity-100 translate-y-0">
-                <audio controls class="w-full rounded-xl" src="{{ $bibleAudioUrl }}" preload="none">
-                    {{ $locale === 'am' ? 'ድምፁን ይደግፍ የለም።' : 'Your browser does not support audio.' }}
-                </audio>
+
+                {{-- Controls --}}
+                <div class="px-4 pb-4 pt-2 space-y-3">
+
+                    {{-- Play + Seek --}}
+                    <div class="flex items-center gap-3">
+                        {{-- Play / Pause button --}}
+                        <button type="button" @click="togglePlay()"
+                                class="w-11 h-11 rounded-full bg-accent flex items-center justify-center shrink-0 hover:opacity-90 active:scale-95 transition touch-manipulation shadow-sm">
+                            {{-- Play icon --}}
+                            <svg x-show="!playing" class="w-4 h-4 text-white ml-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
+                            </svg>
+                            {{-- Pause icon --}}
+                            <svg x-show="playing" x-cloak class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M5.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75A.75.75 0 007.25 3h-1.5zM12.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75a.75.75 0 00-.75-.75h-1.5z"/>
+                            </svg>
+                        </button>
+
+                        {{-- Seek bar + time --}}
+                        <div class="flex-1 space-y-1.5 min-w-0">
+                            {{-- Progress track --}}
+                            <div class="relative h-2 group cursor-pointer" @click="seek({target:{value: ($event.offsetX / $el.offsetWidth) * 100}})">
+                                <div class="absolute inset-y-0 w-full rounded-full bg-border my-auto" style="top:50%;transform:translateY(-50%);height:4px;"></div>
+                                <div class="absolute rounded-full bg-accent transition-none" style="top:50%;transform:translateY(-50%);height:4px;left:0;" :style="'width:'+progress+'%'"></div>
+                                <div class="absolute w-3 h-3 rounded-full bg-accent shadow-md -translate-y-1/2 top-1/2 -translate-x-1/2 transition-none"
+                                     :style="'left:'+Math.min(Math.max(progress,0),100)+'%'"></div>
+                                <input type="range" min="0" max="100" step="0.1" :value="progress"
+                                       @input="seek($event)" @click.stop
+                                       class="absolute inset-0 w-full opacity-0 cursor-pointer" style="height:100%">
+                            </div>
+                            {{-- Time --}}
+                            <div class="flex justify-between text-[10px] font-medium text-muted-text tabular-nums select-none">
+                                <span x-text="fmt(currentTime)">0:00</span>
+                                <span x-text="duration ? fmt(duration) : '--:--'">--:--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Speed + Mute --}}
+                    <div class="flex items-center justify-end gap-2">
+                        {{-- Playback speed --}}
+                        <div class="flex bg-muted rounded-lg p-0.5 gap-0.5">
+                            <template x-for="s in [1, 1.5, 2]">
+                                <button type="button" @click="setSpeed(s)"
+                                        :class="speed === s ? 'bg-card text-accent shadow-sm font-bold' : 'text-muted-text hover:text-secondary'"
+                                        class="px-2.5 py-1 rounded-md text-[11px] font-semibold transition touch-manipulation"
+                                        x-text="s === 1 ? '1×' : s + '×'"></button>
+                            </template>
+                        </div>
+                        {{-- Mute --}}
+                        <button type="button" @click="toggleMute()"
+                                :class="muted ? 'text-muted-text' : 'text-secondary hover:text-primary'"
+                                class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted transition touch-manipulation">
+                            <svg x-show="!muted" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072M12 6v12m0-12L8 9H5a1 1 0 00-1 1v4a1 1 0 001 1h3l4 3m4.5-9.5a8 8 0 010 11.314"/>
+                            </svg>
+                            <svg x-show="muted" x-cloak class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zM17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
         @endif
