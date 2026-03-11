@@ -187,8 +187,10 @@
              x-data="{
                 audioOpen: false,
                 playing: false,
+                buffering: false,
                 currentTime: 0,
                 duration: 0,
+                buffered: 0,
                 muted: false,
                 speed: 1,
                 loaded: false,
@@ -197,17 +199,22 @@
                 urls: { am: @js($bibleAudioAm), en: @js($bibleAudioEn) },
                 get hasBoth() { return !!(this.urls.am && this.urls.en); },
                 get progress() { return this.duration ? (this.currentTime / this.duration) * 100 : 0; },
+                get bufferProgress() { return this.duration ? (this.buffered / this.duration) * 100 : 0; },
                 fmt(s) {
                     if (!s || isNaN(s)) return '0:00';
                     const m = Math.floor(s / 60), sec = Math.floor(s % 60);
                     return m + ':' + String(sec).padStart(2, '0');
                 },
+                getSrc() {
+                    return this.urls[this.activeLocale] || this.urls.am || this.urls.en || '';
+                },
                 loadAudio() {
                     if (this.loaded) return;
                     const a = this.$refs.audio;
-                    const src = this.urls[this.activeLocale] || this.urls.am || this.urls.en || '';
+                    const src = this.getSrc();
                     if (!src) return;
                     a.src = src;
+                    a.preload = 'auto';
                     a.load();
                     this.loaded = true;
                 },
@@ -215,13 +222,15 @@
                     this.$watch('activeLocale', () => {
                         const a = this.$refs.audio;
                         if (!this.loaded) return;
-                        const src = this.urls[this.activeLocale] || this.urls.am || this.urls.en || '';
+                        const src = this.getSrc();
                         if (!src) return;
                         const wasPlaying = this.playing;
                         a.pause();
-                        this.playing = false; this.currentTime = 0; this.duration = 0;
+                        this.playing = false; this.buffering = false;
+                        this.currentTime = 0; this.duration = 0; this.buffered = 0;
                         if (this.rafId) { cancelAnimationFrame(this.rafId); this.rafId = null; }
                         a.src = src;
+                        a.preload = 'auto';
                         a.load();
                         if (wasPlaying) a.play().catch(() => {});
                     });
@@ -233,14 +242,31 @@
                 async togglePlay() {
                     this.loadAudio();
                     const a = this.$refs.audio;
-                    if (this.playing) { a.pause(); } else { await a.play().catch(() => {}); }
+                    if (this.playing) {
+                        a.pause();
+                    } else {
+                        this.buffering = true;
+                        try { await a.play(); } catch(_) {}
+                    }
                 },
-                onPlay()  { this.playing = true;  this.tick(); },
-                onPause() { this.playing = false; if (this.rafId) { cancelAnimationFrame(this.rafId); this.rafId = null; } },
-                onEnded() { this.playing = false; this.currentTime = 0; if (this.rafId) { cancelAnimationFrame(this.rafId); this.rafId = null; } },
-                onMeta()  { this.duration = this.$refs.audio.duration || 0; },
+                onPlay()    { this.playing = true; this.buffering = false; this.tick(); },
+                onPause()   { this.playing = false; this.buffering = false; if (this.rafId) { cancelAnimationFrame(this.rafId); this.rafId = null; } },
+                onEnded()   { this.playing = false; this.buffering = false; this.currentTime = 0; if (this.rafId) { cancelAnimationFrame(this.rafId); this.rafId = null; } },
+                onWaiting() { this.buffering = true; },
+                onCanPlay() { this.buffering = false; },
+                onMeta()    { this.duration = this.$refs.audio.duration || 0; },
+                onProgress() {
+                    const a = this.$refs.audio;
+                    if (a.buffered.length > 0) {
+                        this.buffered = a.buffered.end(a.buffered.length - 1);
+                    }
+                },
                 tick() {
-                    this.currentTime = this.$refs.audio.currentTime;
+                    const a = this.$refs.audio;
+                    this.currentTime = a.currentTime;
+                    if (a.buffered.length > 0) {
+                        this.buffered = a.buffered.end(a.buffered.length - 1);
+                    }
                     if (this.playing) this.rafId = requestAnimationFrame(() => this.tick());
                 },
                 seek(e) {
@@ -277,7 +303,8 @@
                  x-transition:enter-end="opacity-100 translate-y-0">
 
                 <audio x-ref="audio" preload="none"
-                       @play="onPlay()" @pause="onPause()" @ended="onEnded()" @loadedmetadata="onMeta()">
+                       @play="onPlay()" @pause="onPause()" @ended="onEnded()" @loadedmetadata="onMeta()"
+                       @waiting="onWaiting()" @canplay="onCanPlay()" @progress="onProgress()">
                 </audio>
 
                 <div class="rounded-2xl border border-border bg-card overflow-hidden">
@@ -301,10 +328,11 @@
                         </div>
                     </div>
 
-                    {{-- Seek bar --}}
+                    {{-- Seek bar with buffer indicator --}}
                     <div class="px-5 pt-2 pb-1">
                         <div class="relative h-8 flex items-center cursor-pointer">
-                            <div class="absolute w-full rounded-full" style="height:4px;background:color-mix(in srgb, var(--color-primary) 25%, transparent);"></div>
+                            <div class="absolute w-full rounded-full" style="height:4px;background:color-mix(in srgb, var(--color-primary) 15%, transparent);"></div>
+                            <div class="absolute rounded-full transition-none" style="height:4px;left:0;background:color-mix(in srgb, var(--color-primary) 35%, transparent);" :style="'width:'+bufferProgress+'%'"></div>
                             <div class="absolute rounded-full bg-primary transition-none" style="height:4px;left:0;" :style="'width:'+progress+'%'"></div>
                             <div class="absolute w-4 h-4 rounded-full bg-primary shadow-md -translate-x-1/2 transition-none"
                                  :style="'left:'+Math.min(Math.max(progress,0),100)+'%'"></div>
@@ -338,12 +366,16 @@
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M9.195 18.44c1.25.714 2.805-.189 2.805-1.629v-2.34l6.945 3.968c1.25.715 2.805-.188 2.805-1.628V7.19c0-1.44-1.555-2.343-2.805-1.628L12 9.53V7.19c0-1.44-1.555-2.343-2.805-1.628l-7.108 4.061c-1.26.72-1.26 2.536 0 3.256l7.108 4.061z"/></svg>
                         </button>
 
-                        <button type="button" @click="togglePlay()"
+                        <button type="button" @click="togglePlay()" :disabled="buffering"
                                 class="w-14 h-14 rounded-full bg-accent flex items-center justify-center shrink-0 active:scale-95 transition touch-manipulation shadow-lg hover:opacity-90">
-                            <svg x-show="!playing" class="w-6 h-6 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                            <svg x-show="buffering" x-cloak class="w-6 h-6 text-white animate-spin" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                            </svg>
+                            <svg x-show="!buffering && !playing" class="w-6 h-6 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M8 5.14v14.72a1 1 0 001.5.86l11-7.36a1 1 0 000-1.72l-11-7.36A1 1 0 008 5.14z"/>
                             </svg>
-                            <svg x-show="playing" x-cloak class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <svg x-show="!buffering && playing" x-cloak class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M6.75 4a.75.75 0 00-.75.75v14.5c0 .414.336.75.75.75h2.5a.75.75 0 00.75-.75V4.75A.75.75 0 009.25 4h-2.5zM14.75 4a.75.75 0 00-.75.75v14.5c0 .414.336.75.75.75h2.5a.75.75 0 00.75-.75V4.75a.75.75 0 00-.75-.75h-2.5z"/>
                             </svg>
                         </button>
