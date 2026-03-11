@@ -187,6 +187,8 @@ Route::middleware(['auth', 'admin.audit'])->prefix('admin')->name('admin.')->gro
         Route::post('/daily/upload-book-pdf', [Admin\DailyContentController::class, 'uploadBookPdf'])->name('daily.upload_book_pdf');
         Route::post('/daily/upload-sinksar-image', [Admin\DailyContentController::class, 'uploadSinksarImage'])->name('daily.upload_sinksar_image');
         Route::post('/daily/delete-sinksar-image', [Admin\DailyContentController::class, 'deleteSinksarImage'])->name('daily.delete_sinksar_image');
+        Route::post('/daily/upload-bible-audio', [Admin\DailyContentController::class, 'uploadBibleAudio'])->name('daily.upload_bible_audio');
+        Route::post('/daily/delete-bible-audio', [Admin\DailyContentController::class, 'deleteBibleAudio'])->name('daily.delete_bible_audio');
         Route::post('/daily', [Admin\DailyContentController::class, 'store'])->name('daily.store');
         Route::patch('/daily/{daily}', [Admin\DailyContentController::class, 'patch'])->name('daily.patch');
         Route::put('/daily/{daily}', [Admin\DailyContentController::class, 'update'])->name('daily.update');

@@ -27,6 +27,8 @@ class DailyContent extends Model
         'bible_summary_am',
         'bible_text_en',
         'bible_text_am',
+        'bible_audio_url_en',
+        'bible_audio_url_am',
         'sinksar_title_en',
         'sinksar_title_am',
         'sinksar_url',
@@ -142,6 +144,20 @@ class DailyContent extends Model
     public function assignedTo(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_to_id');
+    }
+
+    /**
+     * Localized Bible audio URL with language fallback.
+     */
+    public function bibleAudioUrl(?string $locale = null): ?string
+    {
+        $locale = in_array($locale ?? app()->getLocale(), ['en', 'am'], true) ? ($locale ?? app()->getLocale()) : 'en';
+        $enUrl = $this->bible_audio_url_en ?? null;
+        $amUrl = $this->bible_audio_url_am ?? null;
+
+        return $locale === 'en'
+            ? (($enUrl !== '' ? $enUrl : null) ?: ($amUrl !== '' ? $amUrl : null))
+            : (($amUrl !== '' ? $amUrl : null) ?: ($enUrl !== '' ? $enUrl : null));
     }
 
     /**
