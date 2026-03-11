@@ -145,7 +145,10 @@
 
     {{-- Bible Reading --}}
     @if(localized($daily, 'bible_reference'))
-    @php $bibleText = localized($daily, 'bible_text'); @endphp
+    @php
+        $bibleText = localized($daily, 'bible_text');
+        $bibleAudioUrl = $daily->bibleAudioUrl();
+    @endphp
     <div data-tour="day-bible" class="bg-card rounded-2xl shadow-sm border border-border overflow-hidden"
          x-data="{
             open: false,
@@ -175,6 +178,28 @@
             <p class="text-sm text-muted-text mt-1.5 leading-relaxed">{{ localized($daily, 'bible_summary') }}</p>
             @endif
         </div>
+
+        @if($bibleAudioUrl)
+        {{-- Audio player --}}
+        <div class="px-4 pb-4" x-data="{ audioOpen: false }">
+            <button type="button" @click="audioOpen = !audioOpen"
+                    class="w-full flex items-center justify-between gap-2 py-2.5 px-3 rounded-xl bg-muted/70 hover:bg-muted transition mb-2">
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4 shrink-0 text-accent" fill="currentColor" viewBox="0 0 20 20"><path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v6.499a2.5 2.5 0 10.99 1.98L7 7.22l8-1.6v4.879a2.5 2.5 0 10.99 1.98L16 5.72V3z"/></svg>
+                    <span class="text-sm font-semibold text-primary">{{ $locale === 'am' ? 'ድምፅ ያዳምጡ' : 'Listen to Audio' }}</span>
+                </div>
+                <svg class="w-4 h-4 text-muted-text transition-transform duration-200" :class="audioOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+            <div x-show="audioOpen" x-cloak
+                 x-transition:enter="transition ease-out duration-150"
+                 x-transition:enter-start="opacity-0 -translate-y-1"
+                 x-transition:enter-end="opacity-100 translate-y-0">
+                <audio controls class="w-full rounded-xl" src="{{ $bibleAudioUrl }}" preload="none">
+                    {{ $locale === 'am' ? 'ድምፁን ይደግፍ የለም።' : 'Your browser does not support audio.' }}
+                </audio>
+            </div>
+        </div>
+        @endif
 
         @if($bibleText)
         <div class="px-4 pb-4">

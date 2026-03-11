@@ -17,7 +17,8 @@
       "Bash(php artisan make:migration add_lyrics_to_daily_content_mezmurs_table --table=daily_content_mezmurs)",
       "Bash(php artisan migrate)",
       "Bash(php artisan route:list --name=advanced)",
-      "Bash(php artisan view:cache)"
+      "Bash(php artisan view:cache)",
+      "Bash(php artisan make:migration add_bible_audio_to_daily_contents)"
     ]
   }
 }

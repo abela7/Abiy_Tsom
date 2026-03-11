@@ -96,6 +96,8 @@
         'bible_summary_en' => old('bible_summary_en', $daily->bible_summary_en ?? ''),
         'bible_text_am' => old('bible_text_am', $daily->bible_text_am ?? ''),
         'bible_text_en' => old('bible_text_en', $daily->bible_text_en ?? ''),
+        'bible_audio_url_am' => old('bible_audio_url_am', $daily->bible_audio_url_am ?? ''),
+        'bible_audio_url_en' => old('bible_audio_url_en', $daily->bible_audio_url_en ?? ''),
         'sinksar_title_am' => old('sinksar_title_am', $daily->sinksar_title_am ?? ''),
         'sinksar_title_en' => old('sinksar_title_en', $daily->sinksar_title_en ?? ''),
         'sinksar_url_en' => old('sinksar_url_en', $daily->sinksar_url_en ?? $daily->sinksar_url ?? ''),
@@ -171,8 +173,11 @@
                     copyFromTemplate: @js(route('admin.daily.copy_from', ['day_number' => '__DAY__'])),
                     uploadBookPdf: @js(route('admin.daily.upload_book_pdf')),
                     uploadSinksarImage: @js(route('admin.daily.upload_sinksar_image')),
-                    deleteSinksarImage: @js(route('admin.daily.delete_sinksar_image'))
+                    deleteSinksarImage: @js(route('admin.daily.delete_sinksar_image')),
+                    uploadBibleAudio: @js(route('admin.daily.upload_bible_audio')),
+                    deleteBibleAudio: @js(route('admin.daily.delete_bible_audio'))
                 },
+                bibleAudioUploading: { en: false, am: false },
                 daysWithContent: @js($daysWithContent ?? []),
                 messages: {
                     stepTemplate: @js(__('app.step_x_of_y', ['current' => ':current', 'total' => ':total'])),
@@ -366,6 +371,55 @@
                         <div class="space-y-3">
                             <label class="block text-sm font-medium text-secondary">{{ __('app.bible_text_en_label') }}</label>
                             <textarea x-model="form.bible_text_en" rows="6" placeholder="{{ __('app.bible_text_en_placeholder') }}" class="w-full min-h-[8rem] px-4 py-3 text-base border border-border rounded-xl bg-muted/30 focus:ring-2 focus:ring-accent focus:bg-card outline-none transition"></textarea>
+                        </div>
+                    </div>
+
+                    {{-- Bible Audio Upload --}}
+                    <div class="space-y-3 pt-1">
+                        <label class="block text-sm font-medium text-secondary">{{ __('app.bible_audio_label', [], 'Bible Reading Audio (MP3)') }}</label>
+                        <p class="text-xs text-muted-text">{{ __('app.bible_audio_hint', [], 'Upload MP3 audio for members to listen while reading. Files are stored on Cloudflare R2.') }}</p>
+                        <div class="lg:grid lg:grid-cols-2 lg:gap-4 space-y-3 lg:space-y-0">
+                            {{-- Amharic audio --}}
+                            <div class="space-y-2">
+                                <p class="text-xs font-medium text-muted-text">{{ __('app.amharic') }}</p>
+                                <template x-if="form.bible_audio_url_am">
+                                    <div class="flex items-center gap-2 p-2 rounded-lg border border-border bg-muted/30">
+                                        <svg class="w-4 h-4 text-accent shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v6.499a2.5 2.5 0 10.99 1.98L7 7.22l8-1.6v4.879a2.5 2.5 0 10.99 1.98L16 5.72V3z"/></svg>
+                                        <audio controls class="h-8 flex-1 min-w-0" :src="form.bible_audio_url_am" preload="none"></audio>
+                                        <button x-show="canEdit" type="button" @click="removeBibleAudio('am')" class="text-red-400 hover:text-red-600 shrink-0" title="Remove">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                        </button>
+                                    </div>
+                                </template>
+                                <template x-if="!form.bible_audio_url_am">
+                                    <label x-show="canEdit" class="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-border hover:border-accent cursor-pointer transition bg-muted/20 hover:bg-muted/40">
+                                        <svg class="w-4 h-4 text-muted-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                                        <span class="text-sm text-muted-text" x-text="bibleAudioUploading.am ? '{{ __('app.loading') }}...' : '{{ __('app.upload_audio', [], 'Upload MP3') }}'"></span>
+                                        <input type="file" accept="audio/mpeg,audio/mp3,audio/ogg,audio/wav,audio/m4a,.mp3,.ogg,.wav,.m4a" class="hidden" :disabled="bibleAudioUploading.am" @change="uploadBibleAudio('am', $event)">
+                                    </label>
+                                </template>
+                            </div>
+
+                            {{-- English audio --}}
+                            <div class="space-y-2">
+                                <p class="text-xs font-medium text-muted-text">{{ __('app.english') }}</p>
+                                <template x-if="form.bible_audio_url_en">
+                                    <div class="flex items-center gap-2 p-2 rounded-lg border border-border bg-muted/30">
+                                        <svg class="w-4 h-4 text-accent shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v6.499a2.5 2.5 0 10.99 1.98L7 7.22l8-1.6v4.879a2.5 2.5 0 10.99 1.98L16 5.72V3z"/></svg>
+                                        <audio controls class="h-8 flex-1 min-w-0" :src="form.bible_audio_url_en" preload="none"></audio>
+                                        <button x-show="canEdit" type="button" @click="removeBibleAudio('en')" class="text-red-400 hover:text-red-600 shrink-0" title="Remove">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                        </button>
+                                    </div>
+                                </template>
+                                <template x-if="!form.bible_audio_url_en">
+                                    <label x-show="canEdit" class="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-border hover:border-accent cursor-pointer transition bg-muted/20 hover:bg-muted/40">
+                                        <svg class="w-4 h-4 text-muted-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                                        <span class="text-sm text-muted-text" x-text="bibleAudioUploading.en ? '{{ __('app.loading') }}...' : '{{ __('app.upload_audio', [], 'Upload MP3') }}'"></span>
+                                        <input type="file" accept="audio/mpeg,audio/mp3,audio/ogg,audio/wav,audio/m4a,.mp3,.ogg,.wav,.m4a" class="hidden" :disabled="bibleAudioUploading.en" @change="uploadBibleAudio('en', $event)">
+                                    </label>
+                                </template>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -1026,6 +1080,65 @@
                         }
                     },
 
+                    async uploadBibleAudio(locale, event) {
+                        const input = event?.target;
+                        const file = input?.files?.[0];
+                        if (!input || !file) return;
+
+                        this.bibleAudioUploading[locale] = true;
+                        this.errorMessage = '';
+
+                        const formData = new FormData();
+                        formData.append('bible_audio', file);
+                        formData.append('locale', locale);
+                        formData.append('_token', document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '');
+
+                        try {
+                            const response = await fetch(this.urls.uploadBibleAudio, {
+                                method: 'POST',
+                                credentials: 'same-origin',
+                                headers: { 'Accept': 'application/json' },
+                                body: formData,
+                            });
+                            let data = {};
+                            try { data = await response.json(); } catch (_) { data = {}; }
+                            if (!response.ok || !data?.success) {
+                                throw new Error(data?.message || this.messages.failed || 'Failed');
+                            }
+                            if (locale === 'am') {
+                                this.form.bible_audio_url_am = data.url;
+                            } else {
+                                this.form.bible_audio_url_en = data.url;
+                            }
+                            input.value = '';
+                        } catch (error) {
+                            this.errorMessage = error.message || this.messages.failed || 'Failed';
+                        } finally {
+                            this.bibleAudioUploading[locale] = false;
+                        }
+                    },
+
+                    removeBibleAudio(locale) {
+                        const url = locale === 'am' ? this.form.bible_audio_url_am : this.form.bible_audio_url_en;
+                        if (locale === 'am') {
+                            this.form.bible_audio_url_am = '';
+                        } else {
+                            this.form.bible_audio_url_en = '';
+                        }
+                        if (url) {
+                            fetch(this.urls.deleteBibleAudio, {
+                                method: 'POST',
+                                credentials: 'same-origin',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                },
+                                body: JSON.stringify({ url, locale }),
+                            }).catch(() => {});
+                        }
+                    },
+
                     removeSinksarImage(index) {
                         if (!this.form.sinksar_images) return;
                         const removed = this.form.sinksar_images.splice(index, 1);
@@ -1252,6 +1365,8 @@
                             payload.bible_summary_en = this.form.bible_summary_en;
                             payload.bible_text_am = this.form.bible_text_am;
                             payload.bible_text_en = this.form.bible_text_en;
+                            payload.bible_audio_url_am = this.form.bible_audio_url_am || '';
+                            payload.bible_audio_url_en = this.form.bible_audio_url_en || '';
                         } else if (step === 3) {
                             payload.mezmurs = (this.form.mezmurs || []).map((item) => ({
                                 title_en: item.title_en || '',
@@ -1320,6 +1435,8 @@
                             bible_summary_am: f.bible_summary_am || '',
                             bible_text_en: f.bible_text_en || '',
                             bible_text_am: f.bible_text_am || '',
+                            bible_audio_url_en: f.bible_audio_url_en || '',
+                            bible_audio_url_am: f.bible_audio_url_am || '',
                             mezmurs: (f.mezmurs || []).map((m) => ({
                                 title_en: m.title_en || '',
                                 title_am: m.title_am || '',

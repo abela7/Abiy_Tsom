@@ -302,6 +302,53 @@ class DailyContentController extends Controller
         return redirect('/admin/daily')->with('success', 'Daily content updated.');
     }
 
+    /**
+     * Upload a Bible audio MP3 to Cloudflare R2 (AJAX).
+     */
+    public function uploadBibleAudio(Request $request): JsonResponse
+    {
+        $request->validate([
+            'bible_audio' => ['required', 'file', 'mimes:mp3,mpeg,ogg,wav,m4a', 'max:51200'],
+            'locale'      => ['required', 'in:en,am'],
+        ]);
+
+        $locale = $request->input('locale');
+        $path   = $request->file('bible_audio')->storeAs(
+            'bible-audio',
+            uniqid("bible_{$locale}_", true).'.'.$request->file('bible_audio')->extension(),
+            'r2'
+        );
+
+        $url = rtrim(config('filesystems.disks.r2.url'), '/').'/'.$path;
+
+        return response()->json([
+            'success' => true,
+            'url'     => $url,
+            'locale'  => $locale,
+        ]);
+    }
+
+    /**
+     * Delete a Bible audio file from Cloudflare R2 (AJAX).
+     */
+    public function deleteBibleAudio(Request $request): JsonResponse
+    {
+        $request->validate([
+            'url'    => ['required', 'string', 'max:1000'],
+            'locale' => ['required', 'in:en,am'],
+        ]);
+
+        $publicBase = rtrim(config('filesystems.disks.r2.url'), '/');
+        $url        = $request->input('url');
+
+        if (str_starts_with($url, $publicBase.'/bible-audio/')) {
+            $path = ltrim(str_replace($publicBase, '', $url), '/');
+            Storage::disk('r2')->delete($path);
+        }
+
+        return response()->json(['success' => true]);
+    }
+
     public function uploadBookPdf(Request $request): JsonResponse
     {
         $request->validate([
@@ -382,12 +429,14 @@ class DailyContentController extends Controller
 
             case 2:
                 $updates = $request->validate([
-                    'bible_reference_en' => ['nullable', 'string', 'max:255'],
-                    'bible_reference_am' => ['nullable', 'string', 'max:255'],
-                    'bible_summary_en' => ['nullable', 'string'],
-                    'bible_summary_am' => ['nullable', 'string'],
-                    'bible_text_en' => ['nullable', 'string'],
-                    'bible_text_am' => ['nullable', 'string'],
+                    'bible_reference_en'  => ['nullable', 'string', 'max:255'],
+                    'bible_reference_am'  => ['nullable', 'string', 'max:255'],
+                    'bible_summary_en'    => ['nullable', 'string'],
+                    'bible_summary_am'    => ['nullable', 'string'],
+                    'bible_text_en'       => ['nullable', 'string'],
+                    'bible_text_am'       => ['nullable', 'string'],
+                    'bible_audio_url_en'  => ['nullable', 'string', 'max:1000'],
+                    'bible_audio_url_am'  => ['nullable', 'string', 'max:1000'],
                 ]);
                 break;
 
@@ -711,8 +760,10 @@ class DailyContentController extends Controller
             'bible_reference_am' => ['nullable', 'string', 'max:255'],
             'bible_summary_en' => ['nullable', 'string'],
             'bible_summary_am' => ['nullable', 'string'],
-            'bible_text_en' => ['nullable', 'string'],
-            'bible_text_am' => ['nullable', 'string'],
+            'bible_text_en'      => ['nullable', 'string'],
+            'bible_text_am'      => ['nullable', 'string'],
+            'bible_audio_url_en' => ['nullable', 'string', 'max:1000'],
+            'bible_audio_url_am' => ['nullable', 'string', 'max:1000'],
             'mezmurs' => ['nullable', 'array'],
             'mezmurs.*.title_en' => ['nullable', 'string', 'max:255'],
             'mezmurs.*.title_am' => ['nullable', 'string', 'max:255'],
