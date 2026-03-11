@@ -303,10 +303,11 @@
 
                     {{-- Seek bar --}}
                     <div class="px-5 pt-2 pb-1">
-                        <div class="relative h-6 flex items-center cursor-pointer">
-                            <div class="absolute w-full rounded-full bg-muted" style="height:4px;"></div>
-                            <div class="absolute rounded-full bg-accent transition-none" style="height:4px;left:0;" :style="'width:'+progress+'%'"></div>
-                            <div class="absolute w-3 h-3 rounded-full bg-accent shadow -translate-x-1/2 transition-none"
+                        <div class="relative h-8 flex items-center cursor-pointer">
+                            <div class="absolute w-full rounded-full bg-border" style="height:3px;"></div>
+                            <div class="absolute rounded-full transition-none" style="height:3px;left:0;background:var(--color-accent);" :style="'width:'+progress+'%'"></div>
+                            <div class="absolute w-3.5 h-3.5 rounded-full shadow-md -translate-x-1/2 transition-none border-2"
+                                 style="border-color:var(--color-accent);background:var(--color-card);"
                                  :style="'left:'+Math.min(Math.max(progress,0),100)+'%'"></div>
                             <input type="range" min="0" max="100" step="0.1" :value="progress"
                                    @input="seek($event)"
