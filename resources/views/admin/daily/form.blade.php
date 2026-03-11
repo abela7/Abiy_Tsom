@@ -177,7 +177,6 @@
                     uploadBibleAudio: @js(route('admin.daily.upload_bible_audio')),
                     deleteBibleAudio: @js(route('admin.daily.delete_bible_audio'))
                 },
-                bibleAudioUploading: { en: false, am: false },
                 daysWithContent: @js($daysWithContent ?? []),
                 messages: {
                     stepTemplate: @js(__('app.step_x_of_y', ['current' => ':current', 'total' => ':total'])),
@@ -846,6 +845,7 @@
                     isCopying: false,
                     copyNotice: '',
                     sinksarImageUploading: false,
+                    bibleAudioUploading: { en: false, am: false },
 
                     init() {
                         if (!Array.isArray(this.form.mezmurs) || this.form.mezmurs.length === 0) {
