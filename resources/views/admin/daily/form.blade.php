@@ -380,49 +380,49 @@
 
                     {{-- Bible Audio Upload --}}
                     <div class="space-y-3 pt-1">
-                        <label class="block text-sm font-medium text-secondary">{{ __('app.bible_audio_label', [], 'Bible Reading Audio (MP3)') }}</label>
-                        <p class="text-xs text-muted-text">{{ __('app.bible_audio_hint', [], 'Upload MP3 audio for members to listen while reading. Files are stored on Cloudflare R2.') }}</p>
+                        <label class="block text-sm font-medium text-secondary">{{ __('app.bible_audio_label') }}</label>
+                        <p class="text-xs text-muted-text">{{ __('app.bible_audio_hint') }}</p>
                         <div class="lg:grid lg:grid-cols-2 lg:gap-4 space-y-3 lg:space-y-0">
                             {{-- Amharic audio --}}
                             <div class="space-y-2">
                                 <p class="text-xs font-medium text-muted-text">{{ __('app.amharic') }}</p>
-                                <template x-if="form.bible_audio_url_am">
-                                    <div class="flex items-center gap-2 p-2 rounded-lg border border-border bg-muted/30">
-                                        <svg class="w-4 h-4 text-accent shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v6.499a2.5 2.5 0 10.99 1.98L7 7.22l8-1.6v4.879a2.5 2.5 0 10.99 1.98L16 5.72V3z"/></svg>
-                                        <audio controls class="h-8 flex-1 min-w-0" :src="form.bible_audio_url_am" preload="none"></audio>
-                                        <button x-show="canEdit" type="button" @click="removeBibleAudio('am')" class="text-red-400 hover:text-red-600 shrink-0" title="Remove">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                                        </button>
-                                    </div>
-                                </template>
-                                <template x-if="!form.bible_audio_url_am">
-                                    <label x-show="canEdit" class="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-border hover:border-accent cursor-pointer transition bg-muted/20 hover:bg-muted/40">
-                                        <svg class="w-4 h-4 text-muted-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                                        <span class="text-sm text-muted-text" x-text="bibleAudioUploading.am ? '{{ __('app.loading') }}...' : '{{ __('app.upload_audio', [], 'Upload MP3') }}'"></span>
-                                        <input type="file" accept="audio/mpeg,audio/mp3,audio/ogg,audio/wav,audio/m4a,.mp3,.ogg,.wav,.m4a" class="hidden" :disabled="bibleAudioUploading.am" @change="uploadBibleAudio('am', $event)">
-                                    </label>
-                                </template>
+                                <div x-show="form.bible_audio_url_am" x-cloak class="flex items-center gap-2 p-2 rounded-lg border border-border bg-muted/30">
+                                    <svg class="w-4 h-4 text-accent shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v6.499a2.5 2.5 0 10.99 1.98L7 7.22l8-1.6v4.879a2.5 2.5 0 10.99 1.98L16 5.72V3z"/></svg>
+                                    <audio controls class="h-8 flex-1 min-w-0" :src="form.bible_audio_url_am" preload="none"></audio>
+                                    @if($canEdit ?? true)
+                                    <button type="button" @click="removeBibleAudio('am')" class="text-red-400 hover:text-red-600 shrink-0" title="Remove">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                    </button>
+                                    @endif
+                                </div>
+                                @if($canEdit ?? true)
+                                <label x-show="!form.bible_audio_url_am" class="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-border hover:border-accent cursor-pointer transition bg-muted/20 hover:bg-muted/40">
+                                    <svg class="w-4 h-4 text-muted-text shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                                    <span class="text-sm text-muted-text" x-text="bibleAudioUploading.am ? '{{ __('app.loading') }}...' : '{{ __('app.upload_audio') }}'"></span>
+                                    <input type="file" accept=".mp3,audio/mpeg,audio/mp4,audio/ogg,audio/wav" class="hidden" :disabled="bibleAudioUploading.am" @change="uploadBibleAudio('am', $event)">
+                                </label>
+                                @endif
                             </div>
 
                             {{-- English audio --}}
                             <div class="space-y-2">
                                 <p class="text-xs font-medium text-muted-text">{{ __('app.english') }}</p>
-                                <template x-if="form.bible_audio_url_en">
-                                    <div class="flex items-center gap-2 p-2 rounded-lg border border-border bg-muted/30">
-                                        <svg class="w-4 h-4 text-accent shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v6.499a2.5 2.5 0 10.99 1.98L7 7.22l8-1.6v4.879a2.5 2.5 0 10.99 1.98L16 5.72V3z"/></svg>
-                                        <audio controls class="h-8 flex-1 min-w-0" :src="form.bible_audio_url_en" preload="none"></audio>
-                                        <button x-show="canEdit" type="button" @click="removeBibleAudio('en')" class="text-red-400 hover:text-red-600 shrink-0" title="Remove">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                                        </button>
-                                    </div>
-                                </template>
-                                <template x-if="!form.bible_audio_url_en">
-                                    <label x-show="canEdit" class="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-border hover:border-accent cursor-pointer transition bg-muted/20 hover:bg-muted/40">
-                                        <svg class="w-4 h-4 text-muted-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                                        <span class="text-sm text-muted-text" x-text="bibleAudioUploading.en ? '{{ __('app.loading') }}...' : '{{ __('app.upload_audio', [], 'Upload MP3') }}'"></span>
-                                        <input type="file" accept="audio/mpeg,audio/mp3,audio/ogg,audio/wav,audio/m4a,.mp3,.ogg,.wav,.m4a" class="hidden" :disabled="bibleAudioUploading.en" @change="uploadBibleAudio('en', $event)">
-                                    </label>
-                                </template>
+                                <div x-show="form.bible_audio_url_en" x-cloak class="flex items-center gap-2 p-2 rounded-lg border border-border bg-muted/30">
+                                    <svg class="w-4 h-4 text-accent shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v6.499a2.5 2.5 0 10.99 1.98L7 7.22l8-1.6v4.879a2.5 2.5 0 10.99 1.98L16 5.72V3z"/></svg>
+                                    <audio controls class="h-8 flex-1 min-w-0" :src="form.bible_audio_url_en" preload="none"></audio>
+                                    @if($canEdit ?? true)
+                                    <button type="button" @click="removeBibleAudio('en')" class="text-red-400 hover:text-red-600 shrink-0" title="Remove">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                    </button>
+                                    @endif
+                                </div>
+                                @if($canEdit ?? true)
+                                <label x-show="!form.bible_audio_url_en" class="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-border hover:border-accent cursor-pointer transition bg-muted/20 hover:bg-muted/40">
+                                    <svg class="w-4 h-4 text-muted-text shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                                    <span class="text-sm text-muted-text" x-text="bibleAudioUploading.en ? '{{ __('app.loading') }}...' : '{{ __('app.upload_audio') }}'"></span>
+                                    <input type="file" accept=".mp3,audio/mpeg,audio/mp4,audio/ogg,audio/wav" class="hidden" :disabled="bibleAudioUploading.en" @change="uploadBibleAudio('en', $event)">
+                                </label>
+                                @endif
                             </div>
                         </div>
                     </div>
