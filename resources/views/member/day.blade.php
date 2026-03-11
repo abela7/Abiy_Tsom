@@ -252,7 +252,7 @@
             <button type="button" @click="audioOpen ? (audioOpen = false) : openPlayer()"
                     class="w-full flex items-center justify-between gap-2 py-2.5 px-3 rounded-xl bg-muted/70 hover:bg-muted transition mb-3">
                 <div class="flex items-center gap-1.5">
-                    <svg class="w-4 h-4 shrink-0 text-accent" fill="currentColor" viewBox="0 0 20 20"><path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v6.499a2.5 2.5 0 10.99 1.98L7 7.22l8-1.6v4.879a2.5 2.5 0 10.99 1.98L16 5.72V3z"/></svg>
+                    <svg class="w-4 h-4 shrink-0 transition-transform duration-200" :class="audioOpen ? 'rotate-90' : ''" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                     <div>
                         <span class="text-sm font-semibold text-primary">{{ $locale === 'am' ? 'ድምፅ ያዳምጡ' : 'Listen to Audio' }}</span>
                         <p x-show="!audioOpen" class="text-[11px] text-muted-text mt-0.5">{{ $locale === 'am' ? 'ለማዳመጥ እዚህ ላይ ይንኩ' : 'Tap here to listen' }}</p>
@@ -276,79 +276,93 @@
                        @play="onPlay()" @pause="onPause()" @ended="onEnded()" @loadedmetadata="onMeta()">
                 </audio>
 
-                <div class="rounded-2xl border border-accent/20 overflow-hidden"
-                     :class="playing ? 'bg-gradient-to-br from-accent/8 via-accent/3 to-transparent' : 'bg-muted/40'">
+                <div class="rounded-2xl border border-border bg-card overflow-hidden">
 
-                    <div class="px-4 pt-4 pb-3">
-                        <div class="flex items-center justify-between mb-4">
-                            <div x-show="hasBoth" class="flex bg-card rounded-lg p-0.5 gap-0.5 border border-border">
-                                <button type="button" @click="activeLocale='am'"
-                                        :class="activeLocale==='am' ? 'bg-accent text-white shadow-sm' : 'text-muted-text hover:text-secondary'"
-                                        class="px-3 py-1.5 rounded-md text-[11px] font-bold transition touch-manipulation">{{ $locale === 'am' ? 'አማርኛ' : 'አማ' }}</button>
-                                <button type="button" @click="activeLocale='en'"
-                                        :class="activeLocale==='en' ? 'bg-accent text-white shadow-sm' : 'text-muted-text hover:text-secondary'"
-                                        class="px-3 py-1.5 rounded-md text-[11px] font-bold transition touch-manipulation">EN</button>
-                            </div>
-                            <div x-show="!hasBoth"></div>
-                            <div class="flex bg-card rounded-lg p-0.5 gap-0.5 border border-border">
-                                <template x-for="s in [1, 1.5, 2]">
-                                    <button type="button" @click="setSpeed(s)"
-                                            :class="speed === s ? 'bg-accent text-white shadow-sm' : 'text-muted-text hover:text-secondary'"
-                                            class="px-2 py-1.5 rounded-md text-[11px] font-bold transition touch-manipulation"
-                                            x-text="s === 1 ? '1×' : s + '×'"></button>
-                                </template>
-                            </div>
+                    {{-- Title + language toggle --}}
+                    <div class="px-4 pt-4 pb-2 text-center">
+                        <div class="flex items-center justify-center gap-2 mb-1">
+                            <svg class="w-4 h-4 text-accent shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v6.499a2.5 2.5 0 10.99 1.98L7 7.22l8-1.6v4.879a2.5 2.5 0 10.99 1.98L16 5.72V3z"/></svg>
+                            <span class="text-sm font-bold text-primary">{{ localized($daily, 'bible_reference') }}</span>
                         </div>
-
-                        <div class="flex items-center gap-3">
-                            <button type="button" @click="skipBy(-10)"
-                                    class="w-9 h-9 rounded-full bg-card border border-border flex items-center justify-center shrink-0 hover:bg-muted active:scale-95 transition touch-manipulation">
-                                <svg class="w-3.5 h-3.5 text-secondary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.334 4zM4.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0011 16V8a1 1 0 00-1.6-.8l-5.334 4z"/></svg>
-                            </button>
-
-                            <button type="button" @click="togglePlay()"
-                                    class="w-12 h-12 rounded-full flex items-center justify-center shrink-0 active:scale-95 transition touch-manipulation shadow-md"
-                                    :class="playing ? 'bg-accent/90' : 'bg-accent'">
-                                <svg x-show="!playing" class="w-5 h-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
-                                </svg>
-                                <svg x-show="playing" x-cloak class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M5.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75A.75.75 0 007.25 3h-1.5zM12.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75a.75.75 0 00-.75-.75h-1.5z"/>
-                                </svg>
-                            </button>
-
-                            <button type="button" @click="skipBy(10)"
-                                    class="w-9 h-9 rounded-full bg-card border border-border flex items-center justify-center shrink-0 hover:bg-muted active:scale-95 transition touch-manipulation">
-                                <svg class="w-3.5 h-3.5 text-secondary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11.933 12.8a1 1 0 000-1.6L6.6 7.2A1 1 0 005 8v8a1 1 0 001.6.8l5.333-4zM19.933 12.8a1 1 0 000-1.6l-5.333-4A1 1 0 0013 8v8a1 1 0 001.6.8l5.333-4z"/></svg>
-                            </button>
-
-                            <button type="button" @click="toggleMute()"
-                                    :class="muted ? 'text-muted-text' : 'text-secondary'"
-                                    class="w-9 h-9 rounded-full bg-card border border-border flex items-center justify-center shrink-0 hover:bg-muted transition touch-manipulation ml-auto">
-                                <svg x-show="!muted" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072M12 6v12m0-12L8 9H5a1 1 0 00-1 1v4a1 1 0 001 1h3l4 3m4.5-9.5a8 8 0 010 11.314"/>
-                                </svg>
-                                <svg x-show="muted" x-cloak class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zM17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/>
-                                </svg>
-                            </button>
+                        <p class="text-[11px] text-muted-text">{{ $locale === 'am' ? 'የመጽሐፍ ቅዱስ ንባብ' : 'Bible Reading' }}</p>
+                        <div x-show="hasBoth" class="flex justify-center mt-2.5">
+                            <div class="inline-flex bg-muted rounded-lg p-0.5 gap-0.5">
+                                <button type="button" @click="activeLocale='am'"
+                                        :class="activeLocale==='am' ? 'bg-card text-primary shadow-sm' : 'text-muted-text hover:text-secondary'"
+                                        class="px-3 py-1 rounded-md text-[11px] font-bold transition touch-manipulation">{{ $locale === 'am' ? 'አማርኛ' : 'አማ' }}</button>
+                                <button type="button" @click="activeLocale='en'"
+                                        :class="activeLocale==='en' ? 'bg-card text-primary shadow-sm' : 'text-muted-text hover:text-secondary'"
+                                        class="px-3 py-1 rounded-md text-[11px] font-bold transition touch-manipulation">EN</button>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="px-4 pb-4">
-                        <div class="relative h-6 flex items-center group cursor-pointer">
-                            <div class="absolute w-full rounded-full bg-border" style="height:4px;"></div>
+                    {{-- Seek bar --}}
+                    <div class="px-5 pt-2 pb-1">
+                        <div class="relative h-6 flex items-center cursor-pointer">
+                            <div class="absolute w-full rounded-full bg-muted" style="height:4px;"></div>
                             <div class="absolute rounded-full bg-accent transition-none" style="height:4px;left:0;" :style="'width:'+progress+'%'"></div>
-                            <div class="absolute w-3.5 h-3.5 rounded-full bg-accent shadow-md border-2 border-white -translate-x-1/2 transition-none"
+                            <div class="absolute w-3 h-3 rounded-full bg-accent shadow -translate-x-1/2 transition-none"
                                  :style="'left:'+Math.min(Math.max(progress,0),100)+'%'"></div>
                             <input type="range" min="0" max="100" step="0.1" :value="progress"
                                    @input="seek($event)"
                                    class="absolute inset-0 w-full opacity-0 cursor-pointer" style="height:100%">
                         </div>
-                        <div class="flex justify-between text-[10px] font-medium text-muted-text tabular-nums select-none mt-1">
+                        <div class="flex justify-between text-[10px] font-medium text-muted-text tabular-nums select-none">
                             <span x-text="fmt(currentTime)">0:00</span>
                             <span x-text="duration ? fmt(duration) : '--:--'">--:--</span>
                         </div>
+                    </div>
+
+                    {{-- Transport controls --}}
+                    <div class="flex items-center justify-center gap-5 py-3">
+                        <button type="button" @click="toggleMute()"
+                                class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-muted transition touch-manipulation"
+                                :class="muted ? 'text-muted-text' : 'text-secondary'">
+                            <svg x-show="!muted" class="w-5 h-5" fill="none" viewBox="0 0 24 24">
+                                <path fill="currentColor" d="M11.383 3.076A1 1 0 0112 4v16a1 1 0 01-1.707.707L6.586 17H4a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217z"/>
+                                <path stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728"/>
+                            </svg>
+                            <svg x-show="muted" x-cloak class="w-5 h-5" fill="none" viewBox="0 0 24 24">
+                                <path fill="currentColor" d="M11.383 3.076A1 1 0 0112 4v16a1 1 0 01-1.707.707L6.586 17H4a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217z"/>
+                                <path stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="M17 14l4-4m0 4l-4-4"/>
+                            </svg>
+                        </button>
+
+                        <button type="button" @click="skipBy(-10)"
+                                class="w-10 h-10 rounded-full flex items-center justify-center text-secondary hover:bg-muted transition touch-manipulation active:scale-95">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M9.195 18.44c1.25.714 2.805-.189 2.805-1.629v-2.34l6.945 3.968c1.25.715 2.805-.188 2.805-1.628V7.19c0-1.44-1.555-2.343-2.805-1.628L12 9.53V7.19c0-1.44-1.555-2.343-2.805-1.628l-7.108 4.061c-1.26.72-1.26 2.536 0 3.256l7.108 4.061z"/></svg>
+                        </button>
+
+                        <button type="button" @click="togglePlay()"
+                                class="w-14 h-14 rounded-full bg-accent flex items-center justify-center shrink-0 active:scale-95 transition touch-manipulation shadow-lg hover:opacity-90">
+                            <svg x-show="!playing" class="w-6 h-6 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M8 5.14v14.72a1 1 0 001.5.86l11-7.36a1 1 0 000-1.72l-11-7.36A1 1 0 008 5.14z"/>
+                            </svg>
+                            <svg x-show="playing" x-cloak class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M6.75 4a.75.75 0 00-.75.75v14.5c0 .414.336.75.75.75h2.5a.75.75 0 00.75-.75V4.75A.75.75 0 009.25 4h-2.5zM14.75 4a.75.75 0 00-.75.75v14.5c0 .414.336.75.75.75h2.5a.75.75 0 00.75-.75V4.75a.75.75 0 00-.75-.75h-2.5z"/>
+                            </svg>
+                        </button>
+
+                        <button type="button" @click="skipBy(10)"
+                                class="w-10 h-10 rounded-full flex items-center justify-center text-secondary hover:bg-muted transition touch-manipulation active:scale-95">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M14.805 5.56c-1.25-.714-2.805.189-2.805 1.629v2.34L5.055 5.56C3.805 4.846 2.25 5.749 2.25 7.189v9.622c0 1.44 1.555 2.343 2.805 1.628L12 14.47v2.34c0 1.44 1.555 2.343 2.805 1.628l7.108-4.061c1.26-.72 1.26-2.536 0-3.256L14.805 5.56z"/></svg>
+                        </button>
+
+                        <button type="button" @click="skipBy(30)"
+                                class="w-10 h-10 rounded-full flex items-center justify-center text-secondary hover:bg-muted transition touch-manipulation active:scale-95">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5"/><path stroke-linecap="round" d="M20.5 9A9 9 0 003.5 9M3.5 15a9 9 0 0017 0"/></svg>
+                        </button>
+                    </div>
+
+                    {{-- Speed control --}}
+                    <div class="flex items-center justify-center gap-1 pb-3">
+                        <template x-for="s in [0.75, 1, 1.25, 1.5, 2]">
+                            <button type="button" @click="setSpeed(s)"
+                                    :class="speed === s ? 'text-accent font-bold' : 'text-muted-text'"
+                                    class="px-2 py-0.5 rounded text-[10px] font-semibold transition touch-manipulation hover:text-primary"
+                                    x-text="s + '×'"></button>
+                        </template>
                     </div>
                 </div>
             </div>
