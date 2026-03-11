@@ -18,6 +18,8 @@
                     'url_am' => $m->url_am ?? $m->url ?? '',
                     'description_en' => $m->description_en ?? '',
                     'description_am' => $m->description_am ?? '',
+                    'lyrics_en' => $m->lyrics_en ?? '',
+                    'lyrics_am' => $m->lyrics_am ?? '',
                 ])
                 ->values()
                 ->toArray()
@@ -28,6 +30,8 @@
                 'url_am' => '',
                 'description_en' => '',
                 'description_am' => '',
+                'lyrics_en' => '',
+                'lyrics_am' => '',
             ]]
     );
 
