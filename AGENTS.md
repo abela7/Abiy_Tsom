@@ -12,3 +12,29 @@
 
 - Brand colors: Primary Blue `#0a6286`, Primary Gold `#e2ca18`.
 - Tech stack: Laravel, Blade, Tailwind v4, Alpine.js, MySQL. Always use Tailwind v4 syntax.
+
+## Cursor Cloud specific instructions
+
+### Services overview
+
+| Service | How to start | Port |
+|---------|-------------|------|
+| Laravel dev server | `php artisan serve --host=0.0.0.0 --port=8000` | 8000 |
+| Vite dev server (HMR) | `npm run dev` | 5173 |
+| Both + queue + logs | `composer dev` (uses `concurrently`) | 8000 + 5173 |
+
+### Key development commands
+
+See `composer.json` scripts section for canonical commands: `composer dev`, `composer test`, `composer setup`.
+
+- **Lint:** `vendor/bin/pint --test` (check) or `vendor/bin/pint` (fix)
+- **Tests:** `php artisan test` (uses SQLite in-memory, no MySQL needed)
+- **Build frontend:** `npm run build`
+
+### Non-obvious caveats
+
+- **MySQL socket permissions:** After starting MySQL with `sudo mysqld_safe`, the `/var/run/mysqld/` directory may have restrictive permissions (0700). Run `sudo chmod 755 /var/run/mysqld` so the non-root user can connect via socket.
+- **Migration ordering bug:** Migration `2026_02_17_000003_add_whatsapp_language_to_members_table.php` references column `whatsapp_last_sent_date` (via `->after()`), which is only created in the later migration `2026_02_19_000002_add_whatsapp_reminder_columns_to_members_table.php`. Work around this by running the later migration first: `php artisan migrate --path=database/migrations/2026_02_19_000002_add_whatsapp_reminder_columns_to_members_table.php --force` then `php artisan migrate --force`.
+- **Default admin credentials:** `admin@abiy-tsom.com` / `password` (created by `php artisan db:seed`).
+- **Default locale is Amharic:** `.env.example` sets `APP_LOCALE=am`. The admin and member UIs display in Amharic by default.
+- **Pre-existing test failures:** 13 tests currently fail (WhatsApp admin 403s, member auth 401s, and an undefined variable in `SendWhatsAppReminders`). These are known codebase issues, not environment problems.
