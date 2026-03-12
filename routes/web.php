@@ -158,6 +158,7 @@ Route::middleware(['auth', 'admin.audit'])->prefix('admin')->name('admin.')->gro
         Route::get('/daily', [Admin\DailyContentController::class, 'index'])->name('daily.index');
         Route::get('/daily/{daily}/preview', [Admin\DailyContentController::class, 'preview'])->name('daily.preview');
         Route::get('/daily/{daily}/edit', [Admin\DailyContentController::class, 'edit'])->name('daily.edit');
+        Route::get('/daily/{daily}/views', [Admin\DailyContentController::class, 'viewDetails'])->name('daily.views');
 
         // Daily content suggestions (writer/editor submit; admin reviews)
         Route::post('/daily/{daily}/suggestions', [Admin\DailyContentSuggestionController::class, 'store'])

@@ -76,11 +76,39 @@ class DailyContentController extends Controller
     {
         $season = LentSeason::active();
         $contents = $season
-            ? $season->dailyContents()->with(['weeklyTheme', 'createdBy', 'updatedBy', 'assignedTo'])->withCount('views')->orderBy('day_number')->get()
+            ? $season->dailyContents()
+                ->with(['weeklyTheme', 'createdBy', 'updatedBy', 'assignedTo'])
+                ->withCount(['views', 'memberViews', 'anonymousViews'])
+                ->orderBy('day_number')
+                ->get()
             : collect();
         $canEdit = auth()->user()?->role === 'admin' || auth()->user()?->isSuperAdmin();
 
         return view('admin.daily.index', compact('season', 'contents', 'canEdit'));
+    }
+
+    /**
+     * AJAX: Return view details for a daily content (member names + anonymous count).
+     */
+    public function viewDetails(DailyContent $daily): JsonResponse
+    {
+        $memberViews = $daily->memberViews()
+            ->with('member:id,baptism_name')
+            ->orderByDesc('viewed_at')
+            ->get()
+            ->map(fn ($v) => [
+                'baptism_name' => $v->member?->baptism_name ?? '—',
+                'viewed_at' => $v->viewed_at?->diffForHumans() ?? '—',
+            ]);
+
+        $anonymousCount = $daily->anonymousViews()->count();
+
+        return response()->json([
+            'success' => true,
+            'members' => $memberViews,
+            'anonymous_count' => $anonymousCount,
+            'total' => $memberViews->count() + $anonymousCount,
+        ]);
     }
 
     /**

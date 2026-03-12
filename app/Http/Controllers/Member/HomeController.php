@@ -303,10 +303,16 @@ class HomeController extends Controller
 
         $member = $request->attributes->get('member');
 
-        // Track unique member view
+        // Track unique view (member or anonymous by IP)
         if ($member) {
             MemberDailyView::firstOrCreate(
                 ['member_id' => $member->id, 'daily_content_id' => $daily->id],
+                ['ip_address' => $request->ip(), 'viewed_at' => now()]
+            );
+        } else {
+            $ip = $request->ip();
+            MemberDailyView::firstOrCreate(
+                ['ip_address' => $ip, 'daily_content_id' => $daily->id, 'member_id' => null],
                 ['viewed_at' => now()]
             );
         }

@@ -115,11 +115,27 @@ class DailyContent extends Model
     }
 
     /**
-     * Unique member views for this day.
+     * All views for this day (member + anonymous).
      */
     public function views(): HasMany
     {
         return $this->hasMany(MemberDailyView::class);
+    }
+
+    /**
+     * Only authenticated member views for this day.
+     */
+    public function memberViews(): HasMany
+    {
+        return $this->hasMany(MemberDailyView::class)->whereNotNull('member_id');
+    }
+
+    /**
+     * Only anonymous (non-member) views for this day.
+     */
+    public function anonymousViews(): HasMany
+    {
+        return $this->hasMany(MemberDailyView::class)->whereNull('member_id');
     }
 
     /**
