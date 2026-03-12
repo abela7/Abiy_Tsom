@@ -88,27 +88,22 @@ class DailyContentController extends Controller
     }
 
     /**
-     * AJAX: Return view details for a daily content (member names + anonymous count).
+     * Show view details for a daily content (which members viewed + anonymous count).
      */
-    public function viewDetails(DailyContent $daily): JsonResponse
+    public function viewDetails(DailyContent $daily): View
     {
         $memberViews = $daily->memberViews()
             ->with('member:id,baptism_name')
             ->orderByDesc('viewed_at')
-            ->get()
-            ->map(fn ($v) => [
-                'baptism_name' => $v->member?->baptism_name ?? '—',
-                'viewed_at' => $v->viewed_at?->diffForHumans() ?? '—',
-            ]);
+            ->get();
 
-        $anonymousCount = $daily->anonymousViews()->count();
+        $anonymousViews = $daily->anonymousViews()
+            ->orderByDesc('viewed_at')
+            ->get();
 
-        return response()->json([
-            'success' => true,
-            'members' => $memberViews,
-            'anonymous_count' => $anonymousCount,
-            'total' => $memberViews->count() + $anonymousCount,
-        ]);
+        $totalViews = $memberViews->count() + $anonymousViews->count();
+
+        return view('admin.daily.views', compact('daily', 'memberViews', 'anonymousViews', 'totalViews'));
     }
 
     /**
