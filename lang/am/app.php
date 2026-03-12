@@ -1719,4 +1719,11 @@ return [
     'view_details' => 'የእይታ ዝርዝር',
     'anonymous_viewers' => 'ያልታወቁ ጎብኚዎች',
     'no_views_yet' => 'እስካሁን ምንም እይታ የለም',
+    'back_to_daily' => 'ወደ ዕለታዊ ይዘት ተመለስ',
+    'member_viewers' => 'የአባላት እይታዎች',
+    'no_member_views' => 'ገና ምንም አባል ይህን ቀን አላየም።',
+    'viewed_at' => 'የታየበት ጊዜ',
+    'ip_address' => 'አይፒ አድራሻ',
+    'visitors' => 'ጎብኚዎች',
+    'no_anonymous_views' => 'ገና ያልታወቁ እይታዎች የሉም።',
 ];

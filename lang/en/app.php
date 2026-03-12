@@ -1739,4 +1739,11 @@ return [
     'view_details' => 'View Details',
     'anonymous_viewers' => 'Anonymous visitors',
     'no_views_yet' => 'No views yet',
+    'back_to_daily' => 'Back to Daily Content',
+    'member_viewers' => 'Member Views',
+    'no_member_views' => 'No members have viewed this day yet.',
+    'viewed_at' => 'Viewed At',
+    'ip_address' => 'IP Address',
+    'visitors' => 'visitors',
+    'no_anonymous_views' => 'No anonymous views yet.',
 ];
