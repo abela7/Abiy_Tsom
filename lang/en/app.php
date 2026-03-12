@@ -772,6 +772,7 @@ return [
     'announcement_suggestion_already_processed' => 'This suggestion has already been applied or rejected.',
     'announcement_suggestions_empty' => 'No pending announcement suggestions.',
     'actions' => 'Actions',
+    'views' => 'Views',
     'name' => 'Name',
     'username' => 'Username',
     'username_placeholder' => 'Username or email',

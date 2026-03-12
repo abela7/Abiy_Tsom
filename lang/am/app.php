@@ -775,6 +775,7 @@ return [
     'announcement_suggestion_already_processed' => 'ይህ ዝርዝር ቀደም ሲል ተግብሯል ወይም ተቀባይነት አላገኘም።',
     'announcement_suggestions_empty' => 'በጥበቃ ላይ ያሉ የማስታወቂያ ዝርዝሮች የሉም።',
     'actions' => 'እርምጃዎች',
+    'views' => 'ተመልካቾች',
     'name' => 'ስም',
     'username' => 'የተጠቃሚ ስም',
     'username_placeholder' => 'የተጠቃሚ ስም ወይም ኢሜይል',

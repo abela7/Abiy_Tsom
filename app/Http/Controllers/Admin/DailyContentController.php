@@ -76,7 +76,7 @@ class DailyContentController extends Controller
     {
         $season = LentSeason::active();
         $contents = $season
-            ? $season->dailyContents()->with(['weeklyTheme', 'createdBy', 'updatedBy', 'assignedTo'])->orderBy('day_number')->get()
+            ? $season->dailyContents()->with(['weeklyTheme', 'createdBy', 'updatedBy', 'assignedTo'])->withCount('views')->orderBy('day_number')->get()
             : collect();
         $canEdit = auth()->user()?->role === 'admin' || auth()->user()?->isSuperAdmin();
 
