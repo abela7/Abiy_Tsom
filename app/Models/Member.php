@@ -92,6 +92,11 @@ class Member extends Model
         return $this->hasMany(MemberReminderOpen::class);
     }
 
+    public function dailyViews(): HasMany
+    {
+        return $this->hasMany(MemberDailyView::class);
+    }
+
     public function referrer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'referred_by');

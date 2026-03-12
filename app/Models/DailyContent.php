@@ -115,6 +115,14 @@ class DailyContent extends Model
     }
 
     /**
+     * Unique member views for this day.
+     */
+    public function views(): HasMany
+    {
+        return $this->hasMany(MemberDailyView::class);
+    }
+
+    /**
      * Pending suggestions from writers/editors for this day.
      */
     public function suggestions(): HasMany

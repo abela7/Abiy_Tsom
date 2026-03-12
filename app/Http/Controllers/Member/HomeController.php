@@ -13,6 +13,7 @@ use App\Models\Lectionary;
 use App\Models\LentSeason;
 use App\Models\MemberChecklist;
 use App\Models\MemberCustomChecklist;
+use App\Models\MemberDailyView;
 use App\Models\WeeklyTheme;
 use App\Services\EthiopianCalendarService;
 use App\Services\AbiyTsomStructure;
@@ -301,6 +302,15 @@ class HomeController extends Controller
         }
 
         $member = $request->attributes->get('member');
+
+        // Track unique member view
+        if ($member) {
+            MemberDailyView::firstOrCreate(
+                ['member_id' => $member->id, 'daily_content_id' => $daily->id],
+                ['viewed_at' => now()]
+            );
+        }
+
         // Load books relation for multiple spiritual books per day
         $daily->load(['weeklyTheme', 'mezmurs', 'references', 'books', 'sinksarImages']);
 
