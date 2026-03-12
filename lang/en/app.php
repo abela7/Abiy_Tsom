@@ -1734,4 +1734,9 @@ return [
 
     // Lectionary - additional labels
     'lectionary_chapter_verses' => 'Chapter : Verses',
+
+    // Daily content view tracking
+    'view_details' => 'View Details',
+    'anonymous_viewers' => 'Anonymous visitors',
+    'no_views_yet' => 'No views yet',
 ];

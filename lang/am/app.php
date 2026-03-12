@@ -1714,4 +1714,9 @@ return [
 
     // Lectionary - additional labels
     'lectionary_chapter_verses' => 'Chapter : Verses',
+
+    // Daily content view tracking
+    'view_details' => 'የእይታ ዝርዝር',
+    'anonymous_viewers' => 'ያልታወቁ ጎብኚዎች',
+    'no_views_yet' => 'እስካሁን ምንም እይታ የለም',
 ];

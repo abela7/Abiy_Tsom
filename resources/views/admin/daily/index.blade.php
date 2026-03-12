@@ -57,11 +57,80 @@
                                 {{ $content->is_published ? __('app.published') : __('app.draft') }}
                             </span>
                         </td>
+                        {{-- Views column with clickable detail popup --}}
                         <td class="px-4 py-3 text-center">
-                            <span class="inline-flex items-center gap-1 text-xs font-medium {{ ($content->views_count ?? 0) > 0 ? 'text-accent' : 'text-muted-text' }}">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                                {{ $content->views_count ?? 0 }}
-                            </span>
+                            <div x-data="viewDetails({{ $content->id }}, {{ $content->views_count ?? 0 }})" class="relative inline-block">
+                                <button @click="toggle()" type="button"
+                                    class="inline-flex items-center gap-1 text-xs font-medium rounded-lg px-2 py-1 transition
+                                           {{ ($content->views_count ?? 0) > 0 ? 'text-accent hover:bg-accent/10 cursor-pointer' : 'text-muted-text cursor-default' }}">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                    <span>{{ $content->views_count ?? 0 }}</span>
+                                    @if(($content->member_views_count ?? 0) > 0 || ($content->anonymous_views_count ?? 0) > 0)
+                                        <span class="text-[10px] text-muted-text">({{ $content->member_views_count ?? 0 }}+{{ $content->anonymous_views_count ?? 0 }})</span>
+                                    @endif
+                                </button>
+
+                                {{-- Dropdown panel --}}
+                                <div x-show="open" x-cloak @click.outside="open = false"
+                                     x-transition:enter="transition ease-out duration-150"
+                                     x-transition:enter-start="opacity-0 scale-95"
+                                     x-transition:enter-end="opacity-100 scale-100"
+                                     x-transition:leave="transition ease-in duration-100"
+                                     x-transition:leave-start="opacity-100 scale-100"
+                                     x-transition:leave-end="opacity-0 scale-95"
+                                     class="absolute z-50 right-0 mt-1 w-64 bg-card border border-border rounded-xl shadow-lg overflow-hidden">
+                                    {{-- Header --}}
+                                    <div class="px-3 py-2 bg-muted border-b border-border">
+                                        <p class="text-xs font-semibold text-secondary">{{ __('app.view_details') }} — {{ __('app.day_label') }} {{ $content->day_number }}</p>
+                                    </div>
+
+                                    {{-- Loading state --}}
+                                    <div x-show="loading" class="px-3 py-4 text-center">
+                                        <svg class="animate-spin h-5 w-5 mx-auto text-accent" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                                    </div>
+
+                                    {{-- Content --}}
+                                    <div x-show="!loading" class="max-h-56 overflow-y-auto">
+                                        {{-- Members list --}}
+                                        <template x-if="members.length > 0">
+                                            <div>
+                                                <p class="px-3 pt-2 pb-1 text-[10px] font-semibold text-muted-text uppercase tracking-wider">{{ __('app.members') }}</p>
+                                                <template x-for="(m, i) in members" :key="i">
+                                                    <div class="flex items-center justify-between px-3 py-1.5 hover:bg-muted/50">
+                                                        <div class="flex items-center gap-2">
+                                                            <span class="w-5 h-5 rounded-full bg-accent/10 text-accent text-[10px] font-bold flex items-center justify-center" x-text="m.baptism_name.charAt(0).toUpperCase()"></span>
+                                                            <span class="text-xs text-primary font-medium" x-text="m.baptism_name"></span>
+                                                        </div>
+                                                        <span class="text-[10px] text-muted-text" x-text="m.viewed_at"></span>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+
+                                        {{-- Anonymous count --}}
+                                        <template x-if="anonymousCount > 0">
+                                            <div class="px-3 py-2 border-t border-border flex items-center justify-between">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="w-5 h-5 rounded-full bg-muted text-muted-text text-[10px] font-bold flex items-center justify-center">?</span>
+                                                    <span class="text-xs text-secondary">{{ __('app.anonymous_viewers') }}</span>
+                                                </div>
+                                                <span class="text-xs font-semibold text-secondary" x-text="anonymousCount"></span>
+                                            </div>
+                                        </template>
+
+                                        {{-- Empty state --}}
+                                        <template x-if="!loading && members.length === 0 && anonymousCount === 0">
+                                            <p class="px-3 py-4 text-center text-xs text-muted-text">{{ __('app.no_views_yet') }}</p>
+                                        </template>
+                                    </div>
+
+                                    {{-- Footer total --}}
+                                    <div x-show="!loading && (members.length > 0 || anonymousCount > 0)" class="px-3 py-2 bg-muted border-t border-border flex items-center justify-between">
+                                        <span class="text-[10px] font-semibold text-muted-text uppercase">{{ __('app.total_views') }}</span>
+                                        <span class="text-xs font-bold text-accent" x-text="total"></span>
+                                    </div>
+                                </div>
+                            </div>
                         </td>
                         <td class="px-4 py-3 text-xs text-secondary">
                             {{ __('app.created_by') }}: {{ optional($content->createdBy)->name ?: '-' }}
@@ -130,6 +199,9 @@
                         <span class="inline-flex items-center gap-1 {{ ($content->views_count ?? 0) > 0 ? 'text-accent' : '' }}">
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                             {{ $content->views_count ?? 0 }}
+                            @if(($content->member_views_count ?? 0) > 0 || ($content->anonymous_views_count ?? 0) > 0)
+                                <span class="text-[10px]">({{ $content->member_views_count ?? 0 }}+{{ $content->anonymous_views_count ?? 0 }})</span>
+                            @endif
                         </span>
                     </div>
                 </div>
@@ -155,4 +227,48 @@
         @endforelse
     </div>
 @endif
+
+{{-- View details Alpine component --}}
+<script>
+function viewDetails(dailyId, serverTotal) {
+    return {
+        open: false,
+        loading: false,
+        members: [],
+        anonymousCount: 0,
+        total: serverTotal || 0,
+        fetched: false,
+
+        toggle() {
+            if (this.total === 0 && !this.fetched) {
+                return;
+            }
+            this.open = !this.open;
+            if (this.open && !this.fetched) {
+                this.fetchDetails();
+            }
+        },
+
+        async fetchDetails() {
+            this.loading = true;
+            try {
+                const res = await fetch(`/admin/daily/${dailyId}/views`, {
+                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    this.members = data.members;
+                    this.anonymousCount = data.anonymous_count;
+                    this.total = data.total;
+                    this.fetched = true;
+                }
+            } catch (e) {
+                console.error('Failed to load view details', e);
+            } finally {
+                this.loading = false;
+            }
+        }
+    };
+}
+</script>
 @endsection
