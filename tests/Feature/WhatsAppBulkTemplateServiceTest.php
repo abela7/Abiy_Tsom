@@ -71,6 +71,31 @@ class WhatsAppBulkTemplateServiceTest extends TestCase
         $this->assertStringNotContainsString('EN HEADER: Important update', $rendered['message']);
     }
 
+    public function test_bulk_message_falls_back_to_amharic_when_member_has_no_language_preference(): void
+    {
+        $this->storeBulkTranslations();
+
+        $member = Member::create([
+            'baptism_name' => 'Abel',
+            'token' => str_repeat('c', 64),
+            'whatsapp_phone' => '+447700900113',
+            'whatsapp_reminder_enabled' => true,
+            'whatsapp_confirmation_status' => 'confirmed',
+        ]);
+
+        $rendered = app(WhatsAppTemplateService::class)->renderBulkMessage(
+            $member,
+            'Important update',
+            'Please read this today.',
+            'https://example.com/bulk'
+        );
+
+        $this->assertSame('am', $rendered['locale']);
+        $this->assertSame('AM HEADER: Important update', $rendered['header']);
+        $this->assertSame('AM CONTENT: Please read this today.', $rendered['content']);
+        $this->assertStringContainsString('AM HEADER: Important update', $rendered['message']);
+    }
+
     private function storeBulkTranslations(): void
     {
         $translations = [

@@ -154,7 +154,7 @@ final class WhatsAppTemplateService
         string $url,
         ?string $locale = null
     ): array {
-        $resolvedLocale = $this->normalizeLocale($locale ?? (string) ($member->whatsapp_language ?? $member->locale ?? 'en'));
+        $resolvedLocale = $this->preferredLocale($member, $locale);
         $englishVariables = $this->dailyReminderVariables($member, $dailyContent, $url, 'en');
         $amharicVariables = $this->dailyReminderVariables($member, $dailyContent, $url, 'am');
 
@@ -207,7 +207,7 @@ final class WhatsAppTemplateService
         string $telegramUrl,
         ?string $locale = null
     ): string {
-        $resolvedLocale = $this->normalizeLocale($locale ?? (string) ($member->whatsapp_language ?? $member->locale ?? 'en'));
+        $resolvedLocale = $this->preferredLocale($member, $locale);
         $variables = $this->confirmationVariables($member, $url, $telegramUrl);
 
         return $this->translate($translationKey, $variables, $resolvedLocale);
@@ -223,7 +223,7 @@ final class WhatsAppTemplateService
         ?string $url = null,
         ?string $locale = null
     ): array {
-        $resolvedLocale = $this->normalizeLocale($locale ?? (string) ($member->whatsapp_language ?? $member->locale ?? 'en'));
+        $resolvedLocale = $this->preferredLocale($member, $locale);
         $variables = $this->bulkMessageVariables($member, $header, $content, $url);
 
         $renderedHeaderEn = $this->normalizeRenderedText(
@@ -356,6 +356,21 @@ final class WhatsAppTemplateService
     private function normalizeLocale(string $locale): string
     {
         return in_array($locale, ['en', 'am'], true) ? $locale : 'en';
+    }
+
+    private function preferredLocale(Member $member, ?string $locale = null): string
+    {
+        if ($locale !== null && trim($locale) !== '') {
+            return $this->normalizeLocale($locale);
+        }
+
+        $preferred = trim((string) ($member->whatsapp_language ?? $member->locale ?? ''));
+
+        if ($preferred === '') {
+            return 'am';
+        }
+
+        return in_array($preferred, ['en', 'am'], true) ? $preferred : 'am';
     }
 
     private function localizedDailyValue(DailyContent $dailyContent, string $baseField, string $locale): string

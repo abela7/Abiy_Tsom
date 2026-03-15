@@ -268,6 +268,15 @@
                         <p class="mt-2 text-sm text-secondary">{{ __('app.whatsapp_bulk_builder_step_3_body') }}</p>
                     </div>
                 </div>
+                <div class="mt-4 rounded-xl border border-primary/15 bg-primary/5 p-4">
+                    <div class="text-[11px] font-bold uppercase tracking-wider text-muted-text">{{ __('app.whatsapp_bulk_builder_step_4_title') }}</div>
+                    <p class="mt-2 text-sm text-secondary">{{ __('app.whatsapp_bulk_builder_step_4_body') }}</p>
+                    <div class="mt-3 inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-xs font-mono text-primary">
+                        <span>:url</span>
+                        <span class="text-muted-text">=</span>
+                        <span x-text="bulkLinkPreview() || '{{ __('app.whatsapp_bulk_send_link_empty_state') }}'"></span>
+                    </div>
+                </div>
             </div>
             <div class="rounded-2xl border border-border bg-surface/30 p-4">
                 <h3 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_bulk_placeholders_title') }}</h3>
@@ -289,7 +298,7 @@
             @csrf
 
             <div class="space-y-4">
-                <div class="grid gap-4 md:grid-cols-2">
+                <div class="grid gap-4 md:grid-cols-1">
                     <div>
                         <label for="bulk-recipient-mode" class="mb-1 block text-xs font-medium text-secondary">{{ __('app.whatsapp_bulk_send_recipient_mode_label') }}</label>
                         <select
@@ -301,19 +310,6 @@
                             <option value="all_active">{{ __('app.whatsapp_bulk_send_mode_all') }}</option>
                             <option value="selected_active">{{ __('app.whatsapp_bulk_send_mode_selected') }}</option>
                         </select>
-                    </div>
-
-                    <div>
-                        <label for="bulk-link" class="mb-1 block text-xs font-medium text-secondary">{{ __('app.whatsapp_bulk_send_link_label') }}</label>
-                        <input
-                            id="bulk-link"
-                            name="bulk_link"
-                            type="url"
-                            value="{{ old('bulk_link') }}"
-                            placeholder="{{ __('app.whatsapp_bulk_send_link_placeholder') }}"
-                            class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-primary outline-none transition focus:ring-2 focus:ring-accent"
-                        >
-                        <p class="mt-1 text-xs text-muted-text">{{ __('app.whatsapp_bulk_send_link_help') }}</p>
                     </div>
                 </div>
 
@@ -355,6 +351,27 @@
                         rows="8"
                         class="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm leading-6 text-primary outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 resize-y"
                     >{{ old('bulk_content') }}</textarea>
+                </div>
+
+                <div class="rounded-xl border border-border bg-card p-4">
+                    <div class="flex items-start gap-3">
+                        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 010 5.656l-3 3a4 4 0 11-5.656-5.656l1.5-1.5m4-4a4 4 0 015.656 0l3 3a4 4 0 01-5.656 5.656l-1.5-1.5"/></svg>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <label for="bulk-link" class="mb-1 block text-sm font-semibold text-primary">{{ __('app.whatsapp_bulk_send_link_label') }}</label>
+                            <p class="mb-3 text-xs text-muted-text">{{ __('app.whatsapp_bulk_send_link_help') }}</p>
+                            <input
+                                id="bulk-link"
+                                name="bulk_link"
+                                type="url"
+                                value="{{ old('bulk_link') }}"
+                                placeholder="{{ __('app.whatsapp_bulk_send_link_placeholder') }}"
+                                class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-primary outline-none transition focus:ring-2 focus:ring-accent"
+                            >
+                            <p class="mt-2 text-xs text-muted-text">{{ __('app.whatsapp_bulk_send_link_binding_help') }}</p>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="rounded-xl bg-surface/60 border border-border px-4 py-3">
@@ -624,6 +641,23 @@
                                     </div>
                                     @if($template['key'] === 'whatsapp_bulk_message_final')
                                         <div class="flex flex-col gap-3 lg:items-end">
+                                            <div class="flex flex-wrap gap-2 lg:justify-end">
+                                                <span class="text-[11px] font-semibold uppercase tracking-wide text-muted-text">{{ __('app.whatsapp_template_apply_recommended') }}</span>
+                                                <button
+                                                    type="button"
+                                                    @click="applyRecommendedBulkFinalTemplate('current')"
+                                                    class="inline-flex items-center justify-center rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-primary transition hover:bg-muted/50"
+                                                >
+                                                    {{ __('app.whatsapp_bulk_apply_recommended_current') }}
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    @click="applyRecommendedBulkFinalTemplate('explicit')"
+                                                    class="inline-flex items-center justify-center rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-primary transition hover:bg-muted/50"
+                                                >
+                                                    {{ __('app.whatsapp_bulk_apply_recommended_explicit') }}
+                                                </button>
+                                            </div>
                                             <div class="text-[11px] font-semibold uppercase tracking-wide text-muted-text">{{ __('app.whatsapp_template_final_components_en') }}</div>
                                             <div class="flex flex-wrap gap-2 lg:justify-end">
                                                 @foreach([':header_en', ':content_en'] as $placeholder)
@@ -938,6 +972,28 @@ function whatsappTemplateEditor(initialTemplate, activeMemberCount, initialRecip
             this.activeTemplate = 'whatsapp_daily_reminder_content';
             this.activeFieldId = input.id;
         },
+        applyRecommendedBulkFinalTemplate(mode) {
+            const enInput = document.getElementById('tpl-en-whatsapp_bulk_message_final');
+            const amInput = document.getElementById('tpl-am-whatsapp_bulk_message_final');
+            if (!enInput || !amInput) {
+                return;
+            }
+
+            const enValue = mode === 'explicit'
+                ? ':name\n\n:header_en\n\n:content_en\n\n:url'
+                : ':name\n\n:header\n\n:content\n\n:url';
+            const amValue = mode === 'explicit'
+                ? ':name\n\n:header_am\n\n:content_am\n\n:url'
+                : ':name\n\n:header\n\n:content\n\n:url';
+
+            enInput.value = enValue;
+            amInput.value = amValue;
+            enInput.dispatchEvent(new Event('input', { bubbles: true }));
+            amInput.dispatchEvent(new Event('input', { bubbles: true }));
+            enInput.focus();
+            this.activeTemplate = 'whatsapp_bulk_message_final';
+            this.activeFieldId = enInput.id;
+        },
         switchWorkspace(workspace) {
             this.activeWorkspace = workspace;
             if (workspace === 'bulk' && !this.bulkTemplateKeys.includes(this.activeTemplate)) {
@@ -965,6 +1021,10 @@ function whatsappTemplateEditor(initialTemplate, activeMemberCount, initialRecip
             return this.isBulkSelectedMode()
                 ? this.bulkSelectedMembers.length
                 : this.activeMemberCount;
+        },
+        bulkLinkPreview() {
+            const input = document.getElementById('bulk-link');
+            return String(input?.value || '').trim();
         },
     };
 }
