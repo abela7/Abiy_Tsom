@@ -16,7 +16,7 @@
 
     {{-- View Today — hero CTA card --}}
     @if(($todayUnavailable ?? false) || (isset($viewTodayTarget) && $viewTodayTarget))
-    <a href="{{ ($todayUnavailable ?? false) ? route('member.today-unavailable') : route('member.day', $viewTodayTarget) }}"
+    <a href="{{ ($todayUnavailable ?? false) ? route('member.today-unavailable') : $viewTodayTarget->memberDayUrl() }}"
        data-tour="view-today"
        class="group relative block overflow-hidden rounded-3xl bg-gradient-to-br from-accent via-accent to-accent-hover dark:from-accent-hover dark:via-accent-hover dark:to-[#7a5a08] transition-all duration-300 active:scale-[0.98]">
 

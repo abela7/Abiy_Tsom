@@ -212,4 +212,26 @@ class DailyContent extends Model
             ? (($enText !== '' ? $enText : null) ?: ($amText !== '' ? $amText : null))
             : (($amText !== '' ? $amText : null) ?: ($enText !== '' ? $enText : null));
     }
+
+    /**
+     * Canonical member day URL that shows the fast day number.
+     */
+    public function memberDayUrl(bool $absolute = true): string
+    {
+        return route('member.day.show', [
+            'dayNumber' => $this->day_number,
+            'daily' => $this,
+        ], $absolute);
+    }
+
+    /**
+     * Canonical commemorations URL for this day.
+     */
+    public function memberCommemorationsUrl(bool $absolute = true): string
+    {
+        return route('member.commemorations.show', [
+            'dayNumber' => $this->day_number,
+            'daily' => $this,
+        ], $absolute);
+    }
 }

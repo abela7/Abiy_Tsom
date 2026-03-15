@@ -109,7 +109,7 @@ class ShareController extends Controller
                             ? route('member.passcode')
                             : $telegramAuthService->sanitizeRedirectPath(
                                 $consumedToken->redirect_to,
-                                route('member.day', ['daily' => $daily], false)
+                                $daily->memberDayUrl(false)
                             );
 
                         return redirect($redirectUrl);
@@ -208,6 +208,10 @@ class ShareController extends Controller
             ->where('day', $ethDateInfo['ethiopian_date']['day'])
             ->first();
 
+        $prevDayUrl = $prevDay ? route('share.day.public', ['daily' => $prevDay]) : null;
+        $nextDayUrl = $nextDay ? route('share.day.public', ['daily' => $nextDay]) : null;
+        $commemorationsUrl = null;
+
         return view('member.day', compact(
             'member',
             'daily',
@@ -219,6 +223,9 @@ class ShareController extends Controller
             'ethDateInfo',
             'prevDay',
             'nextDay',
+            'prevDayUrl',
+            'nextDayUrl',
+            'commemorationsUrl',
             'lectionary',
         ));
     }

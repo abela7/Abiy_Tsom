@@ -22,8 +22,8 @@ use App\Services\TelegramBotBuilderService;
 use App\Services\TelegramContentFormatter;
 use App\Services\TelegramService;
 use App\Services\UltraMsgService;
-use Carbon\CarbonImmutable;
 use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -58,6 +58,7 @@ class TelegramWebhookController extends Controller
 
     /** Lectionary section order for all-in-one flow */
     private const LECTIONARY_SECTIONS = ['title_description', 'pauline', 'catholic', 'acts', 'mesbak', 'gospel', 'qiddase'];
+
     public function __construct(
         private readonly TelegramBotBuilderService $telegramBotBuilder,
         private readonly TelegramContentFormatter $contentFormatter,
@@ -536,10 +537,10 @@ class TelegramWebhookController extends Controller
         if (! $actor instanceof Member && ! $actor instanceof User) {
             $currentLocale = $this->guestLocale($chatId);
             $newLocale = match ($action) {
-                'lang_en'     => 'en',
-                'lang_am'     => 'am',
+                'lang_en' => 'en',
+                'lang_am' => 'am',
                 'lang_toggle' => $currentLocale === 'en' ? 'am' : 'en',
-                default       => null,
+                default => null,
             };
             if ($newLocale === null) {
                 return response()->json(['success' => true]);
@@ -565,10 +566,10 @@ class TelegramWebhookController extends Controller
             : $this->guestLocale($chatId);
 
         $newLocale = match ($action) {
-            'lang_en'     => 'en',
-            'lang_am'     => 'am',
+            'lang_en' => 'en',
+            'lang_am' => 'am',
             'lang_toggle' => $currentLocale === 'en' ? 'am' : 'en',
-            default       => null,
+            default => null,
         };
         if ($newLocale === null) {
             return response()->json(['success' => true]);
@@ -628,8 +629,8 @@ class TelegramWebhookController extends Controller
             : app()->getLocale();
 
         $targetLocale = $locale === 'en' ? 'am' : 'en';
-        $label        = $locale === 'en' ? __('app.telegram_lang_switch_am') : __('app.telegram_lang_switch_en');
-        $callback     = $targetLocale === 'en' ? 'lang_en' : 'lang_am';
+        $label = $locale === 'en' ? __('app.telegram_lang_switch_am') : __('app.telegram_lang_switch_en');
+        $callback = $targetLocale === 'en' ? 'lang_en' : 'lang_am';
 
         return ['text' => $label, 'callback_data' => $callback];
     }
@@ -786,7 +787,7 @@ class TelegramWebhookController extends Controller
         }
 
         $member = Member::query()->where('whatsapp_phone', $normalized)->first();
-        $user   = User::query()->where('whatsapp_phone', $normalized)->first();
+        $user = User::query()->where('whatsapp_phone', $normalized)->first();
 
         // Number not in either table — offer WhatsApp reminder signup
         if (! $member instanceof Member && ! $user instanceof User) {
@@ -804,9 +805,9 @@ class TelegramWebhookController extends Controller
         if ($member instanceof Member && $user instanceof User) {
             $state->advance('choose_role', [
                 'member_id' => $member->id,
-                'user_id'   => $user->id,
-                'phone'     => $normalized,
-                'role'      => $user->role,
+                'user_id' => $user->id,
+                'phone' => $normalized,
+                'role' => $user->role,
             ]);
 
             return $this->reply(
@@ -851,9 +852,9 @@ class TelegramWebhookController extends Controller
 
         $idKey = $linkType === 'user' ? 'user_id' : 'member_id';
         $state->advance('verify_code', [
-            'link_type'      => $linkType,
-            $idKey           => $actorId,
-            'code'           => $code,
+            'link_type' => $linkType,
+            $idKey => $actorId,
+            'code' => $code,
             'code_expires_at' => now()->addMinutes(10)->toIso8601String(),
         ]);
 
@@ -875,9 +876,9 @@ class TelegramWebhookController extends Controller
         TelegramBotState $state,
         TelegramService $telegramService
     ): JsonResponse {
-        $expectedCode  = (string) $state->get('code', '');
+        $expectedCode = (string) $state->get('code', '');
         $codeExpiresAt = $state->get('code_expires_at');
-        $linkType      = (string) $state->get('link_type', 'member');
+        $linkType = (string) $state->get('link_type', 'member');
 
         if ($codeExpiresAt && now()->isAfter($codeExpiresAt)) {
             $state->clear();
@@ -892,7 +893,7 @@ class TelegramWebhookController extends Controller
         // Link as staff User (admin / editor / writer)
         if ($linkType === 'user') {
             $userId = (int) $state->get('user_id', 0);
-            $user   = User::query()->find($userId);
+            $user = User::query()->find($userId);
 
             if (! $user instanceof User) {
                 $state->clear();
@@ -914,7 +915,7 @@ class TelegramWebhookController extends Controller
 
         // Link as regular Member (default)
         $memberId = (int) $state->get('member_id', 0);
-        $member   = Member::query()->find($memberId);
+        $member = Member::query()->find($memberId);
 
         if (! $member instanceof Member) {
             $state->clear();
@@ -952,7 +953,7 @@ class TelegramWebhookController extends Controller
 
         if ($choice === 'member') {
             $memberId = (int) $state->get('member_id', 0);
-            $member   = Member::query()->find($memberId);
+            $member = Member::query()->find($memberId);
 
             if (! $member instanceof Member) {
                 $state->clear();
@@ -965,7 +966,7 @@ class TelegramWebhookController extends Controller
 
         // Admin / editor / writer
         $userId = (int) $state->get('user_id', 0);
-        $user   = User::query()->find($userId);
+        $user = User::query()->find($userId);
 
         if (! $user instanceof User) {
             $state->clear();
@@ -981,9 +982,9 @@ class TelegramWebhookController extends Controller
     {
         $roleLabel = match ($role) {
             'super_admin' => 'Super Admin',
-            'editor'      => 'Editor',
-            'writer'      => 'Writer',
-            default       => ucfirst($role),
+            'editor' => 'Editor',
+            'writer' => 'Writer',
+            default => ucfirst($role),
         };
 
         return ['inline_keyboard' => [
@@ -1015,7 +1016,7 @@ class TelegramWebhookController extends Controller
         TelegramService $telegramService
     ): JsonResponse {
         $linkState = TelegramBotState::getAnyActive($chatId);
-        $phone     = $linkState ? (string) $linkState->get('phone', '') : '';
+        $phone = $linkState ? (string) $linkState->get('phone', '') : '';
 
         $linkState?->clear();
 
@@ -1053,7 +1054,7 @@ class TelegramWebhookController extends Controller
         return match ($state->step) {
             'ask_name' => $this->handleSubscribeWaName($chatId, $text, $state, $telegramService),
             'ask_time' => $this->handleSubscribeWaTime($chatId, $text, $state, $telegramService),
-            default    => response()->json(['success' => true]),
+            default => response()->json(['success' => true]),
         };
     }
 
@@ -1091,20 +1092,20 @@ class TelegramWebhookController extends Controller
             return $this->reply($telegramService, $chatId, __('app.telegram_subscribe_invalid_time'));
         }
 
-        $phone  = (string) $state->get('phone', '');
-        $name   = (string) $state->get('name', 'Member');
+        $phone = (string) $state->get('phone', '');
+        $name = (string) $state->get('name', 'Member');
         $locale = app()->getLocale();
 
         $member = Member::create([
-            'baptism_name'                       => $name,
-            'token'                              => Str::random(64),
-            'whatsapp_phone'                     => $phone,
-            'whatsapp_reminder_time'             => $input,
-            'whatsapp_reminder_enabled'          => false,
-            'whatsapp_confirmation_status'       => 'pending',
+            'baptism_name' => $name,
+            'token' => Str::random(64),
+            'whatsapp_phone' => $phone,
+            'whatsapp_reminder_time' => $input,
+            'whatsapp_reminder_enabled' => false,
+            'whatsapp_confirmation_status' => 'pending',
             'whatsapp_confirmation_requested_at' => now(),
-            'whatsapp_language'                  => $locale,
-            'locale'                             => $locale,
+            'whatsapp_language' => $locale,
+            'locale' => $locale,
         ]);
 
         $this->syncTelegramChatId($member, $chatId);
@@ -1119,7 +1120,7 @@ class TelegramWebhookController extends Controller
         $this->applyLocaleForActor($member);
 
         $successText = str_replace(':time', $input, __('app.telegram_subscribe_success'));
-        $keyboard    = $this->mainMenuKeyboard($member, app(TelegramAuthService::class));
+        $keyboard = $this->mainMenuKeyboard($member, app(TelegramAuthService::class));
 
         return $this->reply($telegramService, $chatId, $successText, $keyboard);
     }
@@ -1656,7 +1657,7 @@ class TelegramWebhookController extends Controller
         $code = $telegramAuthService->createCode(
             $member,
             TelegramAuthService::PURPOSE_MEMBER_ACCESS,
-            route('member.day', ['daily' => $daily]),
+            $daily->memberDayUrl(),
             30
         );
 
@@ -2940,6 +2941,7 @@ class TelegramWebhookController extends Controller
             if (! $state) {
                 return $this->startSuggestWizard($chatId, $messageId, $telegramService);
             }
+
             return $this->handleSuggestBack($chatId, $messageId, $state, $telegramService);
         }
 
@@ -4529,7 +4531,7 @@ class TelegramWebhookController extends Controller
 
                 $existing = (string) ((int) $state->get('sort_order', 0));
                 $prompt = $this->structuredSuggestPrompt('enter_sort_order', $state->data ?? []);
-                $prompt .= "\n\n<i>".__('app.telegram_suggest_current')." ".htmlspecialchars($existing, ENT_QUOTES, 'UTF-8')."</i>";
+                $prompt .= "\n\n<i>".__('app.telegram_suggest_current').' '.htmlspecialchars($existing, ENT_QUOTES, 'UTF-8').'</i>';
                 $prompt .= "\n".__('app.telegram_suggest_type_to_replace');
 
                 return $this->replyOrEdit(
@@ -4569,7 +4571,7 @@ class TelegramWebhookController extends Controller
             $existing = $fieldForStep ? ((string) $state->get($fieldForStep, '')) : '';
             $prompt = $this->structuredSuggestPrompt($step, $state->data ?? []);
             if ($existing !== '') {
-                $prompt .= "\n\n<i>".__('app.telegram_suggest_current')." ".htmlspecialchars($existing, ENT_QUOTES, 'UTF-8')."</i>";
+                $prompt .= "\n\n<i>".__('app.telegram_suggest_current').' '.htmlspecialchars($existing, ENT_QUOTES, 'UTF-8').'</i>';
                 $prompt .= "\n".__('app.telegram_suggest_type_to_replace');
             }
 
@@ -4722,7 +4724,7 @@ class TelegramWebhookController extends Controller
         $existing = isset($fieldForStep[$prevStep]) ? ((string) $state->get($fieldForStep[$prevStep], '')) : '';
         $prompt = $this->structuredSuggestPrompt($prevStep, $state->data ?? []);
         if ($existing !== '') {
-            $prompt .= "\n\n<i>".__('app.telegram_suggest_current')." ".htmlspecialchars($existing, ENT_QUOTES, 'UTF-8')."</i>";
+            $prompt .= "\n\n<i>".__('app.telegram_suggest_current').' '.htmlspecialchars($existing, ENT_QUOTES, 'UTF-8').'</i>';
             $prompt .= "\n".__('app.telegram_suggest_type_to_replace');
         }
 
@@ -6079,4 +6081,3 @@ class TelegramWebhookController extends Controller
         );
     }
 }
-

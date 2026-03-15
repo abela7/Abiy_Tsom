@@ -266,7 +266,7 @@ class TelegramAuthController extends Controller
                 $todayCode = $telegramAuthService->createCode(
                     $member,
                     TelegramAuthService::PURPOSE_MEMBER_ACCESS,
-                    route('member.day', ['daily' => $daily]),
+                    $daily->memberDayUrl(),
                     30
                 );
                 $todayUrl = url(route('auth.access', [
@@ -579,8 +579,6 @@ class TelegramAuthController extends Controller
      * member area.  Some mobile WebViews (notably the WhatsApp in-app browser)
      * do not reliably process Set-Cookie headers from 302 responses on first
      * visit, which caused authenticated users to land back on the home page.
-     *
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\Response
      */
     private function authenticateMember(
         Request $request,

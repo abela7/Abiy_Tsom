@@ -58,7 +58,7 @@
     {{-- Day title with prev/next navigation --}}
     <div class="flex items-center justify-between">
         @if($prevDay)
-        <a href="{{ route('member.day', $prevDay) }}" class="shrink-0 w-10 h-10 rounded-xl bg-muted hover:bg-border flex items-center justify-center text-muted-text hover:text-primary transition-all active:scale-95">
+        <a href="{{ $prevDayUrl ?? $prevDay->memberDayUrl() }}" class="shrink-0 w-10 h-10 rounded-xl bg-muted hover:bg-border flex items-center justify-center text-muted-text hover:text-primary transition-all active:scale-95">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
         </a>
         @else
@@ -73,7 +73,7 @@
         </div>
 
         @if($nextDay)
-        <a href="{{ route('member.day', $nextDay) }}" class="shrink-0 w-10 h-10 rounded-xl bg-muted hover:bg-border flex items-center justify-center text-muted-text hover:text-primary transition-all active:scale-95">
+        <a href="{{ $nextDayUrl ?? $nextDay->memberDayUrl() }}" class="shrink-0 w-10 h-10 rounded-xl bg-muted hover:bg-border flex items-center justify-center text-muted-text hover:text-primary transition-all active:scale-95">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </a>
         @else
@@ -96,8 +96,8 @@
         @endif
 
         {{-- Commemorations carousel row --}}
-        @if($slides->isNotEmpty())
-        <a href="{{ route('member.commemorations', $daily) }}"
+        @if($slides->isNotEmpty() && (($commemorationsUrl ?? null) !== null || !($publicPreview ?? false)))
+        <a href="{{ $commemorationsUrl ?? $daily->memberCommemorationsUrl() }}"
            class="flex items-center gap-3 px-4 py-3 bg-accent/5 hover:bg-accent/10 active:scale-[0.98] transition-all group"
            x-data="{ current: 0, total: {{ $slides->count() }}, images: {{ $slides->map(fn($s) => $s['image'] ?? null)->toJson() }}, fallback: '{{ asset('images/Saints.png') }}' }"
            x-init="setInterval(() => current = (current + 1) % total, 3000)">

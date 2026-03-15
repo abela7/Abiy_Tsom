@@ -42,8 +42,7 @@ final class SendWhatsAppReminderJob implements ShouldQueue
         UltraMsgService $ultraMsgService,
         TelegramAuthService $telegramAuthService,
         WhatsAppTemplateService $whatsAppTemplateService
-    ): void
-    {
+    ): void {
         $member = Member::query()->find($this->memberId);
 
         if (! $member
@@ -73,7 +72,7 @@ final class SendWhatsAppReminderJob implements ShouldQueue
         $code = $telegramAuthService->createCode(
             $member,
             TelegramAuthService::PURPOSE_SHARE_DAY_ACCESS,
-            route('member.day', ['daily' => $dailyContent], false)
+            $dailyContent->memberDayUrl(false)
         );
 
         $dayUrl = route('share.day', [

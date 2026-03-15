@@ -30,6 +30,7 @@ class ProgressController extends Controller
     {
         $member = $request->attributes->get('member');
         $season = LentSeason::active();
+
         return view('member.progress', compact('member', 'season'));
     }
 
@@ -202,8 +203,11 @@ class ProgressController extends Controller
 
         // Optional: link to day content when viewing a single day
         $viewDayContentId = null;
+        $viewDayContentUrl = null;
         if ($period === 'daily' && $elapsedPeriodDays->count() === 1) {
-            $viewDayContentId = $elapsedPeriodDays->first()?->id;
+            $viewDay = $elapsedPeriodDays->first();
+            $viewDayContentId = $viewDay?->id;
+            $viewDayContentUrl = $viewDay?->memberDayUrl(false);
         }
 
         // Day picker options from available published days
@@ -269,6 +273,7 @@ class ProgressController extends Controller
             'day_options' => $dayOptions,
             'week_options' => $weekOptions,
             'view_day_content_id' => $viewDayContentId,
+            'view_day_content_url' => $viewDayContentUrl,
         ]);
     }
 
@@ -330,8 +335,7 @@ class ProgressController extends Controller
         Collection $weeklyThemes,
         ?DailyContent $referenceDay,
         ?string $weekParam
-    ): Collection
-    {
+    ): Collection {
         if ($weekParam !== null && $weekParam !== '') {
             $weekNum = (int) $weekParam;
             $theme = $weeklyThemes->first(

@@ -91,7 +91,13 @@ Route::middleware(['member', 'member.passcode'])->prefix('member')->name('member
     Route::get('/home', [Member\HomeController::class, 'index'])->name('home');
     Route::get('/today-unavailable', [Member\HomeController::class, 'todayUnavailable'])->name('today-unavailable');
     Route::get('/calendar', [Member\HomeController::class, 'calendar'])->name('calendar');
+    Route::get('/day/{dayNumber}-{daily}', [Member\HomeController::class, 'showDay'])
+        ->whereNumber('dayNumber')
+        ->name('day.show');
     Route::get('/day/{daily}', [Member\HomeController::class, 'day'])->name('day');
+    Route::get('/day/{dayNumber}-{daily}/commemorations', [Member\HomeController::class, 'showCommemorations'])
+        ->whereNumber('dayNumber')
+        ->name('commemorations.show');
     Route::get('/day/{daily}/commemorations', [Member\HomeController::class, 'commemorations'])->name('commemorations');
     Route::get('/week/{weeklyTheme}', [Member\HomeController::class, 'week'])->name('week');
     Route::get('/announcement/{announcement}', [Member\AnnouncementController::class, 'show'])->name('announcement.show');

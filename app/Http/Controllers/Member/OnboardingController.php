@@ -288,7 +288,19 @@ class OnboardingController extends Controller
 
         $path = '/'.ltrim($path, '/');
 
+        if (preg_match('#^/member/day/(\\d+)-(\\d+)$#', $path, $matches)) {
+            return route('share.day.public', ['daily' => (int) $matches[2]]);
+        }
+
         if (preg_match('#^/member/day/(\\d+)$#', $path, $matches)) {
+            return route('share.day.public', ['daily' => (int) $matches[1]]);
+        }
+
+        if (preg_match('#^/member/day/(\\d+)-(\\d+)/commemorations$#', $path, $matches)) {
+            return route('share.day.public', ['daily' => (int) $matches[2]]);
+        }
+
+        if (preg_match('#^/member/day/(\\d+)/commemorations$#', $path, $matches)) {
             return route('share.day.public', ['daily' => (int) $matches[1]]);
         }
 

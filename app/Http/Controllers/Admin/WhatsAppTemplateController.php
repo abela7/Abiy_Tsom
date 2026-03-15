@@ -264,7 +264,7 @@ class WhatsAppTemplateController extends Controller
         $code = $telegramAuthService->createCode(
             $member,
             TelegramAuthService::PURPOSE_SHARE_DAY_ACCESS,
-            route('member.day', ['daily' => $dailyContent], false)
+            $dailyContent->memberDayUrl(false)
         );
 
         $dayUrl = route('share.day', [

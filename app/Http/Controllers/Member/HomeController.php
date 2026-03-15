@@ -15,11 +15,11 @@ use App\Models\MemberChecklist;
 use App\Models\MemberCustomChecklist;
 use App\Models\MemberDailyView;
 use App\Models\WeeklyTheme;
-use App\Services\EthiopianCalendarService;
 use App\Services\AbiyTsomStructure;
+use App\Services\EthiopianCalendarService;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
@@ -105,7 +105,7 @@ class HomeController extends Controller
         }
 
         if ($today) {
-            return redirect()->route('member.day', $today);
+            return redirect($today->memberDayUrl());
         }
 
         return view('member.today-unavailable', [
@@ -184,6 +184,7 @@ class HomeController extends Controller
 
                         if (isset($seenDates[$dateKey])) {
                             $cursor->addDay();
+
                             continue;
                         }
 
@@ -293,17 +294,107 @@ class HomeController extends Controller
     }
 
     /**
-     * Show a specific day's content.
+     * Redirect legacy day URLs to the canonical day-number URL.
      */
-    public function day(Request $request, DailyContent $daily, EthiopianCalendarService $ethCalendar): View
+    public function day(DailyContent $daily): RedirectResponse
     {
         if (! $daily->is_published) {
             abort(404);
         }
 
+        return redirect($daily->memberDayUrl());
+    }
+
+    /**
+     * Show a specific day's content on the canonical URL.
+     */
+    public function showDay(
+        Request $request,
+        int $dayNumber,
+        DailyContent $daily,
+        EthiopianCalendarService $ethCalendar
+    ): View|RedirectResponse {
+        if (! $daily->is_published) {
+            abort(404);
+        }
+
+        if ($dayNumber !== (int) $daily->day_number) {
+            return redirect($daily->memberDayUrl());
+        }
+
+        return $this->renderDayView($request, $daily, $ethCalendar);
+    }
+
+    /**
+     * Redirect legacy commemorations URLs to the canonical URL.
+     */
+    public function commemorations(DailyContent $daily): RedirectResponse
+    {
+        if (! $daily->is_published) {
+            abort(404);
+        }
+
+        return redirect($daily->memberCommemorationsUrl());
+    }
+
+    /**
+     * Show the commemorations (annual & monthly) for a specific day.
+     */
+    public function showCommemorations(
+        int $dayNumber,
+        DailyContent $daily,
+        EthiopianCalendarService $ethCalendar
+    ): View|RedirectResponse {
+        if (! $daily->is_published) {
+            abort(404);
+        }
+
+        if ($dayNumber !== (int) $daily->day_number) {
+            return redirect($daily->memberCommemorationsUrl());
+        }
+
+        $ethDateInfo = $ethCalendar->getDateInfo($daily->date, app()->getLocale());
+
+        return view('member.commemorations', compact('daily', 'ethDateInfo'));
+    }
+
+    /**
+     * Show a weekly theme's full details.
+     */
+    public function week(Request $request, WeeklyTheme $weeklyTheme): View
+    {
         $member = $request->attributes->get('member');
 
-        // Track unique view (member or anonymous by IP)
+        return view('member.week', compact('member', 'weeklyTheme'));
+    }
+
+    private function resolveWeekThemeForDate(int|string|null $seasonId, Carbon|string|null $date): ?WeeklyTheme
+    {
+        if ($seasonId === null || ! is_numeric((string) $seasonId) || $date === null) {
+            return null;
+        }
+
+        $resolvedDate = $date instanceof Carbon
+            ? $date->copy()
+            : Carbon::parse($date);
+
+        return WeeklyTheme::where('lent_season_id', (int) $seasonId)
+            ->whereDate('week_start_date', '<=', $resolvedDate)
+            ->whereDate('week_end_date', '>=', $resolvedDate)
+            ->first();
+    }
+
+    /**
+     * Render the member day page for a published daily content record.
+     */
+    private function renderDayView(
+        Request $request,
+        DailyContent $daily,
+        EthiopianCalendarService $ethCalendar
+    ): View {
+        $member = $request->attributes->get('member');
+
+        // Track the first view per member/IP for this day.
         if ($member) {
             MemberDailyView::firstOrCreate(
                 ['member_id' => $member->id, 'daily_content_id' => $daily->id],
@@ -317,7 +408,6 @@ class HomeController extends Controller
             );
         }
 
-        // Load books relation for multiple spiritual books per day
         $daily->load(['weeklyTheme', 'mezmurs', 'references', 'books', 'sinksarImages']);
 
         $resolvedWeekTheme = $this->resolveWeekThemeForDate($daily->lent_season_id, $daily->date);
@@ -325,7 +415,6 @@ class HomeController extends Controller
             $daily->setRelation('weeklyTheme', $resolvedWeekTheme);
         }
 
-        // Ethiopian calendar date + celebration
         $ethDateInfo = $ethCalendar->getDateInfo($daily->date, app()->getLocale());
 
         $activities = Activity::where('lent_season_id', $daily->lent_season_id)
@@ -365,46 +454,17 @@ class HomeController extends Controller
             ->where('day', $ethDateInfo['ethiopian_date']['day'])
             ->first();
 
-        return view('member.day', compact('member', 'daily', 'activities', 'checklist', 'customActivities', 'customChecklist', 'ethDateInfo', 'prevDay', 'nextDay', 'lectionary'));
-    }
-
-    /**
-     * Show the commemorations (annual & monthly) for a specific day.
-     */
-    public function commemorations(Request $request, DailyContent $daily, EthiopianCalendarService $ethCalendar): View
-    {
-        if (! $daily->is_published) {
-            abort(404);
-        }
-
-        $ethDateInfo = $ethCalendar->getDateInfo($daily->date, app()->getLocale());
-
-        return view('member.commemorations', compact('daily', 'ethDateInfo'));
-    }
-
-    /**
-     * Show a weekly theme's full details.
-     */
-    public function week(Request $request, WeeklyTheme $weeklyTheme): View
-    {
-        $member = $request->attributes->get('member');
-
-        return view('member.week', compact('member', 'weeklyTheme'));
-    }
-
-    private function resolveWeekThemeForDate(int|string|null $seasonId, Carbon|string|null $date): ?WeeklyTheme
-    {
-        if ($seasonId === null || ! is_numeric((string) $seasonId) || $date === null) {
-            return null;
-        }
-
-        $resolvedDate = $date instanceof Carbon
-            ? $date->copy()
-            : Carbon::parse($date);
-
-        return WeeklyTheme::where('lent_season_id', (int) $seasonId)
-            ->whereDate('week_start_date', '<=', $resolvedDate)
-            ->whereDate('week_end_date', '>=', $resolvedDate)
-            ->first();
+        return view('member.day', compact(
+            'member',
+            'daily',
+            'activities',
+            'checklist',
+            'customActivities',
+            'customChecklist',
+            'ethDateInfo',
+            'prevDay',
+            'nextDay',
+            'lectionary',
+        ));
     }
 }

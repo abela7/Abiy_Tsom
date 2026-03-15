@@ -67,7 +67,7 @@
 
                             <div @if($isToday) id="current-day" data-tour="cal-today" @endif class="relative">
                                 @if($hasContent)
-                                    <a href="{{ route('member.day', $content) }}"
+                                    <a href="{{ $content->memberDayUrl() }}"
                                        class="relative aspect-square min-w-0 flex flex-col items-center justify-center rounded-xl transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md active:scale-95 group
                                               @if($isToday)
                                                   bg-cal-today-bg border-2 border-cal-today-border shadow-md scale-[1.02] z-10 ring-2 ring-cal-today-border/25

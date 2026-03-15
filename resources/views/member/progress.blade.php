@@ -159,7 +159,7 @@
 
         {{-- View day content (when viewing single day) --}}
         <div x-show="viewDayContentId" class="flex justify-center">
-            <a :href="`{{ url('/member/day') }}/${viewDayContentId}`"
+            <a :href="viewDayContentUrl"
                class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-accent text-on-accent text-sm font-semibold hover:bg-accent-hover transition shadow-sm">
                 {{ __('app.view_day_content') }}
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -230,6 +230,7 @@ function progressDashboard() {
         suggestions: [],
         heatmap: [],
         viewDayContentId: null,
+        viewDayContentUrl: null,
 
         _gaugeChart: null,
         _trendChart: null,
@@ -280,6 +281,7 @@ function progressDashboard() {
                     this.dayOptions = data.day_options || [];
                     this.weekOptions = data.week_options || [];
                     this.viewDayContentId = data.view_day_content_id || null;
+                    this.viewDayContentUrl = data.view_day_content_url || null;
                     this.loaded = true;
                     this.$nextTick(() => this.renderCharts());
                 }

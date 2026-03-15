@@ -9,8 +9,8 @@ use App\Models\DailyContent;
 use App\Models\LentSeason;
 use App\Models\Member;
 use App\Services\TelegramAuthService;
-use App\Services\WhatsAppTemplateService;
 use App\Services\UltraMsgService;
+use App\Services\WhatsAppTemplateService;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
@@ -36,8 +36,7 @@ class SendWhatsAppReminders extends Command
         UltraMsgService $ultraMsgService,
         TelegramAuthService $telegramAuthService,
         WhatsAppTemplateService $whatsAppTemplateService
-    ): int
-    {
+    ): int {
         $lock = Cache::lock('reminders:send-whatsapp', 3600);
 
         if (! $lock->get()) {
@@ -157,7 +156,7 @@ class SendWhatsAppReminders extends Command
                         $code = $telegramAuthService->createCode(
                             $member,
                             TelegramAuthService::PURPOSE_SHARE_DAY_ACCESS,
-                            route('member.day', ['daily' => $dailyContent], false)
+                            $dailyContent->memberDayUrl(false)
                         );
                         $dayUrl = route('share.day', [
                             'daily' => $dailyContent,
