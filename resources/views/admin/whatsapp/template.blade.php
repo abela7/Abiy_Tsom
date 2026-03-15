@@ -6,6 +6,14 @@
 
 @php
     $firstTemplateKey = $templates[0]['key'] ?? '';
+    $bulkTemplateKeys = [
+        'whatsapp_bulk_message_header',
+        'whatsapp_bulk_message_content',
+        'whatsapp_bulk_message_final',
+    ];
+    $initialWorkspace = old('recipient_mode') || old('bulk_header') || old('bulk_content') || old('bulk_link')
+        ? 'bulk'
+        : 'main';
     $templateMeta = [
         'whatsapp_daily_reminder_header' => [
             'group' => 'daily',
@@ -98,7 +106,7 @@
     }
 </style>
 
-<div x-data="whatsappTemplateEditor(@js($firstTemplateKey), @js($activeMembers->count()), @js(old('recipient_mode', 'all_active')), @js(collect(old('selected_member_ids', []))->map(fn ($id) => (string) $id)->values()->all()))" class="space-y-6">
+<div x-data="whatsappTemplateEditor(@js($firstTemplateKey), @js($activeMembers->count()), @js(old('recipient_mode', 'all_active')), @js(collect(old('selected_member_ids', []))->map(fn ($id) => (string) $id)->values()->all()), @js($initialWorkspace), @js($bulkTemplateKeys))" class="space-y-6">
 
     {{-- Page header --}}
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -113,8 +121,29 @@
         </button>
     </div>
 
+    <div class="inline-grid grid-cols-1 gap-2 rounded-2xl border border-border bg-card p-2 shadow-sm sm:grid-cols-2">
+        <button
+            type="button"
+            @click="switchWorkspace('main')"
+            :class="activeWorkspace === 'main' ? 'bg-accent text-on-accent shadow-sm' : 'text-secondary hover:bg-muted/60'"
+            class="rounded-xl px-4 py-3 text-left transition"
+        >
+            <span class="block text-sm font-semibold">{{ __('app.whatsapp_template_tab_templates') }}</span>
+            <span class="mt-1 block text-xs" :class="activeWorkspace === 'main' ? 'text-on-accent/80' : 'text-muted-text'">{{ __('app.whatsapp_template_tab_templates_help') }}</span>
+        </button>
+        <button
+            type="button"
+            @click="switchWorkspace('bulk')"
+            :class="activeWorkspace === 'bulk' ? 'bg-accent text-on-accent shadow-sm' : 'text-secondary hover:bg-muted/60'"
+            class="rounded-xl px-4 py-3 text-left transition"
+        >
+            <span class="block text-sm font-semibold">{{ __('app.whatsapp_template_tab_bulk') }}</span>
+            <span class="mt-1 block text-xs" :class="activeWorkspace === 'bulk' ? 'text-on-accent/80' : 'text-muted-text'">{{ __('app.whatsapp_template_tab_bulk_help') }}</span>
+        </button>
+    </div>
+
     {{-- Top cards: Workflow + Test --}}
-    <div class="grid gap-4 lg:grid-cols-[1fr_380px]">
+    <div x-show="activeWorkspace === 'main'" x-cloak class="grid gap-4 lg:grid-cols-[1fr_380px]">
 
         {{-- Workflow steps --}}
         <div class="rounded-2xl border border-border bg-card p-5 shadow-sm">
@@ -205,7 +234,7 @@
     </div>
 
     {{-- Bulk send --}}
-    <div class="rounded-2xl border border-border bg-card p-5 shadow-sm space-y-5">
+    <div x-show="activeWorkspace === 'bulk'" x-cloak class="rounded-2xl border border-border bg-card p-5 shadow-sm space-y-5">
         <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
             <div>
                 <h2 class="text-base font-semibold text-primary">{{ __('app.whatsapp_bulk_send_title') }}</h2>
@@ -219,6 +248,37 @@
         <div class="flex items-start gap-3 rounded-xl border border-amber-300/50 bg-amber-50/60 px-4 py-3 text-sm text-amber-800 dark:bg-amber-900/15 dark:text-amber-200 dark:border-amber-500/20">
             <svg class="w-5 h-5 shrink-0 mt-0.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
             <span>{{ __('app.whatsapp_bulk_send_warning') }}</span>
+        </div>
+
+        <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+            <div class="rounded-2xl border border-border bg-surface/30 p-4">
+                <h3 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_bulk_builder_title') }}</h3>
+                <p class="mt-1 text-sm text-muted-text">{{ __('app.whatsapp_bulk_builder_help') }}</p>
+                <div class="mt-4 grid gap-3 md:grid-cols-3">
+                    <div class="rounded-xl border border-border bg-card p-4">
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-muted-text">{{ __('app.whatsapp_bulk_builder_step_1_title') }}</span>
+                        <p class="mt-2 text-sm text-secondary">{{ __('app.whatsapp_bulk_builder_step_1_body') }}</p>
+                    </div>
+                    <div class="rounded-xl border border-border bg-card p-4">
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-muted-text">{{ __('app.whatsapp_bulk_builder_step_2_title') }}</span>
+                        <p class="mt-2 text-sm text-secondary">{{ __('app.whatsapp_bulk_builder_step_2_body') }}</p>
+                    </div>
+                    <div class="rounded-xl border border-border bg-card p-4">
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-muted-text">{{ __('app.whatsapp_bulk_builder_step_3_title') }}</span>
+                        <p class="mt-2 text-sm text-secondary">{{ __('app.whatsapp_bulk_builder_step_3_body') }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="rounded-2xl border border-border bg-surface/30 p-4">
+                <h3 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_bulk_placeholders_title') }}</h3>
+                <p class="mt-1 text-sm text-muted-text">{{ __('app.whatsapp_bulk_placeholders_help') }}</p>
+                <div class="mt-4 space-y-2 text-sm text-secondary">
+                    <div><code class="rounded bg-card px-2 py-1 text-xs text-primary">:name</code> {{ __('app.whatsapp_bulk_placeholder_name_help') }}</div>
+                    <div><code class="rounded bg-card px-2 py-1 text-xs text-primary">:header</code> {{ __('app.whatsapp_bulk_placeholder_header_help') }}</div>
+                    <div><code class="rounded bg-card px-2 py-1 text-xs text-primary">:content</code> {{ __('app.whatsapp_bulk_placeholder_content_help') }}</div>
+                    <div><code class="rounded bg-card px-2 py-1 text-xs text-primary">:url</code> {{ __('app.whatsapp_bulk_placeholder_url_help') }}</div>
+                </div>
+            </div>
         </div>
 
         <form method="POST" action="{{ route('admin.whatsapp.template.bulk-send') }}" class="grid gap-5 xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
@@ -373,7 +433,7 @@
         {{-- Sidebar: template list --}}
         <aside class="space-y-3 xl:sticky xl:top-24 xl:self-start">
             @foreach(['daily' => __('app.whatsapp_template_group_daily'), 'bulk' => __('app.whatsapp_template_group_bulk'), 'confirmation' => __('app.whatsapp_template_group_confirmation')] as $groupKey => $groupLabel)
-            <details class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden" @if($groupKey === 'daily') open @endif>
+            <details x-show="shouldShowGroup('{{ $groupKey }}')" x-cloak class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden" @if($groupKey === 'daily' || $groupKey === 'bulk') open @endif>
                 <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 bg-surface/60 marker:hidden">
                     <h2 class="text-[11px] font-bold uppercase tracking-widest text-muted-text">{{ $groupLabel }}</h2>
                     <span class="text-xs font-bold text-muted-text">+</span>
@@ -405,7 +465,7 @@
 
             <section
                 x-cloak
-                x-show="['whatsapp_daily_reminder_header','whatsapp_daily_reminder_yearly_block','whatsapp_daily_reminder_monthly_block','whatsapp_daily_reminder_footer','whatsapp_daily_reminder_content'].includes(activeTemplate)"
+                x-show="activeWorkspace === 'main' && ['whatsapp_daily_reminder_header','whatsapp_daily_reminder_yearly_block','whatsapp_daily_reminder_monthly_block','whatsapp_daily_reminder_footer','whatsapp_daily_reminder_content'].includes(activeTemplate)"
                 class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden"
             >
                 <div class="border-b border-border bg-surface/60 px-5 py-4">
@@ -469,7 +529,7 @@
                 @method('PUT')
 
                 @foreach($templates as $template)
-                <section x-cloak x-show="activeTemplate === '{{ $template['key'] }}'"
+                <section x-cloak x-show="activeTemplate === '{{ $template['key'] }}' && workspaceAllowsTemplate('{{ $template['key'] }}')"
                     x-transition:enter="transition ease-out duration-150"
                     x-transition:enter-start="opacity-0 translate-y-1"
                     x-transition:enter-end="opacity-100 translate-y-0"
@@ -481,7 +541,13 @@
                             <div>
                                 <div class="flex items-center gap-2 mb-1.5">
                                     <span class="inline-flex items-center rounded-md bg-accent/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-accent">
-                                        {{ (($templateMeta[$template['key']]['group'] ?? 'confirmation') === 'daily') ? __('app.whatsapp_template_group_daily') : __('app.whatsapp_template_group_confirmation') }}
+                                        {{
+                                            ($templateMeta[$template['key']]['group'] ?? 'confirmation') === 'daily'
+                                                ? __('app.whatsapp_template_group_daily')
+                                                : ((($templateMeta[$template['key']]['group'] ?? 'confirmation') === 'bulk')
+                                                    ? __('app.whatsapp_template_group_bulk')
+                                                    : __('app.whatsapp_template_group_confirmation'))
+                                        }}
                                     </span>
                                     <code class="text-[11px] text-muted-text bg-muted/50 px-2 py-0.5 rounded-md">{{ $template['key'] }}</code>
                                 </div>
@@ -535,6 +601,30 @@
                                             <span class="rounded-full border border-border bg-card px-3 py-1 text-xs font-mono text-primary">:footer_am</span>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+                        @elseif(in_array($template['key'], $bulkTemplateKeys, true))
+                            <div class="rounded-xl border border-primary/15 bg-primary/5 px-4 py-4">
+                                <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                                    <div>
+                                        <h3 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_bulk_builder_title') }}</h3>
+                                        <p class="mt-1 text-sm text-muted-text">
+                                            @if($template['key'] === 'whatsapp_bulk_message_header')
+                                                {{ __('app.whatsapp_bulk_template_header_help') }}
+                                            @elseif($template['key'] === 'whatsapp_bulk_message_content')
+                                                {{ __('app.whatsapp_bulk_template_content_help') }}
+                                            @else
+                                                {{ __('app.whatsapp_bulk_template_final_help') }}
+                                            @endif
+                                        </p>
+                                    </div>
+                                    @if($template['key'] === 'whatsapp_bulk_message_final')
+                                        <div class="flex flex-wrap gap-2 lg:justify-end">
+                                            @foreach([':name', ':header', ':content', ':url'] as $placeholder)
+                                                <span class="rounded-full border border-border bg-card px-3 py-1 text-xs font-mono text-primary">{{ $placeholder }}</span>
+                                            @endforeach
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                         @endif
@@ -733,15 +823,18 @@
 
 @push('scripts')
 <script>
-function whatsappTemplateEditor(initialTemplate, activeMemberCount, initialRecipientMode, initialSelectedMembers) {
+function whatsappTemplateEditor(initialTemplate, activeMemberCount, initialRecipientMode, initialSelectedMembers, initialWorkspace, bulkTemplateKeys) {
     return {
         activeTemplate: initialTemplate || '',
         activeFieldId: initialTemplate ? `tpl-en-${initialTemplate}` : null,
         activeMemberCount: Number(activeMemberCount || 0),
         bulkRecipientMode: initialRecipientMode || 'all_active',
         bulkSelectedMembers: Array.isArray(initialSelectedMembers) ? initialSelectedMembers : [],
+        activeWorkspace: initialWorkspace || 'main',
+        bulkTemplateKeys: Array.isArray(bulkTemplateKeys) ? bulkTemplateKeys : [],
         selectTemplate(key) {
             this.activeTemplate = key;
+            this.activeWorkspace = this.bulkTemplateKeys.includes(key) ? 'bulk' : 'main';
             this.$nextTick(() => {
                 const input = document.getElementById(`tpl-en-${key}`) || document.getElementById(`tpl-am-${key}`);
                 if (input) {
@@ -783,6 +876,26 @@ function whatsappTemplateEditor(initialTemplate, activeMemberCount, initialRecip
             input.focus();
             this.activeTemplate = 'whatsapp_daily_reminder_content';
             this.activeFieldId = input.id;
+        },
+        switchWorkspace(workspace) {
+            this.activeWorkspace = workspace;
+            if (workspace === 'bulk' && !this.bulkTemplateKeys.includes(this.activeTemplate)) {
+                this.selectTemplate(this.bulkTemplateKeys[0] || 'whatsapp_bulk_message_header');
+                return;
+            }
+            if (workspace === 'main' && this.bulkTemplateKeys.includes(this.activeTemplate)) {
+                this.selectTemplate('whatsapp_daily_reminder_header');
+            }
+        },
+        shouldShowGroup(groupKey) {
+            return this.activeWorkspace === 'bulk'
+                ? groupKey === 'bulk'
+                : groupKey !== 'bulk';
+        },
+        workspaceAllowsTemplate(key) {
+            return this.activeWorkspace === 'bulk'
+                ? this.bulkTemplateKeys.includes(key)
+                : !this.bulkTemplateKeys.includes(key);
         },
         isBulkSelectedMode() {
             return this.bulkRecipientMode === 'selected_active';
