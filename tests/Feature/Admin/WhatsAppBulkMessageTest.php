@@ -49,7 +49,8 @@ class WhatsAppBulkMessageTest extends TestCase
             'recipient_mode' => 'all_active',
             'bulk_header' => 'Important update',
             'bulk_content' => 'Please read this today.',
-            'bulk_link' => 'https://example.com/bulk',
+            'bulk_link_1' => 'https://example.com/bulk',
+            'bulk_link_2' => 'https://example.com/calendar',
         ]);
 
         $response->assertRedirect(route('admin.whatsapp.template'))
@@ -60,7 +61,7 @@ class WhatsAppBulkMessageTest extends TestCase
             return $job->memberId === $first->id
                 && $job->header === 'Important update'
                 && $job->content === 'Please read this today.'
-                && $job->url === 'https://example.com/bulk';
+                && $job->links === ['https://example.com/bulk', 'https://example.com/calendar', ''];
         });
         Queue::assertPushed(SendBulkWhatsAppMessageJob::class, function (SendBulkWhatsAppMessageJob $job) use ($second): bool {
             return $job->memberId === $second->id;

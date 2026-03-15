@@ -331,7 +331,9 @@ class WhatsAppTemplateController extends Controller
             'selected_member_ids.*' => ['integer', 'exists:members,id'],
             'bulk_header' => ['required', 'string'],
             'bulk_content' => ['required', 'string'],
-            'bulk_link' => ['nullable', 'url'],
+            'bulk_link_1' => ['nullable', 'url'],
+            'bulk_link_2' => ['nullable', 'url'],
+            'bulk_link_3' => ['nullable', 'url'],
         ]);
 
         $header = trim((string) $validated['bulk_header']);
@@ -342,8 +344,18 @@ class WhatsAppTemplateController extends Controller
             ->filter(static fn (int $id): bool => $id > 0)
             ->unique()
             ->values();
-        $link = trim((string) ($validated['bulk_link'] ?? ''));
-        $link = $link !== '' ? $this->ensureHttpsUrl($link) : null;
+        $links = collect([
+            $validated['bulk_link_1'] ?? null,
+            $validated['bulk_link_2'] ?? null,
+            $validated['bulk_link_3'] ?? null,
+        ])
+            ->map(function (mixed $value): string {
+                $link = trim((string) ($value ?? ''));
+
+                return $link !== '' ? $this->ensureHttpsUrl($link) : '';
+            })
+            ->values()
+            ->all();
 
         if (! $ultraMsg->isConfigured()) {
             return redirect()
@@ -387,7 +399,7 @@ class WhatsAppTemplateController extends Controller
         }
 
         foreach ($recipients as $member) {
-            SendBulkWhatsAppMessageJob::dispatch($member->id, $header, $content, $link);
+            SendBulkWhatsAppMessageJob::dispatch($member->id, $header, $content, $links);
         }
 
         return redirect()

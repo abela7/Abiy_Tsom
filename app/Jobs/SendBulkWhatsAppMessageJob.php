@@ -32,7 +32,7 @@ final class SendBulkWhatsAppMessageJob implements ShouldQueue
         public readonly int $memberId,
         public readonly string $header,
         public readonly string $content,
-        public readonly ?string $url = null,
+        public readonly array $links = [],
     ) {
         $this->onQueue(self::QUEUE_NAME);
     }
@@ -50,7 +50,7 @@ final class SendBulkWhatsAppMessageJob implements ShouldQueue
         }
 
         $message = $whatsAppTemplateService
-            ->renderBulkMessage($member, $this->header, $this->content, $this->url)['message'];
+            ->renderBulkMessage($member, $this->header, $this->content, $this->links)['message'];
 
         if ($message === '') {
             return;

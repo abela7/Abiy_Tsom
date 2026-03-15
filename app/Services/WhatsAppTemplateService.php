@@ -130,7 +130,6 @@ final class WhatsAppTemplateService
         'name',
         'header',
         'content',
-        'url',
     ];
 
     /** @var list<string> */
@@ -143,6 +142,9 @@ final class WhatsAppTemplateService
         'header',
         'content',
         'url',
+        'url_1',
+        'url_2',
+        'url_3',
     ];
 
     /**
@@ -220,11 +222,11 @@ final class WhatsAppTemplateService
         Member $member,
         string $header,
         string $content,
-        ?string $url = null,
+        array|string|null $links = null,
         ?string $locale = null
     ): array {
         $resolvedLocale = $this->preferredLocale($member, $locale);
-        $variables = $this->bulkMessageVariables($member, $header, $content, $url);
+        $variables = $this->bulkMessageVariables($member, $header, $content, $links);
 
         $renderedHeaderEn = $this->normalizeRenderedText(
             $this->translate('app.whatsapp_bulk_message_header', $variables, 'en')
@@ -258,7 +260,9 @@ final class WhatsAppTemplateService
                 implode("\n\n", array_values(array_filter([
                     $finalVariables['header'],
                     $finalVariables['content'],
-                    trim((string) ($variables['url'] ?? '')),
+                    trim((string) ($variables['url_1'] ?? '')),
+                    trim((string) ($variables['url_2'] ?? '')),
+                    trim((string) ($variables['url_3'] ?? '')),
                 ], static fn (string $value): bool => $value !== '')))
             );
         }
@@ -334,15 +338,38 @@ final class WhatsAppTemplateService
         Member $member,
         string $header,
         string $content,
-        ?string $url
+        array|string|null $links
     ): array {
         $name = trim((string) ($member->baptism_name ?? ''));
+        $normalizedLinks = $this->normalizeBulkLinks($links);
 
         return [
             'name' => $name,
             'header' => trim($header),
             'content' => trim($content),
-            'url' => trim((string) ($url ?? '')),
+            'url' => $normalizedLinks['url_1'],
+            ...$normalizedLinks,
+        ];
+    }
+
+    /**
+     * @return array{url_1: string, url_2: string, url_3: string}
+     */
+    private function normalizeBulkLinks(array|string|null $links): array
+    {
+        if (! is_array($links)) {
+            $links = [$links];
+        }
+
+        $values = array_values(array_map(
+            static fn (mixed $value): string => trim((string) ($value ?? '')),
+            $links
+        ));
+
+        return [
+            'url_1' => $values[0] ?? '',
+            'url_2' => $values[1] ?? '',
+            'url_3' => $values[2] ?? '',
         ];
     }
 

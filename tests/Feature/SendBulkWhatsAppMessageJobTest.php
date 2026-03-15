@@ -43,7 +43,7 @@ class SendBulkWhatsAppMessageJobTest extends TestCase
             $member->id,
             'Important update',
             'Please read this today.',
-            'https://example.com/bulk'
+            ['https://example.com/bulk', 'https://example.com/calendar', '']
         );
 
         $job->handle(app(UltraMsgService::class), app(WhatsAppTemplateService::class));
@@ -84,7 +84,7 @@ class SendBulkWhatsAppMessageJobTest extends TestCase
             $member->id,
             'Important update',
             'Please read this today.',
-            'https://example.com/bulk'
+            ['https://example.com/bulk', '', '']
         );
 
         $job->handle(app(UltraMsgService::class), app(WhatsAppTemplateService::class));

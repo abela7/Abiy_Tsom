@@ -31,17 +31,21 @@ class WhatsAppBulkTemplateServiceTest extends TestCase
             $member,
             'Important update',
             'Please read this today.',
-            'https://example.com/bulk'
+            ['https://example.com/bulk', 'https://example.com/calendar', 'https://example.com/progress']
         );
 
         $this->assertSame('EN HEADER: Important update', $rendered['variables']['header_en']);
         $this->assertSame('EN CONTENT: Please read this today.', $rendered['variables']['content_en']);
         $this->assertSame('AM HEADER: Important update', $rendered['variables']['header_am']);
         $this->assertSame('AM CONTENT: Please read this today.', $rendered['variables']['content_am']);
+        $this->assertSame('https://example.com/bulk', $rendered['variables']['url_1']);
+        $this->assertSame('https://example.com/calendar', $rendered['variables']['url_2']);
+        $this->assertSame('https://example.com/progress', $rendered['variables']['url_3']);
         $this->assertSame('EN HEADER: Important update', $rendered['header']);
         $this->assertSame('EN CONTENT: Please read this today.', $rendered['content']);
         $this->assertStringContainsString('EN HEADER: Important update', $rendered['message']);
         $this->assertStringContainsString('EN CONTENT: Please read this today.', $rendered['message']);
+        $this->assertStringContainsString('https://example.com/bulk', $rendered['message']);
     }
 
     public function test_bulk_message_generic_placeholders_follow_the_members_locale(): void
@@ -61,7 +65,7 @@ class WhatsAppBulkTemplateServiceTest extends TestCase
             $member,
             'Important update',
             'Please read this today.',
-            'https://example.com/bulk'
+            ['https://example.com/bulk', '', '']
         );
 
         $this->assertSame('AM HEADER: Important update', $rendered['header']);
@@ -87,7 +91,7 @@ class WhatsAppBulkTemplateServiceTest extends TestCase
             $member,
             'Important update',
             'Please read this today.',
-            'https://example.com/bulk'
+            ['https://example.com/bulk', '', '']
         );
 
         $this->assertSame('am', $rendered['locale']);
@@ -101,10 +105,10 @@ class WhatsAppBulkTemplateServiceTest extends TestCase
         $translations = [
             ['group' => 'whatsapp_member', 'key' => 'whatsapp_bulk_message_header', 'locale' => 'en', 'value' => 'EN HEADER: :header'],
             ['group' => 'whatsapp_member', 'key' => 'whatsapp_bulk_message_content', 'locale' => 'en', 'value' => 'EN CONTENT: :content'],
-            ['group' => 'whatsapp_member', 'key' => 'whatsapp_bulk_message_final', 'locale' => 'en', 'value' => "Hello :name\n\n:header_en\n\n:content_en\n\n:url"],
+            ['group' => 'whatsapp_member', 'key' => 'whatsapp_bulk_message_final', 'locale' => 'en', 'value' => "Hello :name\n\n:header_en\n\n:content_en\n\n:url_1\n:url_2\n:url_3"],
             ['group' => 'whatsapp_member', 'key' => 'whatsapp_bulk_message_header', 'locale' => 'am', 'value' => 'AM HEADER: :header'],
             ['group' => 'whatsapp_member', 'key' => 'whatsapp_bulk_message_content', 'locale' => 'am', 'value' => 'AM CONTENT: :content'],
-            ['group' => 'whatsapp_member', 'key' => 'whatsapp_bulk_message_final', 'locale' => 'am', 'value' => "ሰላም :name\n\n:header_am\n\n:content_am\n\n:url"],
+            ['group' => 'whatsapp_member', 'key' => 'whatsapp_bulk_message_final', 'locale' => 'am', 'value' => "ሰላም :name\n\n:header_am\n\n:content_am\n\n:url_1\n:url_2\n:url_3"],
         ];
 
         foreach ($translations as $translation) {
