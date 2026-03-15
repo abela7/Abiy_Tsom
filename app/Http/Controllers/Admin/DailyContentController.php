@@ -9,7 +9,6 @@ use App\Models\Activity;
 use App\Models\DailyContent;
 use App\Models\DailyContentBook;
 use App\Models\DailyContentMezmur;
-use App\Models\DailyContentSinksarImage;
 use App\Models\LentSeason;
 use App\Services\AbiyTsomStructure;
 use App\Services\EthiopianCalendarService;
@@ -82,7 +81,8 @@ class DailyContentController extends Controller
                 ->orderBy('day_number')
                 ->get()
             : collect();
-        $canEdit = auth()->user()?->role === 'admin' || auth()->user()?->isSuperAdmin();
+        $canEdit = in_array(auth()->user()?->role ?? '', ['admin', 'editor', 'writer'], true)
+            || auth()->user()?->isSuperAdmin();
 
         return view('admin.daily.index', compact('season', 'contents', 'canEdit'));
     }
@@ -299,7 +299,8 @@ class DailyContentController extends Controller
         $recentBooks = $this->getRecentBooks($daily->id);
         $recentMezmurs = $this->getRecentMezmurs($daily->id);
         $daysWithContent = $this->getDaysWithContent($daily->id);
-        $canEdit = auth()->user()?->role === 'admin' || auth()->user()?->isSuperAdmin();
+        $canEdit = in_array(auth()->user()?->role ?? '', ['admin', 'editor', 'writer'], true)
+            || auth()->user()?->isSuperAdmin();
 
         return view('admin.daily.form', compact('season', 'themes', 'daily', 'dayRangesByWeek', 'initialStep', 'recentBooks', 'recentMezmurs', 'daysWithContent', 'canEdit'));
     }
@@ -332,11 +333,11 @@ class DailyContentController extends Controller
     {
         $request->validate([
             'bible_audio' => ['required', 'file', 'mimes:mp3,mpeg,ogg,wav,m4a', 'max:51200'],
-            'locale'      => ['required', 'in:en,am'],
+            'locale' => ['required', 'in:en,am'],
         ]);
 
         $locale = $request->input('locale');
-        $path   = $request->file('bible_audio')->storeAs(
+        $path = $request->file('bible_audio')->storeAs(
             'bible-audio',
             uniqid("bible_{$locale}_", true).'.'.$request->file('bible_audio')->extension(),
             'r2'
@@ -346,8 +347,8 @@ class DailyContentController extends Controller
 
         return response()->json([
             'success' => true,
-            'url'     => $url,
-            'locale'  => $locale,
+            'url' => $url,
+            'locale' => $locale,
         ]);
     }
 
@@ -357,12 +358,12 @@ class DailyContentController extends Controller
     public function deleteBibleAudio(Request $request): JsonResponse
     {
         $request->validate([
-            'url'    => ['required', 'string', 'max:1000'],
+            'url' => ['required', 'string', 'max:1000'],
             'locale' => ['required', 'in:en,am'],
         ]);
 
         $publicBase = rtrim(config('filesystems.disks.r2.url'), '/');
-        $url        = $request->input('url');
+        $url = $request->input('url');
 
         if (str_starts_with($url, $publicBase.'/bible-audio/')) {
             $path = ltrim(str_replace($publicBase, '', $url), '/');
@@ -452,14 +453,14 @@ class DailyContentController extends Controller
 
             case 2:
                 $updates = $request->validate([
-                    'bible_reference_en'  => ['nullable', 'string', 'max:255'],
-                    'bible_reference_am'  => ['nullable', 'string', 'max:255'],
-                    'bible_summary_en'    => ['nullable', 'string'],
-                    'bible_summary_am'    => ['nullable', 'string'],
-                    'bible_text_en'       => ['nullable', 'string'],
-                    'bible_text_am'       => ['nullable', 'string'],
-                    'bible_audio_url_en'  => ['nullable', 'string', 'max:1000'],
-                    'bible_audio_url_am'  => ['nullable', 'string', 'max:1000'],
+                    'bible_reference_en' => ['nullable', 'string', 'max:255'],
+                    'bible_reference_am' => ['nullable', 'string', 'max:255'],
+                    'bible_summary_en' => ['nullable', 'string'],
+                    'bible_summary_am' => ['nullable', 'string'],
+                    'bible_text_en' => ['nullable', 'string'],
+                    'bible_text_am' => ['nullable', 'string'],
+                    'bible_audio_url_en' => ['nullable', 'string', 'max:1000'],
+                    'bible_audio_url_am' => ['nullable', 'string', 'max:1000'],
                 ]);
                 break;
 
@@ -478,7 +479,7 @@ class DailyContentController extends Controller
                 $this->syncMezmurs($daily, $this->parseMezmurs($request));
                 break;
 
-                case 4:
+            case 4:
                 $updates = $request->validate([
                     'sinksar_title_en' => ['nullable', 'string', 'max:255'],
                     'sinksar_title_am' => ['nullable', 'string', 'max:255'],
@@ -660,17 +661,17 @@ class DailyContentController extends Controller
         }
 
         return $query->get()->map(fn ($row) => [
-            'title_en'       => $row->title_en,
-            'title_am'       => $row->title_am,
-            'url'            => $row->url ?? null,
-            'url_en'         => $row->url_en ?? null,
-            'url_am'         => $row->url_am ?? null,
+            'title_en' => $row->title_en,
+            'title_am' => $row->title_am,
+            'url' => $row->url ?? null,
+            'url_en' => $row->url_en ?? null,
+            'url_am' => $row->url_am ?? null,
             'description_en' => $row->description_en,
             'description_am' => $row->description_am,
-            'lyrics_en'      => $row->lyrics_en,
-            'lyrics_am'      => $row->lyrics_am,
-            'day_number'     => (int) $row->day_number,
-            'date'           => $row->date instanceof \DateTimeInterface ? $row->date->format('Y-m-d') : (string) $row->date,
+            'lyrics_en' => $row->lyrics_en,
+            'lyrics_am' => $row->lyrics_am,
+            'day_number' => (int) $row->day_number,
+            'date' => $row->date instanceof \DateTimeInterface ? $row->date->format('Y-m-d') : (string) $row->date,
         ])->unique(fn (array $m) => trim(($m['title_am'] ?? '').'|'.($m['url_am'] ?? '').($m['url_en'] ?? '')))->values()->toArray();
     }
 
@@ -783,8 +784,8 @@ class DailyContentController extends Controller
             'bible_reference_am' => ['nullable', 'string', 'max:255'],
             'bible_summary_en' => ['nullable', 'string'],
             'bible_summary_am' => ['nullable', 'string'],
-            'bible_text_en'      => ['nullable', 'string'],
-            'bible_text_am'      => ['nullable', 'string'],
+            'bible_text_en' => ['nullable', 'string'],
+            'bible_text_am' => ['nullable', 'string'],
             'bible_audio_url_en' => ['nullable', 'string', 'max:1000'],
             'bible_audio_url_am' => ['nullable', 'string', 'max:1000'],
             'mezmurs' => ['nullable', 'array'],

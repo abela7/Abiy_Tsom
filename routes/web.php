@@ -180,8 +180,8 @@ Route::middleware(['auth', 'admin.audit'])->prefix('admin')->name('admin.')->gro
         Route::delete('/activities/{activity}', [Admin\ActivityController::class, 'destroy'])->name('activities.destroy');
     });
 
-    // Admin-only daily content write routes (scaffold, create, edit, delete)
-    Route::middleware('admin_role:admin')->group(function () {
+    // Daily content write routes (writer/editor/admin can create, edit, update, delete)
+    Route::middleware('admin_role:writer,editor,admin')->group(function () {
         Route::post('/daily/scaffold', [Admin\DailyContentController::class, 'scaffold'])->name('daily.scaffold');
         Route::get('/daily/create', [Admin\DailyContentController::class, 'create'])->name('daily.create');
         Route::get('/daily/copy-from/{day_number}', [Admin\DailyContentController::class, 'copyFrom'])->name('daily.copy_from');
@@ -194,7 +194,10 @@ Route::middleware(['auth', 'admin.audit'])->prefix('admin')->name('admin.')->gro
         Route::patch('/daily/{daily}', [Admin\DailyContentController::class, 'patch'])->name('daily.patch');
         Route::put('/daily/{daily}', [Admin\DailyContentController::class, 'update'])->name('daily.update');
         Route::delete('/daily/{daily}', [Admin\DailyContentController::class, 'destroy'])->name('daily.destroy');
+    });
 
+    // Admin-only routes (suggestions review, announcements write)
+    Route::middleware('admin_role:admin')->group(function () {
         // Daily content suggestions (admin review and apply/reject)
         Route::get('/daily-suggestions', [Admin\DailyContentSuggestionController::class, 'index'])
             ->name('daily-suggestions.index');
