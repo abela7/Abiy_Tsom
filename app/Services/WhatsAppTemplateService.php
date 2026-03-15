@@ -126,8 +126,20 @@ final class WhatsAppTemplateService
     ];
 
     /** @var list<string> */
-    public const BULK_MESSAGE_PLACEHOLDERS = [
+    public const BULK_MESSAGE_SECTION_PLACEHOLDERS = [
         'name',
+        'header',
+        'content',
+        'url',
+    ];
+
+    /** @var list<string> */
+    public const BULK_MESSAGE_FINAL_PLACEHOLDERS = [
+        'name',
+        'header_en',
+        'content_en',
+        'header_am',
+        'content_am',
         'header',
         'content',
         'url',
@@ -214,17 +226,27 @@ final class WhatsAppTemplateService
         $resolvedLocale = $this->normalizeLocale($locale ?? (string) ($member->whatsapp_language ?? $member->locale ?? 'en'));
         $variables = $this->bulkMessageVariables($member, $header, $content, $url);
 
-        $renderedHeader = $this->normalizeRenderedText(
-            $this->translate('app.whatsapp_bulk_message_header', $variables, $resolvedLocale)
+        $renderedHeaderEn = $this->normalizeRenderedText(
+            $this->translate('app.whatsapp_bulk_message_header', $variables, 'en')
         );
-        $renderedContent = $this->normalizeRenderedText(
-            $this->translate('app.whatsapp_bulk_message_content', $variables, $resolvedLocale)
+        $renderedHeaderAm = $this->normalizeRenderedText(
+            $this->translate('app.whatsapp_bulk_message_header', $variables, 'am')
+        );
+        $renderedContentEn = $this->normalizeRenderedText(
+            $this->translate('app.whatsapp_bulk_message_content', $variables, 'en')
+        );
+        $renderedContentAm = $this->normalizeRenderedText(
+            $this->translate('app.whatsapp_bulk_message_content', $variables, 'am')
         );
 
         $finalVariables = [
             ...$variables,
-            'header' => $renderedHeader,
-            'content' => $renderedContent,
+            'header_en' => $renderedHeaderEn,
+            'content_en' => $renderedContentEn,
+            'header_am' => $renderedHeaderAm,
+            'content_am' => $renderedContentAm,
+            'header' => $resolvedLocale === 'am' ? $renderedHeaderAm : $renderedHeaderEn,
+            'content' => $resolvedLocale === 'am' ? $renderedContentAm : $renderedContentEn,
         ];
 
         $message = $this->normalizeRenderedText(
@@ -234,8 +256,8 @@ final class WhatsAppTemplateService
         if ($message === '') {
             $message = $this->normalizeRenderedText(
                 implode("\n\n", array_values(array_filter([
-                    $renderedHeader,
-                    $renderedContent,
+                    $finalVariables['header'],
+                    $finalVariables['content'],
                     trim((string) ($variables['url'] ?? '')),
                 ], static fn (string $value): bool => $value !== '')))
             );
@@ -244,8 +266,8 @@ final class WhatsAppTemplateService
         return [
             'locale' => $resolvedLocale,
             'variables' => $finalVariables,
-            'header' => $renderedHeader,
-            'content' => $renderedContent,
+            'header' => $finalVariables['header'],
+            'content' => $finalVariables['content'],
             'message' => $message,
         ];
     }

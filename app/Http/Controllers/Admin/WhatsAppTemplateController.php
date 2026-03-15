@@ -66,19 +66,19 @@ class WhatsAppTemplateController extends Controller
                 'key' => 'whatsapp_bulk_message_header',
                 'group' => 'whatsapp_member',
                 'title' => __('app.whatsapp_template_bulk_header'),
-                'placeholder_keys' => WhatsAppTemplateService::BULK_MESSAGE_PLACEHOLDERS,
+                'placeholder_keys' => WhatsAppTemplateService::BULK_MESSAGE_SECTION_PLACEHOLDERS,
             ],
             [
                 'key' => 'whatsapp_bulk_message_content',
                 'group' => 'whatsapp_member',
                 'title' => __('app.whatsapp_template_bulk_content'),
-                'placeholder_keys' => WhatsAppTemplateService::BULK_MESSAGE_PLACEHOLDERS,
+                'placeholder_keys' => WhatsAppTemplateService::BULK_MESSAGE_SECTION_PLACEHOLDERS,
             ],
             [
                 'key' => 'whatsapp_bulk_message_final',
                 'group' => 'whatsapp_member',
                 'title' => __('app.whatsapp_template_bulk_final'),
-                'placeholder_keys' => WhatsAppTemplateService::BULK_MESSAGE_PLACEHOLDERS,
+                'placeholder_keys' => WhatsAppTemplateService::BULK_MESSAGE_FINAL_PLACEHOLDERS,
             ],
             [
                 'key' => 'whatsapp_confirmation_prompt_message',

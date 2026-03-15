@@ -75,7 +75,7 @@
         'whatsapp_daily_reminder_monthly_block' => [':commemorations_block_en', ':commemorations_block_am'],
         'whatsapp_daily_reminder_footer' => [':footer_en', ':footer_am'],
         'whatsapp_daily_reminder_content' => [':header_en', ':commemorations_block_en', ':footer_en', ':header_am', ':commemorations_block_am', ':footer_am'],
-        'whatsapp_bulk_message_final' => [':name', ':header', ':content', ':url'],
+        'whatsapp_bulk_message_final' => [':name', ':header_en', ':content_en', ':header_am', ':content_am', ':header', ':content', ':url'],
     ];
 
     $templateGroups = [
@@ -274,6 +274,10 @@
                 <p class="mt-1 text-sm text-muted-text">{{ __('app.whatsapp_bulk_placeholders_help') }}</p>
                 <div class="mt-4 space-y-2 text-sm text-secondary">
                     <div><code class="rounded bg-card px-2 py-1 text-xs text-primary">:name</code> {{ __('app.whatsapp_bulk_placeholder_name_help') }}</div>
+                    <div><code class="rounded bg-card px-2 py-1 text-xs text-primary">:header_en</code> {{ __('app.whatsapp_bulk_placeholder_header_en_help') }}</div>
+                    <div><code class="rounded bg-card px-2 py-1 text-xs text-primary">:content_en</code> {{ __('app.whatsapp_bulk_placeholder_content_en_help') }}</div>
+                    <div><code class="rounded bg-card px-2 py-1 text-xs text-primary">:header_am</code> {{ __('app.whatsapp_bulk_placeholder_header_am_help') }}</div>
+                    <div><code class="rounded bg-card px-2 py-1 text-xs text-primary">:content_am</code> {{ __('app.whatsapp_bulk_placeholder_content_am_help') }}</div>
                     <div><code class="rounded bg-card px-2 py-1 text-xs text-primary">:header</code> {{ __('app.whatsapp_bulk_placeholder_header_help') }}</div>
                     <div><code class="rounded bg-card px-2 py-1 text-xs text-primary">:content</code> {{ __('app.whatsapp_bulk_placeholder_content_help') }}</div>
                     <div><code class="rounded bg-card px-2 py-1 text-xs text-primary">:url</code> {{ __('app.whatsapp_bulk_placeholder_url_help') }}</div>
@@ -619,10 +623,25 @@
                                         </p>
                                     </div>
                                     @if($template['key'] === 'whatsapp_bulk_message_final')
-                                        <div class="flex flex-wrap gap-2 lg:justify-end">
-                                            @foreach([':name', ':header', ':content', ':url'] as $placeholder)
-                                                <span class="rounded-full border border-border bg-card px-3 py-1 text-xs font-mono text-primary">{{ $placeholder }}</span>
-                                            @endforeach
+                                        <div class="flex flex-col gap-3 lg:items-end">
+                                            <div class="text-[11px] font-semibold uppercase tracking-wide text-muted-text">{{ __('app.whatsapp_template_final_components_en') }}</div>
+                                            <div class="flex flex-wrap gap-2 lg:justify-end">
+                                                @foreach([':header_en', ':content_en'] as $placeholder)
+                                                    <span class="rounded-full border border-border bg-card px-3 py-1 text-xs font-mono text-primary">{{ $placeholder }}</span>
+                                                @endforeach
+                                            </div>
+                                            <div class="text-[11px] font-semibold uppercase tracking-wide text-muted-text">{{ __('app.whatsapp_template_final_components_am') }}</div>
+                                            <div class="flex flex-wrap gap-2 lg:justify-end">
+                                                @foreach([':header_am', ':content_am'] as $placeholder)
+                                                    <span class="rounded-full border border-border bg-card px-3 py-1 text-xs font-mono text-primary">{{ $placeholder }}</span>
+                                                @endforeach
+                                            </div>
+                                            <div class="text-[11px] font-semibold uppercase tracking-wide text-muted-text">{{ __('app.whatsapp_bulk_placeholders_title') }}</div>
+                                            <div class="flex flex-wrap gap-2 lg:justify-end">
+                                                @foreach([':name', ':header', ':content', ':url'] as $placeholder)
+                                                    <span class="rounded-full border border-border bg-card px-3 py-1 text-xs font-mono text-primary">{{ $placeholder }}</span>
+                                                @endforeach
+                                            </div>
                                         </div>
                                     @endif
                                 </div>
@@ -657,6 +676,48 @@
                                         <div class="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-text">{{ __('app.whatsapp_template_final_components_am') }}</div>
                                         <div class="flex flex-wrap gap-1.5">
                                             @foreach([':header_am', ':commemorations_block_am', ':footer_am'] as $placeholder)
+                                                <button type="button"
+                                                    @click.prevent="insertPlaceholder('{{ $placeholder }}')"
+                                                    class="group inline-flex items-center gap-1.5 rounded-lg border border-border bg-card pl-2 pr-2.5 py-1.5 text-xs font-mono font-medium text-secondary transition-all hover:border-accent hover:bg-accent/10 hover:text-accent hover:shadow-sm active:scale-95">
+                                                    <svg class="w-3 h-3 text-muted-text group-hover:text-accent transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                                    {{ $placeholder }}
+                                                </button>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </div>
+                            @elseif($template['key'] === 'whatsapp_bulk_message_final')
+                                <div class="space-y-3">
+                                    <div>
+                                        <div class="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-text">{{ __('app.whatsapp_template_final_components_en') }}</div>
+                                        <div class="flex flex-wrap gap-1.5">
+                                            @foreach([':header_en', ':content_en'] as $placeholder)
+                                                <button type="button"
+                                                    @click.prevent="insertPlaceholder('{{ $placeholder }}')"
+                                                    class="group inline-flex items-center gap-1.5 rounded-lg border border-border bg-card pl-2 pr-2.5 py-1.5 text-xs font-mono font-medium text-secondary transition-all hover:border-accent hover:bg-accent/10 hover:text-accent hover:shadow-sm active:scale-95">
+                                                    <svg class="w-3 h-3 text-muted-text group-hover:text-accent transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                                    {{ $placeholder }}
+                                                </button>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-text">{{ __('app.whatsapp_template_final_components_am') }}</div>
+                                        <div class="flex flex-wrap gap-1.5">
+                                            @foreach([':header_am', ':content_am'] as $placeholder)
+                                                <button type="button"
+                                                    @click.prevent="insertPlaceholder('{{ $placeholder }}')"
+                                                    class="group inline-flex items-center gap-1.5 rounded-lg border border-border bg-card pl-2 pr-2.5 py-1.5 text-xs font-mono font-medium text-secondary transition-all hover:border-accent hover:bg-accent/10 hover:text-accent hover:shadow-sm active:scale-95">
+                                                    <svg class="w-3 h-3 text-muted-text group-hover:text-accent transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                                    {{ $placeholder }}
+                                                </button>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-text">{{ __('app.whatsapp_bulk_placeholders_title') }}</div>
+                                        <div class="flex flex-wrap gap-1.5">
+                                            @foreach([':name', ':header', ':content', ':url'] as $placeholder)
                                                 <button type="button"
                                                     @click.prevent="insertPlaceholder('{{ $placeholder }}')"
                                                     class="group inline-flex items-center gap-1.5 rounded-lg border border-border bg-card pl-2 pr-2.5 py-1.5 text-xs font-mono font-medium text-secondary transition-all hover:border-accent hover:bg-accent/10 hover:text-accent hover:shadow-sm active:scale-95">
@@ -1068,28 +1129,50 @@ function whatsappTemplateEditor(initialTemplate, activeMemberCount, initialRecip
             return '';
         }
 
-        const runtimeBase = {
-            ...(samples[locale] || samples.en),
-            header: String(document.getElementById('bulk-header')?.value || (samples[locale]?.bulk_header_value ?? '')),
-            content: String(document.getElementById('bulk-content')?.value || (samples[locale]?.bulk_content_value ?? '')),
-            url: String(document.getElementById('bulk-link')?.value || samples[locale]?.url || ''),
+        const runtimeBaseEn = {
+            ...(samples.en || {}),
+            header: String(document.getElementById('bulk-header')?.value || (samples.en?.bulk_header_value ?? '')),
+            content: String(document.getElementById('bulk-content')?.value || (samples.en?.bulk_content_value ?? '')),
+            url: String(document.getElementById('bulk-link')?.value || samples.en?.url || ''),
+        };
+        const runtimeBaseAm = {
+            ...(samples.am || samples.en || {}),
+            header: String(document.getElementById('bulk-header')?.value || (samples.am?.bulk_header_value ?? '')),
+            content: String(document.getElementById('bulk-content')?.value || (samples.am?.bulk_content_value ?? '')),
+            url: String(document.getElementById('bulk-link')?.value || samples.am?.url || ''),
         };
 
-        const headerTemplateInput = document.getElementById(`tpl-${locale}-${BULK_TEMPLATE_IDS.header}`);
-        const contentTemplateInput = document.getElementById(`tpl-${locale}-${BULK_TEMPLATE_IDS.content}`);
+        const headerTemplateInputEn = document.getElementById(`tpl-en-${BULK_TEMPLATE_IDS.header}`);
+        const headerTemplateInputAm = document.getElementById(`tpl-am-${BULK_TEMPLATE_IDS.header}`);
+        const contentTemplateInputEn = document.getElementById(`tpl-en-${BULK_TEMPLATE_IDS.content}`);
+        const contentTemplateInputAm = document.getElementById(`tpl-am-${BULK_TEMPLATE_IDS.content}`);
 
-        const renderedHeader = normalizeRenderedText(
+        const renderedHeaderEn = normalizeRenderedText(
             replacePlaceholders(
-                headerTemplateInput?.value || '',
-                runtimeBase,
-                allowedKeysFor(headerTemplateInput || finalInput)
+                headerTemplateInputEn?.value || '',
+                runtimeBaseEn,
+                allowedKeysFor(headerTemplateInputEn || finalInput)
             )
         );
-        const renderedContent = normalizeRenderedText(
+        const renderedHeaderAm = normalizeRenderedText(
             replacePlaceholders(
-                contentTemplateInput?.value || '',
-                runtimeBase,
-                allowedKeysFor(contentTemplateInput || finalInput)
+                headerTemplateInputAm?.value || '',
+                runtimeBaseAm,
+                allowedKeysFor(headerTemplateInputAm || finalInput)
+            )
+        );
+        const renderedContentEn = normalizeRenderedText(
+            replacePlaceholders(
+                contentTemplateInputEn?.value || '',
+                runtimeBaseEn,
+                allowedKeysFor(contentTemplateInputEn || finalInput)
+            )
+        );
+        const renderedContentAm = normalizeRenderedText(
+            replacePlaceholders(
+                contentTemplateInputAm?.value || '',
+                runtimeBaseAm,
+                allowedKeysFor(contentTemplateInputAm || finalInput)
             )
         );
 
@@ -1097,9 +1180,13 @@ function whatsappTemplateEditor(initialTemplate, activeMemberCount, initialRecip
             replacePlaceholders(
                 finalInput.value,
                 {
-                    ...runtimeBase,
-                    header: renderedHeader,
-                    content: renderedContent,
+                    ...(locale === 'am' ? runtimeBaseAm : runtimeBaseEn),
+                    header_en: renderedHeaderEn,
+                    content_en: renderedContentEn,
+                    header_am: renderedHeaderAm,
+                    content_am: renderedContentAm,
+                    header: locale === 'am' ? renderedHeaderAm : renderedHeaderEn,
+                    content: locale === 'am' ? renderedContentAm : renderedContentEn,
                 },
                 allowedKeysFor(finalInput)
             )
