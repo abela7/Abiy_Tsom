@@ -250,47 +250,28 @@
             <span>{{ __('app.whatsapp_bulk_send_warning') }}</span>
         </div>
 
-        <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <div class="grid gap-3 md:grid-cols-3">
             <div class="rounded-2xl border border-border bg-surface/30 p-4">
-                <h3 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_bulk_builder_title') }}</h3>
-                <p class="mt-1 text-sm text-muted-text">{{ __('app.whatsapp_bulk_builder_help') }}</p>
-                <div class="mt-4 grid gap-3 md:grid-cols-3">
-                    <div class="rounded-xl border border-border bg-card p-4">
-                        <span class="text-[11px] font-bold uppercase tracking-wider text-muted-text">{{ __('app.whatsapp_bulk_builder_step_1_title') }}</span>
-                        <p class="mt-2 text-sm text-secondary">{{ __('app.whatsapp_bulk_builder_step_1_body') }}</p>
-                    </div>
-                    <div class="rounded-xl border border-border bg-card p-4">
-                        <span class="text-[11px] font-bold uppercase tracking-wider text-muted-text">{{ __('app.whatsapp_bulk_builder_step_2_title') }}</span>
-                        <p class="mt-2 text-sm text-secondary">{{ __('app.whatsapp_bulk_builder_step_2_body') }}</p>
-                    </div>
-                    <div class="rounded-xl border border-border bg-card p-4">
-                        <span class="text-[11px] font-bold uppercase tracking-wider text-muted-text">{{ __('app.whatsapp_bulk_builder_step_3_title') }}</span>
-                        <p class="mt-2 text-sm text-secondary">{{ __('app.whatsapp_bulk_builder_step_3_body') }}</p>
-                    </div>
+                <div class="flex items-center justify-between gap-3">
+                    <h3 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_bulk_send_header_label') }}</h3>
+                    <code class="rounded-lg border border-border bg-card px-2.5 py-1 text-[11px] font-mono text-primary">:header</code>
                 </div>
-                <div class="mt-4 rounded-xl border border-primary/15 bg-primary/5 p-4">
-                    <div class="text-[11px] font-bold uppercase tracking-wider text-muted-text">{{ __('app.whatsapp_bulk_builder_step_4_title') }}</div>
-                    <p class="mt-2 text-sm text-secondary">{{ __('app.whatsapp_bulk_builder_step_4_body') }}</p>
-                    <div class="mt-3 inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-xs font-mono text-primary">
-                        <span>:url</span>
-                        <span class="text-muted-text">=</span>
-                        <span x-text="bulkLinkPreview() || '{{ __('app.whatsapp_bulk_send_link_empty_state') }}'"></span>
-                    </div>
-                </div>
+                <p class="mt-2 text-sm text-muted-text">{{ __('app.whatsapp_bulk_send_header_binding_help') }}</p>
             </div>
             <div class="rounded-2xl border border-border bg-surface/30 p-4">
-                <h3 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_bulk_placeholders_title') }}</h3>
-                <p class="mt-1 text-sm text-muted-text">{{ __('app.whatsapp_bulk_placeholders_help') }}</p>
-                <div class="mt-4 space-y-2 text-sm text-secondary">
-                    <div><code class="rounded bg-card px-2 py-1 text-xs text-primary">:name</code> {{ __('app.whatsapp_bulk_placeholder_name_help') }}</div>
-                    <div><code class="rounded bg-card px-2 py-1 text-xs text-primary">:header_en</code> {{ __('app.whatsapp_bulk_placeholder_header_en_help') }}</div>
-                    <div><code class="rounded bg-card px-2 py-1 text-xs text-primary">:content_en</code> {{ __('app.whatsapp_bulk_placeholder_content_en_help') }}</div>
-                    <div><code class="rounded bg-card px-2 py-1 text-xs text-primary">:header_am</code> {{ __('app.whatsapp_bulk_placeholder_header_am_help') }}</div>
-                    <div><code class="rounded bg-card px-2 py-1 text-xs text-primary">:content_am</code> {{ __('app.whatsapp_bulk_placeholder_content_am_help') }}</div>
-                    <div><code class="rounded bg-card px-2 py-1 text-xs text-primary">:header</code> {{ __('app.whatsapp_bulk_placeholder_header_help') }}</div>
-                    <div><code class="rounded bg-card px-2 py-1 text-xs text-primary">:content</code> {{ __('app.whatsapp_bulk_placeholder_content_help') }}</div>
-                    <div><code class="rounded bg-card px-2 py-1 text-xs text-primary">:url</code> {{ __('app.whatsapp_bulk_placeholder_url_help') }}</div>
+                <div class="flex items-center justify-between gap-3">
+                    <h3 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_bulk_send_content_label') }}</h3>
+                    <code class="rounded-lg border border-border bg-card px-2.5 py-1 text-[11px] font-mono text-primary">:content</code>
                 </div>
+                <p class="mt-2 text-sm text-muted-text">{{ __('app.whatsapp_bulk_send_content_binding_help') }}</p>
+            </div>
+            <div class="rounded-2xl border border-border bg-surface/30 p-4">
+                <div class="flex items-center justify-between gap-3">
+                    <h3 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_bulk_send_link_label') }}</h3>
+                    <code class="rounded-lg border border-border bg-card px-2.5 py-1 text-[11px] font-mono text-primary">:url</code>
+                </div>
+                <p class="mt-2 text-sm text-muted-text">{{ __('app.whatsapp_bulk_send_link_binding_help') }}</p>
+                <p class="mt-2 text-xs font-mono text-primary" x-text="bulkLinkPreview() || '{{ __('app.whatsapp_bulk_send_link_empty_state') }}'"></p>
             </div>
         </div>
 
@@ -341,6 +322,7 @@
                         value="{{ old('bulk_header') }}"
                         class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-primary outline-none transition focus:ring-2 focus:ring-accent"
                     >
+                    <p class="mt-1 text-xs text-muted-text">{{ __('app.whatsapp_bulk_send_header_binding_help') }}</p>
                 </div>
 
                 <div>
@@ -351,6 +333,7 @@
                         rows="8"
                         class="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm leading-6 text-primary outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 resize-y"
                     >{{ old('bulk_content') }}</textarea>
+                    <p class="mt-1 text-xs text-muted-text">{{ __('app.whatsapp_bulk_send_content_binding_help') }}</p>
                 </div>
 
                 <div class="rounded-xl border border-border bg-card p-4">
@@ -449,7 +432,7 @@
     </div>
 
     {{-- Main editor area --}}
-    <div class="grid gap-5 xl:grid-cols-[260px_minmax(0,1fr)]">
+    <div x-show="activeWorkspace === 'main'" x-cloak class="grid gap-5 xl:grid-cols-[260px_minmax(0,1fr)]">
 
         {{-- Sidebar: template list --}}
         <aside class="space-y-3 xl:sticky xl:top-24 xl:self-start">
@@ -1113,14 +1096,10 @@ function whatsappTemplateEditor(initialTemplate, activeMemberCount, initialRecip
             }
         },
         shouldShowGroup(groupKey) {
-            return this.activeWorkspace === 'bulk'
-                ? groupKey === 'bulk'
-                : groupKey !== 'bulk';
+            return this.activeWorkspace === 'main';
         },
         workspaceAllowsTemplate(key) {
-            return this.activeWorkspace === 'bulk'
-                ? this.bulkTemplateKeys.includes(key)
-                : !this.bulkTemplateKeys.includes(key);
+            return this.activeWorkspace === 'main';
         },
         isBulkSelectedMode() {
             return this.bulkRecipientMode === 'selected_active';
