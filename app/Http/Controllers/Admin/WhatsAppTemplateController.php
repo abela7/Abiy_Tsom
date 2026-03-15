@@ -406,22 +406,28 @@ class WhatsAppTemplateController extends Controller
         UltraMsgService $ultraMsg,
         WhatsAppTemplateService $whatsAppTemplateService
     ): RedirectResponse {
-        $validated = $request->validate([
-            'bulk_sample_member_id' => ['required', 'integer', 'exists:members,id'],
-        ]);
-
         [$englishMessage, $amharicMessage] = $this->validateBulkMessages($request);
+        $sampleMemberId = $this->resolveBulkSampleMemberId($request);
+
+        if ($sampleMemberId === null) {
+            return redirect()
+                ->route('admin.whatsapp.template')
+                ->withInput()
+                ->withErrors([
+                    'bulk_sample_member_id' => __('app.whatsapp_bulk_sample_member_required'),
+                ]);
+        }
 
         /** @var Member|null $member */
         $member = Member::query()
             ->activeConfirmedWhatsApp()
-            ->find((int) $validated['bulk_sample_member_id']);
+            ->find($sampleMemberId);
 
         if (! $member || ! $member->whatsapp_phone) {
             return redirect()
                 ->route('admin.whatsapp.template')
                 ->withInput([
-                    'bulk_sample_member_id' => (int) $validated['bulk_sample_member_id'],
+                    'bulk_sample_member_id' => $sampleMemberId,
                 ])
                 ->with('error', __('app.whatsapp_bulk_sample_member_invalid'));
         }
@@ -501,5 +507,30 @@ class WhatsAppTemplateController extends Controller
         );
 
         Translation::clearCache();
+    }
+
+    private function resolveBulkSampleMemberId(Request $request): ?int
+    {
+        $explicitId = (int) $request->integer('bulk_sample_member_id');
+        if ($explicitId > 0) {
+            return $explicitId;
+        }
+
+        $recipientMode = (string) $request->input('recipient_mode', 'all_active');
+        if ($recipientMode !== 'selected_active') {
+            return null;
+        }
+
+        $selectedIds = collect($request->input('selected_member_ids', []))
+            ->map(static fn (mixed $id): int => (int) $id)
+            ->filter(static fn (int $id): bool => $id > 0)
+            ->unique()
+            ->values();
+
+        if ($selectedIds->count() === 1) {
+            return $selectedIds->first();
+        }
+
+        return null;
     }
 }
