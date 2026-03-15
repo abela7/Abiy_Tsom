@@ -250,6 +250,62 @@
             <span>{{ __('app.whatsapp_bulk_send_warning') }}</span>
         </div>
 
+        <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <div class="rounded-2xl border border-border bg-surface/40 p-4">
+                <div class="text-[11px] font-semibold uppercase tracking-wide text-muted-text">{{ __('app.whatsapp_bulk_delivery_mode_label') }}</div>
+                <div class="mt-2 text-sm font-semibold text-primary">
+                    @if($bulkDeliveryStatus['runs_inline'])
+                        {{ __('app.whatsapp_bulk_delivery_mode_sync', ['connection' => $bulkDeliveryStatus['queue_connection']]) }}
+                    @else
+                        {{ __('app.whatsapp_bulk_delivery_mode_async', ['connection' => $bulkDeliveryStatus['queue_connection']]) }}
+                    @endif
+                </div>
+            </div>
+            <div class="rounded-2xl border border-border bg-surface/40 p-4">
+                <div class="text-[11px] font-semibold uppercase tracking-wide text-muted-text">{{ __('app.whatsapp_bulk_delivery_ultramsg_label') }}</div>
+                <div class="mt-2 text-sm font-semibold {{ $bulkDeliveryStatus['ultramsg_configured'] ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
+                    {{ $bulkDeliveryStatus['ultramsg_configured']
+                        ? __('app.whatsapp_bulk_delivery_ultramsg_ready')
+                        : __('app.whatsapp_bulk_delivery_ultramsg_missing') }}
+                </div>
+            </div>
+            <div class="rounded-2xl border border-border bg-surface/40 p-4">
+                <div class="text-[11px] font-semibold uppercase tracking-wide text-muted-text">{{ __('app.whatsapp_bulk_delivery_pending_label') }}</div>
+                <div class="mt-2 text-sm font-semibold text-primary">
+                    {{ __('app.whatsapp_bulk_delivery_pending_count', ['count' => $bulkDeliveryStatus['pending_jobs']]) }}
+                </div>
+            </div>
+            <div class="rounded-2xl border border-border bg-surface/40 p-4">
+                <div class="text-[11px] font-semibold uppercase tracking-wide text-muted-text">{{ __('app.whatsapp_bulk_delivery_failed_label') }}</div>
+                <div class="mt-2 text-sm font-semibold text-primary">
+                    {{ __('app.whatsapp_bulk_delivery_failed_count', ['count' => $bulkDeliveryStatus['failed_jobs']]) }}
+                </div>
+            </div>
+        </div>
+
+        @if($bulkDeliveryStatus['requires_worker'])
+            <div class="rounded-2xl border border-border bg-surface/30 p-4">
+                <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                        <h3 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_bulk_delivery_status_title') }}</h3>
+                        <p class="mt-1 text-sm text-muted-text">
+                            {{ __('app.whatsapp_bulk_delivery_worker_help', ['queue' => 'whatsapp-bulk']) }}
+                        </p>
+                    </div>
+                    <a
+                        href="{{ route('admin.whatsapp.cron') }}"
+                        class="inline-flex items-center justify-center rounded-lg border border-border bg-card px-4 py-2 text-sm font-semibold text-primary transition hover:bg-muted/50"
+                    >
+                        {{ __('app.whatsapp_bulk_delivery_open_cron') }}
+                    </a>
+                </div>
+            </div>
+        @else
+            <div class="rounded-2xl border border-emerald-300/50 bg-emerald-50/60 px-4 py-3 text-sm text-emerald-800 dark:bg-emerald-900/15 dark:text-emerald-200 dark:border-emerald-500/20">
+                <span>{{ __('app.whatsapp_bulk_delivery_inline_help') }}</span>
+            </div>
+        @endif
+
         <div class="rounded-2xl border border-border bg-surface/30 p-4">
             <div class="flex flex-wrap items-center gap-3">
                 <h3 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_bulk_message_placeholder_title') }}</h3>

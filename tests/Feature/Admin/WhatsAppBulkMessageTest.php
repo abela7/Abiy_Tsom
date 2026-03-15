@@ -9,8 +9,10 @@ use App\Models\Member;
 use App\Models\Translation;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class WhatsAppBulkMessageTest extends TestCase
@@ -27,6 +29,42 @@ class WhatsAppBulkMessageTest extends TestCase
         $response->assertOk()
             ->assertViewIs('admin.whatsapp.template')
             ->assertSee(__('app.whatsapp_bulk_send_title'));
+    }
+
+    public function test_bulk_message_section_shows_async_delivery_status_and_queue_counts(): void
+    {
+        config()->set('queue.default', 'database');
+        config()->set('services.ultramsg.instance_id', 'instance999');
+        config()->set('services.ultramsg.token', 'token-123');
+
+        $admin = $this->createSuperAdmin();
+
+        DB::table('jobs')->insert([
+            'queue' => SendBulkWhatsAppMessageJob::QUEUE_NAME,
+            'payload' => '{}',
+            'attempts' => 0,
+            'reserved_at' => null,
+            'available_at' => now()->timestamp,
+            'created_at' => now()->timestamp,
+        ]);
+
+        DB::table('failed_jobs')->insert([
+            'uuid' => (string) Str::uuid(),
+            'connection' => 'database',
+            'queue' => SendBulkWhatsAppMessageJob::QUEUE_NAME,
+            'payload' => '{}',
+            'exception' => 'Bulk send failed.',
+            'failed_at' => now(),
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('admin.whatsapp.template'));
+
+        $response->assertOk()
+            ->assertSee(__('app.whatsapp_bulk_delivery_mode_async', ['connection' => 'database']))
+            ->assertSee(__('app.whatsapp_bulk_delivery_ultramsg_ready'))
+            ->assertSee(__('app.whatsapp_bulk_delivery_pending_count', ['count' => 1]))
+            ->assertSee(__('app.whatsapp_bulk_delivery_failed_count', ['count' => 1]))
+            ->assertSee(route('admin.whatsapp.cron'), false);
     }
 
     public function test_super_admin_can_queue_bulk_message_for_all_active_members(): void

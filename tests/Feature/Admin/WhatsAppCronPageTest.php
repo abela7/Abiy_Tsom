@@ -19,12 +19,14 @@ class WhatsAppCronPageTest extends TestCase
             'username' => 'admin',
             'password' => bcrypt('password'),
             'role' => 'admin',
+            'is_super_admin' => true,
         ]);
 
         $response = $this->actingAs($admin)->get(route('admin.whatsapp.cron'));
 
         $response->assertOk()
             ->assertViewIs('admin.whatsapp.cron')
-            ->assertViewHas(['phpPath', 'artisanPath', 'appUrl']);
+            ->assertViewHas(['phpPath', 'artisanPath', 'appUrl'])
+            ->assertSee('whatsapp-reminders,whatsapp-bulk');
     }
 }

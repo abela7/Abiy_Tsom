@@ -16,7 +16,9 @@ use App\Services\WhatsAppTemplateService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use Throwable;
 
 /**
  * Manage WhatsApp message templates used by member reminder/confirmation flows.
@@ -100,7 +102,7 @@ class WhatsAppTemplateController extends Controller
     /**
      * Show WhatsApp template editor.
      */
-    public function index(): View
+    public function index(UltraMsgService $ultraMsg): View
     {
         $config = $this->templateConfig();
         $keys = array_map(static fn (array $item): string => $item['key'], $config);
@@ -169,7 +171,23 @@ class WhatsAppTemplateController extends Controller
                 ->value('value') ?? ($amFile[self::BULK_MESSAGE_KEY] ?? '')),
         ];
 
-        return view('admin.whatsapp.template', compact('templates', 'testMembers', 'activeMembers', 'bulkMessages'));
+        $queueConnection = (string) config('queue.default', 'sync');
+        $bulkDeliveryStatus = [
+            'queue_connection' => $queueConnection,
+            'runs_inline' => $queueConnection === 'sync',
+            'requires_worker' => $queueConnection !== 'sync',
+            'ultramsg_configured' => $ultraMsg->isConfigured(),
+            'pending_jobs' => $this->queueCount('jobs', SendBulkWhatsAppMessageJob::QUEUE_NAME),
+            'failed_jobs' => $this->queueCount('failed_jobs', SendBulkWhatsAppMessageJob::QUEUE_NAME),
+        ];
+
+        return view('admin.whatsapp.template', compact(
+            'templates',
+            'testMembers',
+            'activeMembers',
+            'bulkMessages',
+            'bulkDeliveryStatus'
+        ));
     }
 
     /**
@@ -525,5 +543,16 @@ class WhatsAppTemplateController extends Controller
         }
 
         return null;
+    }
+
+    private function queueCount(string $table, string $queue): int
+    {
+        try {
+            return (int) DB::table($table)
+                ->where('queue', $queue)
+                ->count();
+        } catch (Throwable) {
+            return 0;
+        }
     }
 }
