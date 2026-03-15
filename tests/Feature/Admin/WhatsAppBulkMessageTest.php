@@ -160,6 +160,40 @@ class WhatsAppBulkMessageTest extends TestCase
         });
     }
 
+    public function test_bulk_sample_prefers_single_selected_recipient_over_stale_sample_member(): void
+    {
+        config()->set('services.ultramsg.instance_id', 'instance999');
+        config()->set('services.ultramsg.token', 'token-123');
+
+        Http::fake([
+            'https://api.ultramsg.com/instance999/messages/chat' => Http::response([
+                'sent' => 'true',
+                'message' => 'ok',
+                'id' => 12345,
+            ]),
+        ]);
+
+        $admin = $this->createSuperAdmin();
+        $first = $this->createActiveMember('Abel', '+447700900111');
+        $second = $this->createActiveMember('Sara', '+447700900112');
+
+        $response = $this->actingAs($admin)->post(route('admin.whatsapp.template.bulk-test'), [
+            'recipient_mode' => 'selected_active',
+            'selected_member_ids' => [$second->id],
+            'bulk_sample_member_id' => $first->id,
+            'bulk_message_en' => 'Hello :name, English sample.',
+            'bulk_message_am' => 'ሰላም :name, የአማርኛ ሙከራ መልእክት።',
+        ]);
+
+        $response->assertRedirect(route('admin.whatsapp.template'))
+            ->assertSessionHas('success');
+
+        Http::assertSent(function (\Illuminate\Http\Client\Request $request): bool {
+            return $request['to'] === '+447700900112'
+                && str_contains((string) $request['body'], 'Hello Sara, English sample.');
+        });
+    }
+
     public function test_selected_active_mode_requires_member_selection(): void
     {
         Queue::fake();

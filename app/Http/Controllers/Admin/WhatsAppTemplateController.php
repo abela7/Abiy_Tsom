@@ -457,9 +457,6 @@ class WhatsAppTemplateController extends Controller
 
         return redirect()
             ->route('admin.whatsapp.template')
-            ->withInput([
-                'bulk_sample_member_id' => $member->id,
-            ])
             ->with('success', __('app.whatsapp_bulk_sample_sent', [
                 'name' => (string) ($member->baptism_name ?: $member->whatsapp_phone),
             ]));
@@ -511,24 +508,20 @@ class WhatsAppTemplateController extends Controller
 
     private function resolveBulkSampleMemberId(Request $request): ?int
     {
-        $explicitId = (int) $request->integer('bulk_sample_member_id');
-        if ($explicitId > 0) {
-            return $explicitId;
-        }
-
         $recipientMode = (string) $request->input('recipient_mode', 'all_active');
-        if ($recipientMode !== 'selected_active') {
-            return null;
-        }
-
         $selectedIds = collect($request->input('selected_member_ids', []))
             ->map(static fn (mixed $id): int => (int) $id)
             ->filter(static fn (int $id): bool => $id > 0)
             ->unique()
             ->values();
 
-        if ($selectedIds->count() === 1) {
+        if ($recipientMode === 'selected_active' && $selectedIds->count() === 1) {
             return $selectedIds->first();
+        }
+
+        $explicitId = (int) $request->integer('bulk_sample_member_id');
+        if ($explicitId > 0) {
+            return $explicitId;
         }
 
         return null;
