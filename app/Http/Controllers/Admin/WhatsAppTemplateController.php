@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\SendBulkWhatsAppMessageJob;
 use App\Models\DailyContent;
 use App\Models\LentSeason;
 use App\Models\Member;
@@ -62,6 +63,24 @@ class WhatsAppTemplateController extends Controller
                 'placeholder_keys' => WhatsAppTemplateService::DAILY_REMINDER_FINAL_PLACEHOLDERS,
             ],
             [
+                'key' => 'whatsapp_bulk_message_header',
+                'group' => 'whatsapp_member',
+                'title' => __('app.whatsapp_template_bulk_header'),
+                'placeholder_keys' => WhatsAppTemplateService::BULK_MESSAGE_PLACEHOLDERS,
+            ],
+            [
+                'key' => 'whatsapp_bulk_message_content',
+                'group' => 'whatsapp_member',
+                'title' => __('app.whatsapp_template_bulk_content'),
+                'placeholder_keys' => WhatsAppTemplateService::BULK_MESSAGE_PLACEHOLDERS,
+            ],
+            [
+                'key' => 'whatsapp_bulk_message_final',
+                'group' => 'whatsapp_member',
+                'title' => __('app.whatsapp_template_bulk_final'),
+                'placeholder_keys' => WhatsAppTemplateService::BULK_MESSAGE_PLACEHOLDERS,
+            ],
+            [
                 'key' => 'whatsapp_confirmation_prompt_message',
                 'group' => 'wizard',
                 'title' => __('app.whatsapp_template_confirm_prompt'),
@@ -107,6 +126,11 @@ class WhatsAppTemplateController extends Controller
             ->orderBy('baptism_name')
             ->orderBy('id')
             ->get(['id', 'baptism_name', 'whatsapp_phone', 'whatsapp_language', 'whatsapp_confirmation_status']);
+        $activeMembers = Member::query()
+            ->activeConfirmedWhatsApp()
+            ->orderBy('baptism_name')
+            ->orderBy('id')
+            ->get(['id', 'baptism_name', 'whatsapp_phone', 'whatsapp_language']);
 
         $enDb = Translation::query()
             ->where('locale', 'en')
@@ -148,7 +172,7 @@ class WhatsAppTemplateController extends Controller
             ];
         }, $config);
 
-        return view('admin.whatsapp.template', compact('templates', 'testMembers'));
+        return view('admin.whatsapp.template', compact('templates', 'testMembers', 'activeMembers'));
     }
 
     /**
@@ -293,6 +317,83 @@ class WhatsAppTemplateController extends Controller
             ])
             ->with('success', __('app.whatsapp_template_test_sent', [
                 'name' => (string) ($member->baptism_name ?: $member->whatsapp_phone),
+            ]));
+    }
+
+    /**
+     * Queue a custom bulk WhatsApp message for active confirmed members.
+     */
+    public function sendBulk(Request $request, UltraMsgService $ultraMsg): RedirectResponse
+    {
+        $validated = $request->validate([
+            'recipient_mode' => ['required', 'string', 'in:all_active,selected_active'],
+            'selected_member_ids' => ['nullable', 'array'],
+            'selected_member_ids.*' => ['integer', 'exists:members,id'],
+            'bulk_header' => ['required', 'string'],
+            'bulk_content' => ['required', 'string'],
+            'bulk_link' => ['nullable', 'url'],
+        ]);
+
+        $header = trim((string) $validated['bulk_header']);
+        $content = trim((string) $validated['bulk_content']);
+        $recipientMode = (string) $validated['recipient_mode'];
+        $selectedIds = collect($validated['selected_member_ids'] ?? [])
+            ->map(static fn (mixed $id): int => (int) $id)
+            ->filter(static fn (int $id): bool => $id > 0)
+            ->unique()
+            ->values();
+        $link = trim((string) ($validated['bulk_link'] ?? ''));
+        $link = $link !== '' ? $this->ensureHttpsUrl($link) : null;
+
+        if (! $ultraMsg->isConfigured()) {
+            return redirect()
+                ->route('admin.whatsapp.template')
+                ->withInput()
+                ->with('error', __('app.whatsapp_not_configured'));
+        }
+
+        $recipients = Member::query()
+            ->activeConfirmedWhatsApp()
+            ->when(
+                $recipientMode === 'selected_active',
+                fn ($query) => $query->whereIn('id', $selectedIds->all())
+            )
+            ->orderBy('id')
+            ->get(['id']);
+
+        if ($recipientMode === 'selected_active' && $selectedIds->isEmpty()) {
+            return redirect()
+                ->route('admin.whatsapp.template')
+                ->withInput()
+                ->withErrors([
+                    'selected_member_ids' => __('app.whatsapp_bulk_message_members_required'),
+                ]);
+        }
+
+        if ($recipientMode === 'selected_active' && $recipients->count() !== $selectedIds->count()) {
+            return redirect()
+                ->route('admin.whatsapp.template')
+                ->withInput()
+                ->withErrors([
+                    'selected_member_ids' => __('app.whatsapp_bulk_message_members_invalid'),
+                ]);
+        }
+
+        if ($recipients->isEmpty()) {
+            return redirect()
+                ->route('admin.whatsapp.template')
+                ->withInput()
+                ->with('error', __('app.whatsapp_bulk_message_no_recipients'));
+        }
+
+        foreach ($recipients as $member) {
+            SendBulkWhatsAppMessageJob::dispatch($member->id, $header, $content, $link);
+        }
+
+        return redirect()
+            ->route('admin.whatsapp.template')
+            ->with('success', __('app.whatsapp_bulk_message_queued', [
+                'count' => $recipients->count(),
             ]));
     }
 

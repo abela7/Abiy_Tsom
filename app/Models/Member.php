@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -100,5 +101,17 @@ class Member extends Model
     public function referrer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'referred_by');
+    }
+
+    /**
+     * Members who are confirmed and ready to receive WhatsApp messages.
+     */
+    public function scopeActiveConfirmedWhatsApp(Builder $query): Builder
+    {
+        return $query
+            ->where('whatsapp_reminder_enabled', true)
+            ->where('whatsapp_confirmation_status', 'confirmed')
+            ->whereNotNull('whatsapp_phone')
+            ->where('whatsapp_phone', '!=', '');
     }
 }

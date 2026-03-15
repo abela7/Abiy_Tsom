@@ -53,8 +53,7 @@ final class WhatsAppTemplateService
 
     public function __construct(
         private readonly EthiopianCalendarService $ethiopianCalendarService
-    ) {
-    }
+    ) {}
 
     /** @var list<string> */
     public const DAILY_REMINDER_PLACEHOLDERS = [
@@ -126,6 +125,14 @@ final class WhatsAppTemplateService
         'telegram_url',
     ];
 
+    /** @var list<string> */
+    public const BULK_MESSAGE_PLACEHOLDERS = [
+        'name',
+        'header',
+        'content',
+        'url',
+    ];
+
     /**
      * @return array{locale: string, variables: array<string, string>, header: string, content: string, message: string}
      */
@@ -195,6 +202,55 @@ final class WhatsAppTemplateService
     }
 
     /**
+     * @return array{locale: string, variables: array<string, string>, header: string, content: string, message: string}
+     */
+    public function renderBulkMessage(
+        Member $member,
+        string $header,
+        string $content,
+        ?string $url = null,
+        ?string $locale = null
+    ): array {
+        $resolvedLocale = $this->normalizeLocale($locale ?? (string) ($member->whatsapp_language ?? $member->locale ?? 'en'));
+        $variables = $this->bulkMessageVariables($member, $header, $content, $url);
+
+        $renderedHeader = $this->normalizeRenderedText(
+            $this->translate('app.whatsapp_bulk_message_header', $variables, $resolvedLocale)
+        );
+        $renderedContent = $this->normalizeRenderedText(
+            $this->translate('app.whatsapp_bulk_message_content', $variables, $resolvedLocale)
+        );
+
+        $finalVariables = [
+            ...$variables,
+            'header' => $renderedHeader,
+            'content' => $renderedContent,
+        ];
+
+        $message = $this->normalizeRenderedText(
+            $this->translate('app.whatsapp_bulk_message_final', $finalVariables, $resolvedLocale)
+        );
+
+        if ($message === '') {
+            $message = $this->normalizeRenderedText(
+                implode("\n\n", array_values(array_filter([
+                    $renderedHeader,
+                    $renderedContent,
+                    trim((string) ($variables['url'] ?? '')),
+                ], static fn (string $value): bool => $value !== '')))
+            );
+        }
+
+        return [
+            'locale' => $resolvedLocale,
+            'variables' => $finalVariables,
+            'header' => $renderedHeader,
+            'content' => $renderedContent,
+            'message' => $message,
+        ];
+    }
+
+    /**
      * @return array<string, string>
      */
     private function dailyReminderVariables(
@@ -246,6 +302,25 @@ final class WhatsAppTemplateService
             'baptism_name' => $name,
             'url' => $url,
             'telegram_url' => $telegramUrl,
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function bulkMessageVariables(
+        Member $member,
+        string $header,
+        string $content,
+        ?string $url
+    ): array {
+        $name = trim((string) ($member->baptism_name ?? ''));
+
+        return [
+            'name' => $name,
+            'header' => trim($header),
+            'content' => trim($content),
+            'url' => trim((string) ($url ?? '')),
         ];
     }
 

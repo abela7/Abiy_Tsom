@@ -347,6 +347,7 @@ Route::middleware(['auth', 'admin.audit'])->prefix('admin')->name('admin.')->gro
         Route::get('/whatsapp/template', [Admin\WhatsAppTemplateController::class, 'index'])->name('whatsapp.template');
         Route::put('/whatsapp/template', [Admin\WhatsAppTemplateController::class, 'update'])->name('whatsapp.template.update');
         Route::post('/whatsapp/template/test', [Admin\WhatsAppTemplateController::class, 'sendTest'])->name('whatsapp.template.test');
+        Route::post('/whatsapp/template/bulk-send', [Admin\WhatsAppTemplateController::class, 'sendBulk'])->name('whatsapp.template.bulk-send');
         Route::get('/whatsapp/timetable', [Admin\WhatsAppTimetableController::class, 'index'])->name('whatsapp.timetable');
         Route::get('/whatsapp/reminders/{member}/engagement', [Admin\WhatsAppRemindersController::class, 'engagement'])->name('whatsapp.reminders.engagement');
         Route::put('/whatsapp/reminders/{member}', [Admin\WhatsAppRemindersController::class, 'update'])->name('whatsapp.reminders.update');
