@@ -681,6 +681,84 @@
                                     @endif
                                 </div>
                             </div>
+                            @if($template['key'] === 'whatsapp_bulk_message_final')
+                                <div class="rounded-xl border border-primary/15 bg-primary/5 px-4 py-4">
+                                    <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                                        <div>
+                                            <h3 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_bulk_message_parts_title') }}</h3>
+                                            <p class="mt-1 text-sm text-muted-text">{{ __('app.whatsapp_bulk_message_parts_help') }}</p>
+                                        </div>
+                                        <div class="flex flex-wrap gap-2">
+                                            <button
+                                                type="button"
+                                                @click="selectTemplate('whatsapp_bulk_message_header')"
+                                                class="inline-flex items-center justify-center rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-primary transition hover:bg-muted/50"
+                                            >
+                                                {{ __('app.whatsapp_bulk_open_header_template') }}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                @click="selectTemplate('whatsapp_bulk_message_content')"
+                                                class="inline-flex items-center justify-center rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-primary transition hover:bg-muted/50"
+                                            >
+                                                {{ __('app.whatsapp_bulk_open_content_template') }}
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="mt-4 grid gap-3 md:grid-cols-3">
+                                        <div class="rounded-xl border border-border bg-card p-4">
+                                            <div class="flex items-center justify-between gap-2">
+                                                <span class="text-xs font-semibold text-primary">{{ __('app.whatsapp_bulk_message_part_header_title') }}</span>
+                                                <code class="rounded border border-border bg-surface px-2 py-1 text-[11px] font-mono text-primary">:header</code>
+                                            </div>
+                                            <p class="mt-2 text-sm text-muted-text">{{ __('app.whatsapp_bulk_message_part_header_help') }}</p>
+                                        </div>
+                                        <div class="rounded-xl border border-border bg-card p-4">
+                                            <div class="flex items-center justify-between gap-2">
+                                                <span class="text-xs font-semibold text-primary">{{ __('app.whatsapp_bulk_message_part_content_title') }}</span>
+                                                <code class="rounded border border-border bg-surface px-2 py-1 text-[11px] font-mono text-primary">:content</code>
+                                            </div>
+                                            <p class="mt-2 text-sm text-muted-text">{{ __('app.whatsapp_bulk_message_part_content_help') }}</p>
+                                        </div>
+                                        <div class="rounded-xl border border-border bg-card p-4">
+                                            <div class="flex items-center justify-between gap-2">
+                                                <span class="text-xs font-semibold text-primary">{{ __('app.whatsapp_bulk_message_part_url_title') }}</span>
+                                                <code class="rounded border border-border bg-surface px-2 py-1 text-[11px] font-mono text-primary">:url</code>
+                                            </div>
+                                            <p class="mt-2 text-sm text-muted-text">{{ __('app.whatsapp_bulk_message_part_url_help') }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="mt-4 rounded-xl border border-border bg-card p-4">
+                                        <div class="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+                                            <div>
+                                                <div class="text-xs font-semibold text-primary">{{ __('app.whatsapp_bulk_default_layout_title') }}</div>
+                                                <p class="mt-1 text-sm text-muted-text">{{ __('app.whatsapp_bulk_default_layout_help') }}</p>
+                                            </div>
+                                            <code class="rounded-lg border border-border bg-surface px-3 py-2 text-xs font-mono text-primary">:header\n\n:content\n\n:url</code>
+                                        </div>
+                                    </div>
+                                </div>
+                            @elseif($template['key'] === 'whatsapp_bulk_message_header')
+                                <div class="rounded-xl border border-border bg-surface/60 px-4 py-4">
+                                    <div class="flex items-center justify-between gap-3">
+                                        <div>
+                                            <h3 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_bulk_template_input_title') }}</h3>
+                                            <p class="mt-1 text-sm text-muted-text">{{ __('app.whatsapp_bulk_template_header_input_help') }}</p>
+                                        </div>
+                                        <code class="rounded-lg border border-border bg-card px-3 py-2 text-xs font-mono text-primary">:header</code>
+                                    </div>
+                                </div>
+                            @elseif($template['key'] === 'whatsapp_bulk_message_content')
+                                <div class="rounded-xl border border-border bg-surface/60 px-4 py-4">
+                                    <div class="flex items-center justify-between gap-3">
+                                        <div>
+                                            <h3 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_bulk_template_input_title') }}</h3>
+                                            <p class="mt-1 text-sm text-muted-text">{{ __('app.whatsapp_bulk_template_content_input_help') }}</p>
+                                        </div>
+                                        <code class="rounded-lg border border-border bg-card px-3 py-2 text-xs font-mono text-primary">:content</code>
+                                    </div>
+                                </div>
+                            @endif
                         @endif
 
                         {{-- Placeholder toolbar --}}
@@ -724,6 +802,19 @@
                             @elseif($template['key'] === 'whatsapp_bulk_message_final')
                                 <div class="space-y-3">
                                     <div>
+                                        <div class="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-text">{{ __('app.whatsapp_bulk_default_layout_title') }}</div>
+                                        <div class="flex flex-wrap gap-1.5">
+                                            @foreach([':header', ':content', ':url'] as $placeholder)
+                                                <button type="button"
+                                                    @click.prevent="insertPlaceholder('{{ $placeholder }}')"
+                                                    class="group inline-flex items-center gap-1.5 rounded-lg border border-border bg-card pl-2 pr-2.5 py-1.5 text-xs font-mono font-medium text-secondary transition-all hover:border-accent hover:bg-accent/10 hover:text-accent hover:shadow-sm active:scale-95">
+                                                    <svg class="w-3 h-3 text-muted-text group-hover:text-accent transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                                    {{ $placeholder }}
+                                                </button>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                    <div>
                                         <div class="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-text">{{ __('app.whatsapp_template_final_components_en') }}</div>
                                         <div class="flex flex-wrap gap-1.5">
                                             @foreach([':header_en', ':content_en'] as $placeholder)
@@ -752,7 +843,7 @@
                                     <div>
                                         <div class="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-text">{{ __('app.whatsapp_bulk_placeholders_title') }}</div>
                                         <div class="flex flex-wrap gap-1.5">
-                                            @foreach([':name', ':header', ':content', ':url'] as $placeholder)
+                                            @foreach([':name'] as $placeholder)
                                                 <button type="button"
                                                     @click.prevent="insertPlaceholder('{{ $placeholder }}')"
                                                     class="group inline-flex items-center gap-1.5 rounded-lg border border-border bg-card pl-2 pr-2.5 py-1.5 text-xs font-mono font-medium text-secondary transition-all hover:border-accent hover:bg-accent/10 hover:text-accent hover:shadow-sm active:scale-95">
