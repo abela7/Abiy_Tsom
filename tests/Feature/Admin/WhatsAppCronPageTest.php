@@ -27,6 +27,7 @@ class WhatsAppCronPageTest extends TestCase
         $response->assertOk()
             ->assertViewIs('admin.whatsapp.cron')
             ->assertViewHas(['phpPath', 'artisanPath', 'appUrl'])
-            ->assertSee('whatsapp-reminders,whatsapp-bulk');
+            ->assertSee('--queue=whatsapp-reminders')
+            ->assertSee('--queue=whatsapp-bulk');
     }
 }

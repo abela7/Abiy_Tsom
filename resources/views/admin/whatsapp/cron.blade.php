@@ -27,7 +27,10 @@
             <p class="text-xs font-medium text-primary mb-1">{{ __('app.whatsapp_cron_reminders_job') }}</p>
             <pre class="p-3 bg-muted rounded-lg text-sm font-mono overflow-x-auto break-all mb-4">* * * * * cd {{ $projectPath }} && {{ $phpPath }} artisan reminders:send-whatsapp --queue >> /dev/null 2>&1</pre>
             <p class="text-xs font-medium text-primary mb-1">{{ __('app.whatsapp_cron_queue_worker_job') }}</p>
-            <pre class="p-3 bg-muted rounded-lg text-sm font-mono overflow-x-auto break-all mb-4">* * * * * cd {{ $projectPath }} && {{ $phpPath }} artisan queue:work database --queue=whatsapp-reminders,whatsapp-bulk --stop-when-empty --sleep=1 --tries=3 --max-time=55 >> /dev/null 2>&1</pre>
+            <pre class="p-3 bg-muted rounded-lg text-sm font-mono overflow-x-auto break-all mb-4">* * * * * cd {{ $projectPath }} && {{ $phpPath }} artisan queue:work database --queue=whatsapp-reminders --stop-when-empty --sleep=1 --tries=3 --max-time=55 >> /dev/null 2>&1</pre>
+            <p class="text-xs font-medium text-primary mb-1">{{ __('app.whatsapp_cron_bulk_worker_job') }}</p>
+            <p class="text-xs text-muted-text mb-2">{{ __('app.whatsapp_cron_bulk_worker_help') }}</p>
+            <pre class="p-3 bg-muted rounded-lg text-sm font-mono overflow-x-auto break-all mb-4">* * * * * cd {{ $projectPath }} && {{ $phpPath }} artisan queue:work database --queue=whatsapp-bulk --stop-when-empty --sleep=1 --tries=3 --max-time=55 >> /dev/null 2>&1</pre>
             <p class="text-xs font-medium text-primary mb-1">{{ __('app.whatsapp_cron_scheduler_job') }}</p>
             <pre class="p-3 bg-muted rounded-lg text-sm font-mono overflow-x-auto break-all">* * * * * cd {{ $projectPath }} && {{ $phpPath }} artisan schedule:run >> /dev/null 2>&1</pre>
             <p class="text-xs text-muted-text mt-2">{{ __('app.whatsapp_cron_queue_requirements') }}</p>
