@@ -658,6 +658,7 @@
                                                     {{ __('app.whatsapp_bulk_apply_recommended_explicit') }}
                                                 </button>
                                             </div>
+                                            <p class="text-xs text-muted-text lg:max-w-xs lg:text-right">{{ __('app.whatsapp_bulk_default_layout_help') }}</p>
                                             <div class="text-[11px] font-semibold uppercase tracking-wide text-muted-text">{{ __('app.whatsapp_template_final_components_en') }}</div>
                                             <div class="flex flex-wrap gap-2 lg:justify-end">
                                                 @foreach([':header_en', ':content_en'] as $placeholder)
@@ -932,6 +933,9 @@ function whatsappTemplateEditor(initialTemplate, activeMemberCount, initialRecip
             this.activeWorkspace = this.bulkTemplateKeys.includes(key) ? 'bulk' : 'main';
             this.$nextTick(() => {
                 const input = document.getElementById(`tpl-en-${key}`) || document.getElementById(`tpl-am-${key}`);
+                if (key === 'whatsapp_bulk_message_final') {
+                    this.ensureBulkFinalDefaults();
+                }
                 if (input) {
                     input.focus();
                     this.activeFieldId = input.id;
@@ -993,6 +997,19 @@ function whatsappTemplateEditor(initialTemplate, activeMemberCount, initialRecip
             enInput.focus();
             this.activeTemplate = 'whatsapp_bulk_message_final';
             this.activeFieldId = enInput.id;
+        },
+        ensureBulkFinalDefaults() {
+            const enInput = document.getElementById('tpl-en-whatsapp_bulk_message_final');
+            const amInput = document.getElementById('tpl-am-whatsapp_bulk_message_final');
+            if (!enInput || !amInput) {
+                return;
+            }
+
+            if (String(enInput.value || '').trim() !== '' || String(amInput.value || '').trim() !== '') {
+                return;
+            }
+
+            this.applyRecommendedBulkFinalTemplate('current');
         },
         switchWorkspace(workspace) {
             this.activeWorkspace = workspace;
