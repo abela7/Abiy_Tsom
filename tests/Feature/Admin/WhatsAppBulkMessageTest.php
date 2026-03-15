@@ -47,10 +47,8 @@ class WhatsAppBulkMessageTest extends TestCase
 
         $response = $this->actingAs($admin)->post(route('admin.whatsapp.template.bulk-send'), [
             'recipient_mode' => 'all_active',
-            'bulk_header' => 'Important update',
-            'bulk_content' => 'Please read this today.',
-            'bulk_link_1' => 'https://example.com/bulk',
-            'bulk_link_2' => 'https://example.com/calendar',
+            'bulk_message_en' => 'Hello :name, English bulk message.',
+            'bulk_message_am' => 'ሰላም :name, ይህ የአማርኛ መልእክት ነው።',
         ]);
 
         $response->assertRedirect(route('admin.whatsapp.template'))
@@ -59,9 +57,8 @@ class WhatsAppBulkMessageTest extends TestCase
         Queue::assertPushed(SendBulkWhatsAppMessageJob::class, 2);
         Queue::assertPushed(SendBulkWhatsAppMessageJob::class, function (SendBulkWhatsAppMessageJob $job) use ($first): bool {
             return $job->memberId === $first->id
-                && $job->header === 'Important update'
-                && $job->content === 'Please read this today.'
-                && $job->links === ['https://example.com/bulk', 'https://example.com/calendar', ''];
+                && $job->englishMessage === 'Hello :name, English bulk message.'
+                && $job->amharicMessage === 'ሰላም :name, ይህ የአማርኛ መልእክት ነው።';
         });
         Queue::assertPushed(SendBulkWhatsAppMessageJob::class, function (SendBulkWhatsAppMessageJob $job) use ($second): bool {
             return $job->memberId === $second->id;
@@ -80,8 +77,8 @@ class WhatsAppBulkMessageTest extends TestCase
             ->actingAs($admin)
             ->post(route('admin.whatsapp.template.bulk-send'), [
                 'recipient_mode' => 'selected_active',
-                'bulk_header' => 'Important update',
-                'bulk_content' => 'Please read this today.',
+                'bulk_message_en' => 'Hello :name',
+                'bulk_message_am' => 'ሰላም :name',
             ]);
 
         $response->assertRedirect(route('admin.whatsapp.template'))
@@ -110,8 +107,8 @@ class WhatsAppBulkMessageTest extends TestCase
             ->post(route('admin.whatsapp.template.bulk-send'), [
                 'recipient_mode' => 'selected_active',
                 'selected_member_ids' => [$pending->id],
-                'bulk_header' => 'Important update',
-                'bulk_content' => 'Please read this today.',
+                'bulk_message_en' => 'Hello :name',
+                'bulk_message_am' => 'ሰላም :name',
             ]);
 
         $response->assertRedirect(route('admin.whatsapp.template'))

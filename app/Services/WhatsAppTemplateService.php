@@ -126,25 +126,8 @@ final class WhatsAppTemplateService
     ];
 
     /** @var list<string> */
-    public const BULK_MESSAGE_SECTION_PLACEHOLDERS = [
+    public const BULK_MESSAGE_PLACEHOLDERS = [
         'name',
-        'header',
-        'content',
-    ];
-
-    /** @var list<string> */
-    public const BULK_MESSAGE_FINAL_PLACEHOLDERS = [
-        'name',
-        'header_en',
-        'content_en',
-        'header_am',
-        'content_am',
-        'header',
-        'content',
-        'url',
-        'url_1',
-        'url_2',
-        'url_3',
     ];
 
     /**
@@ -220,58 +203,22 @@ final class WhatsAppTemplateService
      */
     public function renderBulkMessage(
         Member $member,
-        string $header,
-        string $content,
-        array|string|null $links = null,
+        string $englishMessage,
+        string $amharicMessage,
         ?string $locale = null
     ): array {
         $resolvedLocale = $this->preferredLocale($member, $locale);
-        $variables = $this->bulkMessageVariables($member, $header, $content, $links);
-
-        $renderedHeaderEn = $this->normalizeRenderedText(
-            $this->translate('app.whatsapp_bulk_message_header', $variables, 'en')
-        );
-        $renderedHeaderAm = $this->normalizeRenderedText(
-            $this->translate('app.whatsapp_bulk_message_header', $variables, 'am')
-        );
-        $renderedContentEn = $this->normalizeRenderedText(
-            $this->translate('app.whatsapp_bulk_message_content', $variables, 'en')
-        );
-        $renderedContentAm = $this->normalizeRenderedText(
-            $this->translate('app.whatsapp_bulk_message_content', $variables, 'am')
-        );
-
-        $finalVariables = [
-            ...$variables,
-            'header_en' => $renderedHeaderEn,
-            'content_en' => $renderedContentEn,
-            'header_am' => $renderedHeaderAm,
-            'content_am' => $renderedContentAm,
-            'header' => $resolvedLocale === 'am' ? $renderedHeaderAm : $renderedHeaderEn,
-            'content' => $resolvedLocale === 'am' ? $renderedContentAm : $renderedContentEn,
-        ];
-
+        $variables = $this->bulkMessageVariables($member);
+        $selectedTemplate = $resolvedLocale === 'am' ? $amharicMessage : $englishMessage;
         $message = $this->normalizeRenderedText(
-            $this->translate('app.whatsapp_bulk_message_final', $finalVariables, $resolvedLocale)
+            $this->replaceTemplatePlaceholders($selectedTemplate, $variables)
         );
-
-        if ($message === '') {
-            $message = $this->normalizeRenderedText(
-                implode("\n\n", array_values(array_filter([
-                    $finalVariables['header'],
-                    $finalVariables['content'],
-                    trim((string) ($variables['url_1'] ?? '')),
-                    trim((string) ($variables['url_2'] ?? '')),
-                    trim((string) ($variables['url_3'] ?? '')),
-                ], static fn (string $value): bool => $value !== '')))
-            );
-        }
 
         return [
             'locale' => $resolvedLocale,
-            'variables' => $finalVariables,
-            'header' => $finalVariables['header'],
-            'content' => $finalVariables['content'],
+            'variables' => $variables,
+            'header' => '',
+            'content' => '',
             'message' => $message,
         ];
     }
@@ -335,41 +282,12 @@ final class WhatsAppTemplateService
      * @return array<string, string>
      */
     private function bulkMessageVariables(
-        Member $member,
-        string $header,
-        string $content,
-        array|string|null $links
+        Member $member
     ): array {
         $name = trim((string) ($member->baptism_name ?? ''));
-        $normalizedLinks = $this->normalizeBulkLinks($links);
 
         return [
             'name' => $name,
-            'header' => trim($header),
-            'content' => trim($content),
-            'url' => $normalizedLinks['url_1'],
-            ...$normalizedLinks,
-        ];
-    }
-
-    /**
-     * @return array{url_1: string, url_2: string, url_3: string}
-     */
-    private function normalizeBulkLinks(array|string|null $links): array
-    {
-        if (! is_array($links)) {
-            $links = [$links];
-        }
-
-        $values = array_values(array_map(
-            static fn (mixed $value): string => trim((string) ($value ?? '')),
-            $links
-        ));
-
-        return [
-            'url_1' => $values[0] ?? '',
-            'url_2' => $values[1] ?? '',
-            'url_3' => $values[2] ?? '',
         ];
     }
 
@@ -378,6 +296,20 @@ final class WhatsAppTemplateService
         Translation::loadFromDb($locale);
 
         return Lang::get($translationKey, $variables, $locale);
+    }
+
+    /**
+     * @param  array<string, string>  $variables
+     */
+    private function replaceTemplatePlaceholders(string $template, array $variables): string
+    {
+        return preg_replace_callback('/\:([a-z_]+)/i', function (array $matches) use ($variables): string {
+            $key = strtolower((string) ($matches[1] ?? ''));
+
+            return array_key_exists($key, $variables)
+                ? $variables[$key]
+                : (string) ($matches[0] ?? '');
+        }, $template) ?? $template;
     }
 
     private function normalizeLocale(string $locale): string

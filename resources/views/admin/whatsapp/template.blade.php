@@ -11,7 +11,7 @@
         'whatsapp_bulk_message_content',
         'whatsapp_bulk_message_final',
     ];
-    $initialWorkspace = old('recipient_mode') || old('bulk_header') || old('bulk_content') || old('bulk_link_1') || old('bulk_link_2') || old('bulk_link_3')
+    $initialWorkspace = old('recipient_mode') || old('bulk_message_en') || old('bulk_message_am')
         ? 'bulk'
         : 'main';
     $templateMeta = [
@@ -250,31 +250,12 @@
             <span>{{ __('app.whatsapp_bulk_send_warning') }}</span>
         </div>
 
-        <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-            <div class="rounded-2xl border border-border bg-surface/30 p-4">
-                <div class="flex items-center justify-between gap-3">
-                    <h3 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_bulk_send_header_label') }}</h3>
-                    <code class="rounded-lg border border-border bg-card px-2.5 py-1 text-[11px] font-mono text-primary">:header</code>
-                </div>
-                <p class="mt-2 text-sm text-muted-text">{{ __('app.whatsapp_bulk_send_header_binding_help') }}</p>
+        <div class="rounded-2xl border border-border bg-surface/30 p-4">
+            <div class="flex flex-wrap items-center gap-3">
+                <h3 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_bulk_message_placeholder_title') }}</h3>
+                <code class="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-mono text-primary">:name</code>
             </div>
-            <div class="rounded-2xl border border-border bg-surface/30 p-4">
-                <div class="flex items-center justify-between gap-3">
-                    <h3 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_bulk_send_content_label') }}</h3>
-                    <code class="rounded-lg border border-border bg-card px-2.5 py-1 text-[11px] font-mono text-primary">:content</code>
-                </div>
-                <p class="mt-2 text-sm text-muted-text">{{ __('app.whatsapp_bulk_send_content_binding_help') }}</p>
-            </div>
-            @foreach([1, 2, 3] as $linkNumber)
-                <div class="rounded-2xl border border-border bg-surface/30 p-4">
-                    <div class="flex items-center justify-between gap-3">
-                        <h3 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_bulk_send_link_number_label', ['number' => $linkNumber]) }}</h3>
-                        <code class="rounded-lg border border-border bg-card px-2.5 py-1 text-[11px] font-mono text-primary">:url_{{ $linkNumber }}</code>
-                    </div>
-                    <p class="mt-2 text-sm text-muted-text">{{ __('app.whatsapp_bulk_send_link_number_binding_help', ['number' => $linkNumber]) }}</p>
-                    <p class="mt-2 text-xs font-mono text-primary" x-text="bulkLinkPreview({{ $linkNumber }}) || '{{ __('app.whatsapp_bulk_send_link_empty_state') }}'"></p>
-                </div>
-            @endforeach
+            <p class="mt-2 text-sm text-muted-text">{{ __('app.whatsapp_bulk_message_placeholder_help') }}</p>
         </div>
 
         <form method="POST" action="{{ route('admin.whatsapp.template.bulk-send') }}" class="grid gap-5 xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
@@ -315,70 +296,43 @@
                     <p class="mt-1 text-xs text-muted-text">{{ __('app.whatsapp_bulk_send_members_placeholder') }}</p>
                 </div>
 
-                <div>
-                    <label for="bulk-header" class="mb-1 block text-xs font-medium text-secondary">{{ __('app.whatsapp_bulk_send_header_label') }}</label>
-                    <input
-                        id="bulk-header"
-                        name="bulk_header"
-                        type="text"
-                        value="{{ old('bulk_header') }}"
-                        class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-primary outline-none transition focus:ring-2 focus:ring-accent"
-                    >
-                    <p class="mt-1 text-xs text-muted-text">{{ __('app.whatsapp_bulk_send_header_binding_help') }}</p>
-                </div>
-
-                <div>
-                    <label for="bulk-content" class="mb-1 block text-xs font-medium text-secondary">{{ __('app.whatsapp_bulk_send_content_label') }}</label>
-                    <textarea
-                        id="bulk-content"
-                        name="bulk_content"
-                        rows="8"
-                        class="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm leading-6 text-primary outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 resize-y"
-                    >{{ old('bulk_content') }}</textarea>
-                    <p class="mt-1 text-xs text-muted-text">{{ __('app.whatsapp_bulk_send_content_binding_help') }}</p>
-                </div>
-
-                <div class="rounded-xl border border-border bg-card p-4 space-y-4">
-                    <div class="flex items-center gap-3">
-                        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 010 5.656l-3 3a4 4 0 11-5.656-5.656l1.5-1.5m4-4a4 4 0 015.656 0l3 3a4 4 0 01-5.656 5.656l-1.5-1.5"/></svg>
+                <div class="grid gap-4 xl:grid-cols-2">
+                    <div class="rounded-2xl border border-border bg-card p-4 space-y-4">
+                        <div class="flex items-center justify-between gap-3">
+                            <h3 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_bulk_send_message_en_label') }}</h3>
+                            <code class="rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-mono text-primary">:name</code>
                         </div>
+                        <textarea
+                            id="bulk-message-en"
+                            name="bulk_message_en"
+                            rows="10"
+                            class="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm leading-6 text-primary outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 resize-y"
+                        >{{ old('bulk_message_en') }}</textarea>
                         <div>
-                            <h3 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_bulk_send_links_title') }}</h3>
-                            <p class="text-xs text-muted-text">{{ __('app.whatsapp_bulk_send_links_help') }}</p>
-                        </div>
-                    </div>
-                    <div class="grid gap-3">
-                        @foreach([1, 2, 3] as $linkNumber)
-                            <div>
-                                <label for="bulk-link-{{ $linkNumber }}" class="mb-1 block text-xs font-medium text-secondary">{{ __('app.whatsapp_bulk_send_link_number_label', ['number' => $linkNumber]) }}</label>
-                                <input
-                                    id="bulk-link-{{ $linkNumber }}"
-                                    name="bulk_link_{{ $linkNumber }}"
-                                    type="url"
-                                    value="{{ old('bulk_link_'.$linkNumber) }}"
-                                    placeholder="{{ __('app.whatsapp_bulk_send_link_placeholder') }}"
-                                    class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-primary outline-none transition focus:ring-2 focus:ring-accent"
-                                >
-                                <p class="mt-1 text-xs text-muted-text">{{ __('app.whatsapp_bulk_send_link_number_binding_help', ['number' => $linkNumber]) }}</p>
+                            <div class="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-text">{{ __('app.whatsapp_bulk_preview_label') }}</div>
+                            <div class="rounded-xl border border-border bg-surface/50 p-4">
+                                <p id="bulk-preview-en" class="whitespace-pre-wrap break-words text-sm leading-6 text-primary"></p>
                             </div>
-                        @endforeach
-                    </div>
-                </div>
-
-                <div class="rounded-xl bg-surface/60 border border-border px-4 py-3">
-                    <div class="flex items-center justify-between gap-3 mb-2">
-                        <div class="flex items-center gap-2">
-                            <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
-                            <h3 class="text-xs font-semibold text-primary uppercase tracking-wide">{{ __('app.whatsapp_template_placeholders') }}</h3>
                         </div>
                     </div>
-                    <div class="flex flex-wrap gap-1.5">
-                        @foreach([':name', ':header', ':content', ':url_1', ':url_2', ':url_3'] as $placeholder)
-                            <span class="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card pl-2 pr-2.5 py-1.5 text-xs font-mono font-medium text-secondary">
-                                {{ $placeholder }}
-                            </span>
-                        @endforeach
+
+                    <div class="rounded-2xl border border-border bg-card p-4 space-y-4">
+                        <div class="flex items-center justify-between gap-3">
+                            <h3 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_bulk_send_message_am_label') }}</h3>
+                            <code class="rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-mono text-primary">:name</code>
+                        </div>
+                        <textarea
+                            id="bulk-message-am"
+                            name="bulk_message_am"
+                            rows="10"
+                            class="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm leading-6 text-primary outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 resize-y"
+                        >{{ old('bulk_message_am') }}</textarea>
+                        <div>
+                            <div class="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-text">{{ __('app.whatsapp_bulk_preview_label') }}</div>
+                            <div class="rounded-xl border border-border bg-surface/50 p-4">
+                                <p id="bulk-preview-am" class="whitespace-pre-wrap break-words text-sm leading-6 text-primary"></p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -391,52 +345,6 @@
                 </div>
             </div>
 
-            <div class="space-y-3">
-                <div>
-                    <h3 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_bulk_send_preview_title') }}</h3>
-                    <p class="mt-1 text-xs text-muted-text">{{ __('app.whatsapp_bulk_send_preview_help') }}</p>
-                </div>
-
-                <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
-                    <div class="rounded-2xl overflow-hidden border border-border shadow-sm">
-                        <div class="bg-[#075e54] dark:bg-[#1f2c34] px-3 py-2 flex items-center gap-2.5">
-                            <div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center">
-                                <svg class="w-3.5 h-3.5 text-white/80" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-white text-xs font-medium">{{ __('app.abiy_tsom_bot') }}</p>
-                            </div>
-                            <span class="flex h-5 items-center rounded bg-white/15 px-1.5 text-[10px] font-bold text-white/80">EN</span>
-                        </div>
-                        <div class="bg-[#ece5dd] dark:bg-[#0b141a] px-3 py-3 min-h-[180px]">
-                            <div class="ml-1.5">
-                                <div class="wa-bubble wa-bubble-en inline-block max-w-[95%] rounded-lg rounded-tl-none bg-[#dcf8c6] dark:bg-[#025144] px-3 py-2 shadow-sm">
-                                    <p id="bulk-preview-en" class="whitespace-pre-wrap break-words text-[13px] leading-[1.45] text-[#111b21] dark:text-[#e9edef]"></p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="rounded-2xl overflow-hidden border border-border shadow-sm">
-                        <div class="bg-[#075e54] dark:bg-[#1f2c34] px-3 py-2 flex items-center gap-2.5">
-                            <div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center">
-                                <svg class="w-3.5 h-3.5 text-white/80" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-white text-xs font-medium">{{ __('app.abiy_tsom_bot') }}</p>
-                            </div>
-                            <span class="flex h-5 items-center rounded bg-white/15 px-1.5 text-[10px] font-bold text-white/80">AM</span>
-                        </div>
-                        <div class="bg-[#ece5dd] dark:bg-[#0b141a] px-3 py-3 min-h-[180px]">
-                            <div class="ml-1.5">
-                                <div class="wa-bubble wa-bubble-am inline-block max-w-[95%] rounded-lg rounded-tl-none bg-white dark:bg-[#1f2c34] px-3 py-2 shadow-sm">
-                                    <p id="bulk-preview-am" class="whitespace-pre-wrap break-words text-[13px] leading-[1.45] text-[#111b21] dark:text-[#e9edef]"></p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </form>
     </div>
 
@@ -1132,19 +1040,15 @@ function whatsappTemplateEditor(initialTemplate, activeMemberCount, initialRecip
         },
         switchWorkspace(workspace) {
             this.activeWorkspace = workspace;
-            if (workspace === 'bulk' && !this.bulkTemplateKeys.includes(this.activeTemplate)) {
-                this.selectTemplate(this.bulkTemplateKeys[0] || 'whatsapp_bulk_message_header');
-                return;
-            }
             if (workspace === 'main' && this.bulkTemplateKeys.includes(this.activeTemplate)) {
                 this.selectTemplate('whatsapp_daily_reminder_header');
             }
         },
         shouldShowGroup(groupKey) {
-            return this.activeWorkspace === 'main';
+            return this.activeWorkspace === 'main' && groupKey !== 'bulk';
         },
         workspaceAllowsTemplate(key) {
-            return this.activeWorkspace === 'main';
+            return this.activeWorkspace === 'main' && !this.bulkTemplateKeys.includes(key);
         },
         isBulkSelectedMode() {
             return this.bulkRecipientMode === 'selected_active';
@@ -1153,10 +1057,6 @@ function whatsappTemplateEditor(initialTemplate, activeMemberCount, initialRecip
             return this.isBulkSelectedMode()
                 ? this.bulkSelectedMembers.length
                 : this.activeMemberCount;
-        },
-        bulkLinkPreview(index = 1) {
-            const input = document.getElementById(`bulk-link-${index}`);
-            return String(input?.value || '').trim();
         },
     };
 }
@@ -1169,12 +1069,6 @@ function whatsappTemplateEditor(initialTemplate, activeMemberCount, initialRecip
         footer: 'whatsapp_daily_reminder_footer',
         content: 'whatsapp_daily_reminder_content',
     };
-    const BULK_TEMPLATE_IDS = {
-        header: 'whatsapp_bulk_message_header',
-        content: 'whatsapp_bulk_message_content',
-        final: 'whatsapp_bulk_message_final',
-    };
-
     const samples = {
         en: {
             name: 'Abel',
@@ -1200,8 +1094,7 @@ function whatsappTemplateEditor(initialTemplate, activeMemberCount, initialRecip
             commemorations_block: "Today, on March 5 or Yekatit 26, the following yearly feasts are:\n\n- St. Abba A\n- St. Martyr B\n\nAlso, the following monthly feasts are:\n\n- St. Monthly A\n- St. Monthly B\n- St. Monthly C",
             footer: "You can find the day’s Bible reading, Mezmur, Gitsawe, Synaxarium, and other spiritual content at this link:\nhttps://abiytsom.abuneteklehaymanot.org/share/day/15",
             bible_reference: 'Acts 25:13-end',
-            bulk_header_value: 'Important update',
-            bulk_content_value: "Please read this message carefully.\nWe are sharing one update with every active member today.",
+            bulk_message_value: "Hello :name,\n\nThis is the English bulk message preview.",
         },
         am: {
             name: 'Abel',
@@ -1227,8 +1120,7 @@ function whatsappTemplateEditor(initialTemplate, activeMemberCount, initialRecip
             commemorations_block: "Zare March 5 weyim Yekatit 26 qen yemikeberu ametawi bealat:\n\n- Kidus A\n- Kidus B\n\nEndihum werhawi bealat:\n\n- Werhawi Kidusan A\n- Werhawi Kidusan B\n- Werhawi Kidusan C",
             footer: "Yeletun Metsihaf Kidus nibab, Mezmur, Gitsawe, Sinksar ena leloch menfesawi yizetoch bezih link yagegnalu:\nhttps://abiytsom.abuneteklehaymanot.org/share/day/15",
             bible_reference: 'Hawaryat Sira 25:13-f.m.',
-            bulk_header_value: 'Important update',
-            bulk_content_value: "Please read this message carefully.\nWe are sharing one update with every active member today.",
+            bulk_message_value: "ሰላም :name,\n\nይህ የአማርኛ የብዙ ሰዎች መልእክት ቅድመ እይታ ነው።",
         }
     };
 
@@ -1321,150 +1213,13 @@ function whatsappTemplateEditor(initialTemplate, activeMemberCount, initialRecip
         return normalizeRenderedText([yearly, monthly].filter(Boolean).join('\n\n'));
     };
 
-    const buildBulkFinalText = (locale) => {
-        const finalInput = document.getElementById(`tpl-${locale}-${BULK_TEMPLATE_IDS.final}`);
-        if (!finalInput) {
-            return '';
-        }
-
-        const runtimeBaseEn = {
-            ...(samples.en || {}),
-            header: String(document.getElementById('bulk-header')?.value || (samples.en?.bulk_header_value ?? '')),
-            content: String(document.getElementById('bulk-content')?.value || (samples.en?.bulk_content_value ?? '')),
-            url_1: String(document.getElementById('bulk-link-1')?.value || samples.en?.url_1 || ''),
-            url_2: String(document.getElementById('bulk-link-2')?.value || samples.en?.url_2 || ''),
-            url_3: String(document.getElementById('bulk-link-3')?.value || samples.en?.url_3 || ''),
-        };
-        const runtimeBaseAm = {
-            ...(samples.am || samples.en || {}),
-            header: String(document.getElementById('bulk-header')?.value || (samples.am?.bulk_header_value ?? '')),
-            content: String(document.getElementById('bulk-content')?.value || (samples.am?.bulk_content_value ?? '')),
-            url_1: String(document.getElementById('bulk-link-1')?.value || samples.am?.url_1 || ''),
-            url_2: String(document.getElementById('bulk-link-2')?.value || samples.am?.url_2 || ''),
-            url_3: String(document.getElementById('bulk-link-3')?.value || samples.am?.url_3 || ''),
-        };
-        runtimeBaseEn.url = runtimeBaseEn.url_1;
-        runtimeBaseAm.url = runtimeBaseAm.url_1;
-
-        const headerTemplateInputEn = document.getElementById(`tpl-en-${BULK_TEMPLATE_IDS.header}`);
-        const headerTemplateInputAm = document.getElementById(`tpl-am-${BULK_TEMPLATE_IDS.header}`);
-        const contentTemplateInputEn = document.getElementById(`tpl-en-${BULK_TEMPLATE_IDS.content}`);
-        const contentTemplateInputAm = document.getElementById(`tpl-am-${BULK_TEMPLATE_IDS.content}`);
-
-        const renderedHeaderEn = normalizeRenderedText(
-            replacePlaceholders(
-                headerTemplateInputEn?.value || '',
-                runtimeBaseEn,
-                allowedKeysFor(headerTemplateInputEn || finalInput)
-            )
-        );
-        const renderedHeaderAm = normalizeRenderedText(
-            replacePlaceholders(
-                headerTemplateInputAm?.value || '',
-                runtimeBaseAm,
-                allowedKeysFor(headerTemplateInputAm || finalInput)
-            )
-        );
-        const renderedContentEn = normalizeRenderedText(
-            replacePlaceholders(
-                contentTemplateInputEn?.value || '',
-                runtimeBaseEn,
-                allowedKeysFor(contentTemplateInputEn || finalInput)
-            )
-        );
-        const renderedContentAm = normalizeRenderedText(
-            replacePlaceholders(
-                contentTemplateInputAm?.value || '',
-                runtimeBaseAm,
-                allowedKeysFor(contentTemplateInputAm || finalInput)
-            )
-        );
+    const buildBulkPreviewText = (locale) => {
+        const input = document.getElementById(locale === 'am' ? 'bulk-message-am' : 'bulk-message-en');
+        const template = String(input?.value || (samples[locale]?.bulk_message_value ?? ''));
 
         return normalizeRenderedText(
-            replacePlaceholders(
-                finalInput.value,
-                {
-                    ...(locale === 'am' ? runtimeBaseAm : runtimeBaseEn),
-                    header_en: renderedHeaderEn,
-                    content_en: renderedContentEn,
-                    header_am: renderedHeaderAm,
-                    content_am: renderedContentAm,
-                    header: locale === 'am' ? renderedHeaderAm : renderedHeaderEn,
-                    content: locale === 'am' ? renderedContentAm : renderedContentEn,
-                },
-                allowedKeysFor(finalInput)
-            )
+            replacePlaceholders(template, { name: samples[locale]?.name || samples.en.name }, ['name'])
         );
-    };
-
-    const renderBulkSectionPreviews = () => {
-        const headerTemplateInputEn = document.getElementById(`tpl-en-${BULK_TEMPLATE_IDS.header}`);
-        const headerTemplateInputAm = document.getElementById(`tpl-am-${BULK_TEMPLATE_IDS.header}`);
-        const contentTemplateInputEn = document.getElementById(`tpl-en-${BULK_TEMPLATE_IDS.content}`);
-        const contentTemplateInputAm = document.getElementById(`tpl-am-${BULK_TEMPLATE_IDS.content}`);
-
-        const runtimeBaseEn = {
-            ...(samples.en || {}),
-            header: String(document.getElementById('bulk-header')?.value || (samples.en?.bulk_header_value ?? '')),
-            content: String(document.getElementById('bulk-content')?.value || (samples.en?.bulk_content_value ?? '')),
-            url_1: String(document.getElementById('bulk-link-1')?.value || samples.en?.url_1 || ''),
-            url_2: String(document.getElementById('bulk-link-2')?.value || samples.en?.url_2 || ''),
-            url_3: String(document.getElementById('bulk-link-3')?.value || samples.en?.url_3 || ''),
-        };
-        const runtimeBaseAm = {
-            ...(samples.am || samples.en || {}),
-            header: String(document.getElementById('bulk-header')?.value || (samples.am?.bulk_header_value ?? '')),
-            content: String(document.getElementById('bulk-content')?.value || (samples.am?.bulk_content_value ?? '')),
-            url_1: String(document.getElementById('bulk-link-1')?.value || samples.am?.url_1 || ''),
-            url_2: String(document.getElementById('bulk-link-2')?.value || samples.am?.url_2 || ''),
-            url_3: String(document.getElementById('bulk-link-3')?.value || samples.am?.url_3 || ''),
-        };
-        runtimeBaseEn.url = runtimeBaseEn.url_1;
-        runtimeBaseAm.url = runtimeBaseAm.url_1;
-
-        const renderedHeaderEn = normalizeRenderedText(
-            replacePlaceholders(
-                headerTemplateInputEn?.value || '',
-                runtimeBaseEn,
-                allowedKeysFor(headerTemplateInputEn || contentTemplateInputEn)
-            )
-        );
-        const renderedHeaderAm = normalizeRenderedText(
-            replacePlaceholders(
-                headerTemplateInputAm?.value || '',
-                runtimeBaseAm,
-                allowedKeysFor(headerTemplateInputAm || contentTemplateInputAm)
-            )
-        );
-        const renderedContentEn = normalizeRenderedText(
-            replacePlaceholders(
-                contentTemplateInputEn?.value || '',
-                runtimeBaseEn,
-                allowedKeysFor(contentTemplateInputEn || headerTemplateInputEn)
-            )
-        );
-        const renderedContentAm = normalizeRenderedText(
-            replacePlaceholders(
-                contentTemplateInputAm?.value || '',
-                runtimeBaseAm,
-                allowedKeysFor(contentTemplateInputAm || headerTemplateInputAm)
-            )
-        );
-
-        const setText = (id, value) => {
-            const element = document.getElementById(id);
-            if (element) {
-                element.textContent = value || '{{ __('app.whatsapp_bulk_preview_empty') }}';
-            }
-        };
-
-        setText('bulk-section-preview-header-en', renderedHeaderEn);
-        setText('bulk-section-preview-header-am', renderedHeaderAm);
-        setText('bulk-section-preview-content-en', renderedContentEn);
-        setText('bulk-section-preview-content-am', renderedContentAm);
-        setText('bulk-section-preview-url-1', runtimeBaseEn.url_1);
-        setText('bulk-section-preview-url-2', runtimeBaseEn.url_2);
-        setText('bulk-section-preview-url-3', runtimeBaseEn.url_3);
     };
 
     const renderFinalDailyReminder = (locale) => {
@@ -1481,7 +1236,7 @@ function whatsappTemplateEditor(initialTemplate, activeMemberCount, initialRecip
             return;
         }
 
-        target.textContent = buildBulkFinalText(locale);
+        target.textContent = buildBulkPreviewText(locale);
     };
 
     document.querySelectorAll('textarea[data-preview-target]').forEach((input) => {
@@ -1490,13 +1245,10 @@ function whatsappTemplateEditor(initialTemplate, activeMemberCount, initialRecip
             render(input);
             renderFinalDailyReminder('en');
             renderFinalDailyReminder('am');
-            renderBulkPreview('en');
-            renderBulkPreview('am');
-            renderBulkSectionPreviews();
         });
     });
 
-    ['bulk-header', 'bulk-content', 'bulk-link-1', 'bulk-link-2', 'bulk-link-3'].forEach((id) => {
+    ['bulk-message-en', 'bulk-message-am'].forEach((id) => {
         const input = document.getElementById(id);
         if (!input) {
             return;
@@ -1505,7 +1257,6 @@ function whatsappTemplateEditor(initialTemplate, activeMemberCount, initialRecip
         input.addEventListener('input', () => {
             renderBulkPreview('en');
             renderBulkPreview('am');
-            renderBulkSectionPreviews();
         });
     });
 
@@ -1513,7 +1264,6 @@ function whatsappTemplateEditor(initialTemplate, activeMemberCount, initialRecip
     renderFinalDailyReminder('am');
     renderBulkPreview('en');
     renderBulkPreview('am');
-    renderBulkSectionPreviews();
 })();
 </script>
 @endpush

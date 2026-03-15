@@ -41,9 +41,8 @@ class SendBulkWhatsAppMessageJobTest extends TestCase
 
         $job = new SendBulkWhatsAppMessageJob(
             $member->id,
-            'Important update',
-            'Please read this today.',
-            ['https://example.com/bulk', 'https://example.com/calendar', '']
+            'Hello :name, English bulk message.',
+            'ሰላም :name, ይህ የአማርኛ መልእክት ነው።'
         );
 
         $job->handle(app(UltraMsgService::class), app(WhatsAppTemplateService::class));
@@ -54,10 +53,7 @@ class SendBulkWhatsAppMessageJobTest extends TestCase
             return $request->url() === 'https://api.ultramsg.com/instance999/messages/chat'
                 && $request['to'] === '+447700900111'
                 && $request['token'] === 'token-123'
-                && str_contains($body, 'Hello Abel')
-                && str_contains($body, 'Important update')
-                && str_contains($body, 'Please read this today.')
-                && str_contains($body, 'https://example.com/bulk');
+                && str_contains($body, 'Hello Abel, English bulk message.');
         });
 
         $member->refresh();
@@ -82,9 +78,8 @@ class SendBulkWhatsAppMessageJobTest extends TestCase
 
         $job = new SendBulkWhatsAppMessageJob(
             $member->id,
-            'Important update',
-            'Please read this today.',
-            ['https://example.com/bulk', '', '']
+            'Hello :name',
+            'ሰላም :name'
         );
 
         $job->handle(app(UltraMsgService::class), app(WhatsAppTemplateService::class));

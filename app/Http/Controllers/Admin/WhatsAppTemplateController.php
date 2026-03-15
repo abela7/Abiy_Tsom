@@ -63,24 +63,6 @@ class WhatsAppTemplateController extends Controller
                 'placeholder_keys' => WhatsAppTemplateService::DAILY_REMINDER_FINAL_PLACEHOLDERS,
             ],
             [
-                'key' => 'whatsapp_bulk_message_header',
-                'group' => 'whatsapp_member',
-                'title' => __('app.whatsapp_template_bulk_header'),
-                'placeholder_keys' => WhatsAppTemplateService::BULK_MESSAGE_SECTION_PLACEHOLDERS,
-            ],
-            [
-                'key' => 'whatsapp_bulk_message_content',
-                'group' => 'whatsapp_member',
-                'title' => __('app.whatsapp_template_bulk_content'),
-                'placeholder_keys' => WhatsAppTemplateService::BULK_MESSAGE_SECTION_PLACEHOLDERS,
-            ],
-            [
-                'key' => 'whatsapp_bulk_message_final',
-                'group' => 'whatsapp_member',
-                'title' => __('app.whatsapp_template_bulk_final'),
-                'placeholder_keys' => WhatsAppTemplateService::BULK_MESSAGE_FINAL_PLACEHOLDERS,
-            ],
-            [
                 'key' => 'whatsapp_confirmation_prompt_message',
                 'group' => 'wizard',
                 'title' => __('app.whatsapp_template_confirm_prompt'),
@@ -329,33 +311,18 @@ class WhatsAppTemplateController extends Controller
             'recipient_mode' => ['required', 'string', 'in:all_active,selected_active'],
             'selected_member_ids' => ['nullable', 'array'],
             'selected_member_ids.*' => ['integer', 'exists:members,id'],
-            'bulk_header' => ['required', 'string'],
-            'bulk_content' => ['required', 'string'],
-            'bulk_link_1' => ['nullable', 'url'],
-            'bulk_link_2' => ['nullable', 'url'],
-            'bulk_link_3' => ['nullable', 'url'],
+            'bulk_message_en' => ['required', 'string'],
+            'bulk_message_am' => ['required', 'string'],
         ]);
 
-        $header = trim((string) $validated['bulk_header']);
-        $content = trim((string) $validated['bulk_content']);
+        $englishMessage = trim((string) $validated['bulk_message_en']);
+        $amharicMessage = trim((string) $validated['bulk_message_am']);
         $recipientMode = (string) $validated['recipient_mode'];
         $selectedIds = collect($validated['selected_member_ids'] ?? [])
             ->map(static fn (mixed $id): int => (int) $id)
             ->filter(static fn (int $id): bool => $id > 0)
             ->unique()
             ->values();
-        $links = collect([
-            $validated['bulk_link_1'] ?? null,
-            $validated['bulk_link_2'] ?? null,
-            $validated['bulk_link_3'] ?? null,
-        ])
-            ->map(function (mixed $value): string {
-                $link = trim((string) ($value ?? ''));
-
-                return $link !== '' ? $this->ensureHttpsUrl($link) : '';
-            })
-            ->values()
-            ->all();
 
         if (! $ultraMsg->isConfigured()) {
             return redirect()
@@ -399,7 +366,7 @@ class WhatsAppTemplateController extends Controller
         }
 
         foreach ($recipients as $member) {
-            SendBulkWhatsAppMessageJob::dispatch($member->id, $header, $content, $links);
+            SendBulkWhatsAppMessageJob::dispatch($member->id, $englishMessage, $amharicMessage);
         }
 
         return redirect()
