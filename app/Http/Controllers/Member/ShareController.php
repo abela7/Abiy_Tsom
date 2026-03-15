@@ -120,14 +120,9 @@ class ShareController extends Controller
             }
         }
 
-        // No code, invalid code, expired code, or no matching session —
-        // show OG page which redirects to the public day view.
-        return view('member.share-day', compact(
-            'daily',
-            'ogTitle',
-            'ogDescription',
-            'publicDayUrl',
-        ));
+        // Human visitors do not need the intermediate OG landing page.
+        // Redirect them straight to the public read-only day view.
+        return redirect($publicDayUrl);
     }
 
     private function trackReminderOpen(

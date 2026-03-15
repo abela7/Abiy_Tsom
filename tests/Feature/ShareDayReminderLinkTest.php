@@ -34,9 +34,7 @@ class ShareDayReminderLinkTest extends TestCase
             'User-Agent' => 'Mozilla/5.0 Test Browser',
         ]);
 
-        $response->assertOk()
-            ->assertViewIs('member.share-day')
-            ->assertSee(route('share.day.public', ['daily' => $daily]), false);
+        $response->assertRedirect(route('share.day.public', ['daily' => $daily]));
 
         $this->assertDatabaseCount('member_sessions', 0);
         $this->assertNull($this->findAccessToken($code)?->consumed_at);
@@ -54,7 +52,7 @@ class ShareDayReminderLinkTest extends TestCase
 
         $this->get(route('share.day', ['daily' => $daily, 'code' => $code]), [
             'User-Agent' => 'Mozilla/5.0 Test Browser',
-        ])->assertOk();
+        ])->assertRedirect(route('share.day.public', ['daily' => $daily]));
 
         $this->assertDatabaseHas('member_reminder_opens', [
             'member_id' => $member->id,
@@ -141,9 +139,7 @@ class ShareDayReminderLinkTest extends TestCase
                 'User-Agent' => 'Mozilla/5.0 Test Browser',
             ]);
 
-        $response->assertOk()
-            ->assertViewIs('member.share-day')
-            ->assertSee(route('share.day.public', ['daily' => $daily]), false);
+        $response->assertRedirect(route('share.day.public', ['daily' => $daily]));
 
         $this->assertDatabaseCount('member_sessions', 1);
         $this->assertNull($this->findAccessToken($code)?->consumed_at);
