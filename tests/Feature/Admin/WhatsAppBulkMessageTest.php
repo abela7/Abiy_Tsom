@@ -6,8 +6,10 @@ namespace Tests\Feature\Admin;
 
 use App\Jobs\SendBulkWhatsAppMessageJob;
 use App\Models\Member;
+use App\Models\Translation;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
@@ -62,6 +64,67 @@ class WhatsAppBulkMessageTest extends TestCase
         });
         Queue::assertPushed(SendBulkWhatsAppMessageJob::class, function (SendBulkWhatsAppMessageJob $job) use ($second): bool {
             return $job->memberId === $second->id;
+        });
+    }
+
+    public function test_super_admin_can_save_bulk_messages_and_see_them_after_refresh(): void
+    {
+        $admin = $this->createSuperAdmin();
+
+        $response = $this->actingAs($admin)->post(route('admin.whatsapp.template.bulk-save'), [
+            'bulk_message_en' => 'Hello :name, saved English message.',
+            'bulk_message_am' => 'ሰላም :name, የተቀመጠ የአማርኛ መልእክት።',
+        ]);
+
+        $response->assertRedirect(route('admin.whatsapp.template'))
+            ->assertSessionHas('success');
+
+        $this->assertSame(
+            'Hello :name, saved English message.',
+            Translation::query()
+                ->where('group', 'whatsapp_member')
+                ->where('key', 'whatsapp_bulk_message_custom_body')
+                ->where('locale', 'en')
+                ->value('value')
+        );
+
+        $this->actingAs($admin)
+            ->get(route('admin.whatsapp.template'))
+            ->assertOk()
+            ->assertSee('Hello :name, saved English message.', false)
+            ->assertSee('ሰላም :name, የተቀመጠ የአማርኛ መልእክት።', false);
+    }
+
+    public function test_super_admin_can_send_bulk_sample_using_selected_members_language(): void
+    {
+        config()->set('services.ultramsg.instance_id', 'instance999');
+        config()->set('services.ultramsg.token', 'token-123');
+
+        Http::fake([
+            'https://api.ultramsg.com/instance999/messages/chat' => Http::response([
+                'sent' => 'true',
+                'message' => 'ok',
+                'id' => 12345,
+            ]),
+        ]);
+
+        $admin = $this->createSuperAdmin();
+        $member = $this->createActiveMember('Abel', '+447700900111');
+        $member->update(['whatsapp_language' => 'am']);
+
+        $response = $this->actingAs($admin)->post(route('admin.whatsapp.template.bulk-test'), [
+            'bulk_sample_member_id' => $member->id,
+            'bulk_message_en' => 'Hello :name, English sample.',
+            'bulk_message_am' => 'ሰላም :name, የአማርኛ ሙከራ መልእክት።',
+        ]);
+
+        $response->assertRedirect(route('admin.whatsapp.template'))
+            ->assertSessionHas('success');
+
+        Http::assertSent(function (\Illuminate\Http\Client\Request $request): bool {
+            return $request->url() === 'https://api.ultramsg.com/instance999/messages/chat'
+                && $request['to'] === '+447700900111'
+                && str_contains((string) $request['body'], 'ሰላም Abel, የአማርኛ ሙከራ መልእክት።');
         });
     }
 

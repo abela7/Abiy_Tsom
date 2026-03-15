@@ -26,6 +26,8 @@ use Illuminate\View\View;
  */
 class WhatsAppTemplateController extends Controller
 {
+    private const BULK_MESSAGE_KEY = 'whatsapp_bulk_message_custom_body';
+
     /**
      * @return array<int, array{key: string, group: string, title: string, placeholder_keys: list<string>}>
      */
@@ -154,7 +156,20 @@ class WhatsAppTemplateController extends Controller
             ];
         }, $config);
 
-        return view('admin.whatsapp.template', compact('templates', 'testMembers', 'activeMembers'));
+        $bulkMessages = [
+            'en' => (string) (Translation::query()
+                ->where('group', 'whatsapp_member')
+                ->where('key', self::BULK_MESSAGE_KEY)
+                ->where('locale', 'en')
+                ->value('value') ?? ($enFile[self::BULK_MESSAGE_KEY] ?? '')),
+            'am' => (string) (Translation::query()
+                ->where('group', 'whatsapp_member')
+                ->where('key', self::BULK_MESSAGE_KEY)
+                ->where('locale', 'am')
+                ->value('value') ?? ($amFile[self::BULK_MESSAGE_KEY] ?? '')),
+        ];
+
+        return view('admin.whatsapp.template', compact('templates', 'testMembers', 'activeMembers', 'bulkMessages'));
     }
 
     /**
@@ -199,6 +214,17 @@ class WhatsAppTemplateController extends Controller
         return redirect()
             ->route('admin.whatsapp.template')
             ->with('success', __('app.whatsapp_template_saved'));
+    }
+
+    public function saveBulk(Request $request): RedirectResponse
+    {
+        [$englishMessage, $amharicMessage] = $this->validateBulkMessages($request);
+
+        $this->persistBulkMessages($englishMessage, $amharicMessage);
+
+        return redirect()
+            ->route('admin.whatsapp.template')
+            ->with('success', __('app.whatsapp_bulk_saved'));
     }
 
     /**
@@ -311,12 +337,9 @@ class WhatsAppTemplateController extends Controller
             'recipient_mode' => ['required', 'string', 'in:all_active,selected_active'],
             'selected_member_ids' => ['nullable', 'array'],
             'selected_member_ids.*' => ['integer', 'exists:members,id'],
-            'bulk_message_en' => ['required', 'string'],
-            'bulk_message_am' => ['required', 'string'],
         ]);
 
-        $englishMessage = trim((string) $validated['bulk_message_en']);
-        $amharicMessage = trim((string) $validated['bulk_message_am']);
+        [$englishMessage, $amharicMessage] = $this->validateBulkMessages($request);
         $recipientMode = (string) $validated['recipient_mode'];
         $selectedIds = collect($validated['selected_member_ids'] ?? [])
             ->map(static fn (mixed $id): int => (int) $id)
@@ -365,6 +388,8 @@ class WhatsAppTemplateController extends Controller
                 ->with('error', __('app.whatsapp_bulk_message_no_recipients'));
         }
 
+        $this->persistBulkMessages($englishMessage, $amharicMessage);
+
         foreach ($recipients as $member) {
             SendBulkWhatsAppMessageJob::dispatch($member->id, $englishMessage, $amharicMessage);
         }
@@ -373,6 +398,64 @@ class WhatsAppTemplateController extends Controller
             ->route('admin.whatsapp.template')
             ->with('success', __('app.whatsapp_bulk_message_queued', [
                 'count' => $recipients->count(),
+            ]));
+    }
+
+    public function sendBulkSample(
+        Request $request,
+        UltraMsgService $ultraMsg,
+        WhatsAppTemplateService $whatsAppTemplateService
+    ): RedirectResponse {
+        $validated = $request->validate([
+            'bulk_sample_member_id' => ['required', 'integer', 'exists:members,id'],
+        ]);
+
+        [$englishMessage, $amharicMessage] = $this->validateBulkMessages($request);
+
+        /** @var Member|null $member */
+        $member = Member::query()
+            ->activeConfirmedWhatsApp()
+            ->find((int) $validated['bulk_sample_member_id']);
+
+        if (! $member || ! $member->whatsapp_phone) {
+            return redirect()
+                ->route('admin.whatsapp.template')
+                ->withInput([
+                    'bulk_sample_member_id' => (int) $validated['bulk_sample_member_id'],
+                ])
+                ->with('error', __('app.whatsapp_bulk_sample_member_invalid'));
+        }
+
+        if (! $ultraMsg->isConfigured()) {
+            return redirect()
+                ->route('admin.whatsapp.template')
+                ->withInput([
+                    'bulk_sample_member_id' => $member->id,
+                ])
+                ->with('error', __('app.whatsapp_not_configured'));
+        }
+
+        $this->persistBulkMessages($englishMessage, $amharicMessage);
+
+        $message = $whatsAppTemplateService
+            ->renderBulkMessage($member, $englishMessage, $amharicMessage)['message'];
+
+        if ($message === '' || ! $ultraMsg->sendTextMessage((string) $member->whatsapp_phone, $message)) {
+            return redirect()
+                ->route('admin.whatsapp.template')
+                ->withInput([
+                    'bulk_sample_member_id' => $member->id,
+                ])
+                ->with('error', __('app.whatsapp_test_failed'));
+        }
+
+        return redirect()
+            ->route('admin.whatsapp.template')
+            ->withInput([
+                'bulk_sample_member_id' => $member->id,
+            ])
+            ->with('success', __('app.whatsapp_bulk_sample_sent', [
+                'name' => (string) ($member->baptism_name ?: $member->whatsapp_phone),
             ]));
     }
 
@@ -387,5 +470,36 @@ class WhatsAppTemplateController extends Controller
         }
 
         return preg_replace('/^http:\/\//i', 'https://', $url) ?? $url;
+    }
+
+    /**
+     * @return array{0: string, 1: string}
+     */
+    private function validateBulkMessages(Request $request): array
+    {
+        $validated = $request->validate([
+            'bulk_message_en' => ['required', 'string'],
+            'bulk_message_am' => ['required', 'string'],
+        ]);
+
+        return [
+            trim((string) $validated['bulk_message_en']),
+            trim((string) $validated['bulk_message_am']),
+        ];
+    }
+
+    private function persistBulkMessages(string $englishMessage, string $amharicMessage): void
+    {
+        Translation::updateOrCreate(
+            ['group' => 'whatsapp_member', 'key' => self::BULK_MESSAGE_KEY, 'locale' => 'en'],
+            ['value' => $englishMessage]
+        );
+
+        Translation::updateOrCreate(
+            ['group' => 'whatsapp_member', 'key' => self::BULK_MESSAGE_KEY, 'locale' => 'am'],
+            ['value' => $amharicMessage]
+        );
+
+        Translation::clearCache();
     }
 }

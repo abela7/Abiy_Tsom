@@ -114,7 +114,7 @@
             <h1 class="text-2xl font-bold tracking-tight text-primary">{{ __('app.whatsapp_template_title') }}</h1>
             <p class="mt-1 max-w-2xl text-sm text-muted-text">{{ __('app.whatsapp_template_help') }}</p>
         </div>
-        <button type="submit" form="whatsapp-template-form"
+        <button x-show="activeWorkspace === 'main'" x-cloak type="submit" form="whatsapp-template-form"
             class="inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-on-accent shadow-sm transition hover:bg-accent-hover active:scale-[0.97] shrink-0">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
             {{ __('app.whatsapp_template_save') }}
@@ -258,7 +258,7 @@
             <p class="mt-2 text-sm text-muted-text">{{ __('app.whatsapp_bulk_message_placeholder_help') }}</p>
         </div>
 
-        <form method="POST" action="{{ route('admin.whatsapp.template.bulk-send') }}" class="grid gap-5 xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
+        <form method="POST" action="{{ route('admin.whatsapp.template.bulk-send') }}" class="space-y-4">
             @csrf
 
             <div class="space-y-4">
@@ -296,6 +296,20 @@
                     <p class="mt-1 text-xs text-muted-text">{{ __('app.whatsapp_bulk_send_members_placeholder') }}</p>
                 </div>
 
+                <div>
+                    <label for="bulk-sample-member" class="mb-1 block text-xs font-medium text-secondary">{{ __('app.whatsapp_bulk_sample_member_label') }}</label>
+                    <select id="bulk-sample-member" name="bulk_sample_member_id"
+                        class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-primary outline-none transition focus:ring-2 focus:ring-accent">
+                        <option value="">{{ __('app.whatsapp_bulk_sample_member_placeholder') }}</option>
+                        @foreach($activeMembers as $member)
+                            <option value="{{ $member->id }}" @selected((string) old('bulk_sample_member_id') === (string) $member->id)>
+                                {{ trim((string) ($member->baptism_name ?: __('app.whatsapp_template_test_member_fallback'))) }} - {{ $member->whatsapp_phone }} - {{ strtoupper((string) ($member->whatsapp_language ?: 'am')) }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <p class="mt-1 text-xs text-muted-text">{{ __('app.whatsapp_bulk_sample_member_help') }}</p>
+                </div>
+
                 <div class="grid gap-4 xl:grid-cols-2">
                     <div class="rounded-2xl border border-border bg-card p-4 space-y-4">
                         <div class="flex items-center justify-between gap-3">
@@ -307,7 +321,7 @@
                             name="bulk_message_en"
                             rows="10"
                             class="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm leading-6 text-primary outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 resize-y"
-                        >{{ old('bulk_message_en') }}</textarea>
+                        >{{ old('bulk_message_en', $bulkMessages['en'] ?? '') }}</textarea>
                         <div>
                             <div class="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-text">{{ __('app.whatsapp_bulk_preview_label') }}</div>
                             <div class="rounded-xl border border-border bg-surface/50 p-4">
@@ -326,7 +340,7 @@
                             name="bulk_message_am"
                             rows="10"
                             class="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm leading-6 text-primary outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 resize-y"
-                        >{{ old('bulk_message_am') }}</textarea>
+                        >{{ old('bulk_message_am', $bulkMessages['am'] ?? '') }}</textarea>
                         <div>
                             <div class="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-text">{{ __('app.whatsapp_bulk_preview_label') }}</div>
                             <div class="rounded-xl border border-border bg-surface/50 p-4">
@@ -336,9 +350,19 @@
                     </div>
                 </div>
 
-                <div class="flex justify-end">
+                <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
+                    <button type="submit" formaction="{{ route('admin.whatsapp.template.bulk-save') }}"
+                        class="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-5 py-2.5 text-sm font-semibold text-primary shadow-sm transition hover:bg-muted/50 active:scale-[0.97]">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        {{ __('app.whatsapp_bulk_save_button') }}
+                    </button>
+                    <button type="submit" formaction="{{ route('admin.whatsapp.template.bulk-test') }}"
+                        class="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-2.5 text-sm font-semibold text-emerald-700 shadow-sm transition hover:bg-emerald-100 active:scale-[0.97] dark:border-emerald-500/20 dark:bg-emerald-900/15 dark:text-emerald-300">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                        {{ __('app.whatsapp_bulk_send_sample_button') }}
+                    </button>
                     <button type="submit"
-                        class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 active:scale-[0.97]">
+                        class="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 active:scale-[0.97]">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
                         {{ __('app.whatsapp_bulk_send_button') }}
                     </button>
