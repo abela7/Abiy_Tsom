@@ -573,6 +573,22 @@ final class TelegramContentFormatter
         $sectionsWithContent = $this->sectionsWithContent($daily, $locale);
 
         $listenButtons = $this->listenButtonsForSection($daily, $locale, $currentSection);
+
+        // Lectionary has its own reading buttons — show ONLY those + back/menu, no section nav
+        if ($currentSection === 'lectionary') {
+            foreach (array_chunk($listenButtons, 2) as $chunk) {
+                $rows[] = $chunk;
+            }
+            // Back to overview + Menu
+            $rows[] = [
+                ['text' => '📖 '.($locale === 'am' ? 'ዛሬ' : 'Today'), 'callback_data' => 'today'],
+                ['text' => '◀️ '.__('app.menu'), 'callback_data' => 'menu'],
+            ];
+
+            return ['inline_keyboard' => $rows];
+        }
+
+        // For other sections: listen buttons on top, then section nav
         foreach ($listenButtons as $btn) {
             $rows[] = [$btn];
         }
