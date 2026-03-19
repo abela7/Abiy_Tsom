@@ -367,6 +367,7 @@ Route::middleware(['auth', 'admin.audit'])->prefix('admin')->name('admin.')->gro
         Route::delete('/whatsapp/members-data/{member}', [Admin\WhatsAppMembersDataController::class, 'destroy'])->name('whatsapp.members-data.destroy');
         Route::get('/telegram', fn () => redirect()->route('admin.telegram.settings'))->name('telegram.index');
         Route::get('/telegram/settings', [Admin\TelegramSettingsController::class, 'settings'])->name('telegram.settings');
+        Route::get('/telegram/users', [Admin\TelegramLinkedUsersController::class, 'index'])->name('telegram.users');
         Route::put('/telegram', [Admin\TelegramSettingsController::class, 'update'])->name('telegram.update');
         Route::put('/telegram/builder', [Admin\TelegramSettingsController::class, 'updateBuilder'])->name('telegram.builder.update');
         Route::post('/telegram/sync-menu', [Admin\TelegramSettingsController::class, 'syncMenu'])->name('telegram.sync-menu');

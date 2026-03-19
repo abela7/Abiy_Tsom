@@ -2,6 +2,7 @@
 @section('title', __('app.telegram_settings'))
 
 @section('content')
+@include('admin.telegram._nav')
 @php
     $telegramLoginUrl = session('telegram_access_url');
     $telegramLoginExpires = (int) (session('telegram_access_expires') ?? 0);
