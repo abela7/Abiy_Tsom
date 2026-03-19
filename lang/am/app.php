@@ -172,7 +172,7 @@ return [
     'telegram_nav_sinksar' => 'ስንክሳር',
     'telegram_nav_books' => 'መንፈሳዊ መጽሐፍ',
     'telegram_nav_references' => 'ማጣቀሻ',
-    'telegram_nav_reflection' => 'ነጸብራቅ',
+    'telegram_nav_reflection' => 'ዕለታዊ መልዕክት',
     'telegram_nav_lectionary' => 'ቅዳሴ',
     'telegram_nav_commemorations' => 'በዓላት',
     'telegram_choose_language' => 'ቋንቋዎን ይምረጡ',

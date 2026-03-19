@@ -461,7 +461,7 @@ final class TelegramContentFormatter
         $monthlies = $dateInfo['monthly_celebrations'];
 
         if ($annuals->isNotEmpty()) {
-            $parts[] = '<b>'.($locale === 'am' ? '🎉 ዓመታዊ በዓላት' : '🎉 Annual Celebrations').'</b>';
+            $parts[] = '<b>'.($locale === 'am' ? 'ዓመታዊ በዓላት' : 'Annual Celebrations').'</b>';
             $parts[] = '';
             foreach ($annuals as $c) {
                 $name = $this->h(localized($c, 'celebration', $locale) ?? '-');
@@ -472,7 +472,7 @@ final class TelegramContentFormatter
         }
 
         if ($monthlies->isNotEmpty()) {
-            $parts[] = '<b>'.($locale === 'am' ? '📅 ወርሃዊ በዓላት' : '📅 Monthly Commemorations').'</b>';
+            $parts[] = '<b>'.($locale === 'am' ? 'ወርሃዊ በዓላት' : 'Monthly Commemorations').'</b>';
             $parts[] = '';
             foreach ($monthlies as $c) {
                 $name = $this->h(localized($c, 'celebration', $locale) ?? '-');
@@ -576,8 +576,8 @@ final class TelegramContentFormatter
 
         // Sections with their own action buttons — show ONLY those + back/menu, no section nav
         if ($currentSection === 'lectionary' || $currentSection === 'mezmur') {
-            foreach (array_chunk($listenButtons, 2) as $chunk) {
-                $rows[] = $chunk;
+            foreach ($listenButtons as $btn) {
+                $rows[] = [$btn];
             }
             // Back to overview + Menu
             $rows[] = [
@@ -607,15 +607,13 @@ final class TelegramContentFormatter
                 'books' => '📚 '.__('app.telegram_nav_books'),
                 'reference' => '🔗 '.__('app.telegram_nav_references'),
                 'reflection' => '💭 '.__('app.telegram_nav_reflection'),
-                'commemorations' => '🎉 '.__('app.telegram_nav_commemorations'),
+                'commemorations' => __('app.telegram_nav_commemorations'),
                 default => $name,
             };
             $navButtons[] = ['text' => $label, 'callback_data' => $cb];
         }
-        if ($navButtons !== []) {
-            foreach (array_chunk($navButtons, 2) as $chunk) {
-                $rows[] = $chunk;
-            }
+        foreach ($navButtons as $btn) {
+            $rows[] = [$btn];
         }
 
         // Back to overview + Menu
@@ -929,15 +927,15 @@ final class TelegramContentFormatter
                 'books' => '📚 '.__('app.telegram_nav_books'),
                 'reference' => '🔗 '.__('app.telegram_nav_references'),
                 'reflection' => '💭 '.__('app.telegram_nav_reflection'),
-                'commemorations' => '🎉 '.__('app.telegram_nav_commemorations'),
+                'commemorations' => __('app.telegram_nav_commemorations'),
                 default => $name,
             };
             $navButtons[] = ['text' => $label, 'callback_data' => $cb];
         }
 
         $rows = [];
-        foreach (array_chunk($navButtons, 2) as $chunk) {
-            $rows[] = $chunk;
+        foreach ($navButtons as $btn) {
+            $rows[] = [$btn];
         }
 
         $rows[] = [['text' => '◀️ '.__('app.menu'), 'callback_data' => 'menu']];

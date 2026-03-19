@@ -32,7 +32,7 @@
     {{-- Annual Celebrations --}}
     @if($hasAnnuals)
     <div class="space-y-3">
-        <h2 class="text-sm font-black text-accent-secondary text-center uppercase tracking-wider">{{ $locale === 'am' ? '🎉 ዓመታዊ በዓላት' : '🎉 Annual Celebrations' }}</h2>
+        <h2 class="text-sm font-black text-accent-secondary text-center uppercase tracking-wider">{{ $locale === 'am' ? 'ዓመታዊ በዓላት' : 'Annual Celebrations' }}</h2>
 
         @foreach($annualCelebrations as $index => $saint)
         @php $hasImage = (bool) $saint->imageUrl(); $hasDesc = (bool) localized($saint, 'description', $locale); @endphp
@@ -84,7 +84,7 @@
     {{-- Monthly Commemorations --}}
     @if($hasMonthlies)
     <div class="space-y-3">
-        <h2 class="text-sm font-black text-primary text-center uppercase tracking-wider">{{ $locale === 'am' ? '📅 ወርሃዊ በዓላት' : '📅 Monthly Commemorations' }}</h2>
+        <h2 class="text-sm font-black text-primary text-center uppercase tracking-wider">{{ $locale === 'am' ? 'ወርሃዊ በዓላት' : 'Monthly Commemorations' }}</h2>
 
         @foreach($monthlyCelebrations as $index => $saint)
         @php $monthlyImage = $saint->imageUrl(); $monthlyDesc = localized($saint, 'description', $locale); $hasDetail = $monthlyImage || $monthlyDesc; @endphp
