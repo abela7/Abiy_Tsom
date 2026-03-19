@@ -23,6 +23,12 @@ final class TelegramContentFormatter
 {
     private const MAX_MESSAGE_LENGTH = 4080;
 
+    /**
+     * Budget for Sinksar body inside the Today message (header, title, HTML tags).
+     * Telegram sendMessage limit is 4096; we keep a margin below MAX_MESSAGE_LENGTH.
+     */
+    private const SINKSAR_BODY_QUOTE_MAX = 3200;
+
     private const DIVIDER = '▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬';
 
     /** Section codes for callback_data (≤64 bytes). */
@@ -214,10 +220,10 @@ final class TelegramContentFormatter
 
         // Note: saint photos are sent as separate photo messages
 
-        // Full sinksar text
+        // Full sinksar text (was 1200 chars — too small; use most of Telegram limit)
         $sinksarText = $daily->sinksarText($locale);
         if ($sinksarText) {
-            $parts[] = $this->expandableQuote($this->h($sinksarText), 1200);
+            $parts[] = $this->expandableQuote($this->h($sinksarText), self::SINKSAR_BODY_QUOTE_MAX);
         }
 
         return $parts;
