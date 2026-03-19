@@ -100,6 +100,7 @@ class AdminAudit
         'admin.synaxarium.annual.destroy' => 'Deleted annual Synaxarium entry',
         'admin.synaxarium.monthly.convert' => 'Converted monthly Synaxarium entry to annual',
         'admin.synaxarium.annual.convert' => 'Converted annual Synaxarium entry to monthly',
+        'admin.members.update' => 'Updated member profile',
         'admin.members.telegram-link' => 'Generated member Telegram login link',
         'admin.members.wipe-all' => 'Wiped all members',
         'admin.members.destroy' => 'Deleted member',

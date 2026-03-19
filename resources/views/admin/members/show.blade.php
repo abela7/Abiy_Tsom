@@ -1,18 +1,24 @@
 @extends('layouts.admin')
 
-@section('title', $member->baptism_name . ' - Member Detail')
+@section('title', old('baptism_name', $member->baptism_name) . ' - Member Detail')
 
 @section('content')
 <div class="space-y-6">
+
+    @if(session('success'))
+        <div class="rounded-xl border border-success/30 bg-success/10 px-4 py-3 text-sm font-medium text-success">
+            {{ session('success') }}
+        </div>
+    @endif
 
     {{-- Back + Header --}}
     <div class="flex items-start justify-between gap-4 flex-wrap">
         <div>
             <a href="{{ route('admin.members.index') }}" class="inline-flex items-center gap-1 text-xs text-muted-text hover:text-primary transition mb-3">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-                Back to Members
+                {{ __('app.back_to_members') }}
             </a>
-            <h1 class="text-2xl font-bold text-primary">{{ $member->baptism_name }}</h1>
+            <h1 class="text-2xl font-bold text-primary">{{ old('baptism_name', $member->baptism_name) }}</h1>
             <p class="text-sm text-muted-text mt-0.5">Member #{{ $member->id }} &middot; Registered {{ $member->created_at->format('d M Y, H:i') }} ({{ $member->created_at->diffForHumans() }})</p>
         </div>
         <div class="flex items-center gap-2">
@@ -40,9 +46,31 @@
                 </h2>
             </div>
             <div class="p-5 space-y-3">
-                <div class="flex justify-between items-center py-1.5 border-b border-border/50">
-                    <span class="text-xs text-muted-text font-medium">Name</span>
-                    <span class="text-sm font-semibold text-primary">{{ $member->baptism_name }}</span>
+                <div class="py-2 border-b border-border/50">
+                    <p class="text-xs text-muted-text font-medium mb-2">{{ __('app.baptism_name') }}</p>
+                    <form method="post" action="{{ route('admin.members.update', $member) }}" class="flex flex-col sm:flex-row gap-2 sm:items-start">
+                        @csrf
+                        @method('PATCH')
+                        <div class="flex-1 min-w-0">
+                            <label for="admin_member_baptism_name" class="sr-only">{{ __('app.baptism_name') }}</label>
+                            <input type="text"
+                                   id="admin_member_baptism_name"
+                                   name="baptism_name"
+                                   value="{{ old('baptism_name', $member->baptism_name) }}"
+                                   maxlength="255"
+                                   required
+                                   class="w-full px-3 py-2 rounded-lg border text-sm font-semibold text-primary bg-surface border-border focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent @error('baptism_name') border-red-500 @enderror"
+                                   autocomplete="name">
+                            @error('baptism_name')
+                                <p class="text-xs text-red-600 dark:text-red-400 mt-1">{{ $message }}</p>
+                            @enderror
+                            <p class="text-[11px] text-muted-text mt-1.5 leading-snug">{{ __('app.admin_member_baptism_name_hint') }}</p>
+                        </div>
+                        <button type="submit"
+                                class="shrink-0 px-4 py-2 rounded-lg bg-accent text-on-accent text-sm font-bold hover:bg-accent-hover transition touch-manipulation">
+                            {{ __('app.save') }}
+                        </button>
+                    </form>
                 </div>
                 <div class="flex justify-between items-center py-1.5 border-b border-border/50">
                     <span class="text-xs text-muted-text font-medium">Locale</span>

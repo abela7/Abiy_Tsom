@@ -76,15 +76,15 @@ class MembersController extends Controller
         $telegramMemberLinks = (array) session('telegram_member_links', []);
         $membersQuery = Member::with(['sessions' => function ($q) {
             $q->whereNull('revoked_at')
-              ->orderByDesc('last_used_at')
-              ->limit(1);
+                ->orderByDesc('last_used_at')
+                ->limit(1);
         }]);
 
         // Search by name or phone
         if ($searchQuery !== '') {
             $membersQuery->where(function ($q) use ($searchQuery) {
-                $q->where('baptism_name', 'like', '%' . $searchQuery . '%')
-                  ->orWhere('whatsapp_phone', 'like', '%' . $searchQuery . '%');
+                $q->where('baptism_name', 'like', '%'.$searchQuery.'%')
+                    ->orWhere('whatsapp_phone', 'like', '%'.$searchQuery.'%');
             });
         }
 
@@ -95,14 +95,14 @@ class MembersController extends Controller
             $cutoff = now()->subDays((int) $m[1]);
             $membersQuery->where(function ($q) use ($cutoff) {
                 $q->whereDoesntHave('sessions', fn ($s) => $s->whereNull('revoked_at'))
-                  ->orWhereDoesntHave('sessions', fn ($s) => $s->whereNull('revoked_at')->where('last_used_at', '>=', $cutoff));
+                    ->orWhereDoesntHave('sessions', fn ($s) => $s->whereNull('revoked_at')->where('last_used_at', '>=', $cutoff));
             });
         } elseif ($activeFilter === 'custom') {
             $from = $request->query('from');
             $to = $request->query('to');
             if ($from && $to) {
                 $membersQuery->whereHas('sessions', fn ($q) => $q->whereNull('revoked_at')
-                    ->whereBetween('last_used_at', [$from . ' 00:00:00', $to . ' 23:59:59']));
+                    ->whereBetween('last_used_at', [$from.' 00:00:00', $to.' 23:59:59']));
             }
         }
 
@@ -118,7 +118,7 @@ class MembersController extends Controller
         } elseif ($whatsappFilter === 'none') {
             $membersQuery->where(function ($q) {
                 $q->whereNull('whatsapp_confirmation_status')
-                  ->orWhere('whatsapp_confirmation_status', 'none');
+                    ->orWhere('whatsapp_confirmation_status', 'none');
             })->where('whatsapp_non_uk_requested', false);
         }
 
@@ -144,7 +144,7 @@ class MembersController extends Controller
         } elseif ($sortBy === 'last_active') {
             $membersQuery->addSelect(['last_active_at' => MemberSession::selectRaw('MAX(last_used_at)')
                 ->whereColumn('member_sessions.member_id', 'members.id')
-                ->whereNull('revoked_at')
+                ->whereNull('revoked_at'),
             ])->orderByDesc('last_active_at');
         } else {
             $membersQuery->orderByDesc('created_at');
@@ -177,6 +177,24 @@ class MembersController extends Controller
             'telegramBotUsername',
             'telegramMemberLinks'
         ));
+    }
+
+    /**
+     * Update member profile fields (e.g. baptism name shown in the member app header).
+     */
+    public function update(Request $request, Member $member): RedirectResponse
+    {
+        $validated = $request->validate([
+            'baptism_name' => ['required', 'string', 'min:1', 'max:255'],
+        ]);
+
+        $member->update([
+            'baptism_name' => trim($validated['baptism_name']),
+        ]);
+
+        return redirect()
+            ->route('admin.members.show', $member)
+            ->with('success', __('app.admin_member_baptism_name_updated'));
     }
 
     /**
@@ -284,7 +302,7 @@ class MembersController extends Controller
     {
         if (! $member->whatsapp_phone) {
             return redirect()->route('admin.members.index')
-                ->with('success', 'No WhatsApp phone on file for ' . $member->baptism_name . '.');
+                ->with('success', 'No WhatsApp phone on file for '.$member->baptism_name.'.');
         }
 
         $name = $member->baptism_name;
@@ -313,8 +331,8 @@ class MembersController extends Controller
         $sent = $ultraMsg->sendTextMessage($phone, $message);
 
         $status = $sent
-            ? 'Re-invite sent to ' . $name . ' (' . $phone . '). Member record deleted.'
-            : 'Failed to send WhatsApp to ' . $phone . '. Member record was still deleted.';
+            ? 'Re-invite sent to '.$name.' ('.$phone.'). Member record deleted.'
+            : 'Failed to send WhatsApp to '.$phone.'. Member record was still deleted.';
 
         return redirect()->route('admin.members.index')->with('success', $status);
     }
@@ -364,15 +382,15 @@ class MembersController extends Controller
             120
         );
 
-        $payload = 'member:' . $code;
-        $link = 'https://t.me/' . $telegramBotUsername . '?startapp=' . rawurlencode($payload);
+        $payload = 'member:'.$code;
+        $link = 'https://t.me/'.$telegramBotUsername.'?startapp='.rawurlencode($payload);
 
         $links = (array) session('telegram_member_links', []);
         $links[$member->id] = $link;
 
         return redirect()
             ->route('admin.members.index')
-            ->with('success', 'One-time Telegram mini-app link generated for ' . $member->baptism_name . '.')
+            ->with('success', 'One-time Telegram mini-app link generated for '.$member->baptism_name.'.')
             ->with('telegram_member_links', $links);
     }
 }
