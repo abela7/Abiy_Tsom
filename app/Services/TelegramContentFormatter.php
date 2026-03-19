@@ -342,7 +342,7 @@ final class TelegramContentFormatter
         }
         // Back to lectionary overview + today + menu
         $keyboard['inline_keyboard'][] = [
-            ['text' => '⛪ '.($locale === 'am' ? 'ቅዳሴ ዝርዝር' : 'All Readings'), 'callback_data' => $this->callbackData('today_sec', 'l', $dailyId)],
+            ['text' => '⛪ '.trans('app.telegram_lectionary_all_readings', [], $locale), 'callback_data' => $this->callbackData('today_sec', 'l', $dailyId)],
         ];
         $keyboard['inline_keyboard'][] = [
             ['text' => '📖 '.($locale === 'am' ? 'ዛሬ' : 'Today'), 'callback_data' => 'today'],
@@ -890,7 +890,7 @@ final class TelegramContentFormatter
 
         if ($sectionsWithContent['lectionary']) {
             $parts[] = '⛪ <b>'.__('app.telegram_nav_lectionary').'</b>';
-            $parts[] = '   '.($locale === 'am' ? 'ጳውሎስ · ካቶሊኮን · ግብረ ሐዋርያት · መዝሙር · ወንጌል · ቅዳሴ' : 'Pauline · Catholic · Acts · Psalm · Gospel · Qiddase');
+            $parts[] = '   '.trans('app.telegram_overview_lectionary_parts', [], $locale);
             $parts[] = '';
         }
 

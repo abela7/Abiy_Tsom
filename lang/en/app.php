@@ -172,6 +172,8 @@ return [
     'telegram_nav_references' => 'References',
     'telegram_nav_reflection' => 'Reflection',
     'telegram_nav_lectionary' => 'Lectionary',
+    'telegram_lectionary_all_readings' => 'All Readings',
+    'telegram_overview_lectionary_parts' => 'Pauline · Catholic · Acts · Psalm · Gospel · Qiddase',
     'telegram_nav_commemorations' => 'Commemorations',
     'telegram_choose_language' => 'Choose your language',
     'telegram_lang_en' => 'English',
