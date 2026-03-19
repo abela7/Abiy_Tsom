@@ -418,6 +418,8 @@ return [
     'whatsapp_confirmation_activated_message' => 'Great! Your daily WhatsApp reminders are now activated. Return to the same browser you used to register to continue using your account.',
     'whatsapp_confirmation_go_back_message' => "Tap the link below to go back to the website:\n:url\n\nAlternatively, you can use our Telegram bot here:\n:telegram_url",
     'whatsapp_confirmation_rejected_message' => 'Okay, WhatsApp reminders are not activated. You can enable them anytime from Settings.',
+    'whatsapp_reinvite_message_en' => "Hey :name, we noticed your registration wasn't completed. Use the link below to register again:\n:url\n\nThank you!",
+    'whatsapp_reinvite_message_am' => "ሰላም :name ምዝገባዎ አልተጠናቀቀም። እባክዎ በዚህ ሊንክ እንደገና ይመዝገቡ:\n:url\n\nእናመሰግናለን!",
     'whatsapp_daily_reminder_header' => 'Hello :baptism_name. Today is day :day of the 55 great lent days.',
     'whatsapp_daily_reminder_footer' => "You can find the day’s Bible reading, Mezmur, Gitsawe, Synaxarium, and other spiritual content at this link:\n:url",
     'whatsapp_daily_reminder_yearly_block' => "ዛሬ :gregorian_date ወይንም :ethiopian_date ቀን የሚከበሩ ዓመታዊ በዓላት፦\n\n:yearly_commemorations_bullets",

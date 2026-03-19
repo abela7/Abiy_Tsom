@@ -439,6 +439,24 @@
                                     </form>
                                 @endif
 
+                                {{-- Re-invite (for pending or non-UK members with a phone) --}}
+                                @if ($member->whatsapp_phone && ($member->whatsapp_confirmation_status === 'pending' || $member->whatsapp_non_uk_requested))
+                                    <form method="POST" action="{{ route('admin.members.reinvite', $member) }}"
+                                          x-data="{ confirmReinvite: false }">
+                                        @csrf
+                                        <button x-show="!confirmReinvite" type="button" @click="confirmReinvite = true"
+                                                class="px-2.5 py-1 rounded-md bg-green-500/10 text-green-600 hover:bg-green-500/20 text-[11px] font-semibold transition border border-green-500/20"
+                                                title="Send re-invite via WhatsApp">
+                                            Re-invite
+                                        </button>
+                                        <div x-show="confirmReinvite" x-cloak class="flex items-center gap-1">
+                                            <span class="text-[11px] text-green-600 font-semibold">Send?</span>
+                                            <button type="submit" class="px-2 py-0.5 rounded bg-green-600 text-white text-[11px] font-bold hover:bg-green-700 transition">Yes</button>
+                                            <button type="button" @click="confirmReinvite = false" class="px-2 py-0.5 rounded bg-muted text-secondary text-[11px] font-semibold hover:bg-border transition">No</button>
+                                        </div>
+                                    </form>
+                                @endif
+
                                 {{-- Wipe data --}}
                                 <template x-if="!confirmWipe && !confirmDelete">
                                     <button type="button" @click="confirmWipe = true"

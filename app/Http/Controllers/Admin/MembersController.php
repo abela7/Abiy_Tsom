@@ -12,6 +12,7 @@ use App\Models\MemberCustomChecklist;
 use App\Models\MemberSession;
 use App\Models\TelegramAccessToken;
 use App\Services\TelegramAuthService;
+use App\Services\UltraMsgService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -163,6 +164,49 @@ class MembersController extends Controller
 
         return redirect()->route('admin.members.index')
             ->with('success', __('app.member_data_wiped'));
+    }
+
+    /**
+     * Re-invite a pending member: delete their session/data, keep their phone
+     * on record, and send a WhatsApp message with a fresh registration link.
+     */
+    public function reInvite(Member $member, UltraMsgService $ultraMsg): RedirectResponse
+    {
+        if (! $member->whatsapp_phone) {
+            return redirect()->route('admin.members.index')
+                ->with('success', 'No WhatsApp phone on file for ' . $member->baptism_name . '.');
+        }
+
+        $name = $member->baptism_name;
+        $phone = $member->whatsapp_phone;
+        $locale = $member->locale ?? 'en';
+        $siteUrl = config('app.url', 'https://abiytsom.abuneteklehaymanot.org');
+
+        // Build the message
+        $message = $locale === 'am'
+            ? __('app.whatsapp_reinvite_message_am', ['name' => $name, 'url' => $siteUrl])
+            : __('app.whatsapp_reinvite_message_en', ['name' => $name, 'url' => $siteUrl]);
+
+        // Delete sessions and member data — keep phone number noted in the message log
+        $member->sessions()->delete();
+        $member->checklists()->delete();
+        $member->customChecklists()->delete();
+        $member->customActivities()->delete();
+
+        TelegramAccessToken::where('actor_type', Member::class)
+            ->where('actor_id', $member->id)
+            ->delete();
+
+        $member->delete();
+
+        // Send the WhatsApp message
+        $sent = $ultraMsg->sendTextMessage($phone, $message);
+
+        $status = $sent
+            ? 'Re-invite sent to ' . $name . ' (' . $phone . '). Member record deleted.'
+            : 'Failed to send WhatsApp to ' . $phone . '. Member record was still deleted.';
+
+        return redirect()->route('admin.members.index')->with('success', $status);
     }
 
     /**

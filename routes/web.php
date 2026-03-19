@@ -308,6 +308,7 @@ Route::middleware(['auth', 'admin.audit'])->prefix('admin')->name('admin.')->gro
         Route::delete('/members/{member}', [Admin\MembersController::class, 'destroy'])->name('members.destroy');
         Route::delete('/members/{member}/data', [Admin\MembersController::class, 'wipeData'])->name('members.wipe-data');
         Route::post('/members/{member}/restart-tour', [Admin\MembersController::class, 'restartTour'])->name('members.restart-tour');
+        Route::post('/members/{member}/reinvite', [Admin\MembersController::class, 'reInvite'])->name('members.reinvite');
 
         // Referrals
         Route::get('/referrals', [Admin\ReferralController::class, 'index'])->name('referrals.index');
