@@ -38,6 +38,12 @@
         <p class="text-xs font-semibold text-muted-text uppercase tracking-wider">{{ __('app.tour_completed_count') }}</p>
         <p class="text-2xl font-black text-accent-secondary mt-1">{{ number_format($tourCompletedCount) }}</p>
     </div>
+    @if($nonUkRequested > 0)
+    <div class="bg-card rounded-xl p-4 shadow-sm border border-amber-500/30">
+        <p class="text-xs font-semibold text-amber-600 uppercase tracking-wider">Non-UK WhatsApp</p>
+        <p class="text-2xl font-black text-amber-500 mt-1">{{ number_format($nonUkRequested) }}</p>
+    </div>
+    @endif
 </div>
 
 {{-- Date range --}}
@@ -222,6 +228,9 @@
                             <div class="text-[10px] text-muted-text mt-0.5">{{ $member->whatsapp_phone ?? '—' }}</div>
                         @elseif($member->whatsapp_confirmation_status === 'rejected')
                             <span class="px-2 py-0.5 rounded-md bg-red-500/10 text-red-500 text-xs font-semibold">{{ __('app.rejected') }}</span>
+                        @elseif($member->whatsapp_non_uk_requested)
+                            <span class="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 text-xs font-semibold">Non-UK</span>
+                            <div class="text-[10px] text-muted-text mt-0.5">{{ $member->whatsapp_phone ?? '—' }}</div>
                         @else
                             <span class="px-2 py-0.5 rounded-md bg-muted text-muted-text text-xs font-semibold">—</span>
                         @endif

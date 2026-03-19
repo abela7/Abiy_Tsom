@@ -61,6 +61,8 @@ class MembersController extends Controller
             ->orWhereHas('customChecklists', fn ($q) => $q->where('completed', true))
             ->count();
 
+        $nonUkRequested = Member::where('whatsapp_non_uk_requested', true)->count();
+
         $telegramBotUsername = ltrim((string) config('services.telegram.bot_username', ''), '@');
         $telegramMemberLinks = (array) session('telegram_member_links', []);
         $members = Member::orderByDesc('created_at')->paginate(25);
@@ -79,6 +81,7 @@ class MembersController extends Controller
             'totalChecklistCompletions',
             'totalCustomCompletions',
             'engagedMembers',
+            'nonUkRequested',
             'members',
             'telegramBotUsername',
             'telegramMemberLinks'
