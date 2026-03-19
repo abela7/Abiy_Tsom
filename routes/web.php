@@ -303,6 +303,7 @@ Route::middleware(['auth', 'admin.audit'])->prefix('admin')->name('admin.')->gro
         // Dashboard & Members
         Route::get('/dashboard', [Admin\DashboardController::class, 'index'])->name('dashboard');
         Route::get('/members', [Admin\MembersController::class, 'index'])->name('members.index');
+        Route::get('/members/{member}', [Admin\MembersController::class, 'show'])->name('members.show');
         Route::post('/members/{member}/telegram-link', [Admin\MembersController::class, 'createTelegramMiniLink'])->name('members.telegram-link');
         Route::delete('/members/wipe-all', [Admin\MembersController::class, 'wipeAll'])->name('members.wipe-all');
         Route::delete('/members/{member}', [Admin\MembersController::class, 'destroy'])->name('members.destroy');

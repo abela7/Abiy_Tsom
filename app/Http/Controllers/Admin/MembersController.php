@@ -180,6 +180,53 @@ class MembersController extends Controller
     }
 
     /**
+     * Show detailed member profile.
+     */
+    public function show(Member $member): View
+    {
+        $member->load(['referrer']);
+
+        // All sessions (active + revoked), newest first
+        $sessions = MemberSession::where('member_id', $member->id)
+            ->orderByDesc('last_used_at')
+            ->get();
+
+        // Reminder link opens, newest first
+        $reminderOpens = $member->reminderLinkOpens()
+            ->with('dailyContent')
+            ->orderByDesc('last_opened_at')
+            ->limit(50)
+            ->get();
+
+        // Daily views count
+        $totalDailyViews = $member->dailyViews()->count();
+
+        // Checklist stats
+        $totalChecklists = $member->checklists()->where('completed', true)->count();
+        $totalCustomChecklists = $member->customChecklists()->where('completed', true)->count();
+        $customActivities = $member->customActivities()->orderBy('sort_order')->get();
+
+        // Fundraising responses
+        $fundraisingResponses = [];
+        if (class_exists(\App\Models\MemberFundraisingResponse::class)) {
+            $fundraisingResponses = \App\Models\MemberFundraisingResponse::where('member_id', $member->id)
+                ->with('campaign')
+                ->get();
+        }
+
+        return view('admin.members.show', compact(
+            'member',
+            'sessions',
+            'reminderOpens',
+            'totalDailyViews',
+            'totalChecklists',
+            'totalCustomChecklists',
+            'customActivities',
+            'fundraisingResponses'
+        ));
+    }
+
+    /**
      * Delete a single member and all their associated data.
      */
     public function destroy(Member $member): RedirectResponse

@@ -461,7 +461,7 @@
 
                         {{-- Name --}}
                         <td class="px-4 py-3">
-                            <span class="font-semibold text-primary">{{ $member->baptism_name }}</span>
+                            <a href="{{ route('admin.members.show', $member) }}" class="font-semibold text-primary hover:text-accent transition hover:underline underline-offset-2">{{ $member->baptism_name }}</a>
                         </td>
 
                         {{-- Locale --}}
