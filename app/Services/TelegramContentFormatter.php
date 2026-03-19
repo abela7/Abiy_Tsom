@@ -592,13 +592,14 @@ final class TelegramContentFormatter
             return ['inline_keyboard' => $rows];
         }
 
-        // Sinksar: Listen (if any) + Go back only — no section nav, no menu (photos cleared on back)
-        if ($currentSection === 'sinksar') {
+        // Sinksar + Daily Message (reflection): optional media row, then Go back to Today only —
+        // no section nav or main menu (same pattern as Sinksar; photos cleared on back from webhook).
+        if ($currentSection === 'sinksar' || $currentSection === 'reflection') {
             foreach ($listenButtons as $btn) {
                 $rows[] = [$btn];
             }
             $rows[] = [
-                ['text' => '◀️ '.__('app.telegram_sinksar_go_back'), 'callback_data' => 'today'],
+                ['text' => '◀️ '.__('app.telegram_go_back'), 'callback_data' => 'today'],
             ];
 
             return ['inline_keyboard' => $rows];

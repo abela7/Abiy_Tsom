@@ -170,7 +170,7 @@ return [
     'telegram_nav_bible' => 'መጽሐፍ ቅዱስ',
     'telegram_nav_mezmur' => 'መዝሙር',
     'telegram_nav_sinksar' => 'ስንክሳር',
-    'telegram_sinksar_go_back' => 'Go back',
+    'telegram_go_back' => 'Go back',
     'telegram_nav_books' => 'መንፈሳዊ መጽሐፍ',
     'telegram_nav_references' => 'ማጣቀሻ',
     'telegram_nav_reflection' => 'ዕለታዊ መልዕክት',
