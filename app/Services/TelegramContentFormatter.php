@@ -6,11 +6,13 @@ namespace App\Services;
 
 use App\Models\Activity;
 use App\Models\DailyContent;
+use App\Models\Lectionary;
 use App\Models\LentSeason;
 use App\Models\Member;
 use App\Models\MemberChecklist;
 use App\Models\MemberCustomChecklist;
 use App\Services\AbiyTsomStructure;
+use App\Services\EthiopianCalendarService;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
@@ -30,9 +32,11 @@ final class TelegramContentFormatter
         'b' => 'bible',
         'm' => 'mezmur',
         's' => 'sinksar',
+        'l' => 'lectionary',
         'k' => 'books',
         'r' => 'reference',
         'f' => 'reflection',
+        'c' => 'commemorations',
     ];
 
     /**
@@ -51,9 +55,11 @@ final class TelegramContentFormatter
             'bible' => $this->sectionBible($daily, $locale),
             'mezmur' => $this->sectionMezmur($daily, $locale),
             'sinksar' => $this->sectionSinksar($daily, $locale),
+            'lectionary' => $this->sectionLectionary($daily, $locale),
             'books' => $this->sectionBooks($daily, $locale),
             'reference' => $this->sectionReference($daily, $locale),
             'reflection' => $this->sectionReflection($daily, $locale),
+            'commemorations' => $this->sectionCommemorations($daily, $locale),
             default => [],
         };
 
@@ -98,9 +104,11 @@ final class TelegramContentFormatter
             'bible' => __('app.telegram_nav_bible'),
             'mezmur' => __('app.telegram_nav_mezmur'),
             'sinksar' => __('app.telegram_nav_sinksar'),
+            'lectionary' => __('app.telegram_nav_lectionary'),
             'books' => __('app.telegram_nav_books'),
             'reference' => __('app.telegram_nav_references'),
             'reflection' => __('app.telegram_nav_reflection'),
+            'commemorations' => __('app.telegram_nav_commemorations'),
             default => $section,
         };
     }
@@ -136,9 +144,28 @@ final class TelegramContentFormatter
 
             return $parts;
         }
-        foreach ($daily->mezmurs as $m) {
+        foreach ($daily->mezmurs as $i => $m) {
             $title = $this->h(localized($m, 'title', $locale) ?? '-');
-            $parts[] = '  • '.$title;
+            if ($i > 0) {
+                $parts[] = '';
+            }
+            $parts[] = '<b>'.$title.'</b>';
+
+            $desc = localized($m, 'description', $locale);
+            if ($desc) {
+                $parts[] = '<i>'.$this->h($desc).'</i>';
+            }
+
+            $url = $m->mediaUrl($locale);
+            if ($url) {
+                $parts[] = '<a href="'.$this->hUrl($url).'">▶ '.__('app.listen').'</a>';
+            }
+
+            $lyrics = localized($m, 'lyrics', $locale);
+            if ($lyrics) {
+                $parts[] = '';
+                $parts[] = $this->expandableQuote($this->h($lyrics), 800);
+            }
         }
 
         return $parts;
@@ -152,10 +179,212 @@ final class TelegramContentFormatter
 
             return $parts;
         }
-        $parts[] = $this->h(localized($daily, 'sinksar_title', $locale));
+        $parts[] = '<b>'.$this->h(localized($daily, 'sinksar_title', $locale)).'</b>';
         $parts[] = '';
         if (localized($daily, 'sinksar_description', $locale)) {
-            $parts[] = $this->h(localized($daily, 'sinksar_description', $locale));
+            $parts[] = '<i>'.$this->h(localized($daily, 'sinksar_description', $locale)).'</i>';
+            $parts[] = '';
+        }
+
+        // Saint images captions
+        if ($daily->sinksarImages && $daily->sinksarImages->isNotEmpty()) {
+            foreach ($daily->sinksarImages as $img) {
+                $caption = localized($img, 'caption', $locale);
+                if ($caption) {
+                    $parts[] = '🖼 '.$this->h($caption);
+                }
+            }
+            if ($daily->sinksarImages->count() > 0) {
+                $parts[] = '';
+            }
+        }
+
+        // Full sinksar text
+        $sinksarText = $daily->sinksarText($locale);
+        if ($sinksarText) {
+            $parts[] = $this->expandableQuote($this->h($sinksarText), 1200);
+        }
+
+        $sinksarUrl = $daily->sinksarUrl($locale);
+        if ($sinksarUrl) {
+            $parts[] = '';
+            $parts[] = '<a href="'.$this->hUrl($sinksarUrl).'">▶ '.__('app.listen').'</a>';
+        }
+
+        return $parts;
+    }
+
+    private function sectionLectionary(DailyContent $daily, string $locale): array
+    {
+        $parts = [];
+
+        if (! $daily->date) {
+            $parts[] = __('app.no_content');
+
+            return $parts;
+        }
+
+        $ethCal = app(EthiopianCalendarService::class);
+        $eth = $ethCal->gregorianToEthiopian($daily->date);
+        $lectionary = Lectionary::where('month', $eth['month'])->where('day', $eth['day'])->first();
+
+        if (! $lectionary || ! $lectionary->hasContent()) {
+            $parts[] = __('app.no_content');
+
+            return $parts;
+        }
+
+        $suffix = $locale === 'am' ? '_am' : '_en';
+
+        // Pauline Epistles
+        $paulineBook = $lectionary->{'pauline_book'.$suffix};
+        if (filled($paulineBook)) {
+            $parts[] = '<b>📜 '.($locale === 'am' ? 'ጳውሎስ ሐዋርያ' : 'Pauline Epistle').'</b>';
+            $ref = $this->h($paulineBook);
+            if ($lectionary->pauline_chapter) {
+                $ref .= ' '.$lectionary->pauline_chapter;
+                if (filled($lectionary->pauline_verses)) {
+                    $ref .= ':'.$this->h($lectionary->pauline_verses);
+                }
+            }
+            $parts[] = $ref;
+            $paulineText = $lectionary->{'pauline_text'.$suffix};
+            if (filled($paulineText)) {
+                $parts[] = $this->expandableQuote($this->h($paulineText), 600);
+            }
+            $parts[] = '';
+        }
+
+        // Catholic Epistles
+        $cathBook = $lectionary->{'catholic_book'.$suffix};
+        if (filled($cathBook)) {
+            $parts[] = '<b>📜 '.($locale === 'am' ? 'ካቶሊኮን' : 'Catholic Epistle').'</b>';
+            $ref = $this->h($cathBook);
+            if ($lectionary->catholic_chapter) {
+                $ref .= ' '.$lectionary->catholic_chapter;
+                if (filled($lectionary->catholic_verses)) {
+                    $ref .= ':'.$this->h($lectionary->catholic_verses);
+                }
+            }
+            $parts[] = $ref;
+            $cathText = $lectionary->{'catholic_text'.$suffix};
+            if (filled($cathText)) {
+                $parts[] = $this->expandableQuote($this->h($cathText), 600);
+            }
+            $parts[] = '';
+        }
+
+        // Acts
+        if ($lectionary->acts_chapter) {
+            $parts[] = '<b>📜 '.($locale === 'am' ? 'ግብረ ሐዋርያት' : 'Acts of the Apostles').'</b>';
+            $ref = ($locale === 'am' ? 'ግብረ ሐዋርያት' : 'Acts').' '.$lectionary->acts_chapter;
+            if (filled($lectionary->acts_verses)) {
+                $ref .= ':'.$this->h($lectionary->acts_verses);
+            }
+            $parts[] = $ref;
+            $actsText = $lectionary->{'acts_text'.$suffix};
+            if (filled($actsText)) {
+                $parts[] = $this->expandableQuote($this->h($actsText), 600);
+            }
+            $parts[] = '';
+        }
+
+        // Mesbak (Psalm)
+        if ($lectionary->mesbak_psalm) {
+            $parts[] = '<b>🎵 '.($locale === 'am' ? 'መዝሙረ ዳዊት' : 'Psalm (Mesbak)').'</b>';
+            $ref = ($locale === 'am' ? 'መዝ.' : 'Ps.').' '.$lectionary->mesbak_psalm;
+            if (filled($lectionary->mesbak_verses)) {
+                $ref .= ':'.$this->h($lectionary->mesbak_verses);
+            }
+            $parts[] = $ref;
+            // Geez verses
+            foreach ([1, 2, 3] as $n) {
+                $geez = $lectionary->{'mesbak_geez_'.$n};
+                if (filled($geez)) {
+                    $parts[] = '<i>'.$this->h($geez).'</i>';
+                }
+            }
+            $mesbakText = $lectionary->{'mesbak_text'.$suffix};
+            if (filled($mesbakText)) {
+                $parts[] = $this->expandableQuote($this->h($mesbakText), 400);
+            }
+            $parts[] = '';
+        }
+
+        // Gospel
+        $gospelBook = $lectionary->{'gospel_book'.$suffix};
+        if (filled($gospelBook)) {
+            $parts[] = '<b>✝️ '.($locale === 'am' ? 'ወንጌል' : 'Gospel').'</b>';
+            $ref = $this->h($gospelBook);
+            if ($lectionary->gospel_chapter) {
+                $ref .= ' '.$lectionary->gospel_chapter;
+                if (filled($lectionary->gospel_verses)) {
+                    $ref .= ':'.$this->h($lectionary->gospel_verses);
+                }
+            }
+            $parts[] = $ref;
+            $gospelText = $lectionary->{'gospel_text'.$suffix};
+            if (filled($gospelText)) {
+                $parts[] = $this->expandableQuote($this->h($gospelText), 800);
+            }
+            $parts[] = '';
+        }
+
+        // Qiddase
+        $qiddase = $lectionary->{'qiddase'.$suffix};
+        if (filled($qiddase)) {
+            $parts[] = '<b>⛪ '.($locale === 'am' ? 'ቅዳሴ' : 'Qiddase').'</b>';
+            $parts[] = $this->h($qiddase);
+        }
+
+        return $parts;
+    }
+
+    private function sectionCommemorations(DailyContent $daily, string $locale): array
+    {
+        $parts = [];
+
+        if (! $daily->date) {
+            $parts[] = __('app.no_content');
+
+            return $parts;
+        }
+
+        $ethCal = app(EthiopianCalendarService::class);
+        $dateInfo = $ethCal->getDateInfo($daily->date, $locale);
+
+        // Ethiopian date
+        $parts[] = '<b>'.$this->h($dateInfo['ethiopian_date_formatted']).'</b>';
+        $parts[] = '';
+
+        $annuals = $dateInfo['annual_celebrations'];
+        $monthlies = $dateInfo['monthly_celebrations'];
+
+        if ($annuals->isNotEmpty()) {
+            $parts[] = '<b>'.($locale === 'am' ? '🎉 ዓመታዊ በዓላት' : '🎉 Annual Celebrations').'</b>';
+            $parts[] = '';
+            foreach ($annuals as $c) {
+                $name = $this->h(localized($c, 'celebration', $locale) ?? '-');
+                $parts[] = $c->is_main ? '<b>• '.$name.'</b>' : '• '.$name;
+                $desc = localized($c, 'description', $locale);
+                if ($desc) {
+                    $parts[] = '<i>'.$this->h(mb_substr($desc, 0, 200)).'</i>';
+                }
+            }
+            $parts[] = '';
+        }
+
+        if ($monthlies->isNotEmpty()) {
+            $parts[] = '<b>'.($locale === 'am' ? '📅 ወርሃዊ መታሰቢያ' : '📅 Monthly Commemorations').'</b>';
+            $parts[] = '';
+            foreach ($monthlies as $c) {
+                $name = $this->h(localized($c, 'celebration', $locale) ?? '-');
+                $parts[] = $c->is_main ? '<b>• '.$name.'</b>' : '• '.$name;
+            }
+        }
+
+        if ($annuals->isEmpty() && $monthlies->isEmpty()) {
+            $parts[] = __('app.no_content');
         }
 
         return $parts;
@@ -238,9 +467,11 @@ final class TelegramContentFormatter
                 'bible' => '📜 '.__('app.telegram_nav_bible'),
                 'mezmur' => '🎵 '.__('app.telegram_nav_mezmur'),
                 'sinksar' => '📖 '.__('app.telegram_nav_sinksar'),
+                'lectionary' => '⛪ '.__('app.telegram_nav_lectionary'),
                 'books' => '📚 '.__('app.telegram_nav_books'),
                 'reference' => '🔗 '.__('app.telegram_nav_references'),
                 'reflection' => '💭 '.__('app.telegram_nav_reflection'),
+                'commemorations' => '🎉 '.__('app.telegram_nav_commemorations'),
                 default => $name,
             };
             $navButtons[] = ['text' => $label, 'callback_data' => $cb];
@@ -259,13 +490,27 @@ final class TelegramContentFormatter
     /** @return array<string, bool> */
     private function sectionsWithContent(DailyContent $daily, string $locale): array
     {
+        $hasLectionary = false;
+        $hasCommemorations = false;
+
+        if ($daily->date) {
+            $ethCal = app(EthiopianCalendarService::class);
+            $eth = $ethCal->gregorianToEthiopian($daily->date);
+            $lectionary = Lectionary::where('month', $eth['month'])->where('day', $eth['day'])->first();
+            $hasLectionary = $lectionary && $lectionary->hasContent();
+            $celebrations = $ethCal->getCelebrationsForDate($daily->date);
+            $hasCommemorations = $celebrations->isNotEmpty();
+        }
+
         return [
             'bible' => (bool) localized($daily, 'bible_reference', $locale),
             'mezmur' => $daily->mezmurs->isNotEmpty(),
             'sinksar' => (bool) localized($daily, 'sinksar_title', $locale),
+            'lectionary' => $hasLectionary,
             'books' => $daily->books && $daily->books->isNotEmpty(),
             'reference' => $daily->references && $daily->references->isNotEmpty(),
             'reflection' => (bool) localized($daily, 'reflection', $locale),
+            'commemorations' => $hasCommemorations,
         ];
     }
 
@@ -341,6 +586,32 @@ final class TelegramContentFormatter
                         default => __('app.read_more'),
                     };
                     $buttons[] = ['text' => '▶ '.$name, 'url' => $this->hUrl($url)];
+                }
+            }
+        }
+
+        // Sinksar saint images — send as URL buttons
+        if ($section === 'sinksar' && $daily->sinksarImages) {
+            foreach ($daily->sinksarImages as $img) {
+                if (! $img->image_path) {
+                    continue;
+                }
+                $caption = localized($img, 'caption', $locale) ?? __('app.sinksar');
+                $caption = mb_strlen($caption) > 25 ? mb_substr($caption, 0, 22).'…' : $caption;
+                $buttons[] = ['text' => '🖼 '.$caption, 'url' => $img->imageUrl()];
+            }
+        }
+
+        // Bible audio
+        if ($section === 'bible') {
+            $bibleAudio = $daily->bibleAudioUrl($locale);
+            if ($bibleAudio) {
+                $vid = $this->youtubeVideoId($bibleAudio);
+                if ($vid) {
+                    $embedUrl = $embedBase.'?vid='.$vid.'&title='.rawurlencode(__('app.telegram_nav_bible'));
+                    $buttons[] = ['text' => '▶ '.__('app.listen'), 'web_app' => ['url' => $embedUrl]];
+                } else {
+                    $buttons[] = ['text' => '▶ '.__('app.listen'), 'url' => $this->hUrl($bibleAudio)];
                 }
             }
         }
@@ -491,6 +762,47 @@ final class TelegramContentFormatter
             $parts[] = '<b>💭 '.__('app.reflection').'</b>';
             $reflection = $this->h(localized($daily, 'reflection', $locale));
             $parts[] = $this->expandableQuote($reflection, 1000);
+            $parts[] = '';
+            $parts[] = self::DIVIDER;
+        }
+
+        // Lectionary summary
+        if ($daily->date) {
+            $ethCal = app(EthiopianCalendarService::class);
+            $eth = $ethCal->gregorianToEthiopian($daily->date);
+            $lectionary = Lectionary::where('month', $eth['month'])->where('day', $eth['day'])->first();
+            if ($lectionary && $lectionary->hasContent()) {
+                $suffix = $locale === 'am' ? '_am' : '_en';
+                $parts[] = '<b>⛪ '.__('app.telegram_nav_lectionary').'</b>';
+                $readings = [];
+                if (filled($lectionary->{'pauline_book'.$suffix})) {
+                    $readings[] = $this->h($lectionary->{'pauline_book'.$suffix}).($lectionary->pauline_chapter ? ' '.$lectionary->pauline_chapter : '');
+                }
+                if (filled($lectionary->{'gospel_book'.$suffix})) {
+                    $readings[] = $this->h($lectionary->{'gospel_book'.$suffix}).($lectionary->gospel_chapter ? ' '.$lectionary->gospel_chapter : '');
+                }
+                if ($readings) {
+                    $parts[] = implode(' · ', $readings);
+                }
+                $parts[] = '<i>'.($locale === 'am' ? 'ለተሟላ ንባብ ⛪ ቅዳሴ ክፍልን ይመልከቱ' : 'See ⛪ Lectionary section for full readings').'</i>';
+                $parts[] = '';
+                $parts[] = self::DIVIDER;
+            }
+        }
+
+        // Commemorations summary
+        if ($daily->date) {
+            $ethCal = app(EthiopianCalendarService::class);
+            $celebrations = $ethCal->getCelebrationsForDate($daily->date);
+            if ($celebrations->isNotEmpty()) {
+                $parts[] = '<b>🎉 '.__('app.telegram_nav_commemorations').'</b>';
+                foreach ($celebrations->take(3) as $c) {
+                    $parts[] = '• '.$this->h(localized($c, 'celebration', $locale) ?? '-');
+                }
+                if ($celebrations->count() > 3) {
+                    $parts[] = '<i>+'.($celebrations->count() - 3).' '.($locale === 'am' ? 'ተጨማሪ' : 'more').'...</i>';
+                }
+            }
         }
 
         $text = implode("\n", $parts);

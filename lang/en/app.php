@@ -170,6 +170,8 @@ return [
     'telegram_nav_books' => 'Books',
     'telegram_nav_references' => 'References',
     'telegram_nav_reflection' => 'Reflection',
+    'telegram_nav_lectionary' => 'Lectionary',
+    'telegram_nav_commemorations' => 'Commemorations',
     'telegram_choose_language' => 'Choose your language',
     'telegram_lang_en' => 'English',
     'telegram_lang_am' => 'አማርኛ',

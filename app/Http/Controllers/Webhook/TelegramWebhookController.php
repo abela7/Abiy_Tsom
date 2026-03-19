@@ -1267,7 +1267,7 @@ class TelegramWebhookController extends Controller
             ->where('lent_season_id', $season->id)
             ->whereDate('date', $today->toDateString())
             ->where('is_published', true)
-            ->with(['weeklyTheme', 'mezmurs', 'books', 'references'])
+            ->with(['weeklyTheme', 'mezmurs', 'books', 'references', 'sinksarImages'])
             ->first();
 
         if (! $daily) {
@@ -1306,16 +1306,18 @@ class TelegramWebhookController extends Controller
             'b' => 'bible',
             'm' => 'mezmur',
             's' => 'sinksar',
+            'l' => 'lectionary',
             'k' => 'books',
             'r' => 'reference',
             'f' => 'reflection',
+            'c' => 'commemorations',
         ];
         $section = $sectionMap[$sectionCode] ?? 'bible';
 
         $daily = DailyContent::query()
             ->where('id', $dailyId)
             ->where('is_published', true)
-            ->with(['weeklyTheme', 'mezmurs', 'books', 'references'])
+            ->with(['weeklyTheme', 'mezmurs', 'books', 'references', 'sinksarImages'])
             ->first();
 
         if (! $daily) {
