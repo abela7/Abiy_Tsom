@@ -597,7 +597,8 @@ final class TelegramContentFormatter
         if ($currentSection === 'sinksar'
             || $currentSection === 'reflection'
             || $currentSection === 'bible'
-            || $currentSection === 'commemorations') {
+            || $currentSection === 'commemorations'
+            || $currentSection === 'books') {
             foreach ($listenButtons as $btn) {
                 $rows[] = [$btn];
             }
