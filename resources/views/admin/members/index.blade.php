@@ -257,51 +257,169 @@
             </div>
         </div>
 
-        {{-- Activity filter --}}
-        <div class="px-5 py-3 border-b border-border bg-muted/30" x-data="{ showCustom: {{ $activeFilter === 'custom' ? 'true' : 'false' }} }">
-            <div class="flex items-center gap-2 flex-wrap">
-                <span class="text-xs font-bold text-muted-text uppercase tracking-wider mr-1">Filter:</span>
-                @php
-                    $filters = [
-                        '' => 'All',
-                        'today' => 'Active Today',
-                        '1d' => '1d+ Inactive',
-                        '2d' => '2d+ Inactive',
-                        '3d' => '3d+ Inactive',
-                        '7d' => '7d+ Inactive',
-                        '30d' => '30d+ Inactive',
-                    ];
-                @endphp
-                @foreach($filters as $value => $label)
-                    <a href="{{ route('admin.members.index', array_merge(request()->except('page', 'active', 'from', 'to'), $value ? ['active' => $value] : [])) }}"
-                       class="px-2.5 py-1 rounded-md text-[11px] font-semibold transition border {{ $activeFilter === $value ? 'bg-accent text-on-accent border-accent shadow-sm' : 'bg-card text-secondary border-border hover:border-accent/40 hover:text-primary' }}">
-                        {{ $label }}
-                    </a>
-                @endforeach
+        {{-- Filters --}}
+        <div class="border-b border-border bg-muted/30" x-data="{ expanded: {{ ($searchQuery || $whatsappFilter || $localeFilter || $tourFilter || $sortBy !== 'newest' || $activeFilter === 'custom') ? 'true' : 'false' }}, showCustom: {{ $activeFilter === 'custom' ? 'true' : 'false' }} }">
 
-                <span class="w-px h-5 bg-border mx-1"></span>
+            {{-- Search + toggle --}}
+            <div class="px-5 py-3 flex items-center gap-3 flex-wrap">
+                <form method="GET" action="{{ route('admin.members.index') }}" class="flex-1 min-w-[200px] max-w-sm relative">
+                    @foreach(request()->except('page', 'q') as $k => $v)
+                        <input type="hidden" name="{{ $k }}" value="{{ $v }}">
+                    @endforeach
+                    <svg class="w-4 h-4 text-muted-text absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    <input type="text" name="q" value="{{ $searchQuery }}" placeholder="Search name or phone..."
+                           class="w-full pl-9 pr-3 py-2 rounded-lg text-xs border border-border bg-surface text-primary focus:ring-2 focus:ring-accent/30 focus:border-accent outline-none placeholder:text-muted-text/50">
+                </form>
 
-                <button type="button" @click="showCustom = !showCustom"
-                        class="px-2.5 py-1 rounded-md text-[11px] font-semibold transition border {{ $activeFilter === 'custom' ? 'bg-accent text-on-accent border-accent shadow-sm' : 'bg-card text-secondary border-border hover:border-accent/40 hover:text-primary' }}">
-                    Custom
+                <button type="button" @click="expanded = !expanded"
+                        class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[11px] font-semibold transition border"
+                        :class="expanded ? 'bg-accent text-on-accent border-accent' : 'bg-card text-secondary border-border hover:border-accent/40'">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+                    Filters
+                    @if($whatsappFilter || $localeFilter || $tourFilter || $activeFilter || $sortBy !== 'newest')
+                        <span class="w-1.5 h-1.5 rounded-full bg-on-accent animate-pulse"></span>
+                    @endif
                 </button>
+
+                @if($searchQuery || $whatsappFilter || $localeFilter || $tourFilter || $activeFilter || $sortBy !== 'newest')
+                    <a href="{{ route('admin.members.index') }}"
+                       class="px-3 py-2 rounded-lg text-[11px] font-semibold text-red-500 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition">
+                        Clear All
+                    </a>
+                @endif
             </div>
 
-            {{-- Custom range --}}
-            <form x-show="showCustom" x-transition.duration.150ms method="GET" action="{{ route('admin.members.index') }}"
-                  class="flex items-center gap-2 flex-wrap mt-3 pt-3 border-t border-border/50">
-                <input type="hidden" name="active" value="custom">
-                <label class="text-xs text-muted-text font-medium">From</label>
-                <input type="date" name="from" value="{{ request('from', now()->subDays(7)->format('Y-m-d')) }}"
-                       class="px-2.5 py-1.5 rounded-lg text-xs border border-border bg-surface text-primary focus:ring-2 focus:ring-accent/30 focus:border-accent outline-none">
-                <label class="text-xs text-muted-text font-medium">To</label>
-                <input type="date" name="to" value="{{ request('to', now()->format('Y-m-d')) }}"
-                       class="px-2.5 py-1.5 rounded-lg text-xs border border-border bg-surface text-primary focus:ring-2 focus:ring-accent/30 focus:border-accent outline-none">
-                <button type="submit"
-                        class="px-3 py-1.5 rounded-lg text-xs font-bold bg-accent text-on-accent border border-accent hover:brightness-110 transition shadow-sm">
-                    Apply
-                </button>
-            </form>
+            {{-- Expanded filters --}}
+            <div x-show="expanded" x-transition.duration.200ms class="px-5 pb-4 space-y-3">
+
+                {{-- Row 1: Activity --}}
+                <div class="flex items-start gap-2 flex-wrap">
+                    <span class="text-[10px] font-bold text-muted-text uppercase tracking-wider w-16 pt-1.5 shrink-0">Activity</span>
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        @php
+                            $activityFilters = [
+                                '' => 'All',
+                                'today' => 'Active Today',
+                                '1d' => '1d+',
+                                '2d' => '2d+',
+                                '3d' => '3d+',
+                                '7d' => '7d+',
+                                '14d' => '14d+',
+                                '30d' => '30d+',
+                            ];
+                        @endphp
+                        @foreach($activityFilters as $value => $label)
+                            <a href="{{ route('admin.members.index', array_merge(request()->except('page', 'active', 'from', 'to'), $value ? ['active' => $value] : [])) }}"
+                               class="px-2 py-1 rounded text-[11px] font-semibold transition border {{ $activeFilter === $value ? 'bg-accent text-on-accent border-accent shadow-sm' : 'bg-card text-secondary border-border hover:border-accent/40' }}">
+                                {{ $label }}
+                            </a>
+                        @endforeach
+                        <button type="button" @click="showCustom = !showCustom"
+                                class="px-2 py-1 rounded text-[11px] font-semibold transition border {{ $activeFilter === 'custom' ? 'bg-accent text-on-accent border-accent shadow-sm' : 'bg-card text-secondary border-border hover:border-accent/40' }}">
+                            Custom
+                        </button>
+                    </div>
+                </div>
+
+                {{-- Custom date range --}}
+                <form x-show="showCustom" x-transition method="GET" action="{{ route('admin.members.index') }}"
+                      class="flex items-center gap-2 flex-wrap ml-[4.5rem]">
+                    @foreach(request()->except('page', 'active', 'from', 'to') as $k => $v)
+                        <input type="hidden" name="{{ $k }}" value="{{ $v }}">
+                    @endforeach
+                    <input type="hidden" name="active" value="custom">
+                    <label class="text-[11px] text-muted-text font-medium">From</label>
+                    <input type="date" name="from" value="{{ request('from', now()->subDays(7)->format('Y-m-d')) }}"
+                           class="px-2 py-1 rounded text-[11px] border border-border bg-surface text-primary focus:ring-2 focus:ring-accent/30 outline-none">
+                    <label class="text-[11px] text-muted-text font-medium">To</label>
+                    <input type="date" name="to" value="{{ request('to', now()->format('Y-m-d')) }}"
+                           class="px-2 py-1 rounded text-[11px] border border-border bg-surface text-primary focus:ring-2 focus:ring-accent/30 outline-none">
+                    <button type="submit" class="px-2.5 py-1 rounded text-[11px] font-bold bg-accent text-on-accent border border-accent hover:brightness-110 transition">Apply</button>
+                </form>
+
+                {{-- Row 2: WhatsApp --}}
+                <div class="flex items-start gap-2 flex-wrap">
+                    <span class="text-[10px] font-bold text-muted-text uppercase tracking-wider w-16 pt-1.5 shrink-0">WhatsApp</span>
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        @php
+                            $waFilters = [
+                                '' => 'All',
+                                'confirmed' => 'Active',
+                                'pending' => 'Pending',
+                                'rejected' => 'Rejected',
+                                'non_uk' => 'Non-UK',
+                                'none' => 'No Reminder',
+                            ];
+                            $waColors = [
+                                'confirmed' => 'bg-success/15 text-success border-success/30',
+                                'pending' => 'bg-amber-500/15 text-amber-600 border-amber-500/30',
+                                'rejected' => 'bg-red-500/15 text-red-500 border-red-500/30',
+                                'non_uk' => 'bg-amber-500/15 text-amber-600 border-amber-500/30',
+                            ];
+                        @endphp
+                        @foreach($waFilters as $value => $label)
+                            @php $isActive = $whatsappFilter === $value; @endphp
+                            <a href="{{ route('admin.members.index', array_merge(request()->except('page', 'whatsapp'), $value ? ['whatsapp' => $value] : [])) }}"
+                               class="px-2 py-1 rounded text-[11px] font-semibold transition border {{ $isActive ? 'bg-accent text-on-accent border-accent shadow-sm' : ($waColors[$value] ?? 'bg-card text-secondary border-border hover:border-accent/40') }}">
+                                {{ $label }}
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+
+                {{-- Row 3: Locale + Tour + Sort --}}
+                <div class="flex items-start gap-6 flex-wrap">
+                    {{-- Locale --}}
+                    <div class="flex items-start gap-2">
+                        <span class="text-[10px] font-bold text-muted-text uppercase tracking-wider w-16 pt-1.5 shrink-0">Locale</span>
+                        <div class="flex items-center gap-1.5">
+                            @php $localeOptions = ['' => 'All', 'en' => 'EN', 'am' => 'AM']; @endphp
+                            @foreach($localeOptions as $value => $label)
+                                <a href="{{ route('admin.members.index', array_merge(request()->except('page', 'locale'), $value ? ['locale' => $value] : [])) }}"
+                                   class="px-2 py-1 rounded text-[11px] font-semibold transition border {{ $localeFilter === $value ? 'bg-accent text-on-accent border-accent shadow-sm' : 'bg-card text-secondary border-border hover:border-accent/40' }}">
+                                    {{ $label }}
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    {{-- Tour --}}
+                    <div class="flex items-start gap-2">
+                        <span class="text-[10px] font-bold text-muted-text uppercase tracking-wider w-10 pt-1.5 shrink-0">Tour</span>
+                        <div class="flex items-center gap-1.5">
+                            @php $tourOptions = ['' => 'All', 'completed' => 'Done', 'not_completed' => 'Not Done']; @endphp
+                            @foreach($tourOptions as $value => $label)
+                                <a href="{{ route('admin.members.index', array_merge(request()->except('page', 'tour'), $value ? ['tour' => $value] : [])) }}"
+                                   class="px-2 py-1 rounded text-[11px] font-semibold transition border {{ $tourFilter === $value ? 'bg-accent text-on-accent border-accent shadow-sm' : 'bg-card text-secondary border-border hover:border-accent/40' }}">
+                                    {{ $label }}
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    {{-- Sort --}}
+                    <div class="flex items-start gap-2">
+                        <span class="text-[10px] font-bold text-muted-text uppercase tracking-wider w-10 pt-1.5 shrink-0">Sort</span>
+                        <div class="flex items-center gap-1.5">
+                            @php
+                                $sortOptions = [
+                                    'newest' => 'Newest',
+                                    'oldest' => 'Oldest',
+                                    'name_asc' => 'A-Z',
+                                    'name_desc' => 'Z-A',
+                                    'last_active' => 'Last Active',
+                                ];
+                            @endphp
+                            @foreach($sortOptions as $value => $label)
+                                <a href="{{ route('admin.members.index', array_merge(request()->except('page', 'sort'), $value !== 'newest' ? ['sort' => $value] : [])) }}"
+                                   class="px-2 py-1 rounded text-[11px] font-semibold transition border {{ $sortBy === $value ? 'bg-accent text-on-accent border-accent shadow-sm' : 'bg-card text-secondary border-border hover:border-accent/40' }}">
+                                    {{ $label }}
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         {{-- Flash message --}}

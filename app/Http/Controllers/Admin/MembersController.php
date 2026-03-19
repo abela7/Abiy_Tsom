@@ -27,7 +27,13 @@ class MembersController extends Controller
      */
     public function index(Request $request): View
     {
-        $activeFilter = $request->query('active', '');
+        $activeFilter = (string) $request->query('active', '');
+        $searchQuery = trim((string) $request->query('q', ''));
+        $whatsappFilter = (string) $request->query('whatsapp', '');
+        $localeFilter = (string) $request->query('locale', '');
+        $tourFilter = (string) $request->query('tour', '');
+        $sortBy = (string) $request->query('sort', 'newest');
+
         $totalMembers = Member::count();
 
         $registrationsByDay = Member::query()
@@ -74,10 +80,18 @@ class MembersController extends Controller
               ->limit(1);
         }]);
 
+        // Search by name or phone
+        if ($searchQuery !== '') {
+            $membersQuery->where(function ($q) use ($searchQuery) {
+                $q->where('baptism_name', 'like', '%' . $searchQuery . '%')
+                  ->orWhere('whatsapp_phone', 'like', '%' . $searchQuery . '%');
+            });
+        }
+
+        // Activity filter
         if ($activeFilter === 'today') {
             $membersQuery->whereHas('sessions', fn ($q) => $q->whereNull('revoked_at')->where('last_used_at', '>=', now()->startOfDay()));
         } elseif (preg_match('/^(\d+)d$/', $activeFilter, $m)) {
-            // Inactive for N+ days: no active session in the last N days
             $cutoff = now()->subDays((int) $m[1]);
             $membersQuery->where(function ($q) use ($cutoff) {
                 $q->whereDoesntHave('sessions', fn ($s) => $s->whereNull('revoked_at'))
@@ -92,10 +106,59 @@ class MembersController extends Controller
             }
         }
 
-        $members = $membersQuery->orderByDesc('created_at')->paginate(25)->appends($request->only('active', 'from', 'to'));
+        // WhatsApp status filter
+        if ($whatsappFilter === 'confirmed') {
+            $membersQuery->where('whatsapp_confirmation_status', 'confirmed');
+        } elseif ($whatsappFilter === 'pending') {
+            $membersQuery->where('whatsapp_confirmation_status', 'pending');
+        } elseif ($whatsappFilter === 'rejected') {
+            $membersQuery->where('whatsapp_confirmation_status', 'rejected');
+        } elseif ($whatsappFilter === 'non_uk') {
+            $membersQuery->where('whatsapp_non_uk_requested', true);
+        } elseif ($whatsappFilter === 'none') {
+            $membersQuery->where(function ($q) {
+                $q->whereNull('whatsapp_confirmation_status')
+                  ->orWhere('whatsapp_confirmation_status', 'none');
+            })->where('whatsapp_non_uk_requested', false);
+        }
+
+        // Locale filter
+        if ($localeFilter !== '') {
+            $membersQuery->where('locale', $localeFilter);
+        }
+
+        // Tour filter
+        if ($tourFilter === 'completed') {
+            $membersQuery->whereNotNull('tour_completed_at');
+        } elseif ($tourFilter === 'not_completed') {
+            $membersQuery->whereNull('tour_completed_at');
+        }
+
+        // Sort
+        if ($sortBy === 'oldest') {
+            $membersQuery->orderBy('created_at');
+        } elseif ($sortBy === 'name_asc') {
+            $membersQuery->orderBy('baptism_name');
+        } elseif ($sortBy === 'name_desc') {
+            $membersQuery->orderByDesc('baptism_name');
+        } elseif ($sortBy === 'last_active') {
+            $membersQuery->addSelect(['last_active_at' => MemberSession::selectRaw('MAX(last_used_at)')
+                ->whereColumn('member_sessions.member_id', 'members.id')
+                ->whereNull('revoked_at')
+            ])->orderByDesc('last_active_at');
+        } else {
+            $membersQuery->orderByDesc('created_at');
+        }
+
+        $members = $membersQuery->paginate(25)->appends($request->only('active', 'from', 'to', 'q', 'whatsapp', 'locale', 'tour', 'sort'));
 
         return view('admin.members.index', compact(
             'activeFilter',
+            'searchQuery',
+            'whatsappFilter',
+            'localeFilter',
+            'tourFilter',
+            'sortBy',
             'totalMembers',
             'registrationsByDay',
             'firstRegistration',
