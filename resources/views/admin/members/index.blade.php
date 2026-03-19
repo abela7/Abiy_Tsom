@@ -140,6 +140,26 @@
 <div class="bg-card rounded-xl shadow-sm border border-border overflow-hidden"
      x-data="{ confirmWipeAll: false }">
 
+    {{-- Last Active filter --}}
+    <div class="px-4 py-3 border-b border-border flex items-center gap-2 flex-wrap">
+        <span class="text-xs font-semibold text-muted-text mr-1">Last Active:</span>
+        @php
+            $filters = [
+                '' => 'All',
+                'today' => 'Today',
+                '7d' => 'Last 7 days',
+                '30d' => 'Last 30 days',
+                'inactive' => 'Inactive (30d+)',
+            ];
+        @endphp
+        @foreach($filters as $value => $label)
+            <a href="{{ route('admin.members.index', array_merge(request()->except('page', 'active'), $value ? ['active' => $value] : [])) }}"
+               class="px-3 py-1.5 rounded-lg text-xs font-semibold transition border {{ $activeFilter === $value ? 'bg-accent text-on-accent border-accent' : 'bg-muted/60 text-secondary border-border hover:border-accent/50' }}">
+                {{ $label }}
+            </a>
+        @endforeach
+    </div>
+
     <div class="px-4 py-3 border-b border-border flex items-center justify-between gap-3 flex-wrap">
         <div>
             <h2 class="text-sm font-bold text-primary">{{ __('app.member_list') }}</h2>

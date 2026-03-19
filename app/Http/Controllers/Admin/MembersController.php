@@ -13,6 +13,7 @@ use App\Models\MemberSession;
 use App\Models\TelegramAccessToken;
 use App\Services\TelegramAuthService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
@@ -23,8 +24,9 @@ class MembersController extends Controller
     /**
      * Show member stats and paginated member list.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
+        $activeFilter = $request->query('active', '');
         $totalMembers = Member::count();
 
         $registrationsByDay = Member::query()
@@ -65,13 +67,29 @@ class MembersController extends Controller
 
         $telegramBotUsername = ltrim((string) config('services.telegram.bot_username', ''), '@');
         $telegramMemberLinks = (array) session('telegram_member_links', []);
-        $members = Member::with(['sessions' => function ($q) {
+        $membersQuery = Member::with(['sessions' => function ($q) {
             $q->whereNull('revoked_at')
               ->orderByDesc('last_used_at')
               ->limit(1);
-        }])->orderByDesc('created_at')->paginate(25);
+        }]);
+
+        if ($activeFilter === 'today') {
+            $membersQuery->whereHas('sessions', fn ($q) => $q->whereNull('revoked_at')->where('last_used_at', '>=', now()->startOfDay()));
+        } elseif ($activeFilter === '7d') {
+            $membersQuery->whereHas('sessions', fn ($q) => $q->whereNull('revoked_at')->where('last_used_at', '>=', now()->subDays(7)));
+        } elseif ($activeFilter === '30d') {
+            $membersQuery->whereHas('sessions', fn ($q) => $q->whereNull('revoked_at')->where('last_used_at', '>=', now()->subDays(30)));
+        } elseif ($activeFilter === 'inactive') {
+            $membersQuery->where(function ($q) {
+                $q->whereDoesntHave('sessions', fn ($s) => $s->whereNull('revoked_at'))
+                  ->orWhereDoesntHave('sessions', fn ($s) => $s->whereNull('revoked_at')->where('last_used_at', '>=', now()->subDays(30)));
+            });
+        }
+
+        $members = $membersQuery->orderByDesc('created_at')->paginate(25)->appends(['active' => $activeFilter]);
 
         return view('admin.members.index', compact(
+            'activeFilter',
             'totalMembers',
             'registrationsByDay',
             'firstRegistration',
