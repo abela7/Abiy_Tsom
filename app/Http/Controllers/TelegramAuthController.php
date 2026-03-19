@@ -217,6 +217,24 @@ class TelegramAuthController extends Controller
     }
 
     /**
+     * Public commemorations page for Telegram Web App (no auth required).
+     */
+    public function commemorations(\App\Models\DailyContent $daily, \App\Services\EthiopianCalendarService $ethCalendar): \Illuminate\View\View|\Illuminate\Http\RedirectResponse
+    {
+        if (! $daily->is_published || ! $daily->date) {
+            return redirect()->route('home');
+        }
+
+        $locale = request()->query('lang', app()->getLocale());
+        $locale = in_array($locale, ['en', 'am']) ? $locale : 'en';
+        app()->setLocale($locale);
+
+        $ethDateInfo = $ethCalendar->getDateInfo($daily->date, $locale);
+
+        return view('telegram.commemorations', compact('daily', 'ethDateInfo', 'locale'));
+    }
+
+    /**
      * Mezmur player page with lyrics for Telegram Web App.
      */
     public function mezmurPlayer(Request $request): \Illuminate\View\View|\Illuminate\Http\RedirectResponse

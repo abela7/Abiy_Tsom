@@ -751,9 +751,9 @@ final class TelegramContentFormatter
             }
         }
 
-        // Commemorations — open the web commemorations page
+        // Commemorations — open the public Telegram commemorations page
         if ($section === 'commemorations' && $daily->date) {
-            $commUrl = url('/member/day/'.$daily->day_number.'-'.$daily->id.'/commemorations');
+            $commUrl = url(route('telegram.commemorations', ['daily' => $daily->id, 'lang' => $locale]));
             $buttons[] = [
                 'text' => '🖼 '.($locale === 'am' ? 'ፎቶ እና ዝርዝር ይመልከቱ' : 'View Photos & Details'),
                 'web_app' => ['url' => $commUrl],

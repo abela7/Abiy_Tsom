@@ -53,6 +53,7 @@ Route::get('/telegram/mini/connect', [TelegramAuthController::class, 'miniConnec
 Route::get('/telegram/embed', [TelegramAuthController::class, 'embed'])->name('telegram.embed');
 Route::get('/telegram/audio', [TelegramAuthController::class, 'audioPlayer'])->name('telegram.audio');
 Route::get('/telegram/mezmur', [TelegramAuthController::class, 'mezmurPlayer'])->name('telegram.mezmur');
+Route::get('/telegram/commemorations/{daily}', [TelegramAuthController::class, 'commemorations'])->name('telegram.commemorations');
 Route::get('/telegram/webapp/home', [TelegramAuthController::class, 'webappHome'])
     ->middleware('throttle:60,1')
     ->name('telegram.webapp.home');
