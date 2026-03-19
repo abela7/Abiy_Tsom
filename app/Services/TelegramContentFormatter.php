@@ -428,16 +428,23 @@ final class TelegramContentFormatter
 
             return $parts;
         }
-        foreach ($daily->books as $book) {
+        foreach ($daily->books as $i => $book) {
             $title = $this->h(localized($book, 'title', $locale));
             if ($title === '') {
                 continue;
             }
-            $parts[] = '  • '.$title;
-            if (localized($book, 'description', $locale)) {
-                $parts[] = '    '.$this->h(localized($book, 'description', $locale));
+            if ($i > 0) {
+                $parts[] = '';
             }
+            $parts[] = '<b>• '.$title.'</b>';
+            $desc = localized($book, 'description', $locale);
+            if ($desc) {
+                $parts[] = $this->expandableQuote($this->h($desc), 600);
+            }
+            // Buttons handle the actual read/view action
         }
+        $parts[] = '';
+        $parts[] = '<i>'.($locale === 'am' ? '📖 ለማንበብ ከታች ያለውን ቁልፍ ይጫኑ' : '📖 Tap the button below to read').'</i>';
 
         return $parts;
     }
@@ -452,8 +459,20 @@ final class TelegramContentFormatter
         }
         foreach ($daily->references as $ref) {
             $name = $this->h(localized($ref, 'name', $locale) ?? '-');
-            $parts[] = '  • '.$name;
+            $type = $ref->type ?? 'website';
+            $icon = match ($type) {
+                'video' => '▶',
+                'file' => '📄',
+                default => '🔗',
+            };
+            $parts[] = $icon.' <b>'.$name.'</b>';
+            $desc = localized($ref, 'description', $locale);
+            if ($desc) {
+                $parts[] = '<i>'.$this->h(mb_substr($desc, 0, 150)).'</i>';
+            }
         }
+        $parts[] = '';
+        $parts[] = '<i>'.($locale === 'am' ? 'ለመመልከት ከታች ያለውን ቁልፍ ይጫኑ' : 'Tap the buttons below to view').'</i>';
 
         return $parts;
     }
@@ -512,6 +531,11 @@ final class TelegramContentFormatter
             }
         }
 
+        // Back to overview + Open on website + Menu
+        $rows[] = [
+            ['text' => '📖 '.($locale === 'am' ? 'ዛሬ' : 'Today'), 'callback_data' => 'today'],
+            ['text' => '🌐 '.($locale === 'am' ? 'ድረ-ገጽ' : 'Website'), 'url' => $daily->memberDayUrl(true)],
+        ];
         $rows[] = [['text' => '◀️ '.__('app.menu'), 'callback_data' => 'menu']];
 
         return ['inline_keyboard' => $rows];
@@ -671,11 +695,15 @@ final class TelegramContentFormatter
     }
 
     /**
-     * @return array{text: string, use_html: bool}
+     * Format a day overview with section navigation keyboard.
+     * Shows a clean summary without links — users tap section buttons to read.
+     *
+     * @return array{text: string, use_html: bool, keyboard: array}
      */
-    public function formatDayContent(DailyContent $daily, Member $member): array
+    public function formatDayOverview(DailyContent $daily, Member|\App\Models\User $actor): array
     {
-        $locale = $this->memberLocale($member);
+        $locale = $actor instanceof Member ? $this->memberLocale($actor) : app()->getLocale();
+        $dailyId = (string) $daily->id;
         $parts = [];
 
         $dayTitle = $this->h(localized($daily, 'day_title', $locale) ?? __('app.day_x', ['day' => $daily->day_number]));
@@ -687,147 +715,128 @@ final class TelegramContentFormatter
             $themeName = $this->h(localized($daily->weeklyTheme, 'name', $locale) ?? $daily->weeklyTheme->name_en ?? '-');
             $parts[] = '<i>'.$themeName.'</i>';
         }
+
+        // Ethiopian date
+        if ($daily->date) {
+            $ethCal = app(EthiopianCalendarService::class);
+            $ethFormatted = $ethCal->formatEthiopianDate($daily->date, $locale);
+            $parts[] = '<i>'.$this->h($ethFormatted).'</i>';
+        }
+
         $parts[] = '';
-        $parts[] = $dayTitle;
+        $parts[] = '<b>'.$dayTitle.'</b>';
         $parts[] = '';
         $parts[] = self::DIVIDER;
+        $parts[] = '';
 
-        if (localized($daily, 'bible_reference', $locale)) {
-            $parts[] = '<b>📜 '.__('app.bible_reading').'</b>';
-            $parts[] = $this->h(localized($daily, 'bible_reference', $locale));
-            if (localized($daily, 'bible_summary', $locale)) {
-                $parts[] = $this->h(localized($daily, 'bible_summary', $locale));
-            }
-            $bibleText = localized($daily, 'bible_text', $locale);
-            if ($bibleText) {
-                $escaped = $this->h($bibleText);
-                $parts[] = $this->expandableQuote($escaped, 1200);
+        // Section summaries — just headlines, no links
+        $sectionsWithContent = $this->sectionsWithContent($daily, $locale);
+
+        if ($sectionsWithContent['bible']) {
+            $ref = localized($daily, 'bible_reference', $locale);
+            $parts[] = '📜 <b>'.__('app.telegram_nav_bible').'</b>';
+            if ($ref) {
+                $parts[] = '   '.$this->h($ref);
             }
             $parts[] = '';
-            $parts[] = self::DIVIDER;
         }
 
-        if ($daily->mezmurs->isNotEmpty()) {
-            $parts[] = '<b>🎵 '.__('app.mezmur').'</b>';
-            foreach ($daily->mezmurs as $m) {
-                $title = $this->h(localized($m, 'title', $locale) ?? '-');
-                $url = $m->mediaUrl($locale);
-                if ($url) {
-                    $parts[] = '• '.$title.' <a href="'.$this->hUrl($url).'">▶ '.__('app.listen').'</a>';
-                } else {
-                    $parts[] = '• '.$title;
-                }
+        if ($sectionsWithContent['mezmur']) {
+            $parts[] = '🎵 <b>'.__('app.telegram_nav_mezmur').'</b>';
+            foreach ($daily->mezmurs->take(3) as $m) {
+                $parts[] = '   • '.$this->h(localized($m, 'title', $locale) ?? '-');
             }
             $parts[] = '';
-            $parts[] = self::DIVIDER;
         }
 
-        if (localized($daily, 'sinksar_title', $locale)) {
-            $parts[] = '<b>📖 '.__('app.sinksar').'</b>';
-            $parts[] = $this->h(localized($daily, 'sinksar_title', $locale));
-            if (localized($daily, 'sinksar_description', $locale)) {
-                $parts[] = $this->h(localized($daily, 'sinksar_description', $locale));
-            }
-            $sinksarUrl = $daily->sinksarUrl($locale);
-            if ($sinksarUrl) {
-                $parts[] = '<a href="'.$this->hUrl($sinksarUrl).'">▶ '.__('app.listen').'</a>';
-            }
+        if ($sectionsWithContent['sinksar']) {
+            $parts[] = '📖 <b>'.__('app.telegram_nav_sinksar').'</b>';
+            $parts[] = '   '.$this->h(localized($daily, 'sinksar_title', $locale));
             $parts[] = '';
-            $parts[] = self::DIVIDER;
         }
 
-        if ($daily->books && $daily->books->isNotEmpty()) {
-            $parts[] = '<b>📚 '.__('app.spiritual_book').'</b>';
-            foreach ($daily->books as $book) {
-                $title = $this->h(localized($book, 'title', $locale));
-                if ($title === '') {
-                    continue;
-                }
-                $parts[] = $title;
-                if (localized($book, 'description', $locale)) {
-                    $parts[] = $this->h(localized($book, 'description', $locale));
-                }
-                $bookUrl = $book->mediaUrl($locale);
-                if ($bookUrl) {
-                    $parts[] = '<a href="'.$this->hUrl($bookUrl).'">'.__('app.read_more').' →</a>';
+        if ($sectionsWithContent['lectionary']) {
+            $parts[] = '⛪ <b>'.__('app.telegram_nav_lectionary').'</b>';
+            $parts[] = '   '.($locale === 'am' ? 'ጳውሎስ · ካቶሊኮን · ግብረ ሐዋርያት · መዝሙር · ወንጌል · ቅዳሴ' : 'Pauline · Catholic · Acts · Psalm · Gospel · Qiddase');
+            $parts[] = '';
+        }
+
+        if ($sectionsWithContent['books']) {
+            $parts[] = '📚 <b>'.__('app.telegram_nav_books').'</b>';
+            foreach ($daily->books->take(2) as $book) {
+                $title = localized($book, 'title', $locale);
+                if ($title) {
+                    $parts[] = '   • '.$this->h($title);
                 }
             }
             $parts[] = '';
-            $parts[] = self::DIVIDER;
         }
 
-        if ($daily->references && $daily->references->isNotEmpty()) {
-            $parts[] = '<b>🔗 '.__('app.references').'</b>';
-            foreach ($daily->references as $ref) {
-                $refUrl = $ref->mediaUrl($locale);
-                if (! $refUrl) {
-                    continue;
-                }
-                $name = $this->h(localized($ref, 'name', $locale) ?? '-');
-                $refType = $ref->type ?? 'website';
-                $label = match ($refType) {
-                    'video' => __('app.view_video'),
-                    'file' => __('app.view_file'),
-                    default => __('app.read_more'),
-                };
-                $parts[] = '• '.$name.' <a href="'.$this->hUrl($refUrl).'">'.$this->h($label).'</a>';
-            }
+        if ($sectionsWithContent['reference']) {
+            $parts[] = '🔗 <b>'.__('app.telegram_nav_references').'</b>';
             $parts[] = '';
-            $parts[] = self::DIVIDER;
         }
 
-        if (localized($daily, 'reflection', $locale)) {
-            $parts[] = '<b>💭 '.__('app.reflection').'</b>';
-            $reflection = $this->h(localized($daily, 'reflection', $locale));
-            $parts[] = $this->expandableQuote($reflection, 1000);
+        if ($sectionsWithContent['reflection']) {
+            $parts[] = '💭 <b>'.__('app.telegram_nav_reflection').'</b>';
             $parts[] = '';
-            $parts[] = self::DIVIDER;
         }
 
-        // Lectionary summary
-        if ($daily->date) {
-            $ethCal = app(EthiopianCalendarService::class);
-            $eth = $ethCal->gregorianToEthiopian($daily->date);
-            $lectionary = Lectionary::where('month', $eth['month'])->where('day', $eth['day'])->first();
-            if ($lectionary && $lectionary->hasContent()) {
-                $suffix = $locale === 'am' ? '_am' : '_en';
-                $parts[] = '<b>⛪ '.__('app.telegram_nav_lectionary').'</b>';
-                $readings = [];
-                if (filled($lectionary->{'pauline_book'.$suffix})) {
-                    $readings[] = $this->h($lectionary->{'pauline_book'.$suffix}).($lectionary->pauline_chapter ? ' '.$lectionary->pauline_chapter : '');
-                }
-                if (filled($lectionary->{'gospel_book'.$suffix})) {
-                    $readings[] = $this->h($lectionary->{'gospel_book'.$suffix}).($lectionary->gospel_chapter ? ' '.$lectionary->gospel_chapter : '');
-                }
-                if ($readings) {
-                    $parts[] = implode(' · ', $readings);
-                }
-                $parts[] = '<i>'.($locale === 'am' ? 'ለተሟላ ንባብ ⛪ ቅዳሴ ክፍልን ይመልከቱ' : 'See ⛪ Lectionary section for full readings').'</i>';
-                $parts[] = '';
-                $parts[] = self::DIVIDER;
-            }
-        }
-
-        // Commemorations summary
-        if ($daily->date) {
+        if ($sectionsWithContent['commemorations']) {
             $ethCal = app(EthiopianCalendarService::class);
             $celebrations = $ethCal->getCelebrationsForDate($daily->date);
-            if ($celebrations->isNotEmpty()) {
-                $parts[] = '<b>🎉 '.__('app.telegram_nav_commemorations').'</b>';
-                foreach ($celebrations->take(3) as $c) {
-                    $parts[] = '• '.$this->h(localized($c, 'celebration', $locale) ?? '-');
-                }
-                if ($celebrations->count() > 3) {
-                    $parts[] = '<i>+'.($celebrations->count() - 3).' '.($locale === 'am' ? 'ተጨማሪ' : 'more').'...</i>';
-                }
+            $parts[] = '🎉 <b>'.__('app.telegram_nav_commemorations').'</b>';
+            foreach ($celebrations->take(3) as $c) {
+                $parts[] = '   • '.$this->h(localized($c, 'celebration', $locale) ?? '-');
             }
+            if ($celebrations->count() > 3) {
+                $parts[] = '   <i>+'.$this->h((string) ($celebrations->count() - 3)).' '.($locale === 'am' ? 'ተጨማሪ' : 'more').'</i>';
+            }
+            $parts[] = '';
         }
+
+        $parts[] = self::DIVIDER;
+        $parts[] = $locale === 'am'
+            ? '<i>ከታች ያሉትን ክፍሎች በመጫን ያንብቡ ▼</i>'
+            : '<i>Tap a section below to read ▼</i>';
+
+        // Build keyboard with all available sections
+        $navButtons = [];
+        foreach (self::SECTIONS as $code => $name) {
+            if (! ($sectionsWithContent[$name] ?? false)) {
+                continue;
+            }
+            $cb = $this->callbackData('today_sec', $code, $dailyId);
+            $label = match ($name) {
+                'bible' => '📜 '.__('app.telegram_nav_bible'),
+                'mezmur' => '🎵 '.__('app.telegram_nav_mezmur'),
+                'sinksar' => '📖 '.__('app.telegram_nav_sinksar'),
+                'lectionary' => '⛪ '.__('app.telegram_nav_lectionary'),
+                'books' => '📚 '.__('app.telegram_nav_books'),
+                'reference' => '🔗 '.__('app.telegram_nav_references'),
+                'reflection' => '💭 '.__('app.telegram_nav_reflection'),
+                'commemorations' => '🎉 '.__('app.telegram_nav_commemorations'),
+                default => $name,
+            };
+            $navButtons[] = ['text' => $label, 'callback_data' => $cb];
+        }
+
+        $rows = [];
+        foreach (array_chunk($navButtons, 2) as $chunk) {
+            $rows[] = $chunk;
+        }
+
+        // Open on website button
+        $webUrl = $daily->memberDayUrl(true);
+        $rows[] = [['text' => '🌐 '.($locale === 'am' ? 'በድረ-ገጽ ይመልከቱ' : 'Open on Website'), 'url' => $webUrl]];
+        $rows[] = [['text' => '◀️ '.__('app.menu'), 'callback_data' => 'menu']];
 
         $text = implode("\n", $parts);
 
         return [
             'text' => mb_substr($text, 0, self::MAX_MESSAGE_LENGTH),
             'use_html' => true,
+            'keyboard' => ['inline_keyboard' => $rows],
         ];
     }
 

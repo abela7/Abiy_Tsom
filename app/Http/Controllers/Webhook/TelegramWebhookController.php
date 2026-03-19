@@ -1274,7 +1274,7 @@ class TelegramWebhookController extends Controller
             return $this->replyAfterDelete($telegramService, $chatId, $messageId, __('app.no_content_today'), []);
         }
 
-        $formatted = $this->contentFormatter->formatDaySection($daily, $actor, 'bible');
+        $formatted = $this->contentFormatter->formatDayOverview($daily, $actor);
         $keyboard = $formatted['keyboard'] ?? ($actor instanceof Member
             ? $this->mainMenuKeyboard($actor, $telegramAuthService)
             : $this->staffMainPageKeyboard());
