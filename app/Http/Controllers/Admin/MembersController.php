@@ -65,7 +65,11 @@ class MembersController extends Controller
 
         $telegramBotUsername = ltrim((string) config('services.telegram.bot_username', ''), '@');
         $telegramMemberLinks = (array) session('telegram_member_links', []);
-        $members = Member::orderByDesc('created_at')->paginate(25);
+        $members = Member::with(['sessions' => function ($q) {
+            $q->whereNull('revoked_at')
+              ->orderByDesc('last_used_at')
+              ->limit(1);
+        }])->orderByDesc('created_at')->paginate(25);
 
         return view('admin.members.index', compact(
             'totalMembers',

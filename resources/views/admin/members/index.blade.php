@@ -193,6 +193,8 @@
                     <th class="text-left px-4 py-3 font-semibold text-secondary">{{ __('app.tour_column') }}</th>
                     <th class="text-left px-4 py-3 font-semibold text-secondary">WhatsApp</th>
                     <th class="text-left px-4 py-3 font-semibold text-secondary">{{ __('app.registered_at') }}</th>
+                    <th class="text-left px-4 py-3 font-semibold text-secondary">Last Active</th>
+                    <th class="text-left px-4 py-3 font-semibold text-secondary">IP</th>
                     <th class="text-right px-4 py-3 font-semibold text-secondary">{{ __('app.actions') }}</th>
                 </tr>
             </thead>
@@ -237,6 +239,17 @@
                     </td>
                     <td class="px-4 py-3 text-muted-text whitespace-nowrap">
                         {{ $member->created_at->format('d M Y') }}
+                    </td>
+                    @php $latestSession = $member->sessions->first(); @endphp
+                    <td class="px-4 py-3 text-muted-text whitespace-nowrap text-xs">
+                        @if($latestSession && $latestSession->last_used_at)
+                            {{ $latestSession->last_used_at->diffForHumans() }}
+                        @else
+                            <span class="text-muted-text/50">—</span>
+                        @endif
+                    </td>
+                    <td class="px-4 py-3 text-muted-text whitespace-nowrap text-xs font-mono">
+                        {{ $latestSession->ip_address ?? '—' }}
                     </td>
                     <td class="px-4 py-3 text-right">
                         <div class="flex items-center justify-end gap-2 flex-wrap">
@@ -340,7 +353,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="8" class="px-4 py-12 text-center text-muted-text">
+                    <td colspan="10" class="px-4 py-12 text-center text-muted-text">
                         {{ __('app.no_members_yet') }}
                     </td>
                 </tr>
