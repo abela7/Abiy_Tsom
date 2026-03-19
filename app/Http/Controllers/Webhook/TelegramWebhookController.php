@@ -190,6 +190,10 @@ class TelegramWebhookController extends Controller
             return $this->handleTodaySection($chatId, $messageId, $action, $telegramAuthService, $telegramService);
         }
 
+        if (str_starts_with($action, 'lect_')) {
+            return $this->handleLectionaryReading($chatId, $messageId, $action, $telegramAuthService, $telegramService);
+        }
+
         if (str_starts_with($action, 'progress_')) {
             return $this->handleProgressPeriod($chatId, $messageId, $action, $telegramAuthService, $telegramService);
         }
@@ -1331,6 +1335,51 @@ class TelegramWebhookController extends Controller
         foreach ($formatted['photos'] ?? [] as $photo) {
             $telegramService->sendPhoto($chatId, $photo['url'], $photo['caption'] ?? '', 'HTML');
         }
+
+        $telegramService->editMessageText(
+            $chatId,
+            $messageId,
+            $formatted['text'],
+            $formatted['keyboard'] ?? [],
+            $parseMode
+        );
+
+        return response()->json(['success' => true]);
+    }
+
+    private function handleLectionaryReading(
+        string $chatId,
+        int $messageId,
+        string $action,
+        TelegramAuthService $telegramAuthService,
+        TelegramService $telegramService
+    ): JsonResponse {
+        $actor = $this->actorFromChatId($chatId);
+        if (! $actor) {
+            return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->notLinkedMessage(), $this->startChoiceKeyboard());
+        }
+
+        // Parse: lect_{num}_{dailyId}
+        $parts = explode('_', $action, 3);
+        $readingNum = (int) ($parts[1] ?? 0);
+        $dailyId = (int) ($parts[2] ?? 0);
+
+        if ($readingNum < 1 || $readingNum > 6 || $dailyId <= 0) {
+            return response()->json(['success' => true]);
+        }
+
+        $daily = DailyContent::query()
+            ->where('id', $dailyId)
+            ->where('is_published', true)
+            ->with(['weeklyTheme'])
+            ->first();
+
+        if (! $daily) {
+            return response()->json(['success' => true]);
+        }
+
+        $formatted = $this->contentFormatter->formatLectionaryReading($daily, $actor, $readingNum);
+        $parseMode = ($formatted['use_html'] ?? false) ? 'HTML' : null;
 
         $telegramService->editMessageText(
             $chatId,

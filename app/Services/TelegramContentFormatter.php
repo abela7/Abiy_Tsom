@@ -225,19 +225,13 @@ final class TelegramContentFormatter
         return $parts;
     }
 
+    /**
+     * Lectionary overview — shows reading titles only, users tap buttons to read each one.
+     */
     private function sectionLectionary(DailyContent $daily, string $locale): array
     {
         $parts = [];
-
-        if (! $daily->date) {
-            $parts[] = __('app.no_content');
-
-            return $parts;
-        }
-
-        $ethCal = app(EthiopianCalendarService::class);
-        $eth = $ethCal->gregorianToEthiopian($daily->date);
-        $lectionary = Lectionary::where('month', $eth['month'])->where('day', $eth['day'])->first();
+        $lectionary = $this->loadLectionary($daily);
 
         if (! $lectionary || ! $lectionary->hasContent()) {
             $parts[] = __('app.no_content');
@@ -245,17 +239,147 @@ final class TelegramContentFormatter
             return $parts;
         }
 
+        $readings = $this->buildLectionaryReadings($lectionary, $locale);
+
+        foreach ($readings as $r) {
+            if (! $r['has']) {
+                continue;
+            }
+            $ref = '';
+            if ($r['book'] && $r['chapter']) {
+                $ref = ' — '.$this->h($r['book']).' '.$r['chapter'];
+                if (filled($r['verses'])) {
+                    $ref .= ':'.$this->h($r['verses']);
+                }
+            }
+            $parts[] = $r['icon'].' <b>'.$this->h($r['label']).'</b>'.$ref;
+        }
+
+        $parts[] = '';
+        $parts[] = '<i>'.($locale === 'am' ? 'ከታች ያለውን ቁልፍ ይጫኑ ለማንበብ' : 'Tap a reading below to open').'</i>';
+
+        return $parts;
+    }
+
+    /**
+     * Format a single lectionary reading for display.
+     *
+     * @return array{text: string, use_html: bool, keyboard: array}
+     */
+    public function formatLectionaryReading(DailyContent $daily, Member|\App\Models\User $actor, int $readingNum): array
+    {
+        $locale = $actor instanceof Member ? $this->memberLocale($actor) : app()->getLocale();
+        $dailyId = (string) $daily->id;
+        $lectionary = $this->loadLectionary($daily);
+
+        $parts = $this->buildSectionHeader($daily, $locale, 'lectionary');
+
+        if (! $lectionary || ! $lectionary->hasContent()) {
+            $parts[] = __('app.no_content');
+
+            return ['text' => implode("\n", $parts), 'use_html' => true, 'keyboard' => []];
+        }
+
+        $readings = $this->buildLectionaryReadings($lectionary, $locale);
+        $reading = $readings[$readingNum - 1] ?? null;
+
+        if (! $reading || ! $reading['has']) {
+            $parts[] = __('app.no_content');
+
+            return ['text' => implode("\n", $parts), 'use_html' => true, 'keyboard' => []];
+        }
+
+        // Title
+        $parts[] = '<b>'.$reading['icon'].' '.$this->h($reading['label']).'</b>';
+        $parts[] = '';
+
+        // Reference
+        if ($reading['book'] && $reading['chapter']) {
+            $ref = $this->h($reading['book']).' '.$reading['chapter'];
+            if (filled($reading['verses'])) {
+                $ref .= ':'.$this->h($reading['verses']);
+            }
+            $parts[] = '<b>'.$ref.'</b>';
+            $parts[] = '';
+        }
+
+        // Geez verses for Mesbak
+        if (! empty($reading['geez'])) {
+            foreach ([1, 2, 3] as $n) {
+                $geez = $lectionary->{'mesbak_geez_'.$n};
+                if (filled($geez)) {
+                    $geezNum = ['', '፩', '፪', '፫'][$n] ?? '';
+                    $parts[] = '<i>'.$geezNum.' '.$this->h($geez).'</i>';
+                }
+            }
+            $parts[] = '';
+        }
+
+        // Full text
+        if (filled($reading['text'])) {
+            $parts[] = $this->expandableQuote($this->h($reading['text']), 2500);
+        }
+
+        // Build keyboard: other readings + nav
+        $rows = [];
+        foreach ($readings as $r) {
+            if (! $r['has'] || (int) $r['num'] === $readingNum) {
+                continue;
+            }
+            $btnLabel = $r['icon'].' '.$r['label'];
+            if (mb_strlen($btnLabel) > 28) {
+                $btnLabel = mb_substr($btnLabel, 0, 25).'…';
+            }
+            $rows[] = ['text' => $btnLabel, 'callback_data' => 'lect_'.$r['num'].'_'.$dailyId];
+        }
+        $keyboard = ['inline_keyboard' => []];
+        foreach (array_chunk($rows, 2) as $chunk) {
+            $keyboard['inline_keyboard'][] = $chunk;
+        }
+        // Back to lectionary overview + today + menu
+        $keyboard['inline_keyboard'][] = [
+            ['text' => '⛪ '.($locale === 'am' ? 'ቅዳሴ ዝርዝር' : 'All Readings'), 'callback_data' => $this->callbackData('today_sec', 'l', $dailyId)],
+        ];
+        $keyboard['inline_keyboard'][] = [
+            ['text' => '📖 '.($locale === 'am' ? 'ዛሬ' : 'Today'), 'callback_data' => 'today'],
+            ['text' => '◀️ '.__('app.menu'), 'callback_data' => 'menu'],
+        ];
+
+        return [
+            'text' => mb_substr(implode("\n", $parts), 0, self::MAX_MESSAGE_LENGTH),
+            'use_html' => true,
+            'keyboard' => $keyboard,
+        ];
+    }
+
+    private function loadLectionary(DailyContent $daily): ?Lectionary
+    {
+        if (! $daily->date) {
+            return null;
+        }
+        $ethCal = app(EthiopianCalendarService::class);
+        $eth = $ethCal->gregorianToEthiopian($daily->date);
+
+        return Lectionary::where('month', $eth['month'])->where('day', $eth['day'])->first();
+    }
+
+    /**
+     * Build the 6 lectionary readings array matching the web version labels exactly.
+     *
+     * @return list<array{label: string, book: ?string, chapter: mixed, verses: mixed, text: ?string, has: bool, icon: string, num: string, geez?: bool}>
+     */
+    private function buildLectionaryReadings(Lectionary $lectionary, string $locale): array
+    {
         $suffix = $locale === 'am' ? '_am' : '_en';
 
-        // Build readings array matching web version exactly
-        $readings = [
+        return [
             [
                 'label' => __('app.lectionary_pauline'),
                 'book' => $lectionary->{'pauline_book'.$suffix},
                 'chapter' => $lectionary->pauline_chapter,
                 'verses' => $lectionary->pauline_verses,
                 'text' => $lectionary->{'pauline_text'.$suffix},
-                'has' => filled($lectionary->{'pauline_book_am'}) || filled($lectionary->pauline_chapter),
+                'has' => filled($lectionary->pauline_book_am) || filled($lectionary->pauline_chapter),
                 'icon' => '📜',
                 'num' => '1',
             ],
@@ -265,7 +389,7 @@ final class TelegramContentFormatter
                 'chapter' => $lectionary->catholic_chapter,
                 'verses' => $lectionary->catholic_verses,
                 'text' => $lectionary->{'catholic_text'.$suffix},
-                'has' => filled($lectionary->{'catholic_book_am'}) || filled($lectionary->catholic_chapter),
+                'has' => filled($lectionary->catholic_book_am) || filled($lectionary->catholic_chapter),
                 'icon' => '📜',
                 'num' => '2',
             ],
@@ -298,7 +422,7 @@ final class TelegramContentFormatter
                 'chapter' => $lectionary->gospel_chapter,
                 'verses' => $lectionary->gospel_verses,
                 'text' => $lectionary->{'gospel_text'.$suffix},
-                'has' => filled($lectionary->{'gospel_book_am'}) || filled($lectionary->gospel_chapter),
+                'has' => filled($lectionary->gospel_book_am) || filled($lectionary->gospel_chapter),
                 'icon' => '✝️',
                 'num' => '5',
             ],
@@ -315,44 +439,6 @@ final class TelegramContentFormatter
                 'num' => '6',
             ],
         ];
-
-        foreach ($readings as $r) {
-            if (! $r['has']) {
-                continue;
-            }
-
-            $parts[] = '<b>'.$r['icon'].' '.$this->h($r['label']).'</b>';
-
-            // Reference line: Book Chapter:Verses
-            if ($r['book'] && $r['chapter']) {
-                $ref = $this->h($r['book']).' '.$r['chapter'];
-                if (filled($r['verses'])) {
-                    $ref .= ':'.$this->h($r['verses']);
-                }
-                $parts[] = $ref;
-            }
-
-            // Mesbak Geez verses
-            if (! empty($r['geez'])) {
-                foreach ([1, 2, 3] as $n) {
-                    $geez = $lectionary->{'mesbak_geez_'.$n};
-                    if (filled($geez)) {
-                        $geezNum = ['', '፩', '፪', '፫'][$n] ?? '';
-                        $parts[] = '<i>'.$geezNum.' '.$this->h($geez).'</i>';
-                    }
-                }
-            }
-
-            // Full text
-            if (filled($r['text'])) {
-                $parts[] = '';
-                $parts[] = $this->expandableQuote($this->h($r['text']), 800);
-            }
-
-            $parts[] = '';
-        }
-
-        return $parts;
     }
 
     private function sectionCommemorations(DailyContent $daily, string $locale): array
@@ -561,6 +647,7 @@ final class TelegramContentFormatter
     private function listenButtonsForSection(DailyContent $daily, string $locale, string $section): array
     {
         $buttons = [];
+        $dailyId = (string) $daily->id;
         $embedBase = url(route('telegram.embed'));
         $audioBase = url(route('telegram.audio'));
         $mezmurBase = url(route('telegram.mezmur'));
@@ -642,6 +729,24 @@ final class TelegramContentFormatter
                 } else {
                     // Open PDF/book in web_app for inline viewing
                     $buttons[] = ['text' => '📖 '.$btnTitle, 'web_app' => ['url' => $url]];
+                }
+            }
+        }
+
+        // Lectionary — individual reading buttons
+        if ($section === 'lectionary') {
+            $lectionary = $this->loadLectionary($daily);
+            if ($lectionary && $lectionary->hasContent()) {
+                $readings = $this->buildLectionaryReadings($lectionary, $locale);
+                foreach ($readings as $r) {
+                    if (! $r['has']) {
+                        continue;
+                    }
+                    $btnLabel = $r['icon'].' '.$r['label'];
+                    if (mb_strlen($btnLabel) > 28) {
+                        $btnLabel = mb_substr($btnLabel, 0, 25).'…';
+                    }
+                    $buttons[] = ['text' => $btnLabel, 'callback_data' => 'lect_'.$r['num'].'_'.$dailyId];
                 }
             }
         }
