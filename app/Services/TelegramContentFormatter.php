@@ -592,9 +592,12 @@ final class TelegramContentFormatter
             return ['inline_keyboard' => $rows];
         }
 
-        // Sinksar + Daily Message (reflection): optional media row, then Go back to Today only —
-        // no section nav or main menu (same pattern as Sinksar; photos cleared on back from webhook).
-        if ($currentSection === 'sinksar' || $currentSection === 'reflection') {
+        // Read-only / long-text sections: optional listen/web_app row(s), then Go back to Today only —
+        // no section nav or main menu (Sinksar photos cleared on back from webhook).
+        if ($currentSection === 'sinksar'
+            || $currentSection === 'reflection'
+            || $currentSection === 'bible'
+            || $currentSection === 'commemorations') {
             foreach ($listenButtons as $btn) {
                 $rows[] = [$btn];
             }
