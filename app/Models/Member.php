@@ -37,6 +37,7 @@ class Member extends Model
         'whatsapp_confirmation_status',
         'whatsapp_confirmation_requested_at',
         'whatsapp_confirmation_responded_at',
+        'whatsapp_non_uk_requested',
     ];
 
     /** @var list<string> */
@@ -56,6 +57,7 @@ class Member extends Model
             'whatsapp_confirmation_requested_at' => 'datetime',
             'whatsapp_confirmation_responded_at' => 'datetime',
             'tour_completed_at' => 'datetime',
+            'whatsapp_non_uk_requested' => 'boolean',
         ];
     }
 

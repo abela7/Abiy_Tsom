@@ -21,13 +21,13 @@
             {{-- Progress bar --}}
             <div class="h-1 bg-muted/60">
                 <div class="h-full bg-gradient-to-r from-accent to-accent-secondary rounded-r-full transition-all duration-500 ease-out"
-                     :style="'width: ' + (step / (wantsWhatsApp ? 5 : 2) * 100) + '%'"></div>
+                     :style="'width: ' + (step === 6 ? 100 : (step / (wantsWhatsApp ? 5 : 2) * 100)) + '%'"></div>
             </div>
 
             {{-- Step indicator --}}
             <div class="flex items-center justify-center pt-5 pb-1">
                 <span class="text-[11px] font-medium text-muted-text tracking-wide"
-                      x-text="step + ' / ' + (wantsWhatsApp ? 5 : 2)"></span>
+                      x-text="step === 6 ? '' : (step + ' / ' + (wantsWhatsApp ? 5 : 2))"></span>
             </div>
 
             <div class="px-5 pb-6 pt-2 sm:px-8 sm:pb-8 sm:pt-3">
@@ -167,13 +167,15 @@
                     <div class="mb-6">
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                                <span class="text-muted-text text-sm font-medium">🇬🇧</span>
+                                <svg class="w-5 h-5 text-muted-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                                </svg>
                             </div>
                             <input type="tel"
                                    id="whatsapp_phone"
                                    x-model="phone"
-                                   @keydown.enter="if (isPhoneValid) step = 4"
-                                   placeholder="07123456789"
+                                   @keydown.enter="if (isPhoneValid) { isUkPhone ? step = 4 : step = 6 }"
+                                   placeholder="+447123456789"
                                    class="w-full pl-12 pr-4 py-3.5 border rounded-xl bg-surface text-primary text-lg placeholder:text-muted-text/50 focus:ring-2 focus:ring-accent/40 outline-none transition font-mono tracking-wider"
                                    :class="phone && !isPhoneValid ? 'border-red-400 focus:ring-red-400/40 focus:border-red-400' : 'border-border focus:border-accent'"
                                    dir="ltr">
@@ -184,7 +186,7 @@
                         <p x-show="phone && !isPhoneValid" x-transition class="text-xs text-red-500 mt-2">{{ __('app.wizard_phone_invalid') }}</p>
                     </div>
 
-                    <button @click="step = 4"
+                    <button @click="isUkPhone ? step = 4 : step = 6"
                             :disabled="!isPhoneValid"
                             class="group w-full py-3.5 bg-accent text-on-accent rounded-xl font-bold text-base hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition-all duration-150 shadow-lg shadow-accent/25 flex items-center justify-center gap-2">
                         {{ __('app.wizard_next') }}
@@ -280,6 +282,39 @@
                     </button>
 
                     <button @click="step = 4" :disabled="isLoading" class="group w-full mt-5 py-2 text-sm text-muted-text hover:text-primary transition-colors disabled:opacity-50 flex items-center justify-center gap-1">
+                        <svg class="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                        {{ __('app.wizard_back') }}
+                    </button>
+                </div>
+
+                {{-- ==================== STEP 6: Non-UK Number Notice ==================== --}}
+                <div x-show="step === 6" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-x-4" x-transition:enter-end="opacity-100 translate-x-0">
+                    <div class="text-center mb-7">
+                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-500/10 dark:bg-amber-500/15 mb-4 ring-4 ring-amber-500/5">
+                            <svg class="w-8 h-8 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <p class="text-base text-primary leading-relaxed max-w-[300px] mx-auto"
+                           x-text="'{{ __('app.wizard_non_uk_message') }}'.replace(':name', baptismName)"></p>
+                        <p class="text-sm text-muted-text mt-3 max-w-[280px] mx-auto leading-relaxed">{{ __('app.wizard_non_uk_submessage') }}</p>
+                        <p class="text-sm text-primary font-medium mt-4">{{ __('app.wizard_non_uk_thanks') }}</p>
+                    </div>
+
+                    <button @click="registerNonUk()"
+                            :disabled="isLoading"
+                            class="group w-full py-3.5 bg-accent text-on-accent rounded-xl font-bold text-base hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition-all duration-150 shadow-lg shadow-accent/25 flex items-center justify-center gap-2">
+                        <span x-show="!isLoading" class="inline-flex items-center gap-2">
+                            {{ __('app.wizard_non_uk_continue') }}
+                            <svg class="w-4 h-4 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                        </span>
+                        <span x-show="isLoading" class="inline-flex items-center gap-2">
+                            <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                            {{ __('app.loading') }}
+                        </span>
+                    </button>
+
+                    <button @click="step = 3" :disabled="isLoading" class="group w-full mt-5 py-2 text-sm text-muted-text hover:text-primary transition-colors disabled:opacity-50 flex items-center justify-center gap-1">
                         <svg class="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                         {{ __('app.wizard_back') }}
                     </button>
@@ -397,8 +432,17 @@ function onboarding() {
             if (d.length !== 10 || d[0] !== '7') return null;
             return '+44' + d;
         },
-        get isPhoneValid() {
+        normalizeIntlPhone(raw) {
+            if (!raw || typeof raw !== 'string') return null;
+            let d = raw.replace(/\D/g, '');
+            if (!d || d.length < 7 || d.length > 15) return null;
+            return '+' + d;
+        },
+        get isUkPhone() {
             return this.normalizeUkPhone(this.phone) !== null;
+        },
+        get isPhoneValid() {
+            return this.normalizeUkPhone(this.phone) !== null || this.normalizeIntlPhone(this.phone) !== null;
         },
 
         saveState() {
@@ -544,6 +588,41 @@ function onboarding() {
                         } else {
                             window.location.href = redirect;
                         }
+                    } else {
+                        this.errorMessage = data.message || '{{ __('app.wizard_error') }}';
+                        this.isLoading = false;
+                    }
+                })
+                .catch(() => {
+                    this.errorMessage = '{{ __('app.wizard_error') }}';
+                    this.isLoading = false;
+                });
+        },
+
+        registerNonUk() {
+            if (!this.baptismName.trim()) return;
+            if (!this.cookieConsentAccepted) {
+                this.errorMessage = '{{ __('app.cookie_consent_required_error') }}';
+                return;
+            }
+            this.isLoading = true;
+            this.errorMessage = '';
+
+            const payload = {
+                baptism_name: this.baptismName.trim(),
+                whatsapp_reminder_enabled: false,
+                whatsapp_non_uk_requested: true,
+                whatsapp_phone: this.normalizeIntlPhone(this.phone) || this.phone,
+            };
+
+            AbiyTsom.api('/member/register', payload)
+                .then(data => {
+                    if (data.success) {
+                        try {
+                            localStorage.setItem('abiy_has_session', '1');
+                            localStorage.setItem('member_name', data.member.baptism_name);
+                        } catch {}
+                        window.location.href = data.redirect_url || (AbiyTsom.baseUrl + '/member/home');
                     } else {
                         this.errorMessage = data.message || '{{ __('app.wizard_error') }}';
                         this.isLoading = false;

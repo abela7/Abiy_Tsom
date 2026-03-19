@@ -41,25 +41,32 @@ class OnboardingController extends Controller
     public function register(Request $request): JsonResponse
     {
         if ($request->exists('whatsapp_phone')) {
-            $request->merge([
-                'whatsapp_phone' => normalizeUkWhatsAppPhone((string) $request->input('whatsapp_phone')),
-            ]);
+            $raw = (string) $request->input('whatsapp_phone');
+            $normalized = normalizeUkWhatsAppPhone($raw);
+            // Keep the original (already E.164 from frontend) if it's not a UK number.
+            if ($normalized !== null) {
+                $request->merge(['whatsapp_phone' => $normalized]);
+            }
         }
 
         $validated = $request->validate([
             'baptism_name' => ['required', 'string', 'max:255'],
             'whatsapp_reminder_enabled' => ['nullable', 'boolean'],
-            'whatsapp_phone' => ['nullable', 'string', 'regex:/^\+447\d{9}$/'],
+            'whatsapp_phone' => ['nullable', 'string', 'regex:/^\+\d{7,15}$/'],
             'whatsapp_language' => ['nullable', 'string', 'in:en,am'],
             'whatsapp_reminder_time' => ['nullable', 'date_format:H:i'],
+            'whatsapp_non_uk_requested' => ['nullable', 'boolean'],
         ]);
 
         $reminderRequested = $request->boolean('whatsapp_reminder_enabled');
+        $nonUkRequested = $request->boolean('whatsapp_non_uk_requested');
         $reminderPhone = $validated['whatsapp_phone'] ?? null;
         $reminderTime = $this->normalizeReminderTime($validated['whatsapp_reminder_time'] ?? null);
         $reminderLang = $validated['whatsapp_language'] ?? 'en';
 
-        if ($reminderRequested && (! $reminderPhone || ! $reminderTime)) {
+        $isUkPhone = $reminderPhone && preg_match('/^\+447\d{9}$/', $reminderPhone);
+
+        if ($reminderRequested && ! $nonUkRequested && (! $reminderPhone || ! $reminderTime)) {
             return response()->json([
                 'success' => false,
                 'message' => __('app.whatsapp_reminder_requires_phone_and_time'),
@@ -79,11 +86,16 @@ class OnboardingController extends Controller
             $memberPayload['whatsapp_phone'] = $reminderPhone;
         }
 
+        // Non-UK user who wanted reminders — save their phone and flag, but don't enable.
+        if ($nonUkRequested && $reminderPhone) {
+            $memberPayload['whatsapp_non_uk_requested'] = true;
+        }
+
         if ($reminderTime) {
             $memberPayload['whatsapp_reminder_time'] = $reminderTime;
         }
 
-        if ($reminderRequested) {
+        if ($reminderRequested && $isUkPhone) {
             $memberPayload['whatsapp_language'] = $reminderLang;
             $memberPayload['whatsapp_confirmation_status'] = 'pending';
             $memberPayload['whatsapp_confirmation_requested_at'] = now();
@@ -109,8 +121,8 @@ class OnboardingController extends Controller
         }
 
         $promptSent = false;
-        $confirmationPending = $reminderRequested;
-        if ($reminderRequested && $reminderPhone) {
+        $confirmationPending = $reminderRequested && $isUkPhone;
+        if ($confirmationPending && $reminderPhone) {
             $promptSent = $this->confirmation->sendOptInPrompt($member);
         }
 
