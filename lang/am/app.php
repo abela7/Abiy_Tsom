@@ -174,7 +174,7 @@ return [
     'telegram_nav_references' => 'ማጣቀሻ',
     'telegram_nav_reflection' => 'ነጸብራቅ',
     'telegram_nav_lectionary' => 'ቅዳሴ',
-    'telegram_nav_commemorations' => 'መታሰቢያ',
+    'telegram_nav_commemorations' => 'በዓላት',
     'telegram_choose_language' => 'ቋንቋዎን ይምረጡ',
     'telegram_lang_en' => 'English',
     'telegram_lang_am' => 'አማርኛ',

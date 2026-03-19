@@ -84,7 +84,7 @@
     {{-- Monthly Commemorations --}}
     @if($hasMonthlies)
     <div class="space-y-3">
-        <h2 class="text-sm font-black text-primary text-center uppercase tracking-wider">{{ $locale === 'am' ? '📅 ወርሃዊ መታሰቢያ' : '📅 Monthly Commemorations' }}</h2>
+        <h2 class="text-sm font-black text-primary text-center uppercase tracking-wider">{{ $locale === 'am' ? '📅 ወርሃዊ በዓላት' : '📅 Monthly Commemorations' }}</h2>
 
         @foreach($monthlyCelebrations as $index => $saint)
         @php $monthlyImage = $saint->imageUrl(); $monthlyDesc = localized($saint, 'description', $locale); $hasDetail = $monthlyImage || $monthlyDesc; @endphp
@@ -130,7 +130,7 @@
     {{-- Empty --}}
     @if(!$hasAnnuals && !$hasMonthlies)
     <div class="rounded-2xl bg-card border border-border shadow-sm p-8 text-center">
-        <p class="text-sm text-muted-text font-medium">{{ $locale === 'am' ? 'ለዚህ ቀን ምንም መታሰቢያ የለም' : 'No commemorations for this day' }}</p>
+        <p class="text-sm text-muted-text font-medium">{{ $locale === 'am' ? 'ለዚህ ቀን ምንም በዓላት የለም' : 'No commemorations for this day' }}</p>
     </div>
     @endif
 

@@ -472,7 +472,7 @@ final class TelegramContentFormatter
         }
 
         if ($monthlies->isNotEmpty()) {
-            $parts[] = '<b>'.($locale === 'am' ? '📅 ወርሃዊ መታሰቢያ' : '📅 Monthly Commemorations').'</b>';
+            $parts[] = '<b>'.($locale === 'am' ? '📅 ወርሃዊ በዓላት' : '📅 Monthly Commemorations').'</b>';
             $parts[] = '';
             foreach ($monthlies as $c) {
                 $name = $this->h(localized($c, 'celebration', $locale) ?? '-');
