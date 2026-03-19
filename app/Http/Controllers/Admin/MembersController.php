@@ -75,18 +75,23 @@ class MembersController extends Controller
 
         if ($activeFilter === 'today') {
             $membersQuery->whereHas('sessions', fn ($q) => $q->whereNull('revoked_at')->where('last_used_at', '>=', now()->startOfDay()));
-        } elseif ($activeFilter === '7d') {
-            $membersQuery->whereHas('sessions', fn ($q) => $q->whereNull('revoked_at')->where('last_used_at', '>=', now()->subDays(7)));
-        } elseif ($activeFilter === '30d') {
-            $membersQuery->whereHas('sessions', fn ($q) => $q->whereNull('revoked_at')->where('last_used_at', '>=', now()->subDays(30)));
-        } elseif ($activeFilter === 'inactive') {
-            $membersQuery->where(function ($q) {
+        } elseif (preg_match('/^(\d+)d$/', $activeFilter, $m)) {
+            // Inactive for N+ days: no active session in the last N days
+            $cutoff = now()->subDays((int) $m[1]);
+            $membersQuery->where(function ($q) use ($cutoff) {
                 $q->whereDoesntHave('sessions', fn ($s) => $s->whereNull('revoked_at'))
-                  ->orWhereDoesntHave('sessions', fn ($s) => $s->whereNull('revoked_at')->where('last_used_at', '>=', now()->subDays(30)));
+                  ->orWhereDoesntHave('sessions', fn ($s) => $s->whereNull('revoked_at')->where('last_used_at', '>=', $cutoff));
             });
+        } elseif ($activeFilter === 'custom') {
+            $from = $request->query('from');
+            $to = $request->query('to');
+            if ($from && $to) {
+                $membersQuery->whereHas('sessions', fn ($q) => $q->whereNull('revoked_at')
+                    ->whereBetween('last_used_at', [$from . ' 00:00:00', $to . ' 23:59:59']));
+            }
         }
 
-        $members = $membersQuery->orderByDesc('created_at')->paginate(25)->appends(['active' => $activeFilter]);
+        $members = $membersQuery->orderByDesc('created_at')->paginate(25)->appends($request->only('active', 'from', 'to'));
 
         return view('admin.members.index', compact(
             'activeFilter',

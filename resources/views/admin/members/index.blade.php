@@ -141,23 +141,44 @@
      x-data="{ confirmWipeAll: false }">
 
     {{-- Last Active filter --}}
-    <div class="px-4 py-3 border-b border-border flex items-center gap-2 flex-wrap">
-        <span class="text-xs font-semibold text-muted-text mr-1">Last Active:</span>
+    <div class="px-4 py-3 border-b border-border flex items-center gap-2 flex-wrap" x-data="{ showCustom: {{ $activeFilter === 'custom' ? 'true' : 'false' }} }">
+        <span class="text-xs font-semibold text-muted-text mr-1">Active:</span>
         @php
             $filters = [
                 '' => 'All',
                 'today' => 'Today',
-                '7d' => 'Last 7 days',
-                '30d' => 'Last 30 days',
-                'inactive' => 'Inactive (30d+)',
+                '1d' => 'Inactive 1d+',
+                '2d' => 'Inactive 2d+',
+                '3d' => 'Inactive 3d+',
+                '7d' => 'Inactive 7d+',
+                '30d' => 'Inactive 30d+',
             ];
         @endphp
         @foreach($filters as $value => $label)
-            <a href="{{ route('admin.members.index', array_merge(request()->except('page', 'active'), $value ? ['active' => $value] : [])) }}"
+            <a href="{{ route('admin.members.index', array_merge(request()->except('page', 'active', 'from', 'to'), $value ? ['active' => $value] : [])) }}"
                class="px-3 py-1.5 rounded-lg text-xs font-semibold transition border {{ $activeFilter === $value ? 'bg-accent text-on-accent border-accent' : 'bg-muted/60 text-secondary border-border hover:border-accent/50' }}">
                 {{ $label }}
             </a>
         @endforeach
+        <button type="button" @click="showCustom = !showCustom"
+                class="px-3 py-1.5 rounded-lg text-xs font-semibold transition border {{ $activeFilter === 'custom' ? 'bg-accent text-on-accent border-accent' : 'bg-muted/60 text-secondary border-border hover:border-accent/50' }}">
+            Custom Range
+        </button>
+
+        <form x-show="showCustom" x-transition method="GET" action="{{ route('admin.members.index') }}"
+              class="flex items-center gap-2 flex-wrap">
+            <input type="hidden" name="active" value="custom">
+            <label class="text-xs text-muted-text">From</label>
+            <input type="date" name="from" value="{{ request('from', now()->subDays(7)->format('Y-m-d')) }}"
+                   class="px-2 py-1 rounded-lg text-xs border border-border bg-surface text-primary">
+            <label class="text-xs text-muted-text">To</label>
+            <input type="date" name="to" value="{{ request('to', now()->format('Y-m-d')) }}"
+                   class="px-2 py-1 rounded-lg text-xs border border-border bg-surface text-primary">
+            <button type="submit"
+                    class="px-3 py-1.5 rounded-lg text-xs font-bold bg-accent text-on-accent border border-accent hover:brightness-110 transition">
+                Apply
+            </button>
+        </form>
     </div>
 
     <div class="px-4 py-3 border-b border-border flex items-center justify-between gap-3 flex-wrap">
