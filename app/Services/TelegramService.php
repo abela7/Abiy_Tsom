@@ -117,6 +117,29 @@ final class TelegramService
     }
 
     /**
+     * Send a photo to a Telegram chat (by URL).
+     */
+    public function sendPhoto(string $chatId, string $photoUrl, string $caption = '', ?string $parseMode = null): bool
+    {
+        if (! $this->isConfigured() || $chatId === '') {
+            return false;
+        }
+
+        $payload = [
+            'chat_id' => trim($chatId),
+            'photo' => $photoUrl,
+        ];
+        if ($caption !== '') {
+            $payload['caption'] = $caption;
+        }
+        if ($parseMode !== null) {
+            $payload['parse_mode'] = $parseMode;
+        }
+
+        return $this->apiCall('sendPhoto', $payload);
+    }
+
+    /**
      * Delete a message from a chat.
      */
     public function deleteMessage(string $chatId, int $messageId): bool

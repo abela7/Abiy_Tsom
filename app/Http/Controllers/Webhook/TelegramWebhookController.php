@@ -1327,6 +1327,11 @@ class TelegramWebhookController extends Controller
         $formatted = $this->contentFormatter->formatDaySection($daily, $actor, $section);
         $parseMode = ($formatted['use_html'] ?? false) ? 'HTML' : null;
 
+        // Send photos before the text message (saint images, commemoration photos)
+        foreach ($formatted['photos'] ?? [] as $photo) {
+            $telegramService->sendPhoto($chatId, $photo['url'], $photo['caption'] ?? '', 'HTML');
+        }
+
         $telegramService->editMessageText(
             $chatId,
             $messageId,

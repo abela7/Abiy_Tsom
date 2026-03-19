@@ -43,7 +43,7 @@ final class TelegramContentFormatter
      * Format a single Today section with navigation. For YouTube content,
      * uses Web App buttons so user can watch inline without leaving Telegram.
      *
-     * @return array{text: string, use_html: bool, keyboard: array}
+     * @return array{text: string, use_html: bool, keyboard: array, photos?: list<array{url: string, caption: string}>}
      */
     public function formatDaySection(DailyContent $daily, Member|\App\Models\User $actor, string $section): array
     {
@@ -67,11 +67,54 @@ final class TelegramContentFormatter
         $text = implode("\n", $parts);
         $keyboard = $this->sectionNavKeyboard($daily, $locale, $section, $dailyId);
 
-        return [
+        $result = [
             'text' => mb_substr($text, 0, self::MAX_MESSAGE_LENGTH),
             'use_html' => true,
             'keyboard' => $keyboard,
         ];
+
+        // Collect photos to send separately (sinksar saints, commemoration images)
+        $photos = $this->collectPhotosForSection($daily, $locale, $section);
+        if ($photos !== []) {
+            $result['photos'] = $photos;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Collect photo URLs to send as separate photo messages.
+     *
+     * @return list<array{url: string, caption: string}>
+     */
+    private function collectPhotosForSection(DailyContent $daily, string $locale, string $section): array
+    {
+        $photos = [];
+
+        if ($section === 'sinksar' && $daily->sinksarImages && $daily->sinksarImages->isNotEmpty()) {
+            foreach ($daily->sinksarImages as $img) {
+                if (! $img->image_path) {
+                    continue;
+                }
+                $caption = localized($img, 'caption', $locale) ?? '';
+                $photos[] = ['url' => $img->imageUrl(), 'caption' => $caption];
+            }
+        }
+
+        if ($section === 'commemorations' && $daily->date) {
+            $ethCal = app(EthiopianCalendarService::class);
+            $dateInfo = $ethCal->getDateInfo($daily->date, $locale);
+            $allCelebrations = $dateInfo['annual_celebrations']->merge($dateInfo['monthly_celebrations']);
+            foreach ($allCelebrations as $c) {
+                if (! $c->image_path || trim($c->image_path) === '') {
+                    continue;
+                }
+                $caption = localized($c, 'celebration', $locale) ?? '';
+                $photos[] = ['url' => $c->imageUrl(), 'caption' => $caption];
+            }
+        }
+
+        return array_slice($photos, 0, 5); // Limit to 5 photos max
     }
 
     private function buildSectionHeader(DailyContent $daily, string $locale, string $section): array
@@ -156,15 +199,14 @@ final class TelegramContentFormatter
                 $parts[] = '<i>'.$this->h($desc).'</i>';
             }
 
-            $url = $m->mediaUrl($locale);
-            if ($url) {
-                $parts[] = '<a href="'.$this->hUrl($url).'">▶ '.__('app.listen').'</a>';
-            }
+            // Listen buttons are in the keyboard — no inline links needed
 
             $lyrics = localized($m, 'lyrics', $locale);
-            if ($lyrics) {
+            if ($lyrics && trim($lyrics) !== '') {
                 $parts[] = '';
-                $parts[] = $this->expandableQuote($this->h($lyrics), 800);
+                $lyricsLabel = $locale === 'am' ? '📝 ግጥም' : '📝 Lyrics';
+                $parts[] = '<i>'.$lyricsLabel.'</i>';
+                $parts[] = $this->expandableQuote($this->h($lyrics), 1200);
             }
         }
 
@@ -186,29 +228,12 @@ final class TelegramContentFormatter
             $parts[] = '';
         }
 
-        // Saint images captions
-        if ($daily->sinksarImages && $daily->sinksarImages->isNotEmpty()) {
-            foreach ($daily->sinksarImages as $img) {
-                $caption = localized($img, 'caption', $locale);
-                if ($caption) {
-                    $parts[] = '🖼 '.$this->h($caption);
-                }
-            }
-            if ($daily->sinksarImages->count() > 0) {
-                $parts[] = '';
-            }
-        }
+        // Note: saint photos are sent as separate photo messages
 
         // Full sinksar text
         $sinksarText = $daily->sinksarText($locale);
         if ($sinksarText) {
             $parts[] = $this->expandableQuote($this->h($sinksarText), 1200);
-        }
-
-        $sinksarUrl = $daily->sinksarUrl($locale);
-        if ($sinksarUrl) {
-            $parts[] = '';
-            $parts[] = '<a href="'.$this->hUrl($sinksarUrl).'">▶ '.__('app.listen').'</a>';
         }
 
         return $parts;
@@ -357,6 +382,7 @@ final class TelegramContentFormatter
         $parts[] = '<b>'.$this->h($dateInfo['ethiopian_date_formatted']).'</b>';
         $parts[] = '';
 
+        // Always show BOTH annual and monthly (web shows both)
         $annuals = $dateInfo['annual_celebrations'];
         $monthlies = $dateInfo['monthly_celebrations'];
 
@@ -368,7 +394,7 @@ final class TelegramContentFormatter
                 $parts[] = $c->is_main ? '<b>• '.$name.'</b>' : '• '.$name;
                 $desc = localized($c, 'description', $locale);
                 if ($desc) {
-                    $parts[] = '<i>'.$this->h(mb_substr($desc, 0, 200)).'</i>';
+                    $parts[] = $this->expandableQuote($this->h($desc), 400);
                 }
             }
             $parts[] = '';
@@ -380,6 +406,10 @@ final class TelegramContentFormatter
             foreach ($monthlies as $c) {
                 $name = $this->h(localized($c, 'celebration', $locale) ?? '-');
                 $parts[] = $c->is_main ? '<b>• '.$name.'</b>' : '• '.$name;
+                $desc = localized($c, 'description', $locale);
+                if ($desc) {
+                    $parts[] = $this->expandableQuote($this->h($desc), 300);
+                }
             }
         }
 
@@ -587,18 +617,6 @@ final class TelegramContentFormatter
                     };
                     $buttons[] = ['text' => '▶ '.$name, 'url' => $this->hUrl($url)];
                 }
-            }
-        }
-
-        // Sinksar saint images — send as URL buttons
-        if ($section === 'sinksar' && $daily->sinksarImages) {
-            foreach ($daily->sinksarImages as $img) {
-                if (! $img->image_path) {
-                    continue;
-                }
-                $caption = localized($img, 'caption', $locale) ?? __('app.sinksar');
-                $caption = mb_strlen($caption) > 25 ? mb_substr($caption, 0, 22).'…' : $caption;
-                $buttons[] = ['text' => '🖼 '.$caption, 'url' => $img->imageUrl()];
             }
         }
 
