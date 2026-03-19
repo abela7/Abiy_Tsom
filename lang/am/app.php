@@ -55,7 +55,7 @@ return [
     'wizard_phone_label' => 'Phone Number',
     'wizard_phone_help' => 'የዋትስአፕ ቁጥርዎን ከአገር ኮድ ጋር ያስገቡ (ለምሳሌ +447123456789)',
     'wizard_phone_invalid' => 'እባክዎ ትክክለኛ ስልክ ቁጥር ያስገቡ',
-    'wizard_non_uk_message' => 'ሰላም :name ይቅርታ ለጊዜው UK ውጭ ላሉ ሰዎች የዋትስአፕ ማስታወሻ መስጠት አልጀመርንም።',
+    'wizard_non_uk_message' => 'ሰላም :name ይቅርታ ለጊዜው ከUK ውጪ ላሉ ሰዎች የዋትስአፕ ማስታወሻ መስጠት አልጀመርንም።',
     'wizard_non_uk_submessage' => 'እባክዎ ያለ ማስታወሻ ይቀጥሉ።',
     'wizard_non_uk_thanks' => 'እናመሰግናለን',
     'wizard_non_uk_continue' => 'ቀጥል',
