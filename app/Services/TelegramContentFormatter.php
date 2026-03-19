@@ -531,12 +531,11 @@ final class TelegramContentFormatter
             }
         }
 
-        // Back to overview + Open on website + Menu
+        // Back to overview + Menu
         $rows[] = [
             ['text' => '📖 '.($locale === 'am' ? 'ዛሬ' : 'Today'), 'callback_data' => 'today'],
-            ['text' => '🌐 '.($locale === 'am' ? 'ድረ-ገጽ' : 'Website'), 'url' => $daily->memberDayUrl(true)],
+            ['text' => '◀️ '.__('app.menu'), 'callback_data' => 'menu'],
         ];
-        $rows[] = [['text' => '◀️ '.__('app.menu'), 'callback_data' => 'menu']];
 
         return ['inline_keyboard' => $rows];
     }
@@ -826,9 +825,6 @@ final class TelegramContentFormatter
             $rows[] = $chunk;
         }
 
-        // Open on website button
-        $webUrl = $daily->memberDayUrl(true);
-        $rows[] = [['text' => '🌐 '.($locale === 'am' ? 'በድረ-ገጽ ይመልከቱ' : 'Open on Website'), 'url' => $webUrl]];
         $rows[] = [['text' => '◀️ '.__('app.menu'), 'callback_data' => 'menu']];
 
         $text = implode("\n", $parts);
