@@ -574,8 +574,8 @@ final class TelegramContentFormatter
 
         $listenButtons = $this->listenButtonsForSection($daily, $locale, $currentSection);
 
-        // Lectionary has its own reading buttons — show ONLY those + back/menu, no section nav
-        if ($currentSection === 'lectionary') {
+        // Sections with their own action buttons — show ONLY those + back/menu, no section nav
+        if ($currentSection === 'lectionary' || $currentSection === 'mezmur') {
             foreach (array_chunk($listenButtons, 2) as $chunk) {
                 $rows[] = $chunk;
             }
