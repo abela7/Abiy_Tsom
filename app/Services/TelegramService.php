@@ -140,6 +140,59 @@ final class TelegramService
     }
 
     /**
+     * Send a photo and return Telegram's message_id, or null on failure.
+     */
+    public function sendPhotoAndGetMessageId(
+        string $chatId,
+        string $photoUrl,
+        string $caption = '',
+        ?string $parseMode = null
+    ): ?int {
+        if (! $this->isConfigured() || $chatId === '') {
+            return null;
+        }
+
+        $payload = [
+            'chat_id' => trim($chatId),
+            'photo' => $photoUrl,
+        ];
+        if ($caption !== '') {
+            $payload['caption'] = $caption;
+        }
+        if ($parseMode !== null) {
+            $payload['parse_mode'] = $parseMode;
+        }
+
+        $response = Http::acceptJson()
+            ->timeout(20)
+            ->post($this->apiEndpoint('sendPhoto'), $payload);
+
+        if (! $response->successful()) {
+            Log::warning('Telegram sendPhoto failed.', [
+                'status' => $response->status(),
+                'chat_id' => $chatId,
+                'response' => $response->body(),
+            ]);
+
+            return null;
+        }
+
+        $decoded = $response->json();
+        if (! is_array($decoded) || ! ($decoded['ok'] ?? false)) {
+            Log::warning('Telegram sendPhoto returned ok=false.', [
+                'chat_id' => $chatId,
+                'payload' => $decoded,
+            ]);
+
+            return null;
+        }
+
+        $mid = (int) data_get($decoded, 'result.message_id', 0);
+
+        return $mid > 0 ? $mid : null;
+    }
+
+    /**
      * Delete a message from a chat.
      */
     public function deleteMessage(string $chatId, int $messageId): bool

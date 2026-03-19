@@ -35,6 +35,12 @@ use Illuminate\Support\Str;
  */
 class TelegramWebhookController extends Controller
 {
+    /**
+     * Tracks Telegram message_ids for Sinksar images so we can delete them when
+     * the user leaves the section (Go back / Today / Menu / Home / other section).
+     */
+    private const TODAY_SINKSAR_PHOTOS_ACTION = 'today_sinksar_photos';
+
     /** @var array<string, string> Amharic => English */
     private const PAULINE_BOOKS = [
         'ሮሜ' => 'Romans', '1ኛ ቆሮንቶስ' => '1 Corinthians', '2ኛ ቆሮንቶስ' => '2 Corinthians',
@@ -1135,6 +1141,8 @@ class TelegramWebhookController extends Controller
         TelegramService $telegramService,
         int $messageId = 0
     ): JsonResponse {
+        $this->deleteTodaySinksarPhotoMessages($chatId, $telegramService);
+
         $actor = $this->actorFromChatId($chatId);
         if (! $actor) {
             return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->notLinkedMessage(), $this->startChoiceKeyboard());
@@ -1183,6 +1191,8 @@ class TelegramWebhookController extends Controller
         TelegramService $telegramService,
         int $messageId = 0
     ): JsonResponse {
+        $this->deleteTodaySinksarPhotoMessages($chatId, $telegramService);
+
         if (! $this->telegramBotBuilder->commandEnabled('home')) {
             return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->fallbackMessage(), $this->launchKeyboard());
         }
@@ -1248,6 +1258,8 @@ class TelegramWebhookController extends Controller
         TelegramService $telegramService,
         int $messageId = 0
     ): JsonResponse {
+        $this->deleteTodaySinksarPhotoMessages($chatId, $telegramService);
+
         if (! $this->telegramBotBuilder->commandEnabled('day')) {
             return $this->replyAfterDelete($telegramService, $chatId, $messageId, $this->fallbackMessage(), $this->launchKeyboard());
         }
@@ -1328,10 +1340,61 @@ class TelegramWebhookController extends Controller
             return response()->json(['success' => true]);
         }
 
+        if ($section !== 'sinksar') {
+            $this->deleteTodaySinksarPhotoMessages($chatId, $telegramService);
+        }
+
         $formatted = $this->contentFormatter->formatDaySection($daily, $actor, $section);
         $parseMode = ($formatted['use_html'] ?? false) ? 'HTML' : null;
 
-        // Send photos before the text message (saint images, commemoration photos)
+        if ($section === 'sinksar') {
+            $this->deleteTodaySinksarPhotoMessages($chatId, $telegramService);
+
+            // Remove the anchor message so new photo messages appear above the Sinksar text.
+            // (Otherwise Telegram appends photos below the edited message: text first, then images.)
+            if (! $telegramService->deleteMessage($chatId, $messageId)) {
+                Log::warning('[TelegramWebhook] Sinksar: could not delete anchor message.', [
+                    'chat_id' => $chatId,
+                    'message_id' => $messageId,
+                ]);
+            }
+
+            $photoMessageIds = [];
+            foreach ($formatted['photos'] ?? [] as $photo) {
+                $mid = $telegramService->sendPhotoAndGetMessageId(
+                    $chatId,
+                    $photo['url'],
+                    $photo['caption'] ?? '',
+                    'HTML'
+                );
+                if ($mid !== null) {
+                    $photoMessageIds[] = $mid;
+                }
+            }
+            if ($photoMessageIds !== []) {
+                TelegramBotState::startFor(
+                    $chatId,
+                    self::TODAY_SINKSAR_PHOTOS_ACTION,
+                    'active',
+                    ['message_ids' => $photoMessageIds]
+                );
+            }
+
+            $sendOptions = ['reply_markup' => $formatted['keyboard'] ?? []];
+            if ($parseMode !== null) {
+                $sendOptions['parse_mode'] = $parseMode;
+            }
+
+            $body = mb_substr($formatted['text'], 0, 4080);
+            if ($telegramService->sendAndGetMessageId($chatId, $body, $sendOptions) === null) {
+                Log::error('[TelegramWebhook] Sinksar: failed to send text message after photos.', [
+                    'chat_id' => $chatId,
+                ]);
+            }
+
+            return response()->json(['success' => true]);
+        }
+
         foreach ($formatted['photos'] ?? [] as $photo) {
             $telegramService->sendPhoto($chatId, $photo['url'], $photo['caption'] ?? '', 'HTML');
         }
@@ -1345,6 +1408,30 @@ class TelegramWebhookController extends Controller
         );
 
         return response()->json(['success' => true]);
+    }
+
+    /**
+     * Remove Sinksar image messages we sent earlier so the chat is clean after
+     * Go back / Today / Menu / Home / switching section.
+     */
+    private function deleteTodaySinksarPhotoMessages(string $chatId, TelegramService $telegramService): void
+    {
+        $state = TelegramBotState::getActive($chatId, self::TODAY_SINKSAR_PHOTOS_ACTION);
+        if (! $state) {
+            return;
+        }
+
+        $ids = $state->get('message_ids', []);
+        if (is_array($ids)) {
+            foreach ($ids as $mid) {
+                $mid = (int) $mid;
+                if ($mid > 0) {
+                    $telegramService->deleteMessage($chatId, $mid);
+                }
+            }
+        }
+
+        $state->clear();
     }
 
     private function handleLectionaryReading(

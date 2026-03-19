@@ -167,6 +167,7 @@ return [
     'telegram_nav_bible' => 'Bible',
     'telegram_nav_mezmur' => 'Mezmur',
     'telegram_nav_sinksar' => 'Sinksar',
+    'telegram_sinksar_go_back' => 'Go back',
     'telegram_nav_books' => 'Books',
     'telegram_nav_references' => 'References',
     'telegram_nav_reflection' => 'Reflection',

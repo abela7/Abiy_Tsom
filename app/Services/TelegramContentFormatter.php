@@ -11,8 +11,6 @@ use App\Models\LentSeason;
 use App\Models\Member;
 use App\Models\MemberChecklist;
 use App\Models\MemberCustomChecklist;
-use App\Services\AbiyTsomStructure;
-use App\Services\EthiopianCalendarService;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
@@ -583,6 +581,18 @@ final class TelegramContentFormatter
             $rows[] = [
                 ['text' => '📖 '.($locale === 'am' ? 'ዛሬ' : 'Today'), 'callback_data' => 'today'],
                 ['text' => '◀️ '.__('app.menu'), 'callback_data' => 'menu'],
+            ];
+
+            return ['inline_keyboard' => $rows];
+        }
+
+        // Sinksar: Listen (if any) + Go back only — no section nav, no menu (photos cleared on back)
+        if ($currentSection === 'sinksar') {
+            foreach ($listenButtons as $btn) {
+                $rows[] = [$btn];
+            }
+            $rows[] = [
+                ['text' => '◀️ '.__('app.telegram_sinksar_go_back'), 'callback_data' => 'today'],
             ];
 
             return ['inline_keyboard' => $rows];
