@@ -202,6 +202,47 @@ class TelegramAuthController extends Controller
     }
 
     /**
+     * Generic audio player for Telegram Web App (non-YouTube audio).
+     */
+    public function audioPlayer(Request $request): \Illuminate\View\View|\Illuminate\Http\RedirectResponse
+    {
+        $url = trim((string) $request->query('url', ''));
+        $title = trim((string) $request->query('title', ''));
+
+        if ($url === '' || ! filter_var($url, FILTER_VALIDATE_URL)) {
+            return redirect()->route('home');
+        }
+
+        return view('telegram.audio-player', ['audioUrl' => $url, 'title' => $title]);
+    }
+
+    /**
+     * Mezmur player page with lyrics for Telegram Web App.
+     */
+    public function mezmurPlayer(Request $request): \Illuminate\View\View|\Illuminate\Http\RedirectResponse
+    {
+        $mezmurId = (int) $request->query('id', 0);
+        $locale = in_array($request->query('lang', 'en'), ['en', 'am']) ? $request->query('lang') : 'en';
+
+        $mezmur = \App\Models\DailyContentMezmur::find($mezmurId);
+        if (! $mezmur) {
+            return redirect()->route('home');
+        }
+
+        $title = localized($mezmur, 'title', $locale) ?? '';
+        $description = localized($mezmur, 'description', $locale) ?? '';
+        $lyrics = localized($mezmur, 'lyrics', $locale) ?? '';
+        $mediaUrl = $mezmur->mediaUrl($locale);
+        $videoId = null;
+
+        if ($mediaUrl && preg_match('/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/', $mediaUrl, $m)) {
+            $videoId = $m[1];
+        }
+
+        return view('telegram.mezmur-player', compact('mezmur', 'title', 'description', 'lyrics', 'mediaUrl', 'videoId', 'locale'));
+    }
+
+    /**
      * Telegram Web App Home — countdown + Go to Today button.
      * Requires valid code (member). Renders minimal HTML with real-time countdown.
      */

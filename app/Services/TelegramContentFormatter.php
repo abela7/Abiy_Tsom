@@ -101,18 +101,7 @@ final class TelegramContentFormatter
             }
         }
 
-        if ($section === 'commemorations' && $daily->date) {
-            $ethCal = app(EthiopianCalendarService::class);
-            $dateInfo = $ethCal->getDateInfo($daily->date, $locale);
-            $allCelebrations = $dateInfo['annual_celebrations']->merge($dateInfo['monthly_celebrations']);
-            foreach ($allCelebrations as $c) {
-                if (! $c->image_path || trim($c->image_path) === '') {
-                    continue;
-                }
-                $caption = localized($c, 'celebration', $locale) ?? '';
-                $photos[] = ['url' => $c->imageUrl(), 'caption' => $caption];
-            }
-        }
+        // Commemorations photos are shown via web_app page instead
 
         return array_slice($photos, 0, 5); // Limit to 5 photos max
     }
@@ -192,23 +181,20 @@ final class TelegramContentFormatter
             if ($i > 0) {
                 $parts[] = '';
             }
-            $parts[] = '<b>'.$title.'</b>';
+            $parts[] = '<b>🎵 '.$title.'</b>';
 
             $desc = localized($m, 'description', $locale);
             if ($desc) {
                 $parts[] = '<i>'.$this->h($desc).'</i>';
             }
 
-            // Listen buttons are in the keyboard — no inline links needed
-
-            $lyrics = localized($m, 'lyrics', $locale);
-            if ($lyrics && trim($lyrics) !== '') {
-                $parts[] = '';
-                $lyricsLabel = $locale === 'am' ? '📝 ግጥም' : '📝 Lyrics';
-                $parts[] = '<i>'.$lyricsLabel.'</i>';
-                $parts[] = $this->expandableQuote($this->h($lyrics), 1200);
+            $hasLyrics = localized($m, 'lyrics', $locale) && trim(localized($m, 'lyrics', $locale)) !== '';
+            if ($hasLyrics) {
+                $parts[] = ($locale === 'am' ? '📝 ግጥም ከታች ይገኛል' : '📝 Lyrics available in the player');
             }
         }
+        $parts[] = '';
+        $parts[] = '<i>'.($locale === 'am' ? '▶ ከታች ያለውን ቁልፍ ይጫኑ ለማዳመጥ' : '▶ Tap a button below to play').'</i>';
 
         return $parts;
     }
@@ -261,105 +247,109 @@ final class TelegramContentFormatter
 
         $suffix = $locale === 'am' ? '_am' : '_en';
 
-        // Pauline Epistles
-        $paulineBook = $lectionary->{'pauline_book'.$suffix};
-        if (filled($paulineBook)) {
-            $parts[] = '<b>📜 '.($locale === 'am' ? 'ጳውሎስ ሐዋርያ' : 'Pauline Epistle').'</b>';
-            $ref = $this->h($paulineBook);
-            if ($lectionary->pauline_chapter) {
-                $ref .= ' '.$lectionary->pauline_chapter;
-                if (filled($lectionary->pauline_verses)) {
-                    $ref .= ':'.$this->h($lectionary->pauline_verses);
+        // Build readings array matching web version exactly
+        $readings = [
+            [
+                'label' => __('app.lectionary_pauline'),
+                'book' => $lectionary->{'pauline_book'.$suffix},
+                'chapter' => $lectionary->pauline_chapter,
+                'verses' => $lectionary->pauline_verses,
+                'text' => $lectionary->{'pauline_text'.$suffix},
+                'has' => filled($lectionary->{'pauline_book_am'}) || filled($lectionary->pauline_chapter),
+                'icon' => '📜',
+                'num' => '1',
+            ],
+            [
+                'label' => __('app.lectionary_catholic'),
+                'book' => $lectionary->{'catholic_book'.$suffix},
+                'chapter' => $lectionary->catholic_chapter,
+                'verses' => $lectionary->catholic_verses,
+                'text' => $lectionary->{'catholic_text'.$suffix},
+                'has' => filled($lectionary->{'catholic_book_am'}) || filled($lectionary->catholic_chapter),
+                'icon' => '📜',
+                'num' => '2',
+            ],
+            [
+                'label' => __('app.lectionary_acts'),
+                'book' => $locale === 'am' ? 'የሐዋርያት ሥራ' : 'Acts',
+                'chapter' => $lectionary->acts_chapter,
+                'verses' => $lectionary->acts_verses,
+                'text' => $lectionary->{'acts_text'.$suffix},
+                'has' => filled($lectionary->acts_chapter),
+                'icon' => '📜',
+                'num' => '3',
+            ],
+            [
+                'label' => __('app.lectionary_mesbak'),
+                'book' => $locale === 'am' ? 'መዝ.' : 'Ps.',
+                'chapter' => $lectionary->mesbak_psalm,
+                'verses' => $lectionary->mesbak_verses,
+                'text' => $lectionary->{'mesbak_text'.$suffix},
+                'has' => filled($lectionary->mesbak_psalm),
+                'icon' => '🎵',
+                'num' => '4',
+                'geez' => true,
+            ],
+            [
+                'label' => $locale === 'am'
+                    ? (filled($lectionary->gospel_book_am) ? 'የ'.$lectionary->gospel_book_am.' ወንጌል' : __('app.lectionary_gospel'))
+                    : (filled($lectionary->gospel_book_en) ? $lectionary->gospel_book_en.' Gospel' : __('app.lectionary_gospel')),
+                'book' => $lectionary->{'gospel_book'.$suffix},
+                'chapter' => $lectionary->gospel_chapter,
+                'verses' => $lectionary->gospel_verses,
+                'text' => $lectionary->{'gospel_text'.$suffix},
+                'has' => filled($lectionary->{'gospel_book_am'}) || filled($lectionary->gospel_chapter),
+                'icon' => '✝️',
+                'num' => '5',
+            ],
+            [
+                'label' => $locale === 'am'
+                    ? (filled($lectionary->qiddase_am) ? $lectionary->qiddase_am : __('app.lectionary_qiddase'))
+                    : (filled($lectionary->qiddase_en) ? $lectionary->qiddase_en : __('app.lectionary_qiddase')),
+                'book' => null,
+                'chapter' => null,
+                'verses' => null,
+                'text' => $lectionary->{'qiddase'.$suffix},
+                'has' => filled($lectionary->qiddase_am) || filled($lectionary->qiddase_en),
+                'icon' => '⛪',
+                'num' => '6',
+            ],
+        ];
+
+        foreach ($readings as $r) {
+            if (! $r['has']) {
+                continue;
+            }
+
+            $parts[] = '<b>'.$r['icon'].' '.$this->h($r['label']).'</b>';
+
+            // Reference line: Book Chapter:Verses
+            if ($r['book'] && $r['chapter']) {
+                $ref = $this->h($r['book']).' '.$r['chapter'];
+                if (filled($r['verses'])) {
+                    $ref .= ':'.$this->h($r['verses']);
+                }
+                $parts[] = $ref;
+            }
+
+            // Mesbak Geez verses
+            if (! empty($r['geez'])) {
+                foreach ([1, 2, 3] as $n) {
+                    $geez = $lectionary->{'mesbak_geez_'.$n};
+                    if (filled($geez)) {
+                        $geezNum = ['', '፩', '፪', '፫'][$n] ?? '';
+                        $parts[] = '<i>'.$geezNum.' '.$this->h($geez).'</i>';
+                    }
                 }
             }
-            $parts[] = $ref;
-            $paulineText = $lectionary->{'pauline_text'.$suffix};
-            if (filled($paulineText)) {
-                $parts[] = $this->expandableQuote($this->h($paulineText), 600);
-            }
-            $parts[] = '';
-        }
 
-        // Catholic Epistles
-        $cathBook = $lectionary->{'catholic_book'.$suffix};
-        if (filled($cathBook)) {
-            $parts[] = '<b>📜 '.($locale === 'am' ? 'ካቶሊኮን' : 'Catholic Epistle').'</b>';
-            $ref = $this->h($cathBook);
-            if ($lectionary->catholic_chapter) {
-                $ref .= ' '.$lectionary->catholic_chapter;
-                if (filled($lectionary->catholic_verses)) {
-                    $ref .= ':'.$this->h($lectionary->catholic_verses);
-                }
+            // Full text
+            if (filled($r['text'])) {
+                $parts[] = '';
+                $parts[] = $this->expandableQuote($this->h($r['text']), 800);
             }
-            $parts[] = $ref;
-            $cathText = $lectionary->{'catholic_text'.$suffix};
-            if (filled($cathText)) {
-                $parts[] = $this->expandableQuote($this->h($cathText), 600);
-            }
-            $parts[] = '';
-        }
 
-        // Acts
-        if ($lectionary->acts_chapter) {
-            $parts[] = '<b>📜 '.($locale === 'am' ? 'ግብረ ሐዋርያት' : 'Acts of the Apostles').'</b>';
-            $ref = ($locale === 'am' ? 'ግብረ ሐዋርያት' : 'Acts').' '.$lectionary->acts_chapter;
-            if (filled($lectionary->acts_verses)) {
-                $ref .= ':'.$this->h($lectionary->acts_verses);
-            }
-            $parts[] = $ref;
-            $actsText = $lectionary->{'acts_text'.$suffix};
-            if (filled($actsText)) {
-                $parts[] = $this->expandableQuote($this->h($actsText), 600);
-            }
             $parts[] = '';
-        }
-
-        // Mesbak (Psalm)
-        if ($lectionary->mesbak_psalm) {
-            $parts[] = '<b>🎵 '.($locale === 'am' ? 'መዝሙረ ዳዊት' : 'Psalm (Mesbak)').'</b>';
-            $ref = ($locale === 'am' ? 'መዝ.' : 'Ps.').' '.$lectionary->mesbak_psalm;
-            if (filled($lectionary->mesbak_verses)) {
-                $ref .= ':'.$this->h($lectionary->mesbak_verses);
-            }
-            $parts[] = $ref;
-            // Geez verses
-            foreach ([1, 2, 3] as $n) {
-                $geez = $lectionary->{'mesbak_geez_'.$n};
-                if (filled($geez)) {
-                    $parts[] = '<i>'.$this->h($geez).'</i>';
-                }
-            }
-            $mesbakText = $lectionary->{'mesbak_text'.$suffix};
-            if (filled($mesbakText)) {
-                $parts[] = $this->expandableQuote($this->h($mesbakText), 400);
-            }
-            $parts[] = '';
-        }
-
-        // Gospel
-        $gospelBook = $lectionary->{'gospel_book'.$suffix};
-        if (filled($gospelBook)) {
-            $parts[] = '<b>✝️ '.($locale === 'am' ? 'ወንጌል' : 'Gospel').'</b>';
-            $ref = $this->h($gospelBook);
-            if ($lectionary->gospel_chapter) {
-                $ref .= ' '.$lectionary->gospel_chapter;
-                if (filled($lectionary->gospel_verses)) {
-                    $ref .= ':'.$this->h($lectionary->gospel_verses);
-                }
-            }
-            $parts[] = $ref;
-            $gospelText = $lectionary->{'gospel_text'.$suffix};
-            if (filled($gospelText)) {
-                $parts[] = $this->expandableQuote($this->h($gospelText), 800);
-            }
-            $parts[] = '';
-        }
-
-        // Qiddase
-        $qiddase = $lectionary->{'qiddase'.$suffix};
-        if (filled($qiddase)) {
-            $parts[] = '<b>⛪ '.($locale === 'am' ? 'ቅዳሴ' : 'Qiddase').'</b>';
-            $parts[] = $this->h($qiddase);
         }
 
         return $parts;
@@ -378,11 +368,9 @@ final class TelegramContentFormatter
         $ethCal = app(EthiopianCalendarService::class);
         $dateInfo = $ethCal->getDateInfo($daily->date, $locale);
 
-        // Ethiopian date
         $parts[] = '<b>'.$this->h($dateInfo['ethiopian_date_formatted']).'</b>';
         $parts[] = '';
 
-        // Always show BOTH annual and monthly (web shows both)
         $annuals = $dateInfo['annual_celebrations'];
         $monthlies = $dateInfo['monthly_celebrations'];
 
@@ -391,11 +379,8 @@ final class TelegramContentFormatter
             $parts[] = '';
             foreach ($annuals as $c) {
                 $name = $this->h(localized($c, 'celebration', $locale) ?? '-');
-                $parts[] = $c->is_main ? '<b>• '.$name.'</b>' : '• '.$name;
-                $desc = localized($c, 'description', $locale);
-                if ($desc) {
-                    $parts[] = $this->expandableQuote($this->h($desc), 400);
-                }
+                $icon = $c->is_main ? '⭐' : '•';
+                $parts[] = $icon.' <b>'.$name.'</b>';
             }
             $parts[] = '';
         }
@@ -405,16 +390,16 @@ final class TelegramContentFormatter
             $parts[] = '';
             foreach ($monthlies as $c) {
                 $name = $this->h(localized($c, 'celebration', $locale) ?? '-');
-                $parts[] = $c->is_main ? '<b>• '.$name.'</b>' : '• '.$name;
-                $desc = localized($c, 'description', $locale);
-                if ($desc) {
-                    $parts[] = $this->expandableQuote($this->h($desc), 300);
-                }
+                $icon = $c->is_main ? '⭐' : '•';
+                $parts[] = $icon.' <b>'.$name.'</b>';
             }
+            $parts[] = '';
         }
 
         if ($annuals->isEmpty() && $monthlies->isEmpty()) {
             $parts[] = __('app.no_content');
+        } else {
+            $parts[] = '<i>'.($locale === 'am' ? 'ከታች ያለውን ቁልፍ ይጫኑ ለተጨማሪ' : 'Tap below to view with photos &amp; details').'</i>';
         }
 
         return $parts;
@@ -568,8 +553,8 @@ final class TelegramContentFormatter
     }
 
     /**
-     * Listen/View buttons for the current section. YouTube uses Web App (inline);
-     * non-YouTube uses url (opens externally).
+     * Listen/View buttons for the current section. Everything opens in web_app
+     * (YouTube embed, audio player, or mezmur player) — no raw URL links.
      *
      * @return list<array{text: string, web_app?: array{url: string}, url?: string}>
      */
@@ -577,42 +562,36 @@ final class TelegramContentFormatter
     {
         $buttons = [];
         $embedBase = url(route('telegram.embed'));
+        $audioBase = url(route('telegram.audio'));
+        $mezmurBase = url(route('telegram.mezmur'));
 
         if ($section === 'mezmur') {
             foreach ($daily->mezmurs as $m) {
                 $url = $m->mediaUrl($locale);
-                if (! $url) {
+                if (! $url && ! localized($m, 'lyrics', $locale)) {
                     continue;
                 }
-                $vid = $this->youtubeVideoId($url);
                 $fullTitle = localized($m, 'title', $locale) ?? __('app.listen');
                 $btnTitle = mb_strlen($fullTitle) > 25 ? mb_substr($fullTitle, 0, 22).'…' : $fullTitle;
-                if ($vid) {
-                    $embedUrl = $embedBase.'?vid='.$vid.'&title='.rawurlencode($fullTitle);
-                    $buttons[] = [
-                        'text' => '▶ '.$btnTitle,
-                        'web_app' => ['url' => $embedUrl],
-                    ];
-                } else {
-                    $buttons[] = ['text' => '▶ '.$btnTitle, 'url' => $this->hUrl($url)];
-                }
+                // Always open mezmur player (shows video/audio + lyrics)
+                $playerUrl = $mezmurBase.'?id='.$m->id.'&lang='.$locale;
+                $buttons[] = [
+                    'text' => '▶ '.$btnTitle,
+                    'web_app' => ['url' => $playerUrl],
+                ];
             }
         }
 
         if ($section === 'sinksar') {
             $url = $daily->sinksarUrl($locale);
             if ($url) {
-                $vid = $this->youtubeVideoId($url);
-                if ($vid) {
-                    $sinksarTitle = localized($daily, 'sinksar_title', $locale) ?? __('app.sinksar');
-                    $embedUrl = $embedBase.'?vid='.$vid.'&title='.rawurlencode($sinksarTitle);
-                    $buttons[] = [
-                        'text' => '▶ '.__('app.listen'),
-                        'web_app' => ['url' => $embedUrl],
-                    ];
-                } else {
-                    $buttons[] = ['text' => '▶ '.__('app.listen'), 'url' => $this->hUrl($url)];
-                }
+                $buttons[] = $this->mediaButton(
+                    '▶ '.__('app.listen'),
+                    $url,
+                    localized($daily, 'sinksar_title', $locale) ?? __('app.sinksar'),
+                    $embedBase,
+                    $audioBase
+                );
             }
         }
 
@@ -625,35 +604,26 @@ final class TelegramContentFormatter
                 $name = localized($ref, 'name', $locale) ?? __('app.view_video');
                 $name = mb_strlen($name) > 25 ? mb_substr($name, 0, 22).'…' : $name;
                 $refType = $ref->type ?? 'website';
-                $vid = $this->youtubeVideoId($url);
-                if ($vid && $refType === 'video') {
-                    $embedUrl = $embedBase.'?vid='.$vid.'&title='.rawurlencode($name);
-                    $buttons[] = [
-                        'text' => '▶ '.$name,
-                        'web_app' => ['url' => $embedUrl],
-                    ];
+                if ($refType === 'video') {
+                    $buttons[] = $this->mediaButton('▶ '.$name, $url, $name, $embedBase, $audioBase);
                 } else {
-                    $label = match ($refType) {
-                        'video' => __('app.view_video'),
-                        'file' => __('app.view_file'),
-                        default => __('app.read_more'),
-                    };
-                    $buttons[] = ['text' => '▶ '.$name, 'url' => $this->hUrl($url)];
+                    // Files and websites open in web_app for inline viewing
+                    $buttons[] = ['text' => '📄 '.$name, 'web_app' => ['url' => $url]];
                 }
             }
         }
 
-        // Bible audio
+        // Bible audio — always a player, never a raw link
         if ($section === 'bible') {
             $bibleAudio = $daily->bibleAudioUrl($locale);
             if ($bibleAudio) {
-                $vid = $this->youtubeVideoId($bibleAudio);
-                if ($vid) {
-                    $embedUrl = $embedBase.'?vid='.$vid.'&title='.rawurlencode(__('app.telegram_nav_bible'));
-                    $buttons[] = ['text' => '▶ '.__('app.listen'), 'web_app' => ['url' => $embedUrl]];
-                } else {
-                    $buttons[] = ['text' => '▶ '.__('app.listen'), 'url' => $this->hUrl($bibleAudio)];
-                }
+                $buttons[] = $this->mediaButton(
+                    '▶ '.($locale === 'am' ? 'ያዳምጡ' : 'Listen'),
+                    $bibleAudio,
+                    localized($daily, 'bible_reference', $locale) ?? __('app.telegram_nav_bible'),
+                    $embedBase,
+                    $audioBase
+                );
             }
         }
 
@@ -663,22 +633,46 @@ final class TelegramContentFormatter
                 if (! $url) {
                     continue;
                 }
-                $vid = $this->youtubeVideoId($url);
                 $fullTitle = localized($book, 'title', $locale) ?? __('app.read_more');
                 $btnTitle = mb_strlen($fullTitle) > 25 ? mb_substr($fullTitle, 0, 22).'…' : $fullTitle;
+                $vid = $this->youtubeVideoId($url);
                 if ($vid) {
                     $embedUrl = $embedBase.'?vid='.$vid.'&title='.rawurlencode($fullTitle);
-                    $buttons[] = [
-                        'text' => '▶ '.$btnTitle,
-                        'web_app' => ['url' => $embedUrl],
-                    ];
+                    $buttons[] = ['text' => '📖 '.$btnTitle, 'web_app' => ['url' => $embedUrl]];
                 } else {
-                    $buttons[] = ['text' => __('app.read_more').' →', 'url' => $this->hUrl($url)];
+                    // Open PDF/book in web_app for inline viewing
+                    $buttons[] = ['text' => '📖 '.$btnTitle, 'web_app' => ['url' => $url]];
                 }
             }
         }
 
+        // Commemorations — open the web commemorations page
+        if ($section === 'commemorations' && $daily->date) {
+            $commUrl = url('/member/day/'.$daily->day_number.'-'.$daily->id.'/commemorations');
+            $buttons[] = [
+                'text' => '🖼 '.($locale === 'am' ? 'ፎቶ እና ዝርዝር ይመልከቱ' : 'View Photos & Details'),
+                'web_app' => ['url' => $commUrl],
+            ];
+        }
+
         return $buttons;
+    }
+
+    /**
+     * Build a web_app button for any media URL (YouTube → embed, other → audio player).
+     */
+    private function mediaButton(string $label, string $url, string $title, string $embedBase, string $audioBase): array
+    {
+        $vid = $this->youtubeVideoId($url);
+        if ($vid) {
+            $embedUrl = $embedBase.'?vid='.$vid.'&title='.rawurlencode($title);
+
+            return ['text' => $label, 'web_app' => ['url' => $embedUrl]];
+        }
+
+        $audioUrl = $audioBase.'?url='.rawurlencode($url).'&title='.rawurlencode($title);
+
+        return ['text' => $label, 'web_app' => ['url' => $audioUrl]];
     }
 
     private function youtubeVideoId(?string $url): ?string
