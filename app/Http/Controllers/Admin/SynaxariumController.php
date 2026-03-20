@@ -9,7 +9,6 @@ use App\Models\EthiopianSynaxariumAnnual;
 use App\Models\EthiopianSynaxariumMonthly;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -55,61 +54,37 @@ class SynaxariumController extends Controller
     }
 
     /**
-     * Legacy URL: multi-add lives on the Synaxarium index add sheets.
+     * One-page form to add many monthly or annual celebrations at once (no images).
      */
-    public function bulkCreate(): RedirectResponse
+    public function bulkCreate(): View
     {
-        $q = array_filter([
-            'day' => request()->query('day'),
-            'month' => request()->query('month'),
-            'tab' => request()->query('kind') === 'annual' ? 'annual' : null,
-        ], fn ($v) => $v !== null && $v !== '');
+        $defaultRows = [];
+        for ($i = 0; $i < 12; $i++) {
+            $defaultRows[] = $this->emptyBulkRow();
+        }
 
-        return redirect()->route('admin.synaxarium.index', $q);
+        return view('admin.synaxarium.bulk', [
+            'defaultRows' => old('rows', $defaultRows),
+            'emptyBulkRow' => $this->emptyBulkRow(),
+        ]);
     }
 
     /**
-     * Persist multiple saints for one monthly day or one annual month+day (same rules as
-     * single add, including optional image per row).
+     * Persist multiple synaxarium rows from the bulk form.
      */
     public function bulkStore(Request $request): RedirectResponse
     {
-        $kind = (($request->input('kind') ?? 'monthly') === 'annual') ? 'annual' : 'monthly';
-
-        $contextValidator = Validator::make(
-            [
-                'kind' => $kind,
-                'day' => $request->input('day'),
-                'month' => $request->input('month'),
-            ],
-            [
-                'kind' => ['required', Rule::in(['monthly', 'annual'])],
-                'day' => ['required', 'integer', 'min:1', 'max:30'],
-                'month' => [Rule::requiredIf($kind === 'annual'), 'nullable', 'integer', 'min:1', 'max:13'],
-            ]
-        );
-
-        if ($contextValidator->fails()) {
-            throw ValidationException::withMessages($contextValidator->errors()->toArray());
-        }
-
-        /** @var array{kind: string, day: int, month: int|null} $context */
-        $context = $contextValidator->validated();
-        $day = (int) $context['day'];
-        $month = $kind === 'annual' ? (int) $context['month'] : null;
-
-        $rawEntries = $request->input('entries', []);
-        if (! is_array($rawEntries)) {
+        $rawRows = $request->input('rows', []);
+        if (! is_array($rawRows)) {
             throw ValidationException::withMessages([
-                'entries' => __('app.synaxarium_bulk_invalid'),
+                'rows' => __('app.synaxarium_bulk_invalid'),
             ]);
         }
 
-        /** @var list<array{row: array<string, mixed>, file: UploadedFile|null}> $toCreate */
         $toCreate = [];
         $errorBag = new MessageBag;
 
-        foreach ($rawEntries as $index => $row) {
+        foreach ($rawRows as $index => $row) {
             if (! is_array($row)) {
                 continue;
             }
@@ -119,15 +94,17 @@ class SynaxariumController extends Controller
                 continue;
             }
 
+            $kind = (($row['kind'] ?? 'monthly') === 'annual') ? 'annual' : 'monthly';
             $isMain = filter_var($row['is_main'] ?? false, FILTER_VALIDATE_BOOLEAN);
-            $uploadedFile = $request->file('entries.'.$index.'.image');
 
             $payload = [
+                'kind' => $kind,
+                'day' => (int) ($row['day'] ?? 0),
+                'month' => $kind === 'annual' ? (int) ($row['month'] ?? 0) : null,
                 'celebration_en' => $celebrationEn,
                 'celebration_am' => trim((string) ($row['celebration_am'] ?? '')) ?: null,
                 'description_en' => trim((string) ($row['description_en'] ?? '')) ?: null,
                 'description_am' => trim((string) ($row['description_am'] ?? '')) ?: null,
-                'image' => $uploadedFile,
                 'is_main' => $isMain,
                 'sort_order' => isset($row['sort_order']) && $row['sort_order'] !== ''
                     ? (int) $row['sort_order']
@@ -135,11 +112,13 @@ class SynaxariumController extends Controller
             ];
 
             $rules = [
+                'kind' => ['required', Rule::in(['monthly', 'annual'])],
+                'day' => ['required', 'integer', 'min:1', 'max:30'],
+                'month' => [Rule::requiredIf($kind === 'annual'), 'nullable', 'integer', 'min:1', 'max:13'],
                 'celebration_en' => ['required', 'string', 'max:500'],
                 'celebration_am' => ['nullable', 'string', 'max:500'],
                 'description_en' => ['nullable', 'string'],
                 'description_am' => ['nullable', 'string'],
-                'image' => ['nullable', 'image', 'max:2048'],
                 'is_main' => ['boolean'],
                 'sort_order' => ['nullable', 'integer', 'min:0', 'max:255'],
             ];
@@ -148,22 +127,14 @@ class SynaxariumController extends Controller
             if ($validator->fails()) {
                 foreach ($validator->errors()->messages() as $field => $msgs) {
                     foreach ($msgs as $msg) {
-                        $errorBag->add('entries.'.$index.'.'.$field, $msg);
+                        $errorBag->add('rows.'.$index.'.'.$field, $msg);
                     }
                 }
 
                 continue;
             }
 
-            $validated = $validator->validated();
-            /** @var UploadedFile|null $image */
-            $image = $validated['image'] ?? null;
-            unset($validated['image']);
-
-            $toCreate[] = [
-                'row' => $validated,
-                'file' => $image instanceof UploadedFile ? $image : null,
-            ];
+            $toCreate[] = $validator->validated();
         }
 
         if ($errorBag->isNotEmpty()) {
@@ -172,21 +143,16 @@ class SynaxariumController extends Controller
 
         if ($toCreate === []) {
             throw ValidationException::withMessages([
-                'entries' => __('app.synaxarium_bulk_empty'),
+                'rows' => __('app.synaxarium_bulk_empty'),
             ]);
         }
 
-        DB::transaction(function () use ($toCreate, $kind, $day, $month): void {
-            foreach ($toCreate as $item) {
-                /** @var array<string, mixed> $data */
-                $data = $item['row'];
+        DB::transaction(function () use ($toCreate): void {
+            foreach ($toCreate as $data) {
+                $kind = $data['kind'];
+                $day = (int) $data['day'];
                 $isMain = (bool) $data['is_main'];
                 $sortOrder = (int) ($data['sort_order'] ?? 0);
-
-                $imagePath = null;
-                if ($item['file'] instanceof UploadedFile) {
-                    $imagePath = $item['file']->store('synaxarium', 'public');
-                }
 
                 $base = [
                     'celebration_en' => $data['celebration_en'],
@@ -195,7 +161,7 @@ class SynaxariumController extends Controller
                     'description_am' => $data['description_am'],
                     'is_main' => $isMain,
                     'sort_order' => $sortOrder,
-                    'image_path' => $imagePath,
+                    'image_path' => null,
                 ];
 
                 if ($kind === 'monthly') {
@@ -206,6 +172,7 @@ class SynaxariumController extends Controller
                     }
                     EthiopianSynaxariumMonthly::create(array_merge($base, ['day' => $day]));
                 } else {
+                    $month = (int) $data['month'];
                     if ($isMain) {
                         EthiopianSynaxariumAnnual::where('month', $month)
                             ->where('day', $day)
@@ -222,21 +189,20 @@ class SynaxariumController extends Controller
 
         $count = count($toCreate);
 
-        $redirectUrl = $kind === 'monthly'
-            ? '/admin/synaxarium?day='.$day
-            : '/admin/synaxarium?tab=annual&month='.$month.'&day='.$day;
-
         return redirect()
-            ->to($redirectUrl)
+            ->route('admin.synaxarium.index')
             ->with('success', __('app.synaxarium_bulk_saved', ['count' => $count]));
     }
 
     /**
      * @return array<string, mixed>
      */
-    private function emptyBulkEntry(): array
+    private function emptyBulkRow(): array
     {
         return [
+            'kind' => 'monthly',
+            'month' => 1,
+            'day' => 1,
             'celebration_en' => '',
             'celebration_am' => '',
             'description_en' => '',
