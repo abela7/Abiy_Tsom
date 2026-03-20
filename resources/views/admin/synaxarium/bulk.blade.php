@@ -18,13 +18,16 @@ $monthNamesFull = [
 
 <div class="max-w-4xl lg:max-w-6xl pb-28 lg:pb-8"
      x-data="{
-         rows: @json($defaultRows),
-         emptyRow: @json($emptyBulkRow),
+         kind: @json($defaultKind),
+         day: {{ (int) $defaultDay }},
+         month: {{ (int) $defaultMonth }},
+         entries: @json($defaultEntries),
+         emptyEntry: @json($emptyBulkEntry),
          addRow() {
-             this.rows.push(JSON.parse(JSON.stringify(this.emptyRow)));
+             this.entries.push(JSON.parse(JSON.stringify(this.emptyEntry)));
          },
          removeRow(i) {
-             if (this.rows.length > 1) this.rows.splice(i, 1);
+             if (this.entries.length > 1) this.entries.splice(i, 1);
          }
      }">
 
@@ -53,60 +56,59 @@ $monthNamesFull = [
     <form method="post" action="{{ route('admin.synaxarium.bulk.store') }}" class="space-y-4">
         @csrf
 
-        <template x-for="(row, index) in rows" :key="index">
+        {{-- Single calendar slot for every row below --}}
+        <div class="bg-card rounded-2xl border border-border shadow-sm p-4 space-y-4">
+            <h2 class="text-sm font-semibold text-primary">{{ __('app.synaxarium_bulk_when_heading') }}</h2>
+            <p class="text-xs text-muted-text -mt-2">{{ __('app.synaxarium_bulk_when_help') }}</p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div>
+                    <label class="block text-xs font-medium text-muted-text mb-1">{{ __('app.synaxarium_bulk_kind') }}</label>
+                    <select x-model="kind" name="kind"
+                            class="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-primary">
+                        <option value="monthly">{{ __('app.synaxarium_bulk_kind_monthly') }}</option>
+                        <option value="annual">{{ __('app.synaxarium_bulk_kind_annual') }}</option>
+                    </select>
+                </div>
+                <div x-show="kind === 'annual'" x-cloak>
+                    <label class="block text-xs font-medium text-muted-text mb-1">{{ __('app.synaxarium_month_number') }}</label>
+                    <select x-model.number="month" name="month"
+                            class="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-primary">
+                        @foreach ($monthNamesFull as $num => $label)
+                        <option value="{{ $num }}">{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-muted-text mb-1">{{ __('app.synaxarium_day_number') }}</label>
+                    <select x-model.number="day" name="day"
+                            class="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-primary">
+                        @for ($d = 1; $d <= 30; $d++)
+                        <option value="{{ $d }}">{{ $d }}</option>
+                        @endfor
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="text-sm font-semibold text-primary px-1">{{ __('app.synaxarium_bulk_saints_heading') }}</h2>
+
+        <template x-for="(row, index) in entries" :key="index">
             <div class="bg-card rounded-2xl border border-border shadow-sm p-4 space-y-3">
                 <div class="flex items-center justify-between gap-2">
                     <span class="text-xs font-semibold text-muted-text uppercase tracking-wide" x-text="'#' + (index + 1)"></span>
                     <button type="button"
                             @click="removeRow(index)"
                             class="text-xs font-semibold text-red-600 dark:text-red-400 hover:underline disabled:opacity-40"
-                            :disabled="rows.length <= 1">
+                            :disabled="entries.length <= 1">
                         {{ __('app.synaxarium_bulk_remove_row') }}
                     </button>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                    <div>
-                        <label class="block text-xs font-medium text-muted-text mb-1">{{ __('app.synaxarium_bulk_kind') }}</label>
-                        <select x-model="row.kind"
-                                class="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-primary"
-                                :name="'rows[' + index + '][kind]'">
-                            <option value="monthly">{{ __('app.synaxarium_bulk_kind_monthly') }}</option>
-                            <option value="annual">{{ __('app.synaxarium_bulk_kind_annual') }}</option>
-                        </select>
-                    </div>
-                    <div x-show="row.kind === 'annual'" x-cloak>
-                        <label class="block text-xs font-medium text-muted-text mb-1">{{ __('app.synaxarium_month_number') }}</label>
-                        <select x-model.number="row.month"
-                                class="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-primary"
-                                :name="'rows[' + index + '][month]'">
-                            @foreach ($monthNamesFull as $num => $label)
-                            <option value="{{ $num }}">{{ $label }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-muted-text mb-1">{{ __('app.synaxarium_day_number') }}</label>
-                        <select x-model.number="row.day"
-                                class="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-primary"
-                                :name="'rows[' + index + '][day]'">
-                            @for ($d = 1; $d <= 30; $d++)
-                            <option value="{{ $d }}">{{ $d }}</option>
-                            @endfor
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-muted-text mb-1">{{ __('app.synaxarium_sort_order') }}</label>
-                        <input type="number" min="0" max="255" x-model.number="row.sort_order"
-                               class="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-primary"
-                               :name="'rows[' + index + '][sort_order]'">
-                    </div>
                 </div>
 
                 <div class="flex items-center gap-2">
                     <input type="checkbox" value="1" x-model="row.is_main"
                            class="rounded border-border text-accent focus:ring-accent"
-                           :name="'rows[' + index + '][is_main]'">
+                           :name="'entries[' + index + '][is_main]'">
                     <span class="text-sm text-primary">{{ __('app.synaxarium_is_main') }}</span>
                 </div>
 
@@ -115,16 +117,23 @@ $monthNamesFull = [
                         <label class="block text-xs font-medium text-muted-text mb-1">{{ __('app.synaxarium_celebration') }} (EN)</label>
                         <input type="text" maxlength="500" x-model="row.celebration_en"
                                class="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-primary"
-                               :name="'rows[' + index + '][celebration_en]'"
+                               :name="'entries[' + index + '][celebration_en]'"
                                autocomplete="off">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-muted-text mb-1">{{ __('app.synaxarium_celebration') }} (AM)</label>
-                        <input type="text" maxlength="500" x-model="row.celebration_am"
+                        <label class="block text-xs font-medium text-muted-text mb-1">{{ __('app.synaxarium_sort_order') }}</label>
+                        <input type="number" min="0" max="255" x-model.number="row.sort_order"
                                class="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-primary"
-                               :name="'rows[' + index + '][celebration_am]'"
-                               autocomplete="off">
+                               :name="'entries[' + index + '][sort_order]'">
                     </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-muted-text mb-1">{{ __('app.synaxarium_celebration') }} (AM)</label>
+                    <input type="text" maxlength="500" x-model="row.celebration_am"
+                           class="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-primary"
+                           :name="'entries[' + index + '][celebration_am]'"
+                           autocomplete="off">
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
@@ -132,13 +141,13 @@ $monthNamesFull = [
                         <label class="block text-xs font-medium text-muted-text mb-1">{{ __('app.synaxarium_description') }} (EN)</label>
                         <textarea rows="2" x-model="row.description_en"
                                   class="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-primary resize-y min-h-[4rem]"
-                                  :name="'rows[' + index + '][description_en]'"></textarea>
+                                  :name="'entries[' + index + '][description_en]'"></textarea>
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-muted-text mb-1">{{ __('app.synaxarium_description') }} (AM)</label>
                         <textarea rows="2" x-model="row.description_am"
                                   class="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-primary resize-y min-h-[4rem]"
-                                  :name="'rows[' + index + '][description_am]'"></textarea>
+                                  :name="'entries[' + index + '][description_am]'"></textarea>
                     </div>
                 </div>
             </div>

@@ -39,8 +39,9 @@ elseif (old('_form') === 'add_annual') $autoSheet = 'add-annual';
 
 <div class="max-w-2xl lg:max-w-full pb-28 lg:pb-6"
      x-data="{
-         tab: '{{ request()->query('edit_annual') ? 'annual' : 'monthly' }}',
+         tab: '{{ request()->query('tab') === 'annual' || request()->query('edit_annual') ? 'annual' : 'monthly' }}',
          selectedDay: {{ $editingMonthly ? $editingMonthly->day : (int)request()->query('day', 1) }},
+         selectedAnnualMonth: {{ (int) request()->query('month', 1) }},
          sheet: '{{ $autoSheet }}',
          dayPickerOpen: true,
          pendingDeleteId: null,
@@ -84,7 +85,9 @@ elseif (old('_form') === 'add_annual') $autoSheet = 'add-annual';
                 <p class="text-xs text-muted-text">{{ __('app.synaxarium_admin_subtitle') }}</p>
             </div>
         </div>
-        <a href="{{ route('admin.synaxarium.bulk') }}"
+        <a :href="tab === 'monthly'
+                ? '{{ route('admin.synaxarium.bulk') }}?kind=monthly&day=' + selectedDay
+                : '{{ route('admin.synaxarium.bulk') }}?kind=annual&month=' + selectedAnnualMonth + '&day=' + selectedDay"
            class="inline-flex items-center justify-center gap-2 px-4 py-3 sm:py-2 rounded-xl text-sm font-semibold bg-accent text-on-accent shadow-sm hover:opacity-95 active:scale-[0.98] transition shrink-0">
             {{ __('app.synaxarium_bulk_link') }}
         </a>
