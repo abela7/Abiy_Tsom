@@ -92,6 +92,7 @@ class AdminAudit
         'admin.lectionary.store' => 'Created lectionary entry',
         'admin.lectionary.update' => 'Updated lectionary entry',
         'admin.lectionary.destroy' => 'Deleted lectionary entry',
+        'admin.synaxarium.bulk.store' => 'Bulk-created Synaxarium entries',
         'admin.synaxarium.monthly.store' => 'Created monthly Synaxarium entry',
         'admin.synaxarium.monthly.update' => 'Updated monthly Synaxarium entry',
         'admin.synaxarium.monthly.destroy' => 'Deleted monthly Synaxarium entry',

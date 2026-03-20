@@ -286,6 +286,8 @@ Route::middleware(['auth', 'admin.audit'])->prefix('admin')->name('admin.')->gro
 
         // Ethiopian Synaxarium (calendar celebrations)
         Route::get('/synaxarium', [Admin\SynaxariumController::class, 'index'])->name('synaxarium.index');
+        Route::get('/synaxarium/bulk', [Admin\SynaxariumController::class, 'bulkCreate'])->name('synaxarium.bulk');
+        Route::post('/synaxarium/bulk', [Admin\SynaxariumController::class, 'bulkStore'])->name('synaxarium.bulk.store');
         Route::post('/synaxarium/monthly', [Admin\SynaxariumController::class, 'storeMonthly'])->name('synaxarium.monthly.store');
         Route::put('/synaxarium/monthly/{monthly}', [Admin\SynaxariumController::class, 'updateMonthly'])->name('synaxarium.monthly.update');
         Route::delete('/synaxarium/monthly/{monthly}', [Admin\SynaxariumController::class, 'destroyMonthly'])->name('synaxarium.monthly.destroy');
