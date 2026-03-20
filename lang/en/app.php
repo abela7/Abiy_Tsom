@@ -1155,6 +1155,8 @@ return [
     'synaxarium_sort_order' => 'Order',
     'synaxarium_main_badge' => 'Main',
     'synaxarium_add_saint' => 'Add Saint',
+    'synaxarium_add_another_celebration' => 'Add another celebration',
+    'synaxarium_save_all_celebrations' => 'Save all celebrations',
     'synaxarium_description' => 'Description',
     'synaxarium_no_saints_for_day' => 'No saints added for this day yet.',
     'synaxarium_yearly_commemorations' => 'Yearly Commemorations',

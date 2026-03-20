@@ -1153,6 +1153,8 @@ return [
     'synaxarium_sort_order' => 'ደረጃ',
     'synaxarium_main_badge' => 'ዋና',
     'synaxarium_add_saint' => 'ቅዱስ ጨምር',
+    'synaxarium_add_another_celebration' => 'Add another celebration',
+    'synaxarium_save_all_celebrations' => 'Save all celebrations',
     'synaxarium_description' => 'መግለጫ',
     'synaxarium_no_saints_for_day' => 'ለዚህ ቀን ገና ቅዱሳን አልተጨመሩም።',
     'synaxarium_yearly_commemorations' => 'ዓመታዊ በዓላት',
