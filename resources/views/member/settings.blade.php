@@ -6,38 +6,8 @@
 <div class="px-4 pt-4 pb-10 space-y-3" x-data="settingsPage()" x-init="syncThemeFromStorage()">
     <h1 class="text-xl font-bold text-primary">{{ __('app.settings_title') }}</h1>
 
-    {{-- Identity confirmation gate --}}
-    <template x-if="!identityConfirmed">
-        <div class="bg-card rounded-2xl shadow-sm border border-border p-6 max-w-sm mx-auto mt-8">
-            <div class="text-center mb-6">
-                <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-accent/10 flex items-center justify-center">
-                    <svg class="w-8 h-8 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                    </svg>
-                </div>
-                <h2 class="text-lg font-bold text-primary">{{ __('app.identity_confirm_title') }}</h2>
-                <p class="text-sm text-muted-text mt-2">{{ __('app.identity_confirm_subtitle') }}</p>
-            </div>
-
-            <div class="space-y-4">
-                <div>
-                    <input type="text" x-model="identityInput" @keydown.enter="confirmIdentity()"
-                           :placeholder="identityPlaceholder"
-                           dir="ltr"
-                           class="w-full px-4 py-3 border border-border rounded-xl bg-muted text-primary text-sm outline-none focus:ring-2 focus:ring-accent text-center tracking-wider">
-                </div>
-                <button @click="confirmIdentity()" :disabled="!identityInput.trim() || identityLoading"
-                        class="w-full py-3 bg-accent text-on-accent rounded-xl font-bold text-sm disabled:opacity-40 transition active:scale-[0.98] flex items-center justify-center gap-2">
-                    <svg x-show="identityLoading" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                    <span>{{ __('app.identity_confirm_button') }}</span>
-                </button>
-                <p x-show="identityError" x-text="identityError" class="text-xs text-red-500 text-center"></p>
-            </div>
-        </div>
-    </template>
-
-    {{-- Accordion: each section collapsible (only shown after identity confirmed) --}}
-    <div class="space-y-2" x-data="{ openId: null }" x-show="identityConfirmed" x-cloak>
+    {{-- Accordion: each section collapsible --}}
+    <div class="space-y-2" x-data="{ openId: null }">
         {{-- Profile --}}
         <div class="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
             <button type="button" @click="openId = openId === 'profile' ? null : 'profile'"
@@ -857,38 +827,6 @@ function dataManagement() {
 
 function settingsPage() {
     return {
-        // Identity gate
-        identityConfirmed: {{ \App\Http\Middleware\RequireMemberIdentityConfirmation::isConfirmed() ? 'true' : 'false' }},
-        identityInput: '',
-        identityLoading: false,
-        identityError: '',
-        get identityPlaceholder() {
-            @if($member?->email && $member?->email_verified_at)
-                return '{{ __("app.identity_enter_email") }}';
-            @else
-                return '{{ __("app.identity_enter_phone") }}';
-            @endif
-        },
-        async confirmIdentity() {
-            if (!this.identityInput.trim()) return;
-            this.identityLoading = true;
-            this.identityError = '';
-            try {
-                const data = await AbiyTsom.api('/api/member/confirm-identity', {
-                    confirm_identity: this.identityInput.trim(),
-                });
-                if (data.success) {
-                    this.identityConfirmed = true;
-                } else {
-                    this.identityError = data.message || '{{ __("app.identity_confirmation_failed") }}';
-                }
-            } catch {
-                this.identityError = '{{ __("app.failed") }}';
-            } finally {
-                this.identityLoading = false;
-            }
-        },
-
         locale: '{{ $member?->locale ?? 'en' }}',
         telegramLink: '',
         telegramCode: '',
