@@ -285,6 +285,71 @@ class WhatsAppRemindersController extends Controller
     }
 
     /**
+     * Send a test email reminder to an admin-specified email address.
+     */
+    public function testEmailReminder(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'email' => ['required', 'email'],
+        ]);
+
+        $timezone = 'Europe/London';
+        $today = CarbonImmutable::now($timezone)->toDateString();
+
+        $season = LentSeason::active();
+        if (! $season) {
+            return response()->json([
+                'success' => false,
+                'message' => __('app.no_active_season'),
+            ], 400);
+        }
+
+        $dailyContent = DailyContent::query()
+            ->where('lent_season_id', $season->id)
+            ->whereDate('date', $today)
+            ->where('is_published', true)
+            ->first();
+
+        if (! $dailyContent) {
+            return response()->json([
+                'success' => false,
+                'message' => __('app.timetable_no_content_today'),
+            ], 400);
+        }
+
+        // Use a real member or build a dummy for the preview.
+        $member = Member::whereNotNull('email')
+            ->whereNotNull('email_verified_at')
+            ->first();
+
+        if (! $member) {
+            $member = new Member([
+                'baptism_name' => 'Test User',
+                'token' => 'test',
+                'locale' => 'am',
+                'email' => $validated['email'],
+            ]);
+        }
+
+        $dayUrl = $this->ensureHttpsUrl($dailyContent->memberDayUrl($member->token));
+
+        try {
+            \Illuminate\Support\Facades\Mail::to($validated['email'])
+                ->send(new \App\Mail\DailyReminderMail($member, $dailyContent, $dayUrl));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Test email sent to ' . $validated['email'],
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Ensure reminder links are sent as full HTTPS URLs
      * on non-local environments for best WhatsApp clickability.
      */

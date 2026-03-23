@@ -33,6 +33,25 @@
     </div>
 </div>
 
+{{-- Test Email Reminder --}}
+<div x-data="testEmailReminder()" class="bg-card rounded-xl shadow-sm border border-border p-5 mb-8">
+    <h2 class="text-sm font-semibold text-primary mb-3">Test Email Reminder</h2>
+    <p class="text-xs text-muted-text mb-4">Send today's daily reminder email to any address. Uses the same template members receive at 7 AM Ethiopia time.</p>
+    <div class="flex items-end gap-3">
+        <div class="flex-1">
+            <label class="block text-xs font-medium text-muted-text mb-1">Email Address</label>
+            <input type="email" x-model="email" placeholder="your@email.com"
+                   class="w-full px-3 py-2 border border-border rounded-lg bg-muted text-primary text-sm outline-none focus:ring-2 focus:ring-accent">
+        </div>
+        <button @click="send()" :disabled="sending || !email"
+                class="px-5 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium disabled:opacity-40 hover:bg-blue-700 transition flex items-center gap-2">
+            <svg x-show="sending" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+            Send Test
+        </button>
+    </div>
+    <p x-show="msg" x-text="msg" class="mt-3 text-xs" :class="success ? 'text-green-600' : 'text-red-500'"></p>
+</div>
+
 {{-- Members list + Edit modal --}}
 <div x-data="reminderActions()">
 <div class="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
@@ -194,6 +213,38 @@
 
 @push('scripts')
 <script>
+function testEmailReminder() {
+    return {
+        email: '{{ auth()->user()?->email ?? '' }}',
+        sending: false,
+        msg: '',
+        success: false,
+        async send() {
+            this.sending = true;
+            this.msg = '';
+            try {
+                const res = await fetch('{{ route("admin.whatsapp.reminders.test-email") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ email: this.email }),
+                });
+                const data = await res.json();
+                this.msg = data.message || (data.success ? 'Sent!' : 'Failed');
+                this.success = !!data.success;
+            } catch (e) {
+                this.msg = 'Network error: ' + (e.message || 'unknown');
+                this.success = false;
+            } finally {
+                this.sending = false;
+            }
+        }
+    };
+}
+
 function reminderActions() {
     return {
         editOpen: false,

@@ -489,6 +489,7 @@ Route::middleware(['auth', 'admin.audit'])->prefix('admin')->name('admin.')->gro
         Route::post('/whatsapp/reminders/{member}/disable', [Admin\WhatsAppRemindersController::class, 'disable'])->name('whatsapp.reminders.disable');
         Route::post('/whatsapp/reminders/{member}/confirm', [Admin\WhatsAppRemindersController::class, 'confirm'])->name('whatsapp.reminders.confirm');
         Route::delete('/whatsapp/reminders/{member}', [Admin\WhatsAppRemindersController::class, 'destroy'])->name('whatsapp.reminders.destroy');
+        Route::post('/whatsapp/reminders/test-email', [Admin\WhatsAppRemindersController::class, 'testEmailReminder'])->name('whatsapp.reminders.test-email');
         Route::get('/whatsapp/cron', [Admin\WhatsAppCronController::class, 'index'])->name('whatsapp.cron');
         Route::get('/whatsapp/members-data', [Admin\WhatsAppMembersDataController::class, 'index'])->name('whatsapp.members-data');
         Route::delete('/whatsapp/members-data/{member}', [Admin\WhatsAppMembersDataController::class, 'destroy'])->name('whatsapp.members-data.destroy');
