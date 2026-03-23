@@ -691,122 +691,129 @@
         </div>
     </div>
 
-    {{-- Identity verification modal (triggered automatically when a write is blocked) --}}
-    <div x-show="window._identityModal?.show" x-transition.opacity
-         class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-6"
-         @click.self="window._identityModal.show = false" style="display: none;">
-        <div class="bg-card rounded-2xl p-6 w-full max-w-sm shadow-2xl border border-border"
-             x-show="window._identityModal?.show"
-             x-transition:enter="transition ease-out duration-200"
-             x-transition:enter-start="opacity-0 scale-95"
-             x-transition:enter-end="opacity-100 scale-100">
-            <div class="text-center mb-5">
-                <div class="w-14 h-14 mx-auto mb-3 rounded-full bg-accent/10 flex items-center justify-center">
-                    <svg class="w-7 h-7 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                    </svg>
-                </div>
-                <h2 class="text-lg font-bold text-primary">{{ __('app.identity_confirm_title') }}</h2>
-                <p class="text-sm text-muted-text mt-1">{{ __('app.identity_confirm_subtitle') }}</p>
+    </div>
+</div>
+
+{{-- Identity verification modal (standalone, triggered via custom event) --}}
+<div x-data="identityModal()" x-cloak
+     @identity-required.window="open($event.detail)"
+     x-show="show" x-transition.opacity
+     class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-6"
+     @click.self="cancel()" style="display: none;">
+    <div class="bg-card rounded-2xl p-6 w-full max-w-sm shadow-2xl border border-border"
+         x-show="show"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100">
+        <div class="text-center mb-5">
+            <div class="w-14 h-14 mx-auto mb-3 rounded-full bg-accent/10 flex items-center justify-center">
+                <svg class="w-7 h-7 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                </svg>
             </div>
-            <input type="text" id="identity-input"
-                   placeholder="@if($member?->email && $member?->email_verified_at){{ __('app.identity_enter_email') }}@else{{ __('app.identity_enter_phone') }}@endif"
-                   dir="ltr"
-                   class="w-full px-4 py-3 border border-border rounded-xl bg-muted text-primary text-sm outline-none focus:ring-2 focus:ring-accent text-center tracking-wider mb-3">
-            <label class="flex items-center gap-2 text-sm text-muted-text mb-4 justify-center cursor-pointer">
-                <input type="checkbox" id="identity-trust" checked class="rounded border-border text-accent focus:ring-accent">
-                {{ __('app.identity_trust_device') }}
-            </label>
-            <button id="identity-confirm-btn"
-                    class="w-full py-3 bg-accent text-on-accent rounded-xl font-bold text-sm disabled:opacity-40 transition active:scale-[0.98] flex items-center justify-center gap-2">
-                <span id="identity-spinner" style="display:none">
-                    <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                </span>
-                {{ __('app.identity_confirm_button') }}
-            </button>
-            <p id="identity-error" class="text-xs text-red-500 text-center mt-2" style="display:none"></p>
-            <button @click="window._identityModal.show = false" class="w-full mt-3 py-2 text-sm text-muted-text hover:text-primary transition-colors text-center">
-                {{ __('app.cancel') }}
-            </button>
+            <h2 class="text-lg font-bold text-primary">{{ __('app.identity_confirm_title') }}</h2>
+            <p class="text-sm text-muted-text mt-1">{{ __('app.identity_confirm_subtitle') }}</p>
         </div>
+        <input type="text" x-model="input" x-ref="identityInput"
+               @keydown.enter="confirm()"
+               placeholder="@if($member?->email && $member?->email_verified_at){{ __('app.identity_enter_email') }}@else{{ __('app.identity_enter_phone') }}@endif"
+               dir="ltr"
+               class="w-full px-4 py-3 border border-border rounded-xl bg-muted text-primary text-sm outline-none focus:ring-2 focus:ring-accent text-center tracking-wider mb-3">
+        <label class="flex items-center gap-2 text-sm text-muted-text mb-4 justify-center cursor-pointer">
+            <input type="checkbox" x-model="trustDevice" class="rounded border-border text-accent focus:ring-accent">
+            {{ __('app.identity_trust_device') }}
+        </label>
+        <button @click="confirm()" :disabled="!input.trim() || loading"
+                class="w-full py-3 bg-accent text-on-accent rounded-xl font-bold text-sm disabled:opacity-40 transition active:scale-[0.98] flex items-center justify-center gap-2">
+            <svg x-show="loading" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+            <span>{{ __('app.identity_confirm_button') }}</span>
+        </button>
+        <p x-show="error" x-text="error" class="text-xs text-red-500 text-center mt-2"></p>
+        <button @click="cancel()" class="w-full mt-3 py-2 text-sm text-muted-text hover:text-primary transition-colors text-center">
+            {{ __('app.cancel') }}
+        </button>
     </div>
 </div>
 @endsection
 
 @push('scripts')
 <script>
-// Global identity verification interceptor
-(function() {
-    const originalApi = AbiyTsom.api.bind(AbiyTsom);
+// Identity verification modal component
+function identityModal() {
+    return {
+        show: false,
+        input: '',
+        loading: false,
+        error: '',
+        trustDevice: true,
+        _resolve: null,
+        _retryUrl: null,
+        _retryData: null,
 
-    // Shared modal state (Alpine reactive via x-effect)
-    window._identityModal = Alpine.reactive({ show: false });
+        open(detail) {
+            this._resolve = detail.resolve;
+            this._retryUrl = detail.url;
+            this._retryData = detail.data;
+            this.show = true;
+            this.input = '';
+            this.error = '';
+            this.loading = false;
+            this.$nextTick(() => this.$refs.identityInput?.focus());
+        },
+
+        async confirm() {
+            if (!this.input.trim() || this.loading) return;
+            this.loading = true;
+            this.error = '';
+            try {
+                const res = await window._originalApi('/api/member/confirm-identity', {
+                    confirm_identity: this.input.trim(),
+                    trust_device: this.trustDevice,
+                });
+                if (res.success) {
+                    this.show = false;
+                    // Retry the blocked request
+                    if (this._resolve && this._retryUrl) {
+                        const retry = await window._originalApi(this._retryUrl, this._retryData);
+                        this._resolve(retry);
+                    }
+                    this._resolve = null;
+                } else {
+                    this.error = res.message || '{{ __("app.identity_confirmation_failed") }}';
+                }
+            } catch {
+                this.error = '{{ __("app.failed") }}';
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        cancel() {
+            this.show = false;
+            // Resolve with the original identity_required response so callers don't hang
+            if (this._resolve) {
+                this._resolve({ success: false, identity_required: true, cancelled: true });
+                this._resolve = null;
+            }
+        }
+    };
+}
+
+// Intercept AbiyTsom.api — if identity_required, dispatch event to open modal
+(function() {
+    window._originalApi = AbiyTsom.api.bind(AbiyTsom);
 
     AbiyTsom.api = async function(url, data) {
-        const result = await originalApi(url, data);
+        const result = await window._originalApi(url, data);
         if (result && result.identity_required) {
-            // Show modal and wait for user to verify
             return new Promise((resolve) => {
-                window._identityModal.show = true;
-                window._identityModal._resolve = resolve;
-                window._identityModal._retryUrl = url;
-                window._identityModal._retryData = data;
-                // Focus the input
-                setTimeout(() => document.getElementById('identity-input')?.focus(), 200);
+                window.dispatchEvent(new CustomEvent('identity-required', {
+                    detail: { resolve, url, data }
+                }));
             });
         }
         return result;
     };
-
-    // Wire up the confirm button
-    document.addEventListener('click', async (e) => {
-        if (e.target.closest('#identity-confirm-btn')) {
-            const input = document.getElementById('identity-input');
-            const trustCheckbox = document.getElementById('identity-trust');
-            const errorEl = document.getElementById('identity-error');
-            const spinner = document.getElementById('identity-spinner');
-            const value = input?.value?.trim();
-            if (!value) return;
-
-            spinner.style.display = '';
-            errorEl.style.display = 'none';
-
-            try {
-                const data = await originalApi('/api/member/confirm-identity', {
-                    confirm_identity: value,
-                    trust_device: trustCheckbox?.checked ?? false,
-                });
-                if (data.success) {
-                    window._identityModal.show = false;
-                    input.value = '';
-                    // Retry the original request
-                    if (window._identityModal._resolve) {
-                        const retry = await originalApi(
-                            window._identityModal._retryUrl,
-                            window._identityModal._retryData
-                        );
-                        window._identityModal._resolve(retry);
-                        window._identityModal._resolve = null;
-                    }
-                } else {
-                    errorEl.textContent = data.message || '{{ __("app.identity_confirmation_failed") }}';
-                    errorEl.style.display = '';
-                }
-            } catch {
-                errorEl.textContent = '{{ __("app.failed") }}';
-                errorEl.style.display = '';
-            } finally {
-                spinner.style.display = 'none';
-            }
-        }
-    });
-
-    // Enter key on input
-    document.addEventListener('keydown', (e) => {
-        if (e.target.id === 'identity-input' && e.key === 'Enter') {
-            document.getElementById('identity-confirm-btn')?.click();
-        }
-    });
 })();
 </script>
 <script>
