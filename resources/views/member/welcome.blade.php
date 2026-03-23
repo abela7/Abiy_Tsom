@@ -289,7 +289,7 @@ function registration() {
     return {
         step: 1,
         baptismName: '',
-        locale: '{{ in_array(app()->getLocale(), ['en', 'am']) ? app()->getLocale() : 'en' }}',
+        locale: '{{ in_array(app()->getLocale(), ['en', 'am']) ? app()->getLocale() : 'am' }}',
         phone: '',
         email: '',
         verificationCode: '',
