@@ -59,19 +59,37 @@ class RegistrationController extends Controller
             ], 422);
         }
 
-        $member = Member::create([
-            'baptism_name' => $validated['baptism_name'],
-            'token' => $this->generateUniqueToken(),
-            'locale' => $validated['locale'] ?? app()->getLocale(),
-            'theme' => 'sepia',
-            'whatsapp_phone' => $phone,
-            'whatsapp_language' => $validated['locale'] ?? 'en',
-            'email' => $validated['email'] ?? null,
-            'whatsapp_reminder_enabled' => false,
-            // UK: pending YES/NO confirmation. Non-UK: none (uses email code).
-            'whatsapp_confirmation_status' => $isUk ? 'pending' : 'none',
-            'whatsapp_confirmation_requested_at' => $isUk ? now() : null,
-        ]);
+        // Reuse an existing unverified member with the same phone to avoid duplicates.
+        $member = Member::where('whatsapp_phone', $phone)
+            ->whereNull('phone_verified_at')
+            ->whereNull('email_verified_at')
+            ->where('whatsapp_confirmation_status', '!=', 'confirmed')
+            ->latest()
+            ->first();
+
+        if ($member) {
+            $member->update([
+                'baptism_name' => $validated['baptism_name'],
+                'locale' => $validated['locale'] ?? app()->getLocale(),
+                'whatsapp_language' => $validated['locale'] ?? 'en',
+                'email' => $validated['email'] ?? null,
+                'whatsapp_confirmation_status' => $isUk ? 'pending' : 'none',
+                'whatsapp_confirmation_requested_at' => $isUk ? now() : null,
+            ]);
+        } else {
+            $member = Member::create([
+                'baptism_name' => $validated['baptism_name'],
+                'token' => $this->generateUniqueToken(),
+                'locale' => $validated['locale'] ?? app()->getLocale(),
+                'theme' => 'sepia',
+                'whatsapp_phone' => $phone,
+                'whatsapp_language' => $validated['locale'] ?? 'en',
+                'email' => $validated['email'] ?? null,
+                'whatsapp_reminder_enabled' => false,
+                'whatsapp_confirmation_status' => $isUk ? 'pending' : 'none',
+                'whatsapp_confirmation_requested_at' => $isUk ? now() : null,
+            ]);
+        }
 
         // Attribute referral if cookie exists.
         $refCode = $request->cookie('ref');
