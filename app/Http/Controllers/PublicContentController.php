@@ -26,9 +26,7 @@ class PublicContentController extends Controller
         mixed $daily,
         EthiopianCalendarService $ethCalendar
     ): View|RedirectResponse {
-        if (! $daily instanceof DailyContent) {
-            $daily = DailyContent::findOrFail($daily);
-        }
+        $daily = $this->resolveDailyContent($daily);
 
         if (! $daily->is_published) {
             abort(404);
@@ -61,9 +59,7 @@ class PublicContentController extends Controller
         mixed $daily,
         EthiopianCalendarService $ethCalendar
     ): View|RedirectResponse {
-        if (! $daily instanceof DailyContent) {
-            $daily = DailyContent::findOrFail($daily);
-        }
+        $daily = $this->resolveDailyContent($daily);
 
         if (! $daily->is_published) {
             abort(404);
@@ -83,5 +79,20 @@ class PublicContentController extends Controller
             'announcement' => $announcement,
             'member' => null,
         ]);
+    }
+
+    private function resolveDailyContent(mixed $daily): DailyContent
+    {
+        if ($daily instanceof DailyContent) {
+            return $daily;
+        }
+
+        $id = $daily;
+
+        if (is_string($id) && str_contains($id, '-')) {
+            $id = substr($id, (int) strrpos($id, '-') + 1);
+        }
+
+        return DailyContent::findOrFail($id);
     }
 }

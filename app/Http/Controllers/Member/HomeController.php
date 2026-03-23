@@ -297,9 +297,7 @@ class HomeController extends Controller
      */
     public function day(Request $request, mixed $daily): RedirectResponse
     {
-        if (! $daily instanceof DailyContent) {
-            $daily = DailyContent::findOrFail($daily);
-        }
+        $daily = $this->resolveDailyContent($daily);
 
         if (! $daily->is_published) {
             abort(404);
@@ -319,9 +317,7 @@ class HomeController extends Controller
         mixed $daily,
         EthiopianCalendarService $ethCalendar
     ): View|RedirectResponse {
-        if (! $daily instanceof DailyContent) {
-            $daily = DailyContent::findOrFail($daily);
-        }
+        $daily = $this->resolveDailyContent($daily);
 
         if (! $daily->is_published) {
             abort(404);
@@ -341,9 +337,7 @@ class HomeController extends Controller
      */
     public function commemorations(Request $request, mixed $daily): RedirectResponse
     {
-        if (! $daily instanceof DailyContent) {
-            $daily = DailyContent::findOrFail($daily);
-        }
+        $daily = $this->resolveDailyContent($daily);
 
         if (! $daily->is_published) {
             abort(404);
@@ -363,9 +357,7 @@ class HomeController extends Controller
         mixed $daily,
         EthiopianCalendarService $ethCalendar
     ): View|RedirectResponse {
-        if (! $daily instanceof DailyContent) {
-            $daily = DailyContent::findOrFail($daily);
-        }
+        $daily = $this->resolveDailyContent($daily);
 
         if (! $daily->is_published) {
             abort(404);
@@ -390,6 +382,26 @@ class HomeController extends Controller
         $member = $request->attributes->get('member');
 
         return view('member.week', compact('member', 'weeklyTheme'));
+    }
+
+    /**
+     * Resolve a DailyContent from a route parameter that may be a model,
+     * an ID string, or a compound "dayNumber-id" string.
+     */
+    private function resolveDailyContent(mixed $daily): DailyContent
+    {
+        if ($daily instanceof DailyContent) {
+            return $daily;
+        }
+
+        $id = $daily;
+
+        // Handle compound parameter: "36-34" → extract the part after the last dash.
+        if (is_string($id) && str_contains($id, '-')) {
+            $id = substr($id, (int) strrpos($id, '-') + 1);
+        }
+
+        return DailyContent::findOrFail($id);
     }
 
     private function resolveWeekThemeForDate(int|string|null $seasonId, Carbon|string|null $date): ?WeeklyTheme
