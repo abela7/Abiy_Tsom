@@ -8,7 +8,6 @@ use App\Http\Controllers\Controller;
 use App\Models\DailyContent;
 use App\Models\LentSeason;
 use App\Models\Member;
-use App\Services\TelegramAuthService;
 use App\Services\UltraMsgService;
 use App\Services\WhatsAppTemplateService;
 use Carbon\CarbonImmutable;
@@ -222,7 +221,6 @@ class WhatsAppRemindersController extends Controller
     public function sendReminder(
         Member $member,
         UltraMsgService $ultraMsg,
-        TelegramAuthService $telegramAuthService,
         WhatsAppTemplateService $whatsAppTemplateService
     ): JsonResponse {
         $this->ensureOptedIn($member);
@@ -258,16 +256,7 @@ class WhatsAppRemindersController extends Controller
             ], 400);
         }
 
-        $code = $telegramAuthService->createCode(
-            $member,
-            TelegramAuthService::PURPOSE_SHARE_DAY_ACCESS,
-            $dailyContent->memberDayUrl(null, false)
-        );
-        $dayUrl = route('share.day', [
-            'daily' => $dailyContent,
-            'code' => $code,
-        ]);
-        $dayUrl = $this->ensureHttpsUrl($dayUrl);
+        $dayUrl = $this->ensureHttpsUrl($dailyContent->memberDayUrl($member->token));
 
         $message = $whatsAppTemplateService
             ->renderDailyReminder($member, $dailyContent, $dayUrl)['message'];

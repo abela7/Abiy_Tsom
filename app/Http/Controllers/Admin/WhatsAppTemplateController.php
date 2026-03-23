@@ -311,19 +311,10 @@ class WhatsAppTemplateController extends Controller
                 ->with('error', __('app.timetable_no_content_today'));
         }
 
-        $code = $telegramAuthService->createCode(
-            $member,
-            TelegramAuthService::PURPOSE_SHARE_DAY_ACCESS,
-            $dailyContent->memberDayUrl(null, false)
-        );
-
-        $dayUrl = route('share.day', [
-            'daily' => $dailyContent,
-            'code' => $code,
-        ]);
+        $dayUrl = $this->ensureHttpsUrl($dailyContent->memberDayUrl($member->token));
 
         $message = $whatsAppTemplateService
-            ->renderDailyReminder($member, $dailyContent, $this->ensureHttpsUrl($dayUrl), $localeOverride)['message'];
+            ->renderDailyReminder($member, $dailyContent, $dayUrl, $localeOverride)['message'];
 
         if (! $ultraMsg->sendTextMessage((string) $member->whatsapp_phone, $message)) {
             return redirect()
