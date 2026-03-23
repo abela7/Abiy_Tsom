@@ -109,6 +109,8 @@ class WhatsAppTemplateController extends Controller
         $testMembers = Member::query()
             ->whereNotNull('whatsapp_phone')
             ->where('whatsapp_phone', '!=', '')
+            ->where('whatsapp_phone', 'LIKE', '+44%')
+            ->where('whatsapp_confirmation_status', 'confirmed')
             ->orderBy('baptism_name')
             ->orderBy('id')
             ->get(['id', 'baptism_name', 'whatsapp_phone', 'whatsapp_language', 'whatsapp_confirmation_status']);

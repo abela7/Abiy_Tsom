@@ -31,6 +31,9 @@ Route::post('/register/verify', [Member\RegistrationController::class, 'verify']
 Route::post('/register/resend', [Member\RegistrationController::class, 'resend'])
     ->middleware('throttle:5,1')
     ->name('register.resend');
+Route::post('/register/status', [Member\RegistrationController::class, 'status'])
+    ->middleware('throttle:30,1')
+    ->name('register.status');
 
 // Referral tracking
 Route::get('/r/{code}', [Member\ReferralController::class, 'track'])

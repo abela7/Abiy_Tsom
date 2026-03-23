@@ -174,34 +174,65 @@
                         </svg>
                     </div>
                     <h2 class="text-xl sm:text-2xl font-bold text-primary leading-tight">{{ __('app.registration_verify_title') }}</h2>
-                    <p x-show="verifyChannel === 'whatsapp'" class="text-sm text-muted-text mt-2 max-w-[280px] mx-auto leading-relaxed">{{ __('app.registration_verify_whatsapp_subtitle') }}</p>
-                    <p x-show="verifyChannel === 'email'" class="text-sm text-muted-text mt-2 max-w-[280px] mx-auto leading-relaxed">{{ __('app.registration_verify_email_subtitle') }}</p>
-                    <p class="text-xs text-muted-text mt-1" x-text="maskedContact"></p>
+
+                    {{-- WhatsApp: tell user to reply on WhatsApp --}}
+                    <template x-if="verifyChannel === 'whatsapp'">
+                        <div>
+                            <p class="text-sm text-muted-text mt-2 max-w-[300px] mx-auto leading-relaxed">{{ __('app.registration_verify_whatsapp_reply') }}</p>
+                            <p class="text-xs text-muted-text mt-1" x-text="maskedContact"></p>
+                            {{-- Waiting animation --}}
+                            <div class="mt-5 flex flex-col items-center gap-3">
+                                <div class="flex items-center gap-2 text-green-600">
+                                    <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                                    <span class="text-sm font-medium">{{ __('app.registration_waiting_whatsapp') }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    {{-- Email: show code input --}}
+                    <template x-if="verifyChannel === 'email'">
+                        <div>
+                            <p class="text-sm text-muted-text mt-2 max-w-[280px] mx-auto leading-relaxed">{{ __('app.registration_verify_email_subtitle') }}</p>
+                            <p class="text-xs text-muted-text mt-1" x-text="maskedContact"></p>
+                        </div>
+                    </template>
                 </div>
 
-                <div class="mb-6">
-                    <input type="text"
-                           x-model="verificationCode"
-                           @keydown.enter="if (verificationCode.length === 6) verifyCode()"
-                           maxlength="6"
-                           inputmode="numeric"
-                           pattern="[0-9]*"
-                           :placeholder="'{{ __('app.registration_code_placeholder') }}'"
-                           class="w-full px-4 py-4 border-2 border-accent/30 rounded-xl bg-surface text-primary text-center text-2xl font-mono tracking-[0.5em] placeholder:text-muted-text/40 focus:ring-2 focus:ring-accent/40 focus:border-accent outline-none transition">
-                </div>
+                {{-- Code input — visible for email users, hidden for WhatsApp but expandable --}}
+                <template x-if="verifyChannel === 'email' || showManualCodeInput">
+                    <div class="mb-6">
+                        <input type="text"
+                               x-model="verificationCode"
+                               @keydown.enter="if (verificationCode.length === 6) verifyCode()"
+                               maxlength="6"
+                               inputmode="numeric"
+                               pattern="[0-9]*"
+                               :placeholder="'{{ __('app.registration_code_placeholder') }}'"
+                               class="w-full px-4 py-4 border-2 border-accent/30 rounded-xl bg-surface text-primary text-center text-2xl font-mono tracking-[0.5em] placeholder:text-muted-text/40 focus:ring-2 focus:ring-accent/40 focus:border-accent outline-none transition">
 
-                <button @click="verifyCode()"
-                        :disabled="verificationCode.length !== 6 || isLoading"
-                        class="group w-full py-3.5 bg-accent text-on-accent rounded-xl font-bold text-base hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition-all duration-150 shadow-lg shadow-accent/25 flex items-center justify-center gap-2">
-                    <span x-show="!isLoading" class="inline-flex items-center gap-2">
-                        {{ __('app.registration_verify_button') }}
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                    </span>
-                    <span x-show="isLoading" class="inline-flex items-center gap-2">
-                        <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                        {{ __('app.loading') }}
-                    </span>
-                </button>
+                        <button @click="verifyCode()"
+                                :disabled="verificationCode.length !== 6 || isLoading"
+                                class="group w-full mt-4 py-3.5 bg-accent text-on-accent rounded-xl font-bold text-base hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition-all duration-150 shadow-lg shadow-accent/25 flex items-center justify-center gap-2">
+                            <span x-show="!isLoading" class="inline-flex items-center gap-2">
+                                {{ __('app.registration_verify_button') }}
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            </span>
+                            <span x-show="isLoading" class="inline-flex items-center gap-2">
+                                <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                                {{ __('app.loading') }}
+                            </span>
+                        </button>
+                    </div>
+                </template>
+
+                {{-- WhatsApp users: link to show manual code input --}}
+                <div x-show="verifyChannel === 'whatsapp' && !showManualCodeInput" class="mt-4 text-center">
+                    <button @click="showManualCodeInput = true; stopPolling()"
+                            class="text-xs text-muted-text hover:text-primary underline transition-colors">
+                        {{ __('app.registration_enter_code_manually') }}
+                    </button>
+                </div>
 
                 {{-- Resend --}}
                 <div class="mt-4 text-center">
@@ -215,7 +246,7 @@
                     <p x-show="resendMessage" x-transition x-text="resendMessage" class="text-xs text-green-600 mt-1"></p>
                 </div>
 
-                <button @click="step = isUkPhone ? 2 : 3" :disabled="isLoading" class="group w-full mt-4 py-2 text-sm text-muted-text hover:text-primary transition-colors disabled:opacity-50 flex items-center justify-center gap-1">
+                <button @click="step = isUkPhone ? 2 : 3; stopPolling()" :disabled="isLoading" class="group w-full mt-4 py-2 text-sm text-muted-text hover:text-primary transition-colors disabled:opacity-50 flex items-center justify-center gap-1">
                     <svg class="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                     {{ __('app.wizard_back') }}
                 </button>
@@ -256,7 +287,9 @@ function registration() {
         errorMessage: '',
         resendCooldown: 0,
         resendMessage: '',
+        showManualCodeInput: false,
         _cooldownInterval: null,
+        _pollInterval: null,
 
         get isUkPhone() {
             return this.normalizeUkPhone(this.phone) !== null;
@@ -325,8 +358,12 @@ function registration() {
                     this.maskedContact = data.channel === 'email'
                         ? (data.member_email || '')
                         : (data.member_phone || '');
+                    this.showManualCodeInput = false;
                     this.step = 4;
                     this.startResendCooldown();
+                    if (this.verifyChannel === 'whatsapp') {
+                        this.startPolling();
+                    }
                 } else if (data.requires_email) {
                     // Server says non-UK needs email
                     this.step = 3;
@@ -393,6 +430,32 @@ function registration() {
                     this._cooldownInterval = null;
                 }
             }, 1000);
+        },
+
+        startPolling() {
+            this.stopPolling();
+            this._pollInterval = setInterval(() => this.checkVerificationStatus(), 3000);
+        },
+
+        stopPolling() {
+            if (this._pollInterval) {
+                clearInterval(this._pollInterval);
+                this._pollInterval = null;
+            }
+        },
+
+        async checkVerificationStatus() {
+            try {
+                const data = await AbiyTsom.api('/register/status', {
+                    phone: this.normalizedPhone,
+                });
+                if (data.verified && data.redirect_url) {
+                    this.stopPolling();
+                    window.location.href = data.redirect_url;
+                }
+            } catch {
+                // Silently ignore polling errors.
+            }
         }
     };
 }

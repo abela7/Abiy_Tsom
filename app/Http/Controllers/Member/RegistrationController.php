@@ -139,6 +139,33 @@ class RegistrationController extends Controller
     }
 
     /**
+     * Poll: check if a member has been verified (e.g. via WhatsApp webhook reply).
+     */
+    public function status(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'phone' => ['required', 'string', 'regex:/^\+\d{7,15}$/'],
+        ]);
+
+        $member = Member::where('whatsapp_phone', $validated['phone'])
+            ->latest()
+            ->first();
+
+        if (! $member) {
+            return response()->json([
+                'verified' => false,
+            ]);
+        }
+
+        $isVerified = $member->phone_verified_at !== null || $member->email_verified_at !== null;
+
+        return response()->json([
+            'verified' => $isVerified,
+            'redirect_url' => $isVerified ? $member->personalUrl('/home') : null,
+        ]);
+    }
+
+    /**
      * Resend the verification code.
      */
     public function resend(Request $request): JsonResponse

@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Webhook;
 
 use App\Http\Controllers\Controller;
 use App\Models\Member;
+use App\Services\VerificationService;
 use App\Services\WhatsAppReminderConfirmationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,8 +17,11 @@ use Illuminate\Support\Facades\Log;
  */
 class UltraMsgWebhookController extends Controller
 {
-    public function handle(Request $request, WhatsAppReminderConfirmationService $confirmation): JsonResponse
-    {
+    public function handle(
+        Request $request,
+        WhatsAppReminderConfirmationService $confirmation,
+        VerificationService $verificationService
+    ): JsonResponse {
         Log::info('[Webhook] Incoming request', [
             'headers' => $request->headers->all(),
             'payload' => $request->all(),
@@ -50,6 +54,14 @@ class UltraMsgWebhookController extends Controller
             Log::info('[Webhook] Ignored: missing phone or text');
 
             return response()->json(['success' => true, 'ignored' => 'missing_phone_or_text']);
+        }
+
+        // Handle 6-digit verification codes from unverified members.
+        $verificationResult = $this->handleVerificationCode(
+            $phone, $messageText, $verificationService, $confirmation
+        );
+        if ($verificationResult) {
+            return $verificationResult;
         }
 
         $reply = $confirmation->parseReply($messageText);
@@ -125,6 +137,68 @@ class UltraMsgWebhookController extends Controller
         Log::info('[Webhook] Member rejected', ['member_id' => $member->id]);
 
         return response()->json(['success' => true, 'action' => 'rejected']);
+    }
+
+    /**
+     * If the message is a 6-digit code and matches an unverified member, verify them.
+     */
+    private function handleVerificationCode(
+        string $phone,
+        string $messageText,
+        VerificationService $verificationService,
+        WhatsAppReminderConfirmationService $confirmation
+    ): ?JsonResponse {
+        $code = trim($messageText);
+
+        // Only handle pure 6-digit numeric messages.
+        if (! preg_match('/^\d{6}$/', $code)) {
+            return null;
+        }
+
+        // Find an unverified member with this phone who has a pending verification code.
+        $member = Member::query()
+            ->where('whatsapp_phone', $phone)
+            ->whereNull('phone_verified_at')
+            ->whereNull('email_verified_at')
+            ->whereNotNull('verification_code')
+            ->whereNotNull('verification_code_expires_at')
+            ->latest()
+            ->first();
+
+        if (! $member) {
+            return null;
+        }
+
+        if (! $verificationService->validateCode($member, $code)) {
+            Log::info('[Webhook] Verification code invalid', [
+                'member_id' => $member->id,
+            ]);
+
+            return null;
+        }
+
+        // Code is valid — verify the member.
+        $isUk = $verificationService->isUkPhone($member->whatsapp_phone);
+        $member->update(array_filter([
+            'phone_verified_at' => $isUk ? now() : null,
+            'email_verified_at' => ! $isUk ? now() : null,
+            'whatsapp_reminder_enabled' => $isUk,
+            'whatsapp_confirmation_status' => $isUk ? 'confirmed' : 'none',
+            'whatsapp_confirmation_responded_at' => $isUk ? now() : null,
+        ], fn ($v) => $v !== null));
+
+        $verificationService->clearCode($member);
+
+        // Send confirmation notice + go-back link (now clickable since user messaged us first).
+        $confirmation->sendConfirmedNotice($member);
+        sleep(1);
+        $confirmation->sendGoBackMessage($member);
+
+        Log::info('[Webhook] Member verified via code', [
+            'member_id' => $member->id,
+        ]);
+
+        return response()->json(['success' => true, 'action' => 'verified_via_code']);
     }
 
     /**
