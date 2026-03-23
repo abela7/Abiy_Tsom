@@ -29,7 +29,7 @@ class MemberOnboardingWhatsAppConfirmationTest extends TestCase
             'baptism_name' => 'Martha',
             'whatsapp_phone' => '+447123456789',
             'whatsapp_reminder_enabled' => 0,
-            'whatsapp_confirmation_status' => 'none',
+            'whatsapp_confirmation_status' => 'pending',
         ]);
     }
 }

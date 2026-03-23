@@ -7,21 +7,26 @@ namespace App\Http\Controllers\Member;
 use App\Http\Controllers\Controller;
 use App\Models\Member;
 use App\Services\VerificationService;
+use App\Services\WhatsAppReminderConfirmationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 /**
- * Handles new member registration with phone/email verification.
+ * Handles new member registration.
+ *
+ * UK users: WhatsApp YES/NO confirmation (starts conversation for clickable links).
+ * Non-UK users: email verification code.
  */
 class RegistrationController extends Controller
 {
     public function __construct(
         private readonly VerificationService $verification,
+        private readonly WhatsAppReminderConfirmationService $confirmation,
     ) {}
 
     /**
-     * Step 1: Create unverified member and send verification code.
+     * Step 1: Create member and send confirmation/verification.
      */
     public function register(Request $request): JsonResponse
     {
@@ -61,9 +66,10 @@ class RegistrationController extends Controller
             'whatsapp_phone' => $phone,
             'whatsapp_language' => $validated['locale'] ?? 'en',
             'email' => $validated['email'] ?? null,
-            // UK users get WhatsApp reminders enabled after verification.
             'whatsapp_reminder_enabled' => false,
-            'whatsapp_confirmation_status' => 'none',
+            // UK: pending YES/NO confirmation. Non-UK: none (uses email code).
+            'whatsapp_confirmation_status' => $isUk ? 'pending' : 'none',
+            'whatsapp_confirmation_requested_at' => $isUk ? now() : null,
         ]);
 
         // Attribute referral if cookie exists.
@@ -75,12 +81,29 @@ class RegistrationController extends Controller
             }
         }
 
+        if ($isUk) {
+            // Send "Reply YES to confirm" on WhatsApp.
+            $promptSent = $this->confirmation->sendOptInPrompt($member);
+
+            return response()->json([
+                'success' => true,
+                'verification_pending' => true,
+                'channel' => 'whatsapp',
+                'code_sent' => $promptSent,
+                'member_phone' => maskPhone($phone),
+                'message' => $promptSent
+                    ? __('app.registration_whatsapp_prompt_sent')
+                    : __('app.verification_code_send_failed'),
+            ]);
+        }
+
+        // Non-UK: send email verification code.
         $codeSent = $this->verification->sendCode($member);
 
         return response()->json([
             'success' => true,
             'verification_pending' => true,
-            'channel' => $isUk ? 'whatsapp' : 'email',
+            'channel' => 'email',
             'code_sent' => $codeSent,
             'member_phone' => maskPhone($phone),
             'member_email' => $validated['email'] ?? null,
@@ -91,7 +114,7 @@ class RegistrationController extends Controller
     }
 
     /**
-     * Step 2: Validate the 6-digit verification code.
+     * Step 2: Validate 6-digit verification code (email users only).
      */
     public function verify(Request $request): JsonResponse
     {
@@ -120,15 +143,10 @@ class RegistrationController extends Controller
             ], 422);
         }
 
-        // Mark as verified.
-        $isUk = $this->verification->isUkPhone($member->whatsapp_phone);
-        $member->update(array_filter([
-            'phone_verified_at' => $isUk ? now() : null,
-            'email_verified_at' => ! $isUk ? now() : null,
-            'whatsapp_reminder_enabled' => $isUk,
-            'whatsapp_confirmation_status' => $isUk ? 'confirmed' : 'none',
-            'whatsapp_confirmation_responded_at' => $isUk ? now() : null,
-        ], fn ($v) => $v !== null));
+        // Mark as verified (email flow).
+        $member->update([
+            'email_verified_at' => now(),
+        ]);
 
         $this->verification->clearCode($member);
 
@@ -139,7 +157,7 @@ class RegistrationController extends Controller
     }
 
     /**
-     * Poll: check if a member has been verified (e.g. via WhatsApp webhook reply).
+     * Poll: check if a member has been confirmed via WhatsApp YES reply.
      */
     public function status(Request $request): JsonResponse
     {
@@ -152,21 +170,37 @@ class RegistrationController extends Controller
             ->first();
 
         if (! $member) {
+            return response()->json(['status' => 'not_found']);
+        }
+
+        if ($member->whatsapp_confirmation_status === 'confirmed') {
             return response()->json([
-                'verified' => false,
+                'status' => 'confirmed',
+                'redirect_url' => $member->personalUrl('/home'),
             ]);
         }
 
+        if ($member->whatsapp_confirmation_status === 'rejected') {
+            return response()->json([
+                'status' => 'rejected',
+            ]);
+        }
+
+        // Still pending or email-verified.
         $isVerified = $member->phone_verified_at !== null || $member->email_verified_at !== null;
 
-        return response()->json([
-            'verified' => $isVerified,
-            'redirect_url' => $isVerified ? $member->personalUrl('/home') : null,
-        ]);
+        if ($isVerified) {
+            return response()->json([
+                'status' => 'confirmed',
+                'redirect_url' => $member->personalUrl('/home'),
+            ]);
+        }
+
+        return response()->json(['status' => 'pending']);
     }
 
     /**
-     * Resend the verification code.
+     * Resend: re-send WhatsApp prompt (UK) or email code (non-UK).
      */
     public function resend(Request $request): JsonResponse
     {
@@ -175,8 +209,6 @@ class RegistrationController extends Controller
         ]);
 
         $member = Member::where('whatsapp_phone', $validated['phone'])
-            ->whereNull('phone_verified_at')
-            ->whereNull('email_verified_at')
             ->latest()
             ->first();
 
@@ -187,12 +219,23 @@ class RegistrationController extends Controller
             ], 404);
         }
 
-        $codeSent = $this->verification->sendCode($member);
+        $isUk = $this->verification->isUkPhone($member->whatsapp_phone);
+
+        if ($isUk) {
+            // Re-send the YES/NO prompt.
+            $member->update([
+                'whatsapp_confirmation_status' => 'pending',
+                'whatsapp_confirmation_requested_at' => now(),
+            ]);
+            $sent = $this->confirmation->sendOptInPrompt($member);
+        } else {
+            $sent = $this->verification->sendCode($member);
+        }
 
         return response()->json([
             'success' => true,
-            'code_sent' => $codeSent,
-            'message' => $codeSent
+            'code_sent' => $sent,
+            'message' => $sent
                 ? __('app.verification_code_sent')
                 : __('app.verification_code_send_failed'),
         ]);
