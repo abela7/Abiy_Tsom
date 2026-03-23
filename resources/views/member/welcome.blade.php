@@ -46,7 +46,7 @@
                 <div class="mb-6">
                     <p class="text-sm font-medium text-primary mb-3 text-center">{{ __('app.registration_language_title') }}</p>
                     <div class="grid grid-cols-2 gap-3">
-                        <button type="button" @click="locale = 'en'"
+                        <button type="button" @click="locale = 'en'; window.location.href = '{{ request()->fullUrlWithQuery(['lang' => 'en']) }}'"
                                 class="py-3 rounded-xl font-bold text-sm active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-2 border-2"
                                 :class="locale === 'en'
                                     ? 'bg-accent text-on-accent border-accent shadow-lg shadow-accent/25'
@@ -54,7 +54,7 @@
                             <span class="text-lg leading-none">🇬🇧</span>
                             English
                         </button>
-                        <button type="button" @click="locale = 'am'"
+                        <button type="button" @click="locale = 'am'; window.location.href = '{{ request()->fullUrlWithQuery(['lang' => 'am']) }}'"
                                 class="py-3 rounded-xl font-bold text-sm active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-2 border-2"
                                 :class="locale === 'am'
                                     ? 'bg-accent text-on-accent border-accent shadow-lg shadow-accent/25'
