@@ -311,6 +311,181 @@ class RegistrationController extends Controller
         ]);
     }
 
+    /**
+     * Login step 1: lookup member by phone or email, send confirmation.
+     */
+    public function login(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'phone' => ['nullable', 'string'],
+            'email' => ['nullable', 'email', 'max:255'],
+        ]);
+
+        // Try phone lookup first.
+        if (! empty($validated['phone'])) {
+            $raw = (string) $validated['phone'];
+            $normalized = normalizeUkWhatsAppPhone($raw);
+            $phone = $normalized ?? $raw;
+
+            // Only look for verified/confirmed members.
+            $member = Member::where('whatsapp_phone', $phone)
+                ->where(function ($q) {
+                    $q->whereNotNull('phone_verified_at')
+                      ->orWhere('whatsapp_confirmation_status', 'confirmed');
+                })
+                ->first();
+
+            if (! $member) {
+                return response()->json([
+                    'success' => false,
+                    'phone_not_found' => true,
+                    'message' => __('app.login_phone_not_found'),
+                ]);
+            }
+
+            // UK phone — send WhatsApp login prompt.
+            $member->forceFill([
+                'whatsapp_confirmation_status' => 'pending',
+                'whatsapp_confirmation_requested_at' => now(),
+            ])->save();
+
+            $sent = $this->confirmation->sendLoginPrompt($member);
+
+            Log::info('[Login] WhatsApp login prompt', [
+                'member_id' => $member->id,
+                'sent' => $sent,
+            ]);
+
+            if (! $sent) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('app.verification_code_send_failed'),
+                ], 502);
+            }
+
+            return response()->json([
+                'success' => true,
+                'channel' => 'whatsapp',
+                'member_phone' => maskPhone($phone),
+                'message' => __('app.login_whatsapp_sent'),
+            ]);
+        }
+
+        // Email lookup.
+        if (! empty($validated['email'])) {
+            $member = Member::where('email', mb_strtolower(trim($validated['email'])))
+                ->whereNotNull('email_verified_at')
+                ->first();
+
+            if (! $member) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('app.login_email_not_found'),
+                ]);
+            }
+
+            $codeSent = $this->verification->sendCode($member);
+
+            Log::info('[Login] Email code attempt', [
+                'member_id' => $member->id,
+                'code_sent' => $codeSent,
+            ]);
+
+            if (! $codeSent) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('app.verification_code_send_failed'),
+                ], 502);
+            }
+
+            return response()->json([
+                'success' => true,
+                'channel' => 'email',
+                'member_phone' => $member->whatsapp_phone,
+                'message' => __('app.login_email_sent'),
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => __('app.login_provide_phone_or_email'),
+        ], 422);
+    }
+
+    /**
+     * Login step 2: verify email code for login.
+     */
+    public function loginVerify(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'email' => ['required', 'email'],
+            'code' => ['required', 'string', 'size:6'],
+        ]);
+
+        $member = Member::where('email', mb_strtolower(trim($validated['email'])))
+            ->whereNotNull('email_verified_at')
+            ->first();
+
+        if (! $member) {
+            return response()->json([
+                'success' => false,
+                'message' => __('app.login_email_not_found'),
+            ], 404);
+        }
+
+        if (! $this->verification->validateCode($member, $validated['code'])) {
+            return response()->json([
+                'success' => false,
+                'message' => __('app.verification_code_invalid'),
+            ], 422);
+        }
+
+        $this->verification->clearCode($member);
+
+        return response()->json([
+            'success' => true,
+            'redirect_url' => $member->personalUrl('/home'),
+        ]);
+    }
+
+    /**
+     * Login poll: check if WhatsApp YES reply has been received.
+     */
+    public function loginStatus(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'phone' => ['required', 'string'],
+        ]);
+
+        $raw = (string) $validated['phone'];
+        $normalized = normalizeUkWhatsAppPhone($raw);
+        $phone = $normalized ?? $raw;
+
+        $member = Member::where('whatsapp_phone', $phone)
+            ->where(function ($q) {
+                $q->whereNotNull('phone_verified_at')
+                  ->orWhere('whatsapp_confirmation_status', 'confirmed');
+            })
+            ->first();
+
+        if (! $member) {
+            return response()->json(['status' => 'not_found']);
+        }
+
+        if ($member->whatsapp_confirmation_status === 'confirmed') {
+            return response()->json([
+                'status' => 'confirmed',
+                'redirect_url' => $member->personalUrl('/home'),
+            ]);
+        }
+
+        if ($member->whatsapp_confirmation_status === 'rejected') {
+            return response()->json(['status' => 'rejected']);
+        }
+
+        return response()->json(['status' => 'pending']);
+    }
+
     private function generateUniqueToken(): string
     {
         $token = Str::random(64);

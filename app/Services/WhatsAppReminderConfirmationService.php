@@ -61,6 +61,28 @@ final class WhatsAppReminderConfirmationService
     }
 
     /**
+     * Send a "Are you trying to login?" prompt on WhatsApp.
+     * Reuses the YES/NO reply mechanism.
+     */
+    public function sendLoginPrompt(Member $member): bool
+    {
+        if (! $this->ultraMsg->isConfigured() || ! $member->whatsapp_phone) {
+            return false;
+        }
+
+        $locale = $this->memberLocale($member);
+        $message = $this->templates->renderConfirmationTemplate(
+            'app.whatsapp_login_prompt_message',
+            $member,
+            $this->buildWebsiteUrl($member),
+            $this->telegramUrl(),
+            $locale
+        );
+
+        return $this->ultraMsg->sendTextMessage((string) $member->whatsapp_phone, $message);
+    }
+
+    /**
      * Send a follow-up message directing the member back to the website
      * and mentioning the Telegram bot as an alternative.
      */

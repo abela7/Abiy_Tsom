@@ -35,6 +35,17 @@ Route::post('/register/status', [Member\RegistrationController::class, 'status']
     ->middleware('throttle:30,1')
     ->name('register.status');
 
+// Member login (already registered)
+Route::post('/login/member', [Member\RegistrationController::class, 'login'])
+    ->middleware('throttle:10,1')
+    ->name('login.member');
+Route::post('/login/member/verify', [Member\RegistrationController::class, 'loginVerify'])
+    ->middleware('throttle:10,1')
+    ->name('login.member.verify');
+Route::post('/login/member/status', [Member\RegistrationController::class, 'loginStatus'])
+    ->middleware('throttle:30,1')
+    ->name('login.member.status');
+
 // Referral tracking
 Route::get('/r/{code}', [Member\ReferralController::class, 'track'])
     ->where('code', '[A-Za-z0-9]{8}')
