@@ -101,6 +101,10 @@ return [
     'verification_code_send_failed' => 'መላክ አልተሳካም። እባክዎ እንደገና ይሞክሩ።',
     'verification_member_not_found' => 'አባል አልተገኘም። እባክዎ እንደገና ይመዝገቡ።',
     'verification_code_invalid' => 'ልክ ያልሆነ ወይም ጊዜው ያለፈ ኮድ። እባክዎ እንደገና ይሞክሩ።',
+    'verification_email_subject' => 'የአቢይ ጾም የማረጋገጫ ኮድ: :code',
+    'verification_email_greeting' => 'ሰላም :name፣',
+    'verification_email_body' => 'መለያዎን ለማረጋገጥ ከዚህ በታች ያለውን ኮድ ይጠቀሙ። ይህ ኮድ በ10 ደቂቃ ውስጥ ያበቃል።',
+    'verification_email_expires' => 'ይህን ካልጠየቁ፣ እባክዎ ይህን ኢሜል ችላ ይበሉ።',
     'registration_language_title' => 'ቋንቋዎን ይምረጡ',
     'registration_language_subtitle' => 'ለመተግበሪያው የሚመርጡትን ቋንቋ ይምረጡ።',
 

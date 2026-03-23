@@ -97,6 +97,10 @@ return [
     'verification_code_send_failed' => 'Failed to send. Please try again.',
     'verification_member_not_found' => 'Member not found. Please register again.',
     'verification_code_invalid' => 'Invalid or expired code. Please try again.',
+    'verification_email_subject' => 'Your Abiy Tsom verification code: :code',
+    'verification_email_greeting' => 'Hello :name,',
+    'verification_email_body' => 'Use the code below to verify your account. This code expires in 10 minutes.',
+    'verification_email_expires' => 'If you did not request this, please ignore this email.',
     'registration_language_title' => 'Choose Your Language',
     'registration_language_subtitle' => 'Select your preferred language for the app.',
 
