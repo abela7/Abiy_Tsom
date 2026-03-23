@@ -6,20 +6,27 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Protects sensitive member actions by requiring identity confirmation.
+ * Protects sensitive member write actions by requiring identity confirmation.
  *
- * The member must confirm their phone or email before accessing settings,
- * deleting their account, or managing data. Confirmation is cached in the
- * session for 30 minutes.
+ * Three ways to pass:
+ * 1. Trusted device cookie (long-lived, user opted in)
+ * 2. Session confirmation (30 min after confirming)
+ * 3. Inline confirm_identity field in the request
  */
 class RequireMemberIdentityConfirmation
 {
     private const SESSION_KEY = 'member_identity_confirmed_at';
 
     private const LIFETIME_MINUTES = 30;
+
+    private const COOKIE_NAME = 'trusted_device';
+
+    /** Cookie lasts 1 year. */
+    private const COOKIE_LIFETIME_MINUTES = 525600;
 
     public function handle(Request $request, Closure $next): Response
     {
@@ -34,13 +41,18 @@ class RequireMemberIdentityConfirmation
             return $next($request);
         }
 
-        // Check if identity was recently confirmed in this session.
+        // 1. Check trusted device cookie.
+        if ($this->isTrustedDevice($request, $member)) {
+            return $next($request);
+        }
+
+        // 2. Check session confirmation.
         $confirmedAt = session(self::SESSION_KEY);
         if ($confirmedAt && now()->diffInMinutes($confirmedAt) < self::LIFETIME_MINUTES) {
             return $next($request);
         }
 
-        // For API requests, check the confirm_identity field inline.
+        // 3. For API requests, check inline confirm_identity field.
         if ($request->expectsJson() || $request->is('api/*')) {
             $input = $request->input('confirm_identity');
 
@@ -57,20 +69,34 @@ class RequireMemberIdentityConfirmation
             ], 403);
         }
 
-        // For web requests (settings page), the view handles the gate UI.
         return $next($request);
+    }
+
+    private function isTrustedDevice(Request $request, $member): bool
+    {
+        $cookie = $request->cookie(self::COOKIE_NAME);
+        if (! $cookie) {
+            return false;
+        }
+
+        try {
+            $payload = Crypt::decrypt($cookie);
+
+            return is_array($payload)
+                && ($payload['member_id'] ?? null) === $member->id;
+        } catch (\Throwable) {
+            return false;
+        }
     }
 
     private function matchesIdentity($member, string $input): bool
     {
         $input = mb_strtolower(trim($input));
 
-        // Match full phone number.
         if ($member->whatsapp_phone && mb_strtolower($member->whatsapp_phone) === $input) {
             return true;
         }
 
-        // Match email.
         if ($member->email && mb_strtolower($member->email) === $input) {
             return true;
         }
@@ -88,7 +114,7 @@ class RequireMemberIdentityConfirmation
     }
 
     /**
-     * Static helper: check if the current session has confirmed identity.
+     * Check if the current session or device is confirmed.
      */
     public static function isConfirmed(): bool
     {
@@ -98,10 +124,33 @@ class RequireMemberIdentityConfirmation
     }
 
     /**
-     * Static helper: confirm identity in the current session.
+     * Confirm identity in the current session.
      */
     public static function confirm(): void
     {
         session([self::SESSION_KEY => now()]);
+    }
+
+    /**
+     * Create a trusted device cookie for the given member.
+     */
+    public static function makeTrustedCookie($member): \Symfony\Component\HttpFoundation\Cookie
+    {
+        $payload = Crypt::encrypt([
+            'member_id' => $member->id,
+            'created_at' => now()->toIso8601String(),
+        ]);
+
+        return cookie(
+            self::COOKIE_NAME,
+            $payload,
+            self::COOKIE_LIFETIME_MINUTES,
+            '/',
+            null,
+            true,  // secure
+            true,  // httpOnly
+            false,  // raw
+            'Lax'   // sameSite
+        );
     }
 }

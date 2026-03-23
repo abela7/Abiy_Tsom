@@ -39,6 +39,7 @@ class SettingsController extends Controller
     {
         $request->validate([
             'confirm_identity' => ['required', 'string'],
+            'trust_device' => ['nullable', 'boolean'],
         ]);
 
         /** @var \App\Models\Member $member */
@@ -62,9 +63,16 @@ class SettingsController extends Controller
 
         \App\Http\Middleware\RequireMemberIdentityConfirmation::confirm();
 
-        return response()->json([
-            'success' => true,
-        ]);
+        $response = response()->json(['success' => true]);
+
+        // Set trusted device cookie if requested.
+        if ($request->boolean('trust_device')) {
+            $response->withCookie(
+                \App\Http\Middleware\RequireMemberIdentityConfirmation::makeTrustedCookie($member)
+            );
+        }
+
+        return $response;
     }
 
     /**
