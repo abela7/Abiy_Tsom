@@ -109,7 +109,7 @@ class ShareController extends Controller
                             ? route('member.passcode')
                             : $telegramAuthService->sanitizeRedirectPath(
                                 $consumedToken->redirect_to,
-                                $daily->memberDayUrl(false)
+                                $daily->memberDayUrl(null, false)
                             );
 
                         return redirect($redirectUrl);

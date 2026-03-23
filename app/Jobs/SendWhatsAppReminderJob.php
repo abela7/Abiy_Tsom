@@ -6,7 +6,6 @@ namespace App\Jobs;
 
 use App\Models\DailyContent;
 use App\Models\Member;
-use App\Services\TelegramAuthService;
 use App\Services\UltraMsgService;
 use App\Services\WhatsAppTemplateService;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -40,7 +39,6 @@ final class SendWhatsAppReminderJob implements ShouldQueue
 
     public function handle(
         UltraMsgService $ultraMsgService,
-        TelegramAuthService $telegramAuthService,
         WhatsAppTemplateService $whatsAppTemplateService
     ): void {
         $member = Member::query()->find($this->memberId);
@@ -69,16 +67,7 @@ final class SendWhatsAppReminderJob implements ShouldQueue
             return;
         }
 
-        $code = $telegramAuthService->createCode(
-            $member,
-            TelegramAuthService::PURPOSE_SHARE_DAY_ACCESS,
-            $dailyContent->memberDayUrl(false)
-        );
-
-        $dayUrl = route('share.day', [
-            'daily' => $dailyContent,
-            'code' => $code,
-        ]);
+        $dayUrl = $dailyContent->memberDayUrl($member->token);
 
         $message = $whatsAppTemplateService
             ->renderDailyReminder($member, $dailyContent, $this->ensureHttpsUrl($dayUrl))['message'];

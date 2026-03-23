@@ -153,16 +153,7 @@ class SendWhatsAppReminders extends Command
                             continue;
                         }
 
-                        $code = $telegramAuthService->createCode(
-                            $member,
-                            TelegramAuthService::PURPOSE_SHARE_DAY_ACCESS,
-                            $dailyContent->memberDayUrl(false)
-                        );
-                        $dayUrl = route('share.day', [
-                            'daily' => $dailyContent,
-                            'code' => $code,
-                        ]);
-                        $dayUrl = $this->ensureHttpsUrl($dayUrl);
+                        $dayUrl = $this->ensureHttpsUrl($dailyContent->memberDayUrl($member->token));
                         $message = $whatsAppTemplateService
                             ->renderDailyReminder($member, $dailyContent, $dayUrl)['message'];
 

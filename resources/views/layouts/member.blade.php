@@ -43,7 +43,7 @@
 <body class="min-h-screen bg-surface text-primary font-sans">
 
     {{-- Top nav: Welcome + theme toggle (member pages only) --}}
-    @if((isset($currentMember) && request()->routeIs('member.*')) || ($publicPreview ?? false))
+    @if((isset($currentMember) && (request()->routeIs('member.*', 'old.member.*') || request()->is('m/*', 'member/*'))) || ($publicPreview ?? false))
     <header class="sticky top-0 z-40 bg-card border-b border-border safe-area-top overflow-visible">
         <div class="max-w-lg mx-auto px-4 py-3 flex items-center justify-between overflow-visible">
             @if(isset($currentMember))
@@ -68,15 +68,6 @@
             <div class="flex-1"></div>
             @endif
             <div class="flex items-center gap-1.5 shrink-0">
-                @if(isset($currentMember) && ($currentMember->passcode_enabled ?? false))
-                <a href="{{ route('member.passcode.lock') }}"
-                   class="w-9 h-9 rounded-full bg-muted/70 border border-border/50 flex items-center justify-center hover:bg-muted transition active:scale-95"
-                   aria-label="{{ __('app.lock_app') }}">
-                    <svg class="w-4.5 h-4.5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                    </svg>
-                </a>
-                @endif
                 <div class="relative overflow-visible" x-data="{ open: false }" @click.away="open = false" data-tour="language">
                     <button type="button"
                             @click="open = !open"
@@ -145,26 +136,26 @@
     </main>
 
     {{-- Mobile bottom navigation (show when member is identified, even if admin is also logged in) --}}
-    @if(isset($currentMember) && request()->routeIs('member.*'))
+    @if(isset($currentMember) && (request()->routeIs('member.*', 'old.member.*') || request()->is('m/*', 'member/*')))
         <nav class="fixed bottom-0 inset-x-0 bg-card border-t border-border z-50 safe-area-bottom">
             <div class="max-w-lg mx-auto flex justify-around items-center h-16">
-                <a href="{{ route('member.home') }}"
-                   class="flex flex-col items-center gap-1 px-3 py-2 text-xs {{ request()->routeIs('member.home') ? 'text-accent' : 'text-muted-text' }}">
+                <a href="{{ $currentMember->personalUrl('/home') }}"
+                   class="flex flex-col items-center gap-1 px-3 py-2 text-xs {{ request()->routeIs('member.home', 'old.member.home') ? 'text-accent' : 'text-muted-text' }}">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
                     <span>{{ __('app.nav_home') }}</span>
                 </a>
-                <a href="{{ route('member.calendar') }}"
-                   class="flex flex-col items-center gap-1 px-3 py-2 text-xs {{ request()->routeIs('member.calendar') ? 'text-accent' : 'text-muted-text' }}">
+                <a href="{{ $currentMember->personalUrl('/calendar') }}"
+                   class="flex flex-col items-center gap-1 px-3 py-2 text-xs {{ request()->routeIs('member.calendar', 'old.member.calendar') ? 'text-accent' : 'text-muted-text' }}">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                     <span>{{ __('app.nav_calendar') }}</span>
                 </a>
-                <a href="{{ route('member.progress') }}"
-                   class="flex flex-col items-center gap-1 px-3 py-2 text-xs {{ request()->routeIs('member.progress') ? 'text-accent' : 'text-muted-text' }}">
+                <a href="{{ $currentMember->personalUrl('/progress') }}"
+                   class="flex flex-col items-center gap-1 px-3 py-2 text-xs {{ request()->routeIs('member.progress', 'old.member.progress') ? 'text-accent' : 'text-muted-text' }}">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                     <span>{{ __('app.nav_progress') }}</span>
                 </a>
-                <a href="{{ route('member.settings') }}"
-                   class="flex flex-col items-center gap-1 px-3 py-2 text-xs {{ request()->routeIs('member.settings') ? 'text-accent' : 'text-muted-text' }}">
+                <a href="{{ $currentMember->personalUrl('/settings') }}"
+                   class="flex flex-col items-center gap-1 px-3 py-2 text-xs {{ request()->routeIs('member.settings', 'old.member.settings') ? 'text-accent' : 'text-muted-text' }}">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                     <span>{{ __('app.nav_settings') }}</span>
                 </a>
@@ -178,12 +169,12 @@
     @endif
 
     {{-- Fundraising popup — only on home or day page, once per day --}}
-    @if(isset($currentMember) && request()->routeIs('member.home', 'member.day'))
+    @if(isset($currentMember) && (request()->routeIs('member.home', 'member.day', 'member.day.show', 'old.member.home', 'old.member.day', 'old.member.day.show') || request()->is('m/*/home', 'm/*/day/*', 'member/home', 'member/day/*')))
         @include('member.partials.fundraising-popup')
     @endif
 
     {{-- Tour content (locale-aware) --}}
-    @if(isset($currentMember) && request()->routeIs('member.*'))
+    @if(isset($currentMember) && (request()->routeIs('member.*', 'old.member.*') || request()->is('m/*', 'member/*')))
     @php
         $tourContent = [
             'next' => __('app.tour_next'),
@@ -229,14 +220,28 @@
     </script>
     @endif
 
-    {{-- Member session helpers --}}
+    {{-- Member helpers --}}
     <script>
         window.AbiyTsom = {
             csrfToken: document.querySelector('meta[name="csrf-token"]').content,
             baseUrl: '{{ url('/') }}',
+            apiPrefix: '{{ isset($currentMember) ? '/api/m/' . $currentMember->token : '/api/member' }}',
+            memberPrefix: '{{ isset($currentMember) ? '/m/' . $currentMember->token : '/member' }}',
+
+            resolveUrl(url) {
+                // Rewrite /api/member/ paths to token-based paths
+                if (this.apiPrefix !== '/api/member' && url.indexOf('/api/member/') === 0) {
+                    return url.replace('/api/member/', this.apiPrefix + '/');
+                }
+                return url;
+            },
+
+            memberPath(path) {
+                return this.memberPrefix + path;
+            },
 
             async api(url, data = {}) {
-                const response = await fetch(this.baseUrl + url, {
+                const response = await fetch(this.baseUrl + this.resolveUrl(url), {
                     method: 'POST',
                     credentials: 'same-origin',
                     headers: {
@@ -250,7 +255,7 @@
             },
 
             async get(url) {
-                const response = await fetch(this.baseUrl + url, {
+                const response = await fetch(this.baseUrl + this.resolveUrl(url), {
                     method: 'GET',
                     credentials: 'same-origin',
                     headers: {
@@ -262,7 +267,7 @@
         };
     </script>
     {{-- Feedback modal (swipe-to-dismiss bottom sheet) --}}
-    @if(isset($currentMember) && request()->routeIs('member.*'))
+    @if(isset($currentMember) && (request()->routeIs('member.*', 'old.member.*') || request()->is('m/*', 'member/*')))
     <div x-data="{
             open: false,
             name: '',

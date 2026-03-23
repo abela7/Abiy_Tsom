@@ -31,7 +31,7 @@ final class WhatsAppReminderConfirmationService
         $message = $this->templates->renderConfirmationTemplate(
             'app.whatsapp_invalid_reply_message',
             $member,
-            $this->buildWebsiteUrl(),
+            $this->buildWebsiteUrl($member),
             $this->telegramUrl(),
             $locale
         );
@@ -52,7 +52,7 @@ final class WhatsAppReminderConfirmationService
         $message = $this->templates->renderConfirmationTemplate(
             'app.whatsapp_confirmation_prompt_message',
             $member,
-            $this->buildWebsiteUrl(),
+            $this->buildWebsiteUrl($member),
             $this->telegramUrl(),
             $locale
         );
@@ -72,7 +72,7 @@ final class WhatsAppReminderConfirmationService
 
         $locale = $this->memberLocale($member);
 
-        $websiteUrl = $this->buildWebsiteUrl();
+        $websiteUrl = $this->buildWebsiteUrl($member);
 
         $message = $this->templates->renderConfirmationTemplate(
             'app.whatsapp_confirmation_go_back_message',
@@ -102,7 +102,7 @@ final class WhatsAppReminderConfirmationService
         $message = $this->templates->renderConfirmationTemplate(
             'app.whatsapp_confirmation_activated_message',
             $member,
-            $this->buildWebsiteUrl(),
+            $this->buildWebsiteUrl($member),
             $this->telegramUrl(),
             $locale
         );
@@ -123,7 +123,7 @@ final class WhatsAppReminderConfirmationService
         $message = $this->templates->renderConfirmationTemplate(
             'app.whatsapp_confirmation_rejected_message',
             $member,
-            $this->buildWebsiteUrl(),
+            $this->buildWebsiteUrl($member),
             $this->telegramUrl(),
             $locale
         );
@@ -159,13 +159,11 @@ final class WhatsAppReminderConfirmationService
     }
 
     /**
-     * Build a safe go-back URL for WhatsApp confirmation.
-     * The link may resume an existing browser session, but it never
-     * authenticates a new device on its own.
+     * Build a direct token URL for WhatsApp messages.
      */
-    private function buildWebsiteUrl(): string
+    private function buildWebsiteUrl(Member $member = null): string
     {
-        $url = route('auth.go');
+        $url = $member ? $member->personalUrl('/home') : url('/');
 
         if (! app()->environment('local')) {
             $url = preg_replace('/^http:\/\//i', 'https://', $url) ?? $url;

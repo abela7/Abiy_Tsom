@@ -87,3 +87,18 @@ function seo(string $key, ?string $default = null): ?string
 {
     return \App\Models\SeoSetting::cached($key) ?? $default;
 }
+
+/**
+ * Build a member-aware URL. If a member is present on the current request,
+ * prefixes the path with /m/{token}; otherwise returns the public path.
+ */
+function memberUrl(string $path): string
+{
+    $member = request()->attributes->get('member');
+
+    if ($member instanceof \App\Models\Member) {
+        return url('/m/'.$member->token.$path);
+    }
+
+    return url($path);
+}

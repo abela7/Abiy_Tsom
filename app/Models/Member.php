@@ -20,6 +20,7 @@ class Member extends Model
     /** @var list<string> */
     protected $fillable = [
         'baptism_name',
+        'email',
         'token',
         'referred_by',
         'telegram_chat_id',
@@ -38,6 +39,10 @@ class Member extends Model
         'whatsapp_confirmation_requested_at',
         'whatsapp_confirmation_responded_at',
         'whatsapp_non_uk_requested',
+        'phone_verified_at',
+        'email_verified_at',
+        'verification_code',
+        'verification_code_expires_at',
     ];
 
     /** @var list<string> */
@@ -45,6 +50,7 @@ class Member extends Model
         'passcode',
         'token',
         'trusted_device_hash',
+        'verification_code',
     ];
 
     /** @return array<string, string> */
@@ -58,7 +64,26 @@ class Member extends Model
             'whatsapp_confirmation_responded_at' => 'datetime',
             'tour_completed_at' => 'datetime',
             'whatsapp_non_uk_requested' => 'boolean',
+            'phone_verified_at' => 'datetime',
+            'email_verified_at' => 'datetime',
+            'verification_code_expires_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Whether the member has completed phone or email verification.
+     */
+    public function isVerified(): bool
+    {
+        return $this->phone_verified_at !== null || $this->email_verified_at !== null;
+    }
+
+    /**
+     * Build a personal token-in-URL path for this member.
+     */
+    public function personalUrl(string $path = '/home'): string
+    {
+        return url('/m/'.$this->token.$path);
     }
 
     /**

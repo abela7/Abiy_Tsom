@@ -58,7 +58,7 @@ function passcodeScreen() {
                     passcode: this.passcode,
                 });
                 if (data.success) {
-                    window.location.href = AbiyTsom.baseUrl + '/member/home';
+                    window.location.href = AbiyTsom.baseUrl + AbiyTsom.memberPath('/home');
                 } else {
                     this.error = data.message || '{{ __("app.incorrect_passcode") }}';
                 }

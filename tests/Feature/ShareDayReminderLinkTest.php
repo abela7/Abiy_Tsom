@@ -27,7 +27,7 @@ class ShareDayReminderLinkTest extends TestCase
         $code = app(TelegramAuthService::class)->createCode(
             $member,
             TelegramAuthService::PURPOSE_SHARE_DAY_ACCESS,
-            $daily->memberDayUrl(false)
+            $daily->memberDayUrl(null, false)
         );
 
         $response = $this->get(route('share.day', ['daily' => $daily, 'code' => $code]), [
@@ -47,7 +47,7 @@ class ShareDayReminderLinkTest extends TestCase
         $code = app(TelegramAuthService::class)->createCode(
             $member,
             TelegramAuthService::PURPOSE_SHARE_DAY_ACCESS,
-            $daily->memberDayUrl(false)
+            $daily->memberDayUrl(null, false)
         );
 
         $this->get(route('share.day', ['daily' => $daily, 'code' => $code]), [
@@ -71,7 +71,7 @@ class ShareDayReminderLinkTest extends TestCase
         $code = app(TelegramAuthService::class)->createCode(
             $member,
             TelegramAuthService::PURPOSE_SHARE_DAY_ACCESS,
-            $daily->memberDayUrl(false)
+            $daily->memberDayUrl(null, false)
         );
 
         [$sessionToken, $deviceId] = $this->createMemberSession($member);
@@ -95,7 +95,7 @@ class ShareDayReminderLinkTest extends TestCase
         $code = app(TelegramAuthService::class)->createCode(
             $member,
             TelegramAuthService::PURPOSE_SHARE_DAY_ACCESS,
-            $daily->memberDayUrl(false)
+            $daily->memberDayUrl(null, false)
         );
 
         [$sessionToken, $deviceId] = $this->createMemberSession($member);
@@ -128,7 +128,7 @@ class ShareDayReminderLinkTest extends TestCase
         $code = app(TelegramAuthService::class)->createCode(
             $intendedMember,
             TelegramAuthService::PURPOSE_SHARE_DAY_ACCESS,
-            $daily->memberDayUrl(false)
+            $daily->memberDayUrl(null, false)
         );
 
         [$sessionToken, $deviceId] = $this->createMemberSession($otherMember);
@@ -152,7 +152,7 @@ class ShareDayReminderLinkTest extends TestCase
         $code = app(TelegramAuthService::class)->createCode(
             $member,
             TelegramAuthService::PURPOSE_SHARE_DAY_ACCESS,
-            $daily->memberDayUrl(false)
+            $daily->memberDayUrl(null, false)
         );
 
         $this->get(route('share.day', ['daily' => $daily, 'code' => $code]), [
@@ -169,7 +169,7 @@ class ShareDayReminderLinkTest extends TestCase
         $code = app(TelegramAuthService::class)->createCode(
             $member,
             TelegramAuthService::PURPOSE_SHARE_DAY_ACCESS,
-            $daily->memberDayUrl(false)
+            $daily->memberDayUrl(null, false)
         );
 
         $response = $this->get(route('auth.access', ['code' => $code]), [
@@ -189,7 +189,7 @@ class ShareDayReminderLinkTest extends TestCase
         $code = app(TelegramAuthService::class)->createCode(
             $member,
             TelegramAuthService::PURPOSE_SHARE_DAY_ACCESS,
-            $daily->memberDayUrl(false)
+            $daily->memberDayUrl(null, false)
         );
 
         $response = $this->get(route('auth.go', ['code' => $code]), [
@@ -203,30 +203,20 @@ class ShareDayReminderLinkTest extends TestCase
         $this->assertNull($this->findAccessToken($code)?->consumed_at);
     }
 
-    public function test_legacy_member_day_url_redirects_to_canonical_url(): void
+    public function test_legacy_member_day_url_redirects_to_public_url(): void
     {
-        $member = $this->createMember('legacy');
         $daily = $this->createPublishedDay();
 
-        [$sessionToken, $deviceId] = $this->createMemberSession($member);
-
-        $this->withCookie(MemberSessionService::SESSION_COOKIE, $sessionToken)
-            ->withCookie(MemberSessionService::DEVICE_COOKIE, $deviceId)
-            ->get('/member/day/'.$daily->id)
-            ->assertRedirect($daily->memberDayUrl());
+        $this->get('/member/day/'.$daily->id)
+            ->assertRedirect('/day/'.$daily->day_number.'-'.$daily->id);
     }
 
-    public function test_legacy_member_commemorations_url_redirects_to_canonical_url(): void
+    public function test_legacy_member_commemorations_url_redirects_to_public_url(): void
     {
-        $member = $this->createMember('legacy2');
         $daily = $this->createPublishedDay();
 
-        [$sessionToken, $deviceId] = $this->createMemberSession($member);
-
-        $this->withCookie(MemberSessionService::SESSION_COOKIE, $sessionToken)
-            ->withCookie(MemberSessionService::DEVICE_COOKIE, $deviceId)
-            ->get('/member/day/'.$daily->id.'/commemorations')
-            ->assertRedirect($daily->memberCommemorationsUrl());
+        $this->get('/member/day/'.$daily->id.'/commemorations')
+            ->assertRedirect('/commemorations/'.$daily->day_number.'-'.$daily->id);
     }
 
     private function createPublishedDay(): DailyContent

@@ -133,7 +133,7 @@
             x-transition:leave-start="opacity-100"
             x-transition:leave-end="opacity-0" class="px-4 pb-4 pt-0">
                 <p class="text-sm text-muted-text mb-4">{{ __('app.tour_section_desc') }}</p>
-                <button type="button" @click="(async () => { await window.AbiyTsomResetTour?.(); tourCompleted = false; window.location.href = '{{ route('member.home') }}?tour=1'; })()"
+                <button type="button" @click="(async () => { await window.AbiyTsomResetTour?.(); tourCompleted = false; window.location.href = '{{ memberUrl('/home') }}?tour=1'; })()"
                         class="w-full py-2.5 bg-accent text-on-accent rounded-xl font-medium text-sm transition hover:opacity-90">
                     {{ __('app.tour_show_again') }}
                 </button>
@@ -718,7 +718,7 @@ function dataManagement() {
             this.dataLoading = true;
             this.dataMsg = '';
             try {
-                const url = AbiyTsom.baseUrl + '/api/member/data/export';
+                const url = AbiyTsom.baseUrl + AbiyTsom.resolveUrl('/api/member/data/export');
                 window.location.href = url;
                 this.dataMsg = '{{ __("app.export_success") }}';
                 this.dataMsgError = false;
@@ -1027,7 +1027,7 @@ function settingsPage() {
         async setLocale(lang) {
             this.locale = lang;
             await AbiyTsom.api('/api/member/settings', { locale: lang });
-            window.location.replace(AbiyTsom.baseUrl + '/member/settings?lang=' + lang);
+            window.location.replace(AbiyTsom.baseUrl + AbiyTsom.memberPath('/settings') + '?lang=' + lang);
         },
         async saveBaptismName() {
             const name = this.baptismName.trim();

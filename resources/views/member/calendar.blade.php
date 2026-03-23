@@ -67,7 +67,7 @@
 
                             <div @if($isToday) id="current-day" data-tour="cal-today" @endif class="relative">
                                 @if($hasContent)
-                                    <a href="{{ $content->memberDayUrl() }}"
+                                    <a href="{{ $content->memberDayUrl($currentMember->token ?? null) }}"
                                        class="relative aspect-square min-w-0 flex flex-col items-center justify-center rounded-xl transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md active:scale-95 group
                                               @if($isToday)
                                                   bg-cal-today-bg border-2 border-cal-today-border shadow-md scale-[1.02] z-10 ring-2 ring-cal-today-border/25
@@ -122,7 +122,7 @@
             </div>
             <h3 class="text-lg font-bold text-primary mb-2">{{ __('app.no_calendar_content') }}</h3>
             <p class="text-sm text-muted-text mb-8">{{ __('app.check_back_soon') }}</p>
-            <a href="{{ route('member.home') }}"
+            <a href="{{ memberUrl('/home') }}"
                class="inline-flex items-center gap-2 px-6 py-3 bg-accent text-on-accent rounded-2xl font-bold text-sm shadow-lg hover:opacity-90 active:scale-95 transition-all">
                 {{ __('app.nav_home') }}
             </a>

@@ -75,10 +75,7 @@ class MembersAdminBaptismNameTest extends TestCase
             'baptism_name' => 'After Admin Edit',
         ])->assertRedirect();
 
-        $home = $this->withCookies([
-            'member_session' => $sessionToken,
-            'member_device' => $deviceId,
-        ])->get(route('member.home'));
+        $home = $this->get($member->personalUrl('/home'));
 
         $home->assertOk();
         $home->assertSee('After Admin Edit', false);

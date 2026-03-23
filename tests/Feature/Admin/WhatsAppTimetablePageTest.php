@@ -20,6 +20,7 @@ class WhatsAppTimetablePageTest extends TestCase
             'username' => 'admin',
             'password' => bcrypt('password'),
             'role' => 'admin',
+            'is_super_admin' => true,
         ]);
 
         $response = $this->actingAs($admin)->get(route('admin.whatsapp.timetable'));
@@ -36,6 +37,7 @@ class WhatsAppTimetablePageTest extends TestCase
             'username' => 'admin',
             'password' => bcrypt('password'),
             'role' => 'admin',
+            'is_super_admin' => true,
         ]);
 
         Member::create([

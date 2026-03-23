@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\CheckMemberPasscode;
 use App\Http\Middleware\IdentifyMember;
+use App\Http\Middleware\ResolveMemberFromUrl;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -28,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'member' => IdentifyMember::class,
             'member.passcode' => CheckMemberPasscode::class,
             'api.member' => \App\Http\Middleware\EnsureMemberFromToken::class,
+            'resolve.member.url' => ResolveMemberFromUrl::class,
             'super_admin' => \App\Http\Middleware\EnsureSuperAdmin::class,
             'admin_role' => \App\Http\Middleware\EnsureAdminRole::class,
             'admin.audit' => \App\Http\Middleware\LogAdminAudit::class,

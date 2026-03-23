@@ -21,6 +21,7 @@ class WhatsAppSettingsTest extends TestCase
             'email' => null,
             'password' => bcrypt('password'),
             'role' => 'admin',
+            'is_super_admin' => true,
         ]);
 
         $response = $this->actingAs($admin)->get(route('admin.whatsapp.settings'));
@@ -37,6 +38,7 @@ class WhatsAppSettingsTest extends TestCase
             'email' => null,
             'password' => bcrypt('password'),
             'role' => 'admin',
+            'is_super_admin' => true,
         ]);
 
         Http::fake([
@@ -71,6 +73,7 @@ class WhatsAppSettingsTest extends TestCase
             'email' => null,
             'password' => bcrypt('password'),
             'role' => 'admin',
+            'is_super_admin' => true,
         ]);
 
         $response = $this->actingAs($admin)->postJson('/admin/whatsapp/test', [

@@ -107,16 +107,14 @@ class SendWhatsAppRemindersCommandTest extends TestCase
         Http::assertSentCount(1);
         Http::assertSent(function (\Illuminate\Http\Client\Request $request) use ($daily, $dueMember): bool {
             $body = (string) $request['body'];
-            $legacyMemberDayPattern = '#/member/day/'.preg_quote((string) $daily->id, '#').'(?:$|[/?])#';
+            $expectedUrl = '/m/'.$dueMember->token.'/day/'.$daily->day_number.'-'.$daily->id;
 
             return $request->url() === 'https://api.ultramsg.com/instance999/messages/chat'
                 && $request['to'] === '+447700900111'
                 && $request['token'] === 'token-123'
                 && $body !== ''
                 && str_contains(strtolower($body), 'day '.$daily->day_number)
-                && str_contains($body, '/share/day/'.$daily->id.'?code=')
-                && preg_match($legacyMemberDayPattern, $body) !== 1
-                && ! str_contains($body, $dueMember->token);
+                && str_contains($body, $expectedUrl);
         });
 
         $this->assertDatabaseHas('members', [

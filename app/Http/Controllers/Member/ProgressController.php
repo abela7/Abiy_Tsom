@@ -207,7 +207,7 @@ class ProgressController extends Controller
         if ($period === 'daily' && $elapsedPeriodDays->count() === 1) {
             $viewDay = $elapsedPeriodDays->first();
             $viewDayContentId = $viewDay?->id;
-            $viewDayContentUrl = $viewDay?->memberDayUrl(false);
+            $viewDayContentUrl = $viewDay?->memberDayUrl(null, false);
         }
 
         // Day picker options from available published days

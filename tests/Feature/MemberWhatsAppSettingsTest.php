@@ -21,7 +21,7 @@ class MemberWhatsAppSettingsTest extends TestCase
             'theme' => 'light',
         ]);
 
-        $response = $this->postJson('/api/member/settings', [
+        $response = $this->postJson('/api/m/' . $member->token . '/settings', [
             'whatsapp_reminder_enabled' => true,
             'whatsapp_phone' => '+447700900123',
             'whatsapp_reminder_time' => '08:30',
@@ -53,7 +53,7 @@ class MemberWhatsAppSettingsTest extends TestCase
             'theme' => 'light',
         ]);
 
-        $response = $this->postJson('/api/member/settings', [
+        $response = $this->postJson('/api/m/' . $member->token . '/settings', [
             'whatsapp_reminder_enabled' => true,
         ], [
             'X-Member-Token' => $member->token,

@@ -3,7 +3,7 @@
 @php
     $locale = app()->getLocale();
     $publicPreview = (bool) ($publicPreview ?? false);
-    $backUrl = $backUrl ?? ($publicPreview ? route('home') : route('member.calendar'));
+    $backUrl = $backUrl ?? ($publicPreview ? route('home') : memberUrl('/calendar'));
     $weekName = $daily->weeklyTheme ? (localized($daily->weeklyTheme, 'name') ?? $daily->weeklyTheme->name_en ?? '-') : '';
     $dayTitle = localized($daily, 'day_title') ?? __('app.day_x', ['day' => $daily->day_number]);
     $sinksarUrl = $daily->sinksarUrl($locale);
@@ -58,7 +58,7 @@
     {{-- Day title with prev/next navigation --}}
     <div class="flex items-center justify-between">
         @if($prevDay)
-        <a href="{{ $prevDayUrl ?? $prevDay->memberDayUrl() }}" class="shrink-0 w-10 h-10 rounded-xl bg-muted hover:bg-border flex items-center justify-center text-muted-text hover:text-primary transition-all active:scale-95">
+        <a href="{{ $prevDayUrl ?? $prevDay->memberDayUrl($currentMember->token ?? null) }}" class="shrink-0 w-10 h-10 rounded-xl bg-muted hover:bg-border flex items-center justify-center text-muted-text hover:text-primary transition-all active:scale-95">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
         </a>
         @else
@@ -73,7 +73,7 @@
         </div>
 
         @if($nextDay)
-        <a href="{{ $nextDayUrl ?? $nextDay->memberDayUrl() }}" class="shrink-0 w-10 h-10 rounded-xl bg-muted hover:bg-border flex items-center justify-center text-muted-text hover:text-primary transition-all active:scale-95">
+        <a href="{{ $nextDayUrl ?? $nextDay->memberDayUrl($currentMember->token ?? null) }}" class="shrink-0 w-10 h-10 rounded-xl bg-muted hover:bg-border flex items-center justify-center text-muted-text hover:text-primary transition-all active:scale-95">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </a>
         @else
@@ -97,7 +97,7 @@
 
         {{-- Commemorations carousel row --}}
         @if($slides->isNotEmpty() && (($commemorationsUrl ?? null) !== null || !($publicPreview ?? false)))
-        <a href="{{ $commemorationsUrl ?? $daily->memberCommemorationsUrl() }}"
+        <a href="{{ $commemorationsUrl ?? $daily->memberCommemorationsUrl($currentMember->token ?? null) }}"
            class="flex items-center gap-3 px-4 py-3 bg-accent/5 hover:bg-accent/10 active:scale-[0.98] transition-all group"
            x-data="{ current: 0, total: {{ $slides->count() }}, images: {{ $slides->map(fn($s) => $s['image'] ?? null)->toJson() }}, fallback: '{{ asset('images/Saints.png') }}' }"
            x-init="setInterval(() => current = (current + 1) % total, 3000)">
@@ -129,7 +129,7 @@
 
         {{-- Weekly theme link --}}
         @if($daily->weeklyTheme)
-        <a href="{{ route('member.week', $daily->weeklyTheme) }}" class="flex items-center gap-3 px-4 py-3 bg-accent/5 hover:bg-accent/10 active:scale-[0.98] transition-all group">
+        <a href="{{ memberUrl('/week/' . $daily->weeklyTheme->id) }}" class="flex items-center gap-3 px-4 py-3 bg-accent/5 hover:bg-accent/10 active:scale-[0.98] transition-all group">
             <div class="shrink-0 w-9 h-9 rounded-lg bg-accent/15 flex items-center justify-center">
                 <i class="bi bi-calendar-week text-accent text-sm"></i>
             </div>

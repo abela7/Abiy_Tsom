@@ -17,12 +17,12 @@
             </div>
 
             <div class="space-y-3 px-6 py-6">
-                <a href="{{ route('member.calendar') }}"
+                <a href="{{ memberUrl('/calendar') }}"
                    class="flex w-full items-center justify-center rounded-2xl bg-accent px-5 py-4 text-base font-bold text-on-accent shadow-lg shadow-accent/20 transition hover:opacity-90 active:scale-[0.98]">
                     {{ __('app.check_other_days') }}
                 </a>
 
-                <a href="{{ route('member.home') }}"
+                <a href="{{ memberUrl('/home') }}"
                    class="flex w-full items-center justify-center rounded-2xl border border-border px-5 py-4 text-base font-semibold text-primary transition hover:bg-muted/50 active:scale-[0.98]">
                     {{ __('app.back') }}
                 </a>

@@ -96,14 +96,15 @@ class WhatsAppWebhookConfirmationTest extends TestCase
         $this->assertNotNull($member->whatsapp_confirmation_responded_at);
 
         Http::assertSentCount(2);
-        Http::assertSent(function (\Illuminate\Http\Client\Request $request) use ($member): bool {
+        $personalUrl = str_replace('http://', 'https://', $member->personalUrl('/home'));
+
+        Http::assertSent(function (\Illuminate\Http\Client\Request $request) use ($personalUrl): bool {
             return $request->url() === 'https://api.ultramsg.com/instance999/messages/chat'
                 && $request['to'] === '+447700900123'
                 && $request['token'] === 'token-123'
                 && is_string($request['body'])
                 && ! str_contains($request['body'], '/member/access/')
-                && ! str_contains($request['body'], $member->token)
-                && str_contains($request['body'], 'https://abiytsom.abuneteklehaymanot.org/auth/go')
+                && str_contains($request['body'], $personalUrl)
                 && str_contains($request['body'], 'do not share this link');
         });
     }

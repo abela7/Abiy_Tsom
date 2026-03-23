@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin;
 use App\Http\Controllers\ContentSuggestionController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\Member;
+use App\Http\Controllers\PublicContentController;
 use App\Http\Controllers\TelegramAuthController;
 use App\Http\Controllers\VolunteerInviteController;
 use App\Http\Controllers\Webhook;
@@ -13,25 +14,30 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Member-Facing Routes (public + member-identified)
+| Member-Facing Routes (public + token-in-URL authenticated)
 |--------------------------------------------------------------------------
 */
 
-// Welcome / onboarding (no auth required)
+// Welcome / landing page
 Route::get('/', [Member\OnboardingController::class, 'welcome'])->name('home');
-Route::post('/member/register', [Member\OnboardingController::class, 'register'])->name('member.register');
-Route::get('/member/access/{token}', [Member\OnboardingController::class, 'access'])
-    ->where('token', '[A-Za-z0-9]{20,128}')
-    ->name('member.access');
+
+// Registration with phone/email verification (replaces old cookie-based registration)
+Route::post('/register', [Member\RegistrationController::class, 'register'])
+    ->middleware('throttle:10,1')
+    ->name('register');
+Route::post('/register/verify', [Member\RegistrationController::class, 'verify'])
+    ->middleware('throttle:10,1')
+    ->name('register.verify');
+Route::post('/register/resend', [Member\RegistrationController::class, 'resend'])
+    ->middleware('throttle:5,1')
+    ->name('register.resend');
+
+// Referral tracking
 Route::get('/r/{code}', [Member\ReferralController::class, 'track'])
     ->where('code', '[A-Za-z0-9]{8}')
     ->name('referral.track');
-Route::post('/member/identify', [Member\OnboardingController::class, 'identify'])
-    ->middleware('member')
-    ->name('member.identify');
-Route::post('/member/reset', [Member\OnboardingController::class, 'reset'])
-    ->middleware('member')
-    ->name('member.reset');
+
+// Webhooks (no CSRF)
 Route::post('/webhooks/telegram', [Webhook\TelegramWebhookController::class, 'handle'])
     ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class])
     ->name('webhooks.telegram');
@@ -39,10 +45,11 @@ Route::post('/webhooks/ultramsg', [Webhook\UltraMsgWebhookController::class, 'ha
     ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class])
     ->name('webhooks.ultramsg');
 
-// Public share page — serves OG meta for social crawlers, then redirects
+// Public share pages (OG meta for social crawlers)
 Route::get('/share/day/{daily}', [Member\ShareController::class, 'day'])->name('share.day');
 Route::get('/share/day/{daily}/public', [Member\ShareController::class, 'publicDay'])->name('share.day.public');
-// Landing page for WhatsApp go-back links — serves OG tags; JS then redirects to /auth/access
+
+// Telegram / WhatsApp auth landing pages (kept for backward compat)
 Route::get('/auth/go', [TelegramAuthController::class, 'go'])
     ->middleware('throttle:60,1')
     ->name('auth.go');
@@ -61,14 +68,14 @@ Route::post('/telegram/mini/connect', [TelegramAuthController::class, 'miniConne
     ->middleware('throttle:60,1')
     ->name('telegram.mini.connect.submit');
 
-// Public content suggestion form (no auth required)
+// Public content suggestion form
 Route::get('/suggest', [ContentSuggestionController::class, 'show'])->name('suggest');
 Route::post('/suggest', [ContentSuggestionController::class, 'store'])->name('suggest.store');
-// Feedback (modal submit, no auth required)
 Route::post('/feedback', [FeedbackController::class, 'store'])
     ->middleware('throttle:5,60')
     ->name('feedback.store');
 
+// Volunteer invitations
 Route::get('/invite/{slug}', [VolunteerInviteController::class, 'show'])->name('volunteer.invite.show');
 Route::post('/invite/{slug}/track', [VolunteerInviteController::class, 'track'])
     ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
@@ -80,17 +87,27 @@ Route::post('/invite/{slug}/contact', [VolunteerInviteController::class, 'contac
     ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
     ->name('volunteer.invite.contact');
 
-// Passcode routes (member-identified but before passcode check)
-Route::middleware('member')->group(function () {
-    Route::get('/member/passcode', [Member\PasscodeController::class, 'show'])->name('member.passcode');
-    Route::get('/member/passcode/lock', [Member\PasscodeController::class, 'lock'])->name('member.passcode.lock');
-    Route::post('/member/passcode/verify', [Member\PasscodeController::class, 'verify'])->name('member.passcode.verify');
-    Route::post('/member/passcode/update', [Member\PasscodeController::class, 'update'])->name('member.passcode.update');
-    Route::post('/member/passcode/reset', [Member\PasscodeController::class, 'reset'])->name('member.passcode.reset');
-});
+/*
+|--------------------------------------------------------------------------
+| Public Content Routes (no auth — anyone can read)
+|--------------------------------------------------------------------------
+*/
+Route::get('/day/{dayNumber}-{daily}', [PublicContentController::class, 'showDay'])
+    ->whereNumber('dayNumber')
+    ->name('public.day.show');
+Route::get('/calendar', [PublicContentController::class, 'calendar'])->name('public.calendar');
+Route::get('/week/{weeklyTheme}', [PublicContentController::class, 'week'])->name('public.week');
+Route::get('/commemorations/{dayNumber}-{daily}', [PublicContentController::class, 'commemorations'])
+    ->whereNumber('dayNumber')
+    ->name('public.commemorations');
+Route::get('/announcement/{announcement}', [PublicContentController::class, 'announcement'])->name('public.announcement');
 
-// Member-protected routes (identified + passcode cleared)
-Route::middleware(['member', 'member.passcode'])->prefix('member')->name('member.')->group(function () {
+/*
+|--------------------------------------------------------------------------
+| Token-in-URL Authenticated Member Routes
+|--------------------------------------------------------------------------
+*/
+Route::middleware('resolve.member.url')->prefix('m/{token}')->where(['token' => '[A-Za-z0-9]{64}'])->name('member.')->group(function () {
     Route::get('/home', [Member\HomeController::class, 'index'])->name('home');
     Route::get('/today-unavailable', [Member\HomeController::class, 'todayUnavailable'])->name('today-unavailable');
     Route::get('/calendar', [Member\HomeController::class, 'calendar'])->name('calendar');
@@ -104,16 +121,12 @@ Route::middleware(['member', 'member.passcode'])->prefix('member')->name('member
     Route::get('/day/{daily}/commemorations', [Member\HomeController::class, 'commemorations'])->name('commemorations');
     Route::get('/week/{weeklyTheme}', [Member\HomeController::class, 'week'])->name('week');
     Route::get('/announcement/{announcement}', [Member\AnnouncementController::class, 'show'])->name('announcement.show');
-
-    // Progress
     Route::get('/progress', [Member\ProgressController::class, 'index'])->name('progress');
-
-    // Settings
     Route::get('/settings', [Member\SettingsController::class, 'index'])->name('settings');
 });
 
-// API-style routes for AJAX calls (JSON responses) — member resolved from secure session
-Route::prefix('api/member')->middleware('api.member')->name('api.member.')->group(function () {
+// Token-in-URL API routes (JSON responses)
+Route::middleware('resolve.member.url')->prefix('api/m/{token}')->where(['token' => '[A-Za-z0-9]{64}'])->name('api.member.')->group(function () {
     Route::post('/checklist/toggle', [Member\ChecklistController::class, 'toggle'])->name('checklist.toggle');
     Route::post('/checklist/custom-toggle', [Member\CustomActivityController::class, 'toggle'])->name('checklist.custom-toggle');
     Route::post('/settings', [Member\SettingsController::class, 'update'])->name('settings.update');
@@ -133,6 +146,85 @@ Route::prefix('api/member')->middleware('api.member')->name('api.member.')->grou
     Route::post('/tour/complete', [Member\TourController::class, 'complete'])->name('tour.complete');
     Route::post('/tour/reset', [Member\TourController::class, 'reset'])->name('tour.reset');
     Route::post('/account/delete', [Member\SettingsController::class, 'deleteAccount'])->name('account.delete');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Cookie-Based Member Routes (existing members — zero disruption)
+|--------------------------------------------------------------------------
+| These routes preserve the old /member/* paths so existing cookie-auth
+| members keep working exactly as before. They use the same controllers
+| as the new /m/{token}/* routes.
+*/
+
+// Direct token access → establish session & redirect to token-in-URL home
+Route::get('/member/access/{token}', [Member\OnboardingController::class, 'access'])
+    ->where('token', '[A-Za-z0-9]{20,128}')
+    ->name('member.access');
+
+// Old registration/session management (still cookie-based)
+Route::post('/member/register', [Member\OnboardingController::class, 'register']);
+Route::middleware('member')->group(function () {
+    Route::post('/member/identify', [Member\OnboardingController::class, 'identify']);
+    Route::post('/member/reset', [Member\OnboardingController::class, 'reset']);
+});
+
+// Passcode routes (cookie-auth members with passcode protection)
+Route::middleware('member')->prefix('member')->group(function () {
+    Route::get('/passcode', [Member\PasscodeController::class, 'show'])->name('member.passcode');
+    Route::get('/passcode/lock', [Member\PasscodeController::class, 'lock'])->name('member.passcode.lock');
+    Route::post('/passcode/verify', [Member\PasscodeController::class, 'verify'])->name('member.passcode.verify');
+    Route::post('/passcode/update', [Member\PasscodeController::class, 'update'])->name('member.passcode.update');
+    Route::post('/passcode/reset', [Member\PasscodeController::class, 'reset'])->name('member.passcode.reset');
+});
+
+// Legacy redirects for old-format URLs (no auth — these are shared links)
+// /member/day/{id} → /day/{dayNumber}-{id} (public)
+Route::get('/member/day/{daily}/commemorations', function (\App\Models\DailyContent $daily) {
+    return redirect("/commemorations/{$daily->day_number}-{$daily->id}");
+})->whereNumber('daily');
+Route::get('/member/day/{daily}', function (\App\Models\DailyContent $daily) {
+    return redirect("/day/{$daily->day_number}-{$daily->id}");
+})->whereNumber('daily');
+
+// Cookie-auth member page routes (same controllers as /m/{token}/* routes)
+Route::middleware(['member', 'member.passcode'])->prefix('member')->group(function () {
+    Route::get('/home', [Member\HomeController::class, 'index'])->name('old.member.home');
+    Route::get('/today-unavailable', [Member\HomeController::class, 'todayUnavailable'])->name('old.member.today-unavailable');
+    Route::get('/calendar', [Member\HomeController::class, 'calendar'])->name('old.member.calendar');
+    Route::get('/day/{dayNumber}-{daily}', [Member\HomeController::class, 'showDay'])
+        ->whereNumber('dayNumber')
+        ->name('old.member.day.show');
+    Route::get('/day/{dayNumber}-{daily}/commemorations', [Member\HomeController::class, 'showCommemorations'])
+        ->whereNumber('dayNumber')
+        ->name('old.member.commemorations.show');
+    Route::get('/week/{weeklyTheme}', [Member\HomeController::class, 'week'])->name('old.member.week');
+    Route::get('/announcement/{announcement}', [Member\AnnouncementController::class, 'show'])->name('old.member.announcement.show');
+    Route::get('/progress', [Member\ProgressController::class, 'index'])->name('old.member.progress');
+    Route::get('/settings', [Member\SettingsController::class, 'index'])->name('old.member.settings');
+});
+
+// Cookie-auth member API routes (same controllers as /api/m/{token}/* routes)
+Route::middleware('api.member')->prefix('api/member')->group(function () {
+    Route::post('/checklist/toggle', [Member\ChecklistController::class, 'toggle']);
+    Route::post('/checklist/custom-toggle', [Member\CustomActivityController::class, 'toggle']);
+    Route::post('/settings', [Member\SettingsController::class, 'update']);
+    Route::post('/custom-activities', [Member\CustomActivityController::class, 'store']);
+    Route::post('/custom-activities/update', [Member\CustomActivityController::class, 'update']);
+    Route::post('/custom-activities/delete', [Member\CustomActivityController::class, 'destroy']);
+    Route::get('/progress/data', [Member\ProgressController::class, 'data']);
+    Route::get('/data/export', [Member\DataController::class, 'export']);
+    Route::post('/data/import', [Member\DataController::class, 'import']);
+    Route::post('/data/clear', [Member\DataController::class, 'clear']);
+    Route::post('/telegram-link', [Member\SettingsController::class, 'generateTelegramLink']);
+    Route::post('/telegram-unlink', [Member\SettingsController::class, 'unlinkTelegram']);
+    Route::get('/fundraising/popup', [Member\FundraisingController::class, 'popup']);
+    Route::post('/fundraising/snooze', [Member\FundraisingController::class, 'snooze']);
+    Route::post('/fundraising/interested', [Member\FundraisingController::class, 'interested']);
+    Route::post('/banner/{banner}/respond', [Member\BannerController::class, 'respond']);
+    Route::post('/tour/complete', [Member\TourController::class, 'complete']);
+    Route::post('/tour/reset', [Member\TourController::class, 'reset']);
+    Route::post('/account/delete', [Member\SettingsController::class, 'deleteAccount']);
 });
 
 /*

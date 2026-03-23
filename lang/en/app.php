@@ -73,6 +73,27 @@ return [
     'cookie_consent_checkbox_label' => 'I understand and accept local cookie use.',
     'cookie_consent_required_error' => 'Please accept the cookie consent to continue.',
 
+    // Registration & Verification
+    'registration_phone_title' => 'Your Phone Number',
+    'registration_phone_subtitle' => 'Enter your phone number to create your account.',
+    'registration_email_title' => 'Email Verification',
+    'registration_email_subtitle' => 'WhatsApp verification is only available for UK numbers. Please enter your email to verify your account.',
+    'registration_email_placeholder' => 'Enter your email address',
+    'registration_email_required' => 'An email address is required for non-UK phone numbers.',
+    'registration_verify_title' => 'Enter Verification Code',
+    'registration_verify_whatsapp_subtitle' => 'We sent a 6-digit code to your WhatsApp.',
+    'registration_verify_email_subtitle' => 'We sent a 6-digit code to your email.',
+    'registration_verify_button' => 'Verify & Start',
+    'registration_resend' => 'Resend Code',
+    'registration_resend_sent' => 'Code resent!',
+    'registration_code_placeholder' => '000000',
+    'verification_code_sent' => 'Verification code sent.',
+    'verification_code_send_failed' => 'Failed to send verification code. Please try again.',
+    'verification_member_not_found' => 'Member not found. Please register again.',
+    'verification_code_invalid' => 'Invalid or expired code. Please try again.',
+    'registration_language_title' => 'Choose Your Language',
+    'registration_language_subtitle' => 'Select your preferred language for the app.',
+
     // WhatsApp welcome confirmation messages (sent after registration)
     'whatsapp_welcome_message_en' => "Respected :name, may the peace of God be with you.\nWe thank you for being a user of this platform. From now on, based on the time you have chosen, we will send you our daily reminders each day.\n\nLiverpool Mekane Kidusan Abune Teklehaimanot Church.\nBlessed Great Lent!",
     'whatsapp_welcome_message_am' => "የተከበሩ :name ሰላመ እግዚአብሄር ከእርስዎ ጋር ይሁን። የዚህ ፕላትፎርም ተጠቃሚ ስለሆኑ እያመሰገንን ከዚህ በኋላ በመረጡት ሰዓት መሰረት በየዕለቱ ማስታወሻወችን እንልክልዎታለን።\n\nሊቨርፑል መካነ ቅዱሳን አቡነ ተክለሃይማኖት ቤተክርስቲያን።\nመልካም የዓብይ ጾም!",

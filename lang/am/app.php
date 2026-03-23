@@ -77,6 +77,27 @@ return [
     'cookie_consent_checkbox_label' => 'I understand and accept local cookie use.',
     'cookie_consent_required_error' => 'Please accept the cookie consent to continue.',
 
+    // Registration & Verification
+    'registration_phone_title' => 'ስልክ ቁጥርዎ',
+    'registration_phone_subtitle' => 'መለያዎን ለመፍጠር ስልክ ቁጥርዎን ያስገቡ።',
+    'registration_email_title' => 'የኢሜል ማረጋገጫ',
+    'registration_email_subtitle' => 'የዋትስአፕ ማረጋገጫ ለUK ቁጥሮች ብቻ ነው። እባክዎ ኢሜልዎን ያስገቡ።',
+    'registration_email_placeholder' => 'ኢሜል አድራሻዎን ያስገቡ',
+    'registration_email_required' => 'ለUK ውጪ ስልክ ቁጥሮች ኢሜል አድራሻ ያስፈልጋል።',
+    'registration_verify_title' => 'የማረጋገጫ ኮድ ያስገቡ',
+    'registration_verify_whatsapp_subtitle' => 'የ6 አሃዝ ኮድ ወደ ዋትስአፕዎ ተልኳል።',
+    'registration_verify_email_subtitle' => 'የ6 አሃዝ ኮድ ወደ ኢሜልዎ ተልኳል።',
+    'registration_verify_button' => 'አረጋግጥ እና ጀምር',
+    'registration_resend' => 'ኮድ እንደገና ላክ',
+    'registration_resend_sent' => 'ኮድ እንደገና ተልኳል!',
+    'registration_code_placeholder' => '000000',
+    'verification_code_sent' => 'የማረጋገጫ ኮድ ተልኳል።',
+    'verification_code_send_failed' => 'የማረጋገጫ ኮድ መላክ አልተሳካም። እባክዎ እንደገና ይሞክሩ።',
+    'verification_member_not_found' => 'አባል አልተገኘም። እባክዎ እንደገና ይመዝገቡ።',
+    'verification_code_invalid' => 'ልክ ያልሆነ ወይም ጊዜው ያለፈ ኮድ። እባክዎ እንደገና ይሞክሩ።',
+    'registration_language_title' => 'ቋንቋዎን ይምረጡ',
+    'registration_language_subtitle' => 'ለመተግበሪያው የሚመርጡትን ቋንቋ ይምረጡ።',
+
     // WhatsApp welcome confirmation messages (sent after registration)
     'whatsapp_welcome_message_en' => "Respected :name, may the peace of God be with you.\nWe thank you for being a user of this platform. From now on, based on the time you have chosen, we will send you our daily reminders each day.\n\nLiverpool Mekane Kidusan Abune Teklehaimanot Church.\nBlessed Great Lent!",
     'whatsapp_welcome_message_am' => "የተከበሩ :name ሰላመ እግዚአብሄር ከእርስዎ ጋር ይሁን። የዚህ ፕላትፎርም ተጠቃሚ ስለሆኑ እያመሰገንን ከዚህ በኋላ በመረጡት ሰዓት መሰረት በየዕለቱ ማስታወሻወችን እንልክልዎታለን።\n\nሊቨርፑል መካነ ቅዱሳን አቡነ ተክለሃይማኖት ቤተክርስቲያን።\nመልካም የዓብይ ጾም!",

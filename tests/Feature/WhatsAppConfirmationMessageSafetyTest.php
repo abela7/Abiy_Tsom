@@ -48,8 +48,8 @@ class WhatsAppConfirmationMessageSafetyTest extends TestCase
 
         $this->assertCount(5, $recorded);
 
-        $websiteUrl = 'https://abiytsom.abuneteklehaymanot.org/auth/go';
-        $foundSafeGoBackUrl = false;
+        $personalUrl = str_replace('http://', 'https://', $member->personalUrl('/home'));
+        $foundPersonalGoBackUrl = false;
         $foundShareWarning = false;
 
         foreach ($recorded as [$request]) {
@@ -58,10 +58,9 @@ class WhatsAppConfirmationMessageSafetyTest extends TestCase
             $this->assertSame('+447700900123', $request['to']);
             $this->assertIsString($request['body']);
             $this->assertStringNotContainsString('/member/access/', $request['body']);
-            $this->assertStringNotContainsString($member->token, $request['body']);
 
-            if (str_contains($request['body'], $websiteUrl)) {
-                $foundSafeGoBackUrl = true;
+            if (str_contains($request['body'], $personalUrl)) {
+                $foundPersonalGoBackUrl = true;
             }
 
             if (str_contains($request['body'], 'do not share this link')) {
@@ -69,7 +68,7 @@ class WhatsAppConfirmationMessageSafetyTest extends TestCase
             }
         }
 
-        $this->assertTrue($foundSafeGoBackUrl);
+        $this->assertTrue($foundPersonalGoBackUrl);
         $this->assertTrue($foundShareWarning);
     }
 }

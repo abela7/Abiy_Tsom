@@ -20,6 +20,7 @@ class WhatsAppWebhookSettingsTest extends TestCase
             'username' => 'admin',
             'password' => bcrypt('password'),
             'role' => 'admin',
+            'is_super_admin' => true,
         ]);
 
         config()->set('services.ultramsg.instance_id', 'test123');
@@ -50,6 +51,7 @@ class WhatsAppWebhookSettingsTest extends TestCase
             'username' => 'admin',
             'password' => bcrypt('password'),
             'role' => 'admin',
+            'is_super_admin' => true,
         ]);
 
         config()->set('services.ultramsg.instance_id', 'test123');
@@ -93,6 +95,7 @@ class WhatsAppWebhookSettingsTest extends TestCase
             'username' => 'admin',
             'password' => bcrypt('password'),
             'role' => 'admin',
+            'is_super_admin' => true,
         ]);
 
         config()->set('services.ultramsg.instance_id', 'test123');
@@ -114,6 +117,7 @@ class WhatsAppWebhookSettingsTest extends TestCase
             'username' => 'admin',
             'password' => bcrypt('password'),
             'role' => 'admin',
+            'is_super_admin' => true,
         ]);
 
         config()->set('services.ultramsg.instance_id', '');

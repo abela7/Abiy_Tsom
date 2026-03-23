@@ -94,6 +94,7 @@ class HomeController extends Controller
 
     public function todayUnavailable(Request $request): View|RedirectResponse
     {
+        $member = $request->attributes->get('member');
         $season = LentSeason::active();
         $today = null;
 
@@ -105,12 +106,10 @@ class HomeController extends Controller
         }
 
         if ($today) {
-            return redirect($today->memberDayUrl());
+            return redirect($today->memberDayUrl($member?->token));
         }
 
-        return view('member.today-unavailable', [
-            'member' => $request->attributes->get('member'),
-        ]);
+        return view('member.today-unavailable', compact('member'));
     }
 
     /**
@@ -296,13 +295,15 @@ class HomeController extends Controller
     /**
      * Redirect legacy day URLs to the canonical day-number URL.
      */
-    public function day(DailyContent $daily): RedirectResponse
+    public function day(Request $request, DailyContent $daily): RedirectResponse
     {
         if (! $daily->is_published) {
             abort(404);
         }
 
-        return redirect($daily->memberDayUrl());
+        $member = $request->attributes->get('member');
+
+        return redirect($daily->memberDayUrl($member?->token));
     }
 
     /**
@@ -318,8 +319,10 @@ class HomeController extends Controller
             abort(404);
         }
 
+        $member = $request->attributes->get('member');
+
         if ($dayNumber !== (int) $daily->day_number) {
-            return redirect($daily->memberDayUrl());
+            return redirect($daily->memberDayUrl($member?->token));
         }
 
         return $this->renderDayView($request, $daily, $ethCalendar);
@@ -328,19 +331,22 @@ class HomeController extends Controller
     /**
      * Redirect legacy commemorations URLs to the canonical URL.
      */
-    public function commemorations(DailyContent $daily): RedirectResponse
+    public function commemorations(Request $request, DailyContent $daily): RedirectResponse
     {
         if (! $daily->is_published) {
             abort(404);
         }
 
-        return redirect($daily->memberCommemorationsUrl());
+        $member = $request->attributes->get('member');
+
+        return redirect($daily->memberCommemorationsUrl($member?->token));
     }
 
     /**
      * Show the commemorations (annual & monthly) for a specific day.
      */
     public function showCommemorations(
+        Request $request,
         int $dayNumber,
         DailyContent $daily,
         EthiopianCalendarService $ethCalendar
@@ -349,8 +355,10 @@ class HomeController extends Controller
             abort(404);
         }
 
+        $member = $request->attributes->get('member');
+
         if ($dayNumber !== (int) $daily->day_number) {
-            return redirect($daily->memberCommemorationsUrl());
+            return redirect($daily->memberCommemorationsUrl($member?->token));
         }
 
         $ethDateInfo = $ethCalendar->getDateInfo($daily->date, app()->getLocale());

@@ -13,26 +13,23 @@ class MemberOnboardingWhatsAppConfirmationTest extends TestCase
 
     public function test_registration_starts_whatsapp_confirmation_as_pending(): void
     {
-        $response = $this->postJson('/member/register', [
+        $response = $this->postJson('/register', [
             'baptism_name' => 'Martha',
-            'whatsapp_reminder_enabled' => true,
-            'whatsapp_phone' => '07123456789',
-            'whatsapp_reminder_time' => '08:30',
-            'whatsapp_language' => 'en',
+            'phone' => '+447123456789',
+            'locale' => 'en',
         ]);
 
         $response->assertOk()
             ->assertJson([
                 'success' => true,
-                'whatsapp_confirmation_pending' => true,
+                'verification_pending' => true,
             ]);
 
         $this->assertDatabaseHas('members', [
             'baptism_name' => 'Martha',
             'whatsapp_phone' => '+447123456789',
-            'whatsapp_reminder_time' => '08:30:00',
             'whatsapp_reminder_enabled' => 0,
-            'whatsapp_confirmation_status' => 'pending',
+            'whatsapp_confirmation_status' => 'none',
         ]);
     }
 }

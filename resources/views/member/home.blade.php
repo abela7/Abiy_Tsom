@@ -16,7 +16,7 @@
 
     {{-- View Today — hero CTA card --}}
     @if(($todayUnavailable ?? false) || (isset($viewTodayTarget) && $viewTodayTarget))
-    <a href="{{ ($todayUnavailable ?? false) ? route('member.today-unavailable') : $viewTodayTarget->memberDayUrl() }}"
+    <a href="{{ ($todayUnavailable ?? false) ? ($currentMember ? $currentMember->personalUrl('/today-unavailable') : '#') : $viewTodayTarget->memberDayUrl($currentMember->token ?? null) }}"
        data-tour="view-today"
        class="group relative block overflow-hidden rounded-3xl bg-gradient-to-br from-accent via-accent to-accent-hover dark:from-accent-hover dark:via-accent-hover dark:to-[#7a5a08] transition-all duration-300 active:scale-[0.98]">
 
@@ -61,7 +61,7 @@
         </div>
     </a>
     @else
-    <a href="{{ route('member.calendar') }}"
+    <a href="{{ $currentMember ? $currentMember->personalUrl('/calendar') : url('/calendar') }}"
        data-tour="view-today"
        class="group relative block overflow-hidden rounded-3xl bg-card border border-border shadow-md hover:shadow-lg transition-all duration-300 active:scale-[0.98]">
         <div class="relative flex items-center gap-4 p-5 sm:p-6">
@@ -171,7 +171,7 @@
         $themeName = localized($weekTheme, 'name') ?? $weekTheme->name_en ?? $weekTheme->name_geez ?? '-';
         $themeMeaning = $isAm && $weekTheme->meaning_am ? $weekTheme->meaning_am : $weekTheme->meaning;
     @endphp
-    <a href="{{ route('member.week', $weekTheme) }}" class="block rounded-2xl bg-card shadow-lg overflow-hidden group">
+    <a href="{{ $currentMember ? $currentMember->personalUrl('/week/' . $weekTheme->id) : url('/week/' . $weekTheme->id) }}" class="block rounded-2xl bg-card shadow-lg overflow-hidden group">
         <div class="relative overflow-hidden bg-gradient-to-br from-[#0a6286] via-[#134e5e] to-[#0a6286]">
             <div class="absolute -top-20 -right-20 w-56 h-56 rounded-full bg-easter-gold/15 blur-[70px] pointer-events-none"></div>
             <div class="absolute -bottom-16 -left-16 w-40 h-40 rounded-full bg-white/5 blur-[60px] pointer-events-none"></div>
@@ -229,7 +229,7 @@
                     $announcementPhotoUrl = $announcement->photoUrlForLocale();
                 @endphp
                 <article class="rounded-2xl shadow-lg border border-border overflow-hidden bg-card">
-                    <a href="{{ route('member.announcement.show', $announcement) }}" class="block group">
+                    <a href="{{ memberUrl('/announcement/' . $announcement->id) }}" class="block group">
                         @if($announcementPhotoUrl)
                             <div class="relative w-full aspect-[16/9] overflow-hidden bg-muted">
                                 <img src="{{ $announcementPhotoUrl }}" alt=""
@@ -293,8 +293,8 @@
                     @endphp
                     <article class="carousel-card absolute top-0 left-0 w-full rounded-2xl shadow-lg border border-border overflow-hidden bg-card transition-all duration-500 ease-out"
                              :style="getCardStyles({{ $index }})"
-                             @click="handleCardClick({{ $index }}, '{{ route('member.announcement.show', $announcement) }}')">
-                        <a href="{{ route('member.announcement.show', $announcement) }}"
+                             @click="handleCardClick({{ $index }}, '{{ memberUrl('/announcement/' . $announcement->id) }}')">
+                        <a href="{{ memberUrl('/announcement/' . $announcement->id) }}"
                            class="block group"
                            @click.prevent>
                             @if($announcementPhotoUrl)

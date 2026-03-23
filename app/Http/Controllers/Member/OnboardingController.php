@@ -27,9 +27,16 @@ class OnboardingController extends Controller
 
     /**
      * Show the welcome / onboarding page.
+     * If the visitor already has a valid cookie session, redirect to their home.
      */
-    public function welcome(): View
+    public function welcome(Request $request): View|RedirectResponse
     {
+        $member = $this->sessions->resolveMember($request);
+
+        if ($member) {
+            return redirect($member->personalUrl('/home'));
+        }
+
         $season = LentSeason::active();
 
         return view('member.welcome', compact('season'));

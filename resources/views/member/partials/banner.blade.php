@@ -81,7 +81,7 @@
                                 if (!phone) { errors.contact_phone = ['{{ __('app.banner_phone_required') }}']; }
                                 if (Object.keys(errors).length) return;
                                 sending = true;
-                                fetch('/api/member/banner/{{ $banner->id }}/respond', {
+                                fetch(AbiyTsom.baseUrl + AbiyTsom.resolveUrl('/api/member/banner/{{ $banner->id }}/respond'), {
                                     method: 'POST',
                                     headers: {
                                         'Content-Type': 'application/json',

@@ -214,24 +214,27 @@ class DailyContent extends Model
     }
 
     /**
-     * Canonical member day URL that shows the fast day number.
+     * Canonical day URL. When a member token is provided, returns the
+     * token-in-URL path; otherwise returns the public path.
      */
-    public function memberDayUrl(bool $absolute = true): string
+    public function memberDayUrl(?string $memberToken = null, bool $absolute = true): string
     {
-        return route('member.day.show', [
-            'dayNumber' => $this->day_number,
-            'daily' => $this,
-        ], $absolute);
+        $path = $memberToken
+            ? "/m/{$memberToken}/day/{$this->day_number}-{$this->id}"
+            : "/day/{$this->day_number}-{$this->id}";
+
+        return $absolute ? url($path) : $path;
     }
 
     /**
      * Canonical commemorations URL for this day.
      */
-    public function memberCommemorationsUrl(bool $absolute = true): string
+    public function memberCommemorationsUrl(?string $memberToken = null, bool $absolute = true): string
     {
-        return route('member.commemorations.show', [
-            'dayNumber' => $this->day_number,
-            'daily' => $this,
-        ], $absolute);
+        $path = $memberToken
+            ? "/m/{$memberToken}/day/{$this->day_number}-{$this->id}/commemorations"
+            : "/day/{$this->day_number}-{$this->id}/commemorations";
+
+        return $absolute ? url($path) : $path;
     }
 }
