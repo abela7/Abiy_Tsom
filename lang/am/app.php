@@ -308,7 +308,7 @@ return [
     'identity_enter_phone' => 'ስልክ ቁጥርዎ (ለምሳሌ +251...)',
     'identity_enter_email' => 'የኢሜል አድራሻዎ',
     'identity_confirmation_required' => 'እባክዎ መጀመሪያ ማንነትዎን ያረጋግጡ።',
-    'identity_confirmation_failed' => 'ስልክ ቁጥር ወይም ኢሜል አልተዛመደም።',
+    'identity_confirmation_failed' => 'ስልክ ቁጥር ወይም ኢሜል አልተዛመደም። እባክዎ የተመዘገቡበትን ስልክ ቁጥር ወይም ኢሜል ያስገቡ — ስም አይደለም።',
     'lang_en' => 'እንግሊዝኛ',
     'lang_am' => 'አማርኛ',
     'custom_activities' => 'ብጁ እንቅስቃሴዎች',

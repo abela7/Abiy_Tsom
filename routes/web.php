@@ -162,18 +162,10 @@ Route::middleware('resolve.member.url')->prefix('m/{token}')->where(['token' => 
 
 // Token-in-URL API routes (JSON responses)
 Route::middleware('resolve.member.url')->prefix('api/m/{token}')->where(['token' => '[A-Za-z0-9]{64}'])->name('api.member.')->group(function () {
+    // Low-risk: checklist, progress, fundraising, tour, banners
     Route::post('/checklist/toggle', [Member\ChecklistController::class, 'toggle'])->name('checklist.toggle');
     Route::post('/checklist/custom-toggle', [Member\CustomActivityController::class, 'toggle'])->name('checklist.custom-toggle');
-    Route::post('/settings', [Member\SettingsController::class, 'update'])->name('settings.update');
-    Route::post('/custom-activities', [Member\CustomActivityController::class, 'store'])->name('custom-activities.store');
-    Route::post('/custom-activities/update', [Member\CustomActivityController::class, 'update'])->name('custom-activities.update');
-    Route::post('/custom-activities/delete', [Member\CustomActivityController::class, 'destroy'])->name('custom-activities.destroy');
     Route::get('/progress/data', [Member\ProgressController::class, 'data'])->name('progress.data');
-    Route::get('/data/export', [Member\DataController::class, 'export'])->name('data.export');
-    Route::post('/data/import', [Member\DataController::class, 'import'])->name('data.import');
-    Route::post('/data/clear', [Member\DataController::class, 'clear'])->name('data.clear');
-    Route::post('/telegram-link', [Member\SettingsController::class, 'generateTelegramLink'])->name('telegram-link');
-    Route::post('/telegram-unlink', [Member\SettingsController::class, 'unlinkTelegram'])->name('telegram-unlink');
     Route::get('/fundraising/popup', [Member\FundraisingController::class, 'popup'])->name('fundraising.popup');
     Route::post('/fundraising/snooze', [Member\FundraisingController::class, 'snooze'])->name('fundraising.snooze');
     Route::post('/fundraising/interested', [Member\FundraisingController::class, 'interested'])->name('fundraising.interested');
@@ -184,7 +176,23 @@ Route::middleware('resolve.member.url')->prefix('api/m/{token}')->where(['token'
     })->name('banner.respond');
     Route::post('/tour/complete', [Member\TourController::class, 'complete'])->name('tour.complete');
     Route::post('/tour/reset', [Member\TourController::class, 'reset'])->name('tour.reset');
-    Route::post('/account/delete', [Member\SettingsController::class, 'deleteAccount'])->name('account.delete');
+
+    // Identity confirmation endpoint
+    Route::post('/confirm-identity', [Member\SettingsController::class, 'confirmIdentity'])->name('confirm-identity');
+
+    // Sensitive: require identity confirmation
+    Route::middleware('member.confirm_identity')->group(function () {
+        Route::post('/settings', [Member\SettingsController::class, 'update'])->name('settings.update');
+        Route::post('/custom-activities', [Member\CustomActivityController::class, 'store'])->name('custom-activities.store');
+        Route::post('/custom-activities/update', [Member\CustomActivityController::class, 'update'])->name('custom-activities.update');
+        Route::post('/custom-activities/delete', [Member\CustomActivityController::class, 'destroy'])->name('custom-activities.destroy');
+        Route::get('/data/export', [Member\DataController::class, 'export'])->name('data.export');
+        Route::post('/data/import', [Member\DataController::class, 'import'])->name('data.import');
+        Route::post('/data/clear', [Member\DataController::class, 'clear'])->name('data.clear');
+        Route::post('/telegram-link', [Member\SettingsController::class, 'generateTelegramLink'])->name('telegram-link');
+        Route::post('/telegram-unlink', [Member\SettingsController::class, 'unlinkTelegram'])->name('telegram-unlink');
+        Route::post('/account/delete', [Member\SettingsController::class, 'deleteAccount'])->name('account.delete');
+    });
 });
 
 /*

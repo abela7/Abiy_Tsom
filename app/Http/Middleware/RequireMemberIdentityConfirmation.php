@@ -29,6 +29,11 @@ class RequireMemberIdentityConfirmation
             return $this->denyAccess($request);
         }
 
+        // Skip if the member has no phone and no email — nothing to confirm against.
+        if (empty($member->whatsapp_phone) && empty($member->email)) {
+            return $next($request);
+        }
+
         // Check if identity was recently confirmed in this session.
         $confirmedAt = session(self::SESSION_KEY);
         if ($confirmedAt && now()->diffInMinutes($confirmedAt) < self::LIFETIME_MINUTES) {

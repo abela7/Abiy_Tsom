@@ -305,7 +305,7 @@ return [
     'identity_enter_phone' => 'Your phone number (e.g. +251...)',
     'identity_enter_email' => 'Your email address',
     'identity_confirmation_required' => 'Please confirm your identity first.',
-    'identity_confirmation_failed' => 'Phone number or email does not match.',
+    'identity_confirmation_failed' => 'Does not match. Please enter your registered phone number or email — not your name.',
     'lang_en' => 'English',
     'lang_am' => 'አማርኛ',
     'custom_activities' => 'Custom Activities',
