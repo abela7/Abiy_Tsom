@@ -84,6 +84,7 @@ return [
     'registration_whatsapp_confirm_title' => 'Check Your WhatsApp',
     'registration_whatsapp_confirm_subtitle' => 'We sent you a message on WhatsApp. Please reply YES to confirm, or NO to decline.',
     'registration_whatsapp_prompt_sent' => 'Confirmation message sent to your WhatsApp.',
+    'registration_open_whatsapp' => 'Open WhatsApp & Send YES',
     'registration_waiting_whatsapp' => 'Waiting for your WhatsApp reply...',
     'registration_whatsapp_rejected' => 'You replied NO. You can still browse public content without an account.',
     'registration_verify_email_subtitle' => 'We sent a 6-digit code to your email.',

@@ -88,6 +88,7 @@ return [
     'registration_whatsapp_confirm_title' => 'ዋትስአፕዎን ይመልከቱ',
     'registration_whatsapp_confirm_subtitle' => 'በዋትስአፕ መልእክት ልከንልዎታል። ለማረጋገጥ YES ብለው ይመልሱ፣ ወይም NO ብለው ይመልሱ።',
     'registration_whatsapp_prompt_sent' => 'የማረጋገጫ መልእክት ወደ ዋትስአፕዎ ተልኳል።',
+    'registration_open_whatsapp' => 'ዋትስአፕን ክፈት እና YES ላክ',
     'registration_waiting_whatsapp' => 'የዋትስአፕ መልስዎን በመጠበቅ ላይ...',
     'registration_whatsapp_rejected' => 'NO ብለው መልሰዋል። ያለ መለያ ይዘትን ማየት ይችላሉ።',
     'registration_verify_email_subtitle' => 'የ6 አሃዝ ኮድ ወደ ኢሜልዎ ተልኳል።',
