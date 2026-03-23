@@ -23,9 +23,13 @@ class PublicContentController extends Controller
     public function showDay(
         Request $request,
         string $dayNumber,
-        DailyContent $daily,
+        mixed $daily,
         EthiopianCalendarService $ethCalendar
     ): View|RedirectResponse {
+        if (! $daily instanceof DailyContent) {
+            $daily = DailyContent::findOrFail($daily);
+        }
+
         if (! $daily->is_published) {
             abort(404);
         }
@@ -54,9 +58,13 @@ class PublicContentController extends Controller
     public function commemorations(
         Request $request,
         string $dayNumber,
-        DailyContent $daily,
+        mixed $daily,
         EthiopianCalendarService $ethCalendar
     ): View|RedirectResponse {
+        if (! $daily instanceof DailyContent) {
+            $daily = DailyContent::findOrFail($daily);
+        }
+
         if (! $daily->is_published) {
             abort(404);
         }

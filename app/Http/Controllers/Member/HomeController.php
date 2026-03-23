@@ -295,8 +295,12 @@ class HomeController extends Controller
     /**
      * Redirect legacy day URLs to the canonical day-number URL.
      */
-    public function day(Request $request, DailyContent $daily): RedirectResponse
+    public function day(Request $request, mixed $daily): RedirectResponse
     {
+        if (! $daily instanceof DailyContent) {
+            $daily = DailyContent::findOrFail($daily);
+        }
+
         if (! $daily->is_published) {
             abort(404);
         }
@@ -312,9 +316,13 @@ class HomeController extends Controller
     public function showDay(
         Request $request,
         string $dayNumber,
-        DailyContent $daily,
+        mixed $daily,
         EthiopianCalendarService $ethCalendar
     ): View|RedirectResponse {
+        if (! $daily instanceof DailyContent) {
+            $daily = DailyContent::findOrFail($daily);
+        }
+
         if (! $daily->is_published) {
             abort(404);
         }
@@ -331,8 +339,12 @@ class HomeController extends Controller
     /**
      * Redirect legacy commemorations URLs to the canonical URL.
      */
-    public function commemorations(Request $request, DailyContent $daily): RedirectResponse
+    public function commemorations(Request $request, mixed $daily): RedirectResponse
     {
+        if (! $daily instanceof DailyContent) {
+            $daily = DailyContent::findOrFail($daily);
+        }
+
         if (! $daily->is_published) {
             abort(404);
         }
@@ -348,9 +360,13 @@ class HomeController extends Controller
     public function showCommemorations(
         Request $request,
         string $dayNumber,
-        DailyContent $daily,
+        mixed $daily,
         EthiopianCalendarService $ethCalendar
     ): View|RedirectResponse {
+        if (! $daily instanceof DailyContent) {
+            $daily = DailyContent::findOrFail($daily);
+        }
+
         if (! $daily->is_published) {
             abort(404);
         }
