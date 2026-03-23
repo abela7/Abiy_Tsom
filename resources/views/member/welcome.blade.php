@@ -376,6 +376,10 @@ function registration() {
                     if (this.verifyChannel === 'whatsapp') {
                         this.startPolling();
                     }
+                } else if (data.redirect_url) {
+                    // Already verified — redirect to their account.
+                    window.location.href = data.redirect_url;
+                    return;
                 } else if (data.requires_email) {
                     // Server says non-UK needs email
                     this.step = 3;

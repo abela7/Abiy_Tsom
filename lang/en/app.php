@@ -80,6 +80,7 @@ return [
     'registration_email_subtitle' => 'WhatsApp verification is only available for UK numbers. Please enter your email to verify your account.',
     'registration_email_placeholder' => 'Enter your email address',
     'registration_email_required' => 'An email address is required for non-UK phone numbers.',
+    'registration_email_already_verified' => 'This email is already registered. Redirecting you to your account...',
     'registration_verify_title' => 'Enter Verification Code',
     'registration_whatsapp_confirm_title' => 'Check Your WhatsApp',
     'registration_whatsapp_confirm_subtitle' => 'We sent you a message on WhatsApp. Please reply YES to confirm, or NO to decline.',

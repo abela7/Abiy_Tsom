@@ -84,6 +84,7 @@ return [
     'registration_email_subtitle' => 'የዋትስአፕ ማረጋገጫ ለUK ቁጥሮች ብቻ ነው። እባክዎ ኢሜልዎን ያስገቡ።',
     'registration_email_placeholder' => 'ኢሜል አድራሻዎን ያስገቡ',
     'registration_email_required' => 'ለUK ውጪ ስልክ ቁጥሮች ኢሜል አድራሻ ያስፈልጋል።',
+    'registration_email_already_verified' => 'ይህ ኢሜል ቀድሞ ተመዝግቧል። ወደ መለያዎ እየተዘዋወሩ ነው...',
     'registration_verify_title' => 'የማረጋገጫ ኮድ ያስገቡ',
     'registration_whatsapp_confirm_title' => 'ዋትስአፕዎን ይመልከቱ',
     'registration_whatsapp_confirm_subtitle' => 'በዋትስአፕ መልእክት ልከንልዎታል። ለማረጋገጥ YES ብለው ይመልሱ፣ ወይም NO ብለው ይመልሱ።',

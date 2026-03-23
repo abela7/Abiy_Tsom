@@ -59,8 +59,32 @@ class RegistrationController extends Controller
             ], 422);
         }
 
-        // Reuse an existing unverified member with the same phone to avoid duplicates.
-        $member = Member::where('whatsapp_phone', $phone)
+        // If this email is already verified by another member, reject early.
+        $email = $validated['email'] ?? null;
+        if ($email) {
+            $existingVerified = Member::where('email', $email)
+                ->where(function ($q) {
+                    $q->whereNotNull('email_verified_at')
+                      ->orWhereNotNull('phone_verified_at');
+                })
+                ->first();
+
+            if ($existingVerified) {
+                return response()->json([
+                    'success' => false,
+                    'redirect_url' => $existingVerified->personalUrl('/home'),
+                    'message' => __('app.registration_email_already_verified'),
+                ], 409);
+            }
+        }
+
+        // Reuse an existing unverified member with the same phone or email to avoid duplicates.
+        $member = Member::where(function ($q) use ($phone, $email) {
+                $q->where('whatsapp_phone', $phone);
+                if ($email) {
+                    $q->orWhere('email', $email);
+                }
+            })
             ->whereNull('phone_verified_at')
             ->whereNull('email_verified_at')
             ->where('whatsapp_confirmation_status', '!=', 'confirmed')
@@ -70,9 +94,10 @@ class RegistrationController extends Controller
         if ($member) {
             $member->update([
                 'baptism_name' => $validated['baptism_name'],
+                'whatsapp_phone' => $phone,
                 'locale' => $validated['locale'] ?? app()->getLocale(),
                 'whatsapp_language' => $validated['locale'] ?? 'en',
-                'email' => $validated['email'] ?? null,
+                'email' => $email,
                 'whatsapp_confirmation_status' => $isUk ? 'pending' : 'none',
                 'whatsapp_confirmation_requested_at' => $isUk ? now() : null,
             ]);
@@ -84,7 +109,7 @@ class RegistrationController extends Controller
                 'theme' => 'sepia',
                 'whatsapp_phone' => $phone,
                 'whatsapp_language' => $validated['locale'] ?? 'en',
-                'email' => $validated['email'] ?? null,
+                'email' => $email,
                 'whatsapp_reminder_enabled' => false,
                 'whatsapp_confirmation_status' => $isUk ? 'pending' : 'none',
                 'whatsapp_confirmation_requested_at' => $isUk ? now() : null,
