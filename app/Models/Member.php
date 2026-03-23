@@ -43,6 +43,8 @@ class Member extends Model
         'email_verified_at',
         'verification_code',
         'verification_code_expires_at',
+        'email_reminder_enabled',
+        'email_last_sent_date',
     ];
 
     /** @var list<string> */
@@ -58,6 +60,8 @@ class Member extends Model
     {
         return [
             'passcode_enabled' => 'boolean',
+            'email_reminder_enabled' => 'boolean',
+            'email_last_sent_date' => 'date',
             'whatsapp_reminder_enabled' => 'boolean',
             'whatsapp_last_sent_date' => 'date',
             'whatsapp_confirmation_requested_at' => 'datetime',

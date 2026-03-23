@@ -15,3 +15,9 @@ Schedule::command('reminders:send-writer')
     ->dailyAt('17:00')
     ->timezone('Europe/London')
     ->withoutOverlapping();
+
+// Email reminders: 04:00 London = 07:00 Ethiopia (fixed time, no per-member choice).
+Schedule::command('reminders:send-email')
+    ->dailyAt('04:00')
+    ->timezone('Europe/London')
+    ->withoutOverlapping();

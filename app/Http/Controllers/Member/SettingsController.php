@@ -53,6 +53,7 @@ class SettingsController extends Controller
             'whatsapp_phone' => ['nullable', 'string', 'regex:/^\+447\d{9}$/'],
             'whatsapp_reminder_time' => ['nullable', 'date_format:H:i'],
             'whatsapp_language' => ['nullable', 'string', 'in:en,am'],
+            'email_reminder_enabled' => ['nullable', 'boolean'],
         ]);
 
         /** @var \App\Models\Member $member */
@@ -141,6 +142,11 @@ class SettingsController extends Controller
                     $updates['whatsapp_confirmation_responded_at'] = null;
                 }
             }
+        }
+
+        if ($request->exists('email_reminder_enabled')) {
+            $canEnable = $member->email && $member->email_verified_at;
+            $updates['email_reminder_enabled'] = $canEnable && $request->boolean('email_reminder_enabled');
         }
 
         if (! empty($updates)) {
