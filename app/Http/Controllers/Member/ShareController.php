@@ -205,7 +205,7 @@ class ShareController extends Controller
 
         $prevDayUrl = $prevDay ? route('share.day.public', ['daily' => $prevDay]) : null;
         $nextDayUrl = $nextDay ? route('share.day.public', ['daily' => $nextDay]) : null;
-        $commemorationsUrl = null;
+        $commemorationsUrl = "/commemorations/{$daily->day_number}-{$daily->id}";
 
         return view('member.day', compact(
             'member',
