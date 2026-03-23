@@ -280,6 +280,13 @@ return [
 
     // Settings
     'settings_title' => 'Settings',
+    'identity_confirm_title' => 'Confirm Your Identity',
+    'identity_confirm_subtitle' => 'Enter your phone number or email to access settings.',
+    'identity_confirm_button' => 'Confirm',
+    'identity_enter_phone' => 'Your phone number (e.g. +251...)',
+    'identity_enter_email' => 'Your email address',
+    'identity_confirmation_required' => 'Please confirm your identity first.',
+    'identity_confirmation_failed' => 'Phone number or email does not match.',
     'lang_en' => 'English',
     'lang_am' => 'አማርኛ',
     'custom_activities' => 'Custom Activities',

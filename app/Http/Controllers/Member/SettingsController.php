@@ -33,6 +33,41 @@ class SettingsController extends Controller
     }
 
     /**
+     * Confirm member identity — validates phone or email, sets session flag.
+     */
+    public function confirmIdentity(Request $request): JsonResponse
+    {
+        $request->validate([
+            'confirm_identity' => ['required', 'string'],
+        ]);
+
+        /** @var \App\Models\Member $member */
+        $member = $request->attributes->get('member');
+        $input = mb_strtolower(trim($request->input('confirm_identity')));
+
+        $matches = false;
+        if ($member->whatsapp_phone && mb_strtolower($member->whatsapp_phone) === $input) {
+            $matches = true;
+        }
+        if ($member->email && mb_strtolower($member->email) === $input) {
+            $matches = true;
+        }
+
+        if (! $matches) {
+            return response()->json([
+                'success' => false,
+                'message' => __('app.identity_confirmation_failed'),
+            ], 422);
+        }
+
+        \App\Http\Middleware\RequireMemberIdentityConfirmation::confirm();
+
+        return response()->json([
+            'success' => true,
+        ]);
+    }
+
+    /**
      * Update member preferences (theme, locale).
      */
     public function update(

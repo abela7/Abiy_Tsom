@@ -238,25 +238,33 @@ Route::middleware(['member', 'member.passcode'])->prefix('member')->group(functi
 
 // Cookie-auth member API routes (same controllers as /api/m/{token}/* routes)
 Route::middleware('api.member')->prefix('api/member')->group(function () {
+    // Low-risk: checklist, progress, fundraising, tour, banners
     Route::post('/checklist/toggle', [Member\ChecklistController::class, 'toggle']);
     Route::post('/checklist/custom-toggle', [Member\CustomActivityController::class, 'toggle']);
-    Route::post('/settings', [Member\SettingsController::class, 'update']);
-    Route::post('/custom-activities', [Member\CustomActivityController::class, 'store']);
-    Route::post('/custom-activities/update', [Member\CustomActivityController::class, 'update']);
-    Route::post('/custom-activities/delete', [Member\CustomActivityController::class, 'destroy']);
     Route::get('/progress/data', [Member\ProgressController::class, 'data']);
-    Route::get('/data/export', [Member\DataController::class, 'export']);
-    Route::post('/data/import', [Member\DataController::class, 'import']);
-    Route::post('/data/clear', [Member\DataController::class, 'clear']);
-    Route::post('/telegram-link', [Member\SettingsController::class, 'generateTelegramLink']);
-    Route::post('/telegram-unlink', [Member\SettingsController::class, 'unlinkTelegram']);
     Route::get('/fundraising/popup', [Member\FundraisingController::class, 'popup']);
     Route::post('/fundraising/snooze', [Member\FundraisingController::class, 'snooze']);
     Route::post('/fundraising/interested', [Member\FundraisingController::class, 'interested']);
     Route::post('/banner/{banner}/respond', [Member\BannerController::class, 'respond']);
     Route::post('/tour/complete', [Member\TourController::class, 'complete']);
     Route::post('/tour/reset', [Member\TourController::class, 'reset']);
-    Route::post('/account/delete', [Member\SettingsController::class, 'deleteAccount']);
+
+    // Identity confirmation endpoint (no middleware — this IS the confirmation)
+    Route::post('/confirm-identity', [Member\SettingsController::class, 'confirmIdentity']);
+
+    // Sensitive: require identity confirmation
+    Route::middleware('member.confirm_identity')->group(function () {
+        Route::post('/settings', [Member\SettingsController::class, 'update']);
+        Route::post('/custom-activities', [Member\CustomActivityController::class, 'store']);
+        Route::post('/custom-activities/update', [Member\CustomActivityController::class, 'update']);
+        Route::post('/custom-activities/delete', [Member\CustomActivityController::class, 'destroy']);
+        Route::get('/data/export', [Member\DataController::class, 'export']);
+        Route::post('/data/import', [Member\DataController::class, 'import']);
+        Route::post('/data/clear', [Member\DataController::class, 'clear']);
+        Route::post('/telegram-link', [Member\SettingsController::class, 'generateTelegramLink']);
+        Route::post('/telegram-unlink', [Member\SettingsController::class, 'unlinkTelegram']);
+        Route::post('/account/delete', [Member\SettingsController::class, 'deleteAccount']);
+    });
 });
 
 /*

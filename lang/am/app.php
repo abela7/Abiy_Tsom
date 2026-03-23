@@ -283,6 +283,13 @@ return [
 
     // Settings
     'settings_title' => 'ቅንብሮች',
+    'identity_confirm_title' => 'ማንነትዎን ያረጋግጡ',
+    'identity_confirm_subtitle' => 'ቅንብሮችን ለመድረስ ስልክ ቁጥርዎን ወይም ኢሜልዎን ያስገቡ።',
+    'identity_confirm_button' => 'አረጋግጥ',
+    'identity_enter_phone' => 'ስልክ ቁጥርዎ (ለምሳሌ +251...)',
+    'identity_enter_email' => 'የኢሜል አድራሻዎ',
+    'identity_confirmation_required' => 'እባክዎ መጀመሪያ ማንነትዎን ያረጋግጡ።',
+    'identity_confirmation_failed' => 'ስልክ ቁጥር ወይም ኢሜል አልተዛመደም።',
     'lang_en' => 'እንግሊዝኛ',
     'lang_am' => 'አማርኛ',
     'custom_activities' => 'ብጁ እንቅስቃሴዎች',
