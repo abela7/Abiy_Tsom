@@ -311,7 +311,7 @@ class HomeController extends Controller
      */
     public function showDay(
         Request $request,
-        int $dayNumber,
+        string $dayNumber,
         DailyContent $daily,
         EthiopianCalendarService $ethCalendar
     ): View|RedirectResponse {
@@ -321,7 +321,7 @@ class HomeController extends Controller
 
         $member = $request->attributes->get('member');
 
-        if ($dayNumber !== (int) $daily->day_number) {
+        if ((int) $dayNumber !== (int) $daily->day_number) {
             return redirect($daily->memberDayUrl($member?->token));
         }
 
@@ -347,7 +347,7 @@ class HomeController extends Controller
      */
     public function showCommemorations(
         Request $request,
-        int $dayNumber,
+        string $dayNumber,
         DailyContent $daily,
         EthiopianCalendarService $ethCalendar
     ): View|RedirectResponse {
@@ -357,7 +357,7 @@ class HomeController extends Controller
 
         $member = $request->attributes->get('member');
 
-        if ($dayNumber !== (int) $daily->day_number) {
+        if ((int) $dayNumber !== (int) $daily->day_number) {
             return redirect($daily->memberCommemorationsUrl($member?->token));
         }
 

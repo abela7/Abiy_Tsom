@@ -22,7 +22,7 @@ class PublicContentController extends Controller
 {
     public function showDay(
         Request $request,
-        int $dayNumber,
+        string $dayNumber,
         DailyContent $daily,
         EthiopianCalendarService $ethCalendar
     ): View|RedirectResponse {
@@ -30,7 +30,7 @@ class PublicContentController extends Controller
             abort(404);
         }
 
-        if ($dayNumber !== (int) $daily->day_number) {
+        if ((int) $dayNumber !== (int) $daily->day_number) {
             return redirect("/day/{$daily->day_number}-{$daily->id}");
         }
 
@@ -53,7 +53,7 @@ class PublicContentController extends Controller
 
     public function commemorations(
         Request $request,
-        int $dayNumber,
+        string $dayNumber,
         DailyContent $daily,
         EthiopianCalendarService $ethCalendar
     ): View|RedirectResponse {
@@ -61,7 +61,7 @@ class PublicContentController extends Controller
             abort(404);
         }
 
-        if ($dayNumber !== (int) $daily->day_number) {
+        if ((int) $dayNumber !== (int) $daily->day_number) {
             return redirect("/day/{$daily->day_number}-{$daily->id}/commemorations");
         }
 
