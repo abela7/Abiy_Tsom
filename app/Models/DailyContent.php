@@ -214,6 +214,28 @@ class DailyContent extends Model
     }
 
     /**
+     * Resolve a route value that may arrive as an ID or "dayNumber-id".
+     */
+    public static function resolveRouteValue(mixed $value): self
+    {
+        if ($value instanceof self) {
+            return $value;
+        }
+
+        $id = $value;
+
+        if (is_string($id)) {
+            $id = trim($id);
+
+            if (str_contains($id, '-')) {
+                $id = substr($id, (int) strrpos($id, '-') + 1);
+            }
+        }
+
+        return self::query()->findOrFail($id);
+    }
+
+    /**
      * Canonical day URL. When a member token is provided, returns the
      * token-in-URL path; otherwise returns the public path.
      */

@@ -111,13 +111,16 @@ Route::middleware('resolve.member.url')->prefix('m/{token}')->where(['token' => 
     Route::get('/home', [Member\HomeController::class, 'index'])->name('home');
     Route::get('/today-unavailable', [Member\HomeController::class, 'todayUnavailable'])->name('today-unavailable');
     Route::get('/calendar', [Member\HomeController::class, 'calendar'])->name('calendar');
-    Route::get('/day/{dayNumber}-{daily}', function (\Illuminate\Http\Request $request, string $dayNumber, string $daily) {
-        $model = \App\Models\DailyContent::findOrFail($daily);
+    // Keep $token in the closure signature so later args map to dayNumber and daily.
+    Route::get('/day/{dayNumber}-{daily}', function (\Illuminate\Http\Request $request, string $token, string $dayNumber, string $daily) {
+        $model = \App\Models\DailyContent::resolveRouteValue($daily);
+
         return app(Member\HomeController::class)->showDay($request, $dayNumber, $model, app(\App\Services\EthiopianCalendarService::class));
     })->whereNumber('dayNumber')->name('day.show');
     Route::get('/day/{daily}', [Member\HomeController::class, 'day'])->name('day');
-    Route::get('/day/{dayNumber}-{daily}/commemorations', function (\Illuminate\Http\Request $request, string $dayNumber, string $daily) {
-        $model = \App\Models\DailyContent::findOrFail($daily);
+    Route::get('/day/{dayNumber}-{daily}/commemorations', function (\Illuminate\Http\Request $request, string $token, string $dayNumber, string $daily) {
+        $model = \App\Models\DailyContent::resolveRouteValue($daily);
+
         return app(Member\HomeController::class)->showCommemorations($request, $dayNumber, $model, app(\App\Services\EthiopianCalendarService::class));
     })->whereNumber('dayNumber')->name('commemorations.show');
     Route::get('/day/{daily}/commemorations', [Member\HomeController::class, 'commemorations'])->name('commemorations');
@@ -195,11 +198,13 @@ Route::middleware(['member', 'member.passcode'])->prefix('member')->group(functi
     Route::get('/today-unavailable', [Member\HomeController::class, 'todayUnavailable'])->name('old.member.today-unavailable');
     Route::get('/calendar', [Member\HomeController::class, 'calendar'])->name('old.member.calendar');
     Route::get('/day/{dayNumber}-{daily}', function (\Illuminate\Http\Request $request, string $dayNumber, string $daily) {
-        $model = \App\Models\DailyContent::findOrFail($daily);
+        $model = \App\Models\DailyContent::resolveRouteValue($daily);
+
         return app(Member\HomeController::class)->showDay($request, $dayNumber, $model, app(\App\Services\EthiopianCalendarService::class));
     })->whereNumber('dayNumber')->name('old.member.day.show');
     Route::get('/day/{dayNumber}-{daily}/commemorations', function (\Illuminate\Http\Request $request, string $dayNumber, string $daily) {
-        $model = \App\Models\DailyContent::findOrFail($daily);
+        $model = \App\Models\DailyContent::resolveRouteValue($daily);
+
         return app(Member\HomeController::class)->showCommemorations($request, $dayNumber, $model, app(\App\Services\EthiopianCalendarService::class));
     })->whereNumber('dayNumber')->name('old.member.commemorations.show');
     Route::get('/week/{weeklyTheme}', [Member\HomeController::class, 'week'])->name('old.member.week');
