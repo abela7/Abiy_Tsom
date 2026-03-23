@@ -117,15 +117,31 @@ Route::middleware('resolve.member.url')->prefix('m/{token}')->where(['token' => 
 
         return app(Member\HomeController::class)->showDay($request, $dayNumber, $model, app(\App\Services\EthiopianCalendarService::class));
     })->whereNumber('dayNumber')->name('day.show');
-    Route::get('/day/{daily}', [Member\HomeController::class, 'day'])->name('day');
+    Route::get('/day/{daily}', function (\Illuminate\Http\Request $request, string $token, string $daily) {
+        $model = \App\Models\DailyContent::resolveRouteValue($daily);
+
+        return app(Member\HomeController::class)->day($request, $model);
+    })->name('day');
     Route::get('/day/{dayNumber}-{daily}/commemorations', function (\Illuminate\Http\Request $request, string $token, string $dayNumber, string $daily) {
         $model = \App\Models\DailyContent::resolveRouteValue($daily);
 
         return app(Member\HomeController::class)->showCommemorations($request, $dayNumber, $model, app(\App\Services\EthiopianCalendarService::class));
     })->whereNumber('dayNumber')->name('commemorations.show');
-    Route::get('/day/{daily}/commemorations', [Member\HomeController::class, 'commemorations'])->name('commemorations');
-    Route::get('/week/{weeklyTheme}', [Member\HomeController::class, 'week'])->name('week');
-    Route::get('/announcement/{announcement}', [Member\AnnouncementController::class, 'show'])->name('announcement.show');
+    Route::get('/day/{daily}/commemorations', function (\Illuminate\Http\Request $request, string $token, string $daily) {
+        $model = \App\Models\DailyContent::resolveRouteValue($daily);
+
+        return app(Member\HomeController::class)->commemorations($request, $model);
+    })->name('commemorations');
+    Route::get('/week/{weeklyTheme}', function (\Illuminate\Http\Request $request, string $token, string $weeklyTheme) {
+        $model = \App\Models\WeeklyTheme::findOrFail($weeklyTheme);
+
+        return app(Member\HomeController::class)->week($request, $model);
+    })->name('week');
+    Route::get('/announcement/{announcement}', function (\Illuminate\Http\Request $request, string $token, string $announcement) {
+        $model = \App\Models\Announcement::findOrFail($announcement);
+
+        return app(Member\AnnouncementController::class)->show($model);
+    })->name('announcement.show');
     Route::get('/progress', [Member\ProgressController::class, 'index'])->name('progress');
     Route::get('/settings', [Member\SettingsController::class, 'index'])->name('settings');
 });
@@ -147,7 +163,11 @@ Route::middleware('resolve.member.url')->prefix('api/m/{token}')->where(['token'
     Route::get('/fundraising/popup', [Member\FundraisingController::class, 'popup'])->name('fundraising.popup');
     Route::post('/fundraising/snooze', [Member\FundraisingController::class, 'snooze'])->name('fundraising.snooze');
     Route::post('/fundraising/interested', [Member\FundraisingController::class, 'interested'])->name('fundraising.interested');
-    Route::post('/banner/{banner}/respond', [Member\BannerController::class, 'respond'])->name('banner.respond');
+    Route::post('/banner/{banner}/respond', function (\Illuminate\Http\Request $request, string $token, string $banner) {
+        $model = \App\Models\Banner::findOrFail($banner);
+
+        return app(Member\BannerController::class)->respond($request, $model);
+    })->name('banner.respond');
     Route::post('/tour/complete', [Member\TourController::class, 'complete'])->name('tour.complete');
     Route::post('/tour/reset', [Member\TourController::class, 'reset'])->name('tour.reset');
     Route::post('/account/delete', [Member\SettingsController::class, 'deleteAccount'])->name('account.delete');
