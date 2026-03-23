@@ -10,6 +10,7 @@ use App\Services\VerificationService;
 use App\Services\WhatsAppReminderConfirmationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 /**
@@ -85,31 +86,57 @@ class RegistrationController extends Controller
             // Send "Reply YES to confirm" on WhatsApp.
             $promptSent = $this->confirmation->sendOptInPrompt($member);
 
+            Log::info('[Registration] UK WhatsApp prompt attempt', [
+                'member_id' => $member->id,
+                'phone' => $phone,
+                'prompt_sent' => $promptSent,
+            ]);
+
+            if (! $promptSent) {
+                // Clean up the member record — don't leave orphaned pending members.
+                $member->delete();
+
+                return response()->json([
+                    'success' => false,
+                    'message' => __('app.verification_code_send_failed'),
+                ], 502);
+            }
+
             return response()->json([
                 'success' => true,
                 'verification_pending' => true,
                 'channel' => 'whatsapp',
-                'code_sent' => $promptSent,
+                'code_sent' => true,
                 'member_phone' => maskPhone($phone),
-                'message' => $promptSent
-                    ? __('app.registration_whatsapp_prompt_sent')
-                    : __('app.verification_code_send_failed'),
+                'message' => __('app.registration_whatsapp_prompt_sent'),
             ]);
         }
 
         // Non-UK: send email verification code.
         $codeSent = $this->verification->sendCode($member);
 
+        Log::info('[Registration] Non-UK email code attempt', [
+            'member_id' => $member->id,
+            'code_sent' => $codeSent,
+        ]);
+
+        if (! $codeSent) {
+            $member->delete();
+
+            return response()->json([
+                'success' => false,
+                'message' => __('app.verification_code_send_failed'),
+            ], 502);
+        }
+
         return response()->json([
             'success' => true,
             'verification_pending' => true,
             'channel' => 'email',
-            'code_sent' => $codeSent,
+            'code_sent' => true,
             'member_phone' => maskPhone($phone),
             'member_email' => $validated['email'] ?? null,
-            'message' => $codeSent
-                ? __('app.verification_code_sent')
-                : __('app.verification_code_send_failed'),
+            'message' => __('app.verification_code_sent'),
         ]);
     }
 
