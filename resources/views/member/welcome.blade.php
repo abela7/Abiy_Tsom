@@ -440,12 +440,6 @@
         </div>
     </div>
 
-    {{-- Language switcher --}}
-    <div class="mt-6 flex items-center justify-center gap-2 text-sm">
-        <span class="text-muted-text">{{ __('app.language') }}:</span>
-        <button @click="window.location.href = '{{ request()->fullUrlWithQuery(['lang' => 'en']) }}'" class="px-3 py-1.5 rounded-lg transition {{ app()->getLocale() === 'en' ? 'bg-accent text-on-accent font-semibold' : 'bg-muted text-muted-text hover:bg-muted/80' }}">{{ __('app.lang_en') }}</button>
-        <button @click="window.location.href = '{{ request()->fullUrlWithQuery(['lang' => 'am']) }}'" class="px-3 py-1.5 rounded-lg transition {{ app()->getLocale() === 'am' ? 'bg-accent text-on-accent font-semibold' : 'bg-muted text-muted-text hover:bg-muted/80' }}">{{ __('app.lang_am') }}</button>
-    </div>
 
     <p class="text-center text-xs text-muted-text mt-6">{{ __('app.footer_branding', ['name' => __('app.app_name')]) }}</p>
 </div>
