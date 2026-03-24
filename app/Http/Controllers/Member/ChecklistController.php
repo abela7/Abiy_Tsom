@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
 use App\Models\Activity;
+use App\Models\MemberActivityLog;
 use App\Models\DailyContent;
 use App\Models\MemberChecklist;
 use Illuminate\Http\JsonResponse;
@@ -50,6 +51,8 @@ class ChecklistController extends Controller
             ],
             ['completed' => $request->boolean('completed')]
         );
+
+        MemberActivityLog::log($member, 'checklist_toggle', 'Checklist item toggled', $request);
 
         return response()->json([
             'success' => true,

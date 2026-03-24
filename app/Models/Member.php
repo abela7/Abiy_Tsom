@@ -119,6 +119,11 @@ class Member extends Model
         return $this->hasMany(MemberSession::class);
     }
 
+    public function activityLogs(): HasMany
+    {
+        return $this->hasMany(MemberActivityLog::class);
+    }
+
     public function reminderLinkOpens(): HasMany
     {
         return $this->hasMany(MemberReminderOpen::class);

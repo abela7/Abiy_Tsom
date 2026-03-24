@@ -78,8 +78,7 @@ class MembersController extends Controller
         $telegramBotUsername = ltrim((string) config('services.telegram.bot_username', ''), '@');
         $telegramMemberLinks = (array) session('telegram_member_links', []);
         $membersQuery = Member::with(['sessions' => function ($q) {
-            $q->whereNull('revoked_at')
-                ->orderByDesc('last_used_at')
+            $q->orderByDesc('last_used_at')
                 ->limit(1);
         }]);
 
@@ -228,6 +227,12 @@ class MembersController extends Controller
         $totalCustomChecklists = $member->customChecklists()->where('completed', true)->count();
         $customActivities = $member->customActivities()->orderBy('sort_order')->get();
 
+        // Activity logs (latest 100)
+        $activityLogs = $member->activityLogs()
+            ->orderByDesc('created_at')
+            ->limit(100)
+            ->get();
+
         // Fundraising responses
         $fundraisingResponses = [];
         if (class_exists(\App\Models\MemberFundraisingResponse::class)) {
@@ -244,6 +249,7 @@ class MembersController extends Controller
             'totalChecklists',
             'totalCustomChecklists',
             'customActivities',
+            'activityLogs',
             'fundraisingResponses'
         ));
     }

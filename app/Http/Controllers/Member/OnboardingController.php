@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Member;
 use App\Http\Controllers\Controller;
 use App\Models\LentSeason;
 use App\Models\Member;
+use App\Models\MemberActivityLog;
 use App\Services\MemberSessionService;
 use App\Services\WhatsAppReminderConfirmationService;
 use Illuminate\Http\JsonResponse;
@@ -118,6 +119,8 @@ class OnboardingController extends Controller
                 $member->update(['referred_by' => $referrer->id]);
             }
         }
+
+        MemberActivityLog::log($member, 'register', 'New member registered (cookie)', $request);
 
         // Bind and persist this browser as the trusted member device.
         if (! $this->sessions->establishSession($member, $request)) {
@@ -232,6 +235,8 @@ class OnboardingController extends Controller
 
             return redirect($fallback ?? '/');
         }
+
+        MemberActivityLog::log($member, 'login', 'Accessed via token link', $request);
 
         session()->forget("member_unlocked_{$member->id}");
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
+use App\Models\MemberActivityLog;
 use App\Models\TelegramAccessToken;
 use App\Services\MemberSessionService;
 use App\Services\TelegramAuthService;
@@ -196,6 +197,8 @@ class SettingsController extends Controller
             $member->update($updates);
         }
 
+        MemberActivityLog::log($member, 'settings_update', 'Settings updated', $request);
+
         $freshMember = $member->fresh();
         $pending = $freshMember?->whatsapp_confirmation_status === 'pending';
         $promptSent = true;
@@ -276,6 +279,8 @@ class SettingsController extends Controller
         $member = $request->attributes->get('member');
 
         try {
+            MemberActivityLog::log($member, 'account_delete', 'Account deleted', $request);
+
             DB::transaction(function () use ($member, $sessionService): void {
                 TelegramAccessToken::query()
                     ->where('actor_type', get_class($member))

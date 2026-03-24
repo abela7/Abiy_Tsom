@@ -80,12 +80,20 @@
                     <span class="text-xs text-muted-text font-medium">Theme</span>
                     <span class="text-sm text-secondary capitalize">{{ $member->theme ?? '—' }}</span>
                 </div>
+                @if($member->email)
                 <div class="flex justify-between items-center py-1.5 border-b border-border/50">
-                    <span class="text-xs text-muted-text font-medium">Passcode</span>
-                    @if($member->passcode_enabled)
-                        <span class="px-2 py-0.5 rounded bg-success/10 text-success text-[10px] font-bold">Enabled</span>
+                    <span class="text-xs text-muted-text font-medium">Email</span>
+                    <span class="text-sm font-mono text-primary">{{ $member->email }}</span>
+                </div>
+                @endif
+                <div class="flex justify-between items-center py-1.5 border-b border-border/50">
+                    <span class="text-xs text-muted-text font-medium">Verified</span>
+                    @if($member->phone_verified_at)
+                        <span class="px-2 py-0.5 rounded bg-success/10 text-success text-[10px] font-bold">Phone ✓ {{ $member->phone_verified_at->format('d M') }}</span>
+                    @elseif($member->email_verified_at)
+                        <span class="px-2 py-0.5 rounded bg-blue-500/10 text-blue-500 text-[10px] font-bold">Email ✓ {{ $member->email_verified_at->format('d M') }}</span>
                     @else
-                        <span class="px-2 py-0.5 rounded bg-muted text-muted-text text-[10px] font-bold">Off</span>
+                        <span class="px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 text-[10px] font-bold">Not verified</span>
                     @endif
                 </div>
                 <div class="flex justify-between items-center py-1.5 border-b border-border/50">
@@ -294,6 +302,84 @@
                     </tr>
                     @empty
                     <tr><td colspan="6" class="px-4 py-8 text-center text-muted-text text-sm">No sessions</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {{-- ───────── Activity Log ───────── --}}
+    <div class="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
+        <div class="px-5 py-3 border-b border-border bg-muted/30">
+            <h2 class="text-sm font-bold text-primary flex items-center gap-2">
+                <svg class="w-4 h-4 text-muted-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Activity Log
+                <span class="text-xs font-normal text-muted-text">({{ $activityLogs->count() }})</span>
+            </h2>
+        </div>
+        <div class="overflow-x-auto max-h-96 overflow-y-auto">
+            <table class="w-full text-sm">
+                <thead class="sticky top-0 bg-muted/60">
+                    <tr class="border-b border-border">
+                        <th class="text-left px-4 py-2 text-[10px] font-bold text-muted-text uppercase tracking-wider">Time</th>
+                        <th class="text-left px-4 py-2 text-[10px] font-bold text-muted-text uppercase tracking-wider">Action</th>
+                        <th class="text-left px-4 py-2 text-[10px] font-bold text-muted-text uppercase tracking-wider">Details</th>
+                        <th class="text-left px-4 py-2 text-[10px] font-bold text-muted-text uppercase tracking-wider">IP</th>
+                        <th class="text-left px-4 py-2 text-[10px] font-bold text-muted-text uppercase tracking-wider">Device</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-border/50">
+                    @forelse($activityLogs as $log)
+                    <tr class="hover:bg-muted/20">
+                        <td class="px-4 py-2.5 text-xs text-muted-text whitespace-nowrap">
+                            <span class="font-medium text-secondary">{{ $log->created_at->diffForHumans() }}</span>
+                            <span class="text-[10px] block text-muted-text/60">{{ $log->created_at->format('d M, H:i') }}</span>
+                        </td>
+                        <td class="px-4 py-2.5">
+                            @php
+                                $actionColors = [
+                                    'login' => 'bg-success/10 text-success',
+                                    'register' => 'bg-blue-500/10 text-blue-500',
+                                    'verify' => 'bg-green-500/10 text-green-600',
+                                    'page_view' => 'bg-muted text-secondary',
+                                    'settings_update' => 'bg-amber-500/10 text-amber-600',
+                                    'checklist_toggle' => 'bg-accent/10 text-accent',
+                                    'account_delete' => 'bg-red-500/10 text-red-500',
+                                ];
+                            @endphp
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold {{ $actionColors[$log->action] ?? 'bg-muted text-muted-text' }}">
+                                {{ str_replace('_', ' ', $log->action) }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-2.5 text-xs text-secondary max-w-[250px] truncate" title="{{ $log->description }}">
+                            {{ $log->description ?? '—' }}
+                        </td>
+                        <td class="px-4 py-2.5 text-[11px] text-muted-text font-mono">{{ $log->ip_address ?? '—' }}</td>
+                        <td class="px-4 py-2.5 text-[11px] text-muted-text max-w-[200px] truncate" title="{{ $log->user_agent }}">
+                            @if($log->user_agent)
+                                @php
+                                    $ua = $log->user_agent;
+                                    $browser = 'Unknown';
+                                    if (str_contains($ua, 'WhatsApp')) $browser = 'WhatsApp';
+                                    elseif (str_contains($ua, 'Chrome') && !str_contains($ua, 'Edg')) $browser = 'Chrome';
+                                    elseif (str_contains($ua, 'Safari') && !str_contains($ua, 'Chrome')) $browser = 'Safari';
+                                    elseif (str_contains($ua, 'Firefox')) $browser = 'Firefox';
+                                    elseif (str_contains($ua, 'Edg')) $browser = 'Edge';
+
+                                    $os = '';
+                                    if (str_contains($ua, 'iPhone') || str_contains($ua, 'iPad')) $os = 'iOS';
+                                    elseif (str_contains($ua, 'Android')) $os = 'Android';
+                                    elseif (str_contains($ua, 'Windows')) $os = 'Win';
+                                    elseif (str_contains($ua, 'Mac OS')) $os = 'Mac';
+                                @endphp
+                                {{ $browser }}{{ $os ? " / $os" : '' }}
+                            @else
+                                —
+                            @endif
+                        </td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="5" class="px-4 py-8 text-center text-muted-text text-sm">No activity recorded yet</td></tr>
                     @endforelse
                 </tbody>
             </table>

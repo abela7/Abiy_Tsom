@@ -11,6 +11,7 @@ use App\Services\WhatsAppReminderConfirmationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use App\Models\MemberActivityLog;
 use Illuminate\Support\Str;
 
 /**
@@ -125,6 +126,8 @@ class RegistrationController extends Controller
             }
         }
 
+        MemberActivityLog::log($member, 'register', 'New member registered', $request);
+
         if ($isUk) {
             // Send "Reply YES to confirm" on WhatsApp.
             $promptSent = $this->confirmation->sendOptInPrompt($member);
@@ -219,6 +222,8 @@ class RegistrationController extends Controller
         ]);
 
         $this->verification->clearCode($member);
+
+        MemberActivityLog::log($member, 'verify', 'Identity verified', $request);
 
         return response()->json([
             'success' => true,
@@ -441,6 +446,8 @@ class RegistrationController extends Controller
         }
 
         $this->verification->clearCode($member);
+
+        MemberActivityLog::log($member, 'login', 'Logged in via email verification', $request);
 
         return response()->json([
             'success' => true,

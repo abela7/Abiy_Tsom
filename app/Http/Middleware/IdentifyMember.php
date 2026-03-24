@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Models\Member;
-use App\Models\MemberSession;
+use App\Models\MemberActivityLog;
 use App\Services\MemberSessionService;
 use Closure;
 use Illuminate\Http\Request;
@@ -28,8 +28,8 @@ class IdentifyMember
             $request->attributes->set('member', $member);
             view()->share('currentMember', $member);
 
-            // Track activity (IP, last active, user agent)
-            $this->trackActivity($member, $request);
+            // Log page view (throttled)
+            $this->logPageView($member, $request);
 
             $urlLang = $request->query('lang');
             $locale = in_array($urlLang, ['en', 'am'], true)
@@ -59,36 +59,22 @@ class IdentifyMember
         return $next($request);
     }
 
-    private function trackActivity(Member $member, Request $request): void
+    private function logPageView(Member $member, Request $request): void
     {
-        $ip = (string) $request->ip();
-        $userAgent = $request->userAgent();
-        $deviceHash = hash('sha256', ($member->token ?? $member->id) . '|' . $ip);
+        if (! $request->isMethod('GET') || $request->is('api/*')) {
+            return;
+        }
 
-        $session = MemberSession::where('member_id', $member->id)
-            ->where('device_hash', $deviceHash)
-            ->whereNull('revoked_at')
-            ->first();
+        $path = $request->path();
 
-        if ($session) {
-            if ($session->last_used_at && $session->last_used_at->diffInSeconds(now()) < 60) {
-                return;
-            }
-            $session->forceFill([
-                'last_used_at' => now(),
-                'ip_address' => $ip,
-                'user_agent' => $userAgent ? mb_substr($userAgent, 0, 512) : null,
-            ])->save();
-        } else {
-            MemberSession::create([
-                'member_id' => $member->id,
-                'token_hash' => hash('sha256', $member->token ?? ''),
-                'device_hash' => $deviceHash,
-                'ip_address' => $ip,
-                'user_agent' => $userAgent ? mb_substr($userAgent, 0, 512) : null,
-                'last_used_at' => now(),
-                'expires_at' => now()->addDays(120),
-            ]);
+        $recentExists = MemberActivityLog::where('member_id', $member->id)
+            ->where('action', 'page_view')
+            ->where('url', 'like', '%' . $path)
+            ->where('created_at', '>=', now()->subMinutes(5))
+            ->exists();
+
+        if (! $recentExists) {
+            MemberActivityLog::log($member, 'page_view', $path, $request);
         }
     }
 }

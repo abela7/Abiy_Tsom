@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Models\Member;
+use App\Models\MemberActivityLog;
 use App\Models\MemberSession;
 use App\Models\Translation;
 use Closure;
@@ -39,6 +40,9 @@ class ResolveMemberFromUrl
 
         // Track activity: create or update a session keyed by token + IP.
         $this->trackActivity($member, $request);
+
+        // Log page view (throttled — only if no log in last 5 minutes for same URL path)
+        $this->logPageView($member, $request);
 
         // Resolve locale from URL query param or member preference.
         $urlLang = $request->query('lang');
@@ -89,6 +93,27 @@ class ResolveMemberFromUrl
                 'last_used_at' => now(),
                 'expires_at' => now()->addDays(120),
             ]);
+        }
+    }
+
+    private function logPageView(Member $member, Request $request): void
+    {
+        // Only log GET page requests, skip API and asset requests
+        if (! $request->isMethod('GET') || $request->is('api/*')) {
+            return;
+        }
+
+        $path = $request->path();
+
+        // Throttle: skip if same member visited same path in the last 5 minutes
+        $recentExists = MemberActivityLog::where('member_id', $member->id)
+            ->where('action', 'page_view')
+            ->where('url', 'like', '%' . $path)
+            ->where('created_at', '>=', now()->subMinutes(5))
+            ->exists();
+
+        if (! $recentExists) {
+            MemberActivityLog::log($member, 'page_view', $path, $request);
         }
     }
 
