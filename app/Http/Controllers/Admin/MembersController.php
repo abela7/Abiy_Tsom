@@ -61,7 +61,10 @@ class MembersController extends Controller
             ->orderByDesc('count')
             ->get();
 
-        $passcodeEnabled = Member::where('passcode_enabled', true)->count();
+        $verifiedMembers = Member::where(function ($q) {
+            $q->whereNotNull('phone_verified_at')
+                ->orWhereNotNull('email_verified_at');
+        })->count();
         $tourCompletedCount = Member::whereNotNull('tour_completed_at')->count();
 
         $totalChecklistCompletions = MemberChecklist::where('completed', true)->count();
@@ -80,11 +83,12 @@ class MembersController extends Controller
                 ->limit(1);
         }]);
 
-        // Search by name or phone
+        // Search by name, phone, or email
         if ($searchQuery !== '') {
             $membersQuery->where(function ($q) use ($searchQuery) {
                 $q->where('baptism_name', 'like', '%'.$searchQuery.'%')
-                    ->orWhere('whatsapp_phone', 'like', '%'.$searchQuery.'%');
+                    ->orWhere('whatsapp_phone', 'like', '%'.$searchQuery.'%')
+                    ->orWhere('email', 'like', '%'.$searchQuery.'%');
             });
         }
 
@@ -167,7 +171,7 @@ class MembersController extends Controller
             'last30Days',
             'localeDistribution',
             'themeDistribution',
-            'passcodeEnabled',
+            'verifiedMembers',
             'tourCompletedCount',
             'totalChecklistCompletions',
             'totalCustomCompletions',

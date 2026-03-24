@@ -63,15 +63,15 @@
             <p class="text-[11px] text-muted-text font-medium mt-0.5">{{ __('app.engaged_members') }}</p>
         </div>
 
-        {{-- Passcode --}}
+        {{-- Verified --}}
         <div class="bg-card rounded-xl p-4 border border-border shadow-sm">
             <div class="flex items-center gap-2 mb-2">
                 <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
                 </div>
             </div>
-            <p class="text-2xl font-black text-primary tabular-nums">{{ number_format($passcodeEnabled) }}</p>
-            <p class="text-[11px] text-muted-text font-medium mt-0.5">{{ __('app.passcode_users') }}</p>
+            <p class="text-2xl font-black text-primary tabular-nums">{{ number_format($verifiedMembers) }}</p>
+            <p class="text-[11px] text-muted-text font-medium mt-0.5">Verified Members</p>
         </div>
 
         {{-- Tour completed --}}
@@ -267,7 +267,7 @@
                         <input type="hidden" name="{{ $k }}" value="{{ $v }}">
                     @endforeach
                     <svg class="w-4 h-4 text-muted-text absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                    <input type="text" name="q" value="{{ $searchQuery }}" placeholder="Search name or phone..."
+                    <input type="text" name="q" value="{{ $searchQuery }}" placeholder="Search name, phone or email..."
                            class="w-full pl-9 pr-3 py-2 rounded-lg text-xs border border-border bg-surface text-primary focus:ring-2 focus:ring-accent/30 focus:border-accent outline-none placeholder:text-muted-text/50">
                 </form>
 
@@ -440,7 +440,7 @@
                         <th class="text-left px-4 py-2.5 text-[11px] font-bold text-muted-text uppercase tracking-wider">{{ __('app.locale_label') }}</th>
                         <th class="text-left px-4 py-2.5 text-[11px] font-bold text-muted-text uppercase tracking-wider">{{ __('app.theme') }}</th>
                         <th class="text-left px-4 py-2.5 text-[11px] font-bold text-muted-text uppercase tracking-wider">{{ __('app.tour_column') }}</th>
-                        <th class="text-left px-4 py-2.5 text-[11px] font-bold text-muted-text uppercase tracking-wider">WhatsApp</th>
+                        <th class="text-left px-4 py-2.5 text-[11px] font-bold text-muted-text uppercase tracking-wider">Contact</th>
                         <th class="text-left px-4 py-2.5 text-[11px] font-bold text-muted-text uppercase tracking-wider">{{ __('app.registered_at') }}</th>
                         <th class="text-left px-4 py-2.5 text-[11px] font-bold text-muted-text uppercase tracking-wider">Last Active</th>
                         <th class="text-left px-4 py-2.5 text-[11px] font-bold text-muted-text uppercase tracking-wider">IP</th>
@@ -489,29 +489,42 @@
                             @endif
                         </td>
 
-                        {{-- WhatsApp --}}
+                        {{-- Contact --}}
                         <td class="px-4 py-3">
+                            {{-- WhatsApp status --}}
                             @if($member->whatsapp_confirmation_status === 'confirmed')
                                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-success/10 text-success text-[10px] font-bold">
                                     <span class="w-1.5 h-1.5 rounded-full bg-success animate-pulse"></span>
-                                    {{ __('app.active') }}
+                                    WA {{ __('app.active') }}
                                 </span>
                                 <div class="text-[10px] text-muted-text mt-1 font-mono">{{ $member->whatsapp_phone }} · {{ $member->whatsapp_reminder_time ? \Carbon\Carbon::parse($member->whatsapp_reminder_time)->format('H:i') : '—' }}</div>
                             @elseif($member->whatsapp_confirmation_status === 'pending')
                                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 text-[10px] font-bold">
                                     <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                                    {{ __('app.pending') }}
+                                    WA {{ __('app.pending') }}
                                 </span>
                                 <div class="text-[10px] text-muted-text mt-1 font-mono">{{ $member->whatsapp_phone ?? '—' }}</div>
                             @elseif($member->whatsapp_confirmation_status === 'rejected')
-                                <span class="px-2 py-0.5 rounded-md bg-red-500/10 text-red-500 text-[10px] font-bold">{{ __('app.rejected') }}</span>
+                                <span class="px-2 py-0.5 rounded-md bg-red-500/10 text-red-500 text-[10px] font-bold">WA {{ __('app.rejected') }}</span>
                             @elseif($member->whatsapp_non_uk_requested)
                                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 text-[10px] font-bold">
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                     Non-UK
                                 </span>
                                 <div class="text-[10px] text-muted-text mt-1 font-mono">{{ $member->whatsapp_phone ?? '—' }}</div>
-                            @else
+                            @endif
+                            {{-- Email --}}
+                            @if($member->email)
+                                <div class="mt-1 flex items-center gap-1">
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold {{ $member->email_verified_at ? 'bg-blue-500/10 text-blue-500' : 'bg-muted text-muted-text' }}">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                                        {{ $member->email_verified_at ? 'Email ✓' : 'Email' }}
+                                    </span>
+                                </div>
+                                <div class="text-[10px] text-muted-text mt-0.5 font-mono truncate max-w-[180px]" title="{{ $member->email }}">{{ $member->email }}</div>
+                            @endif
+                            {{-- No contact info at all --}}
+                            @if(!$member->whatsapp_phone && !$member->email && !in_array($member->whatsapp_confirmation_status, ['confirmed', 'pending', 'rejected']))
                                 <span class="text-muted-text/40 text-xs">—</span>
                             @endif
                         </td>
