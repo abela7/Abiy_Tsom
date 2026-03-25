@@ -90,38 +90,45 @@ class ResolveMemberFromUrl
         $userAgent = $request->userAgent();
         $deviceHash = hash('sha256', $member->token . '|' . $ip);
 
-        $tokenHash = hash('sha256', $member->token);
+        // Use a device-specific token_hash so each device gets its own unique row.
+        // This avoids the unique constraint violation when the same member
+        // visits from multiple devices/IPs.
+        $tokenHash = hash('sha256', $member->token . '|device|' . $deviceHash);
 
-        $session = MemberSession::where('token_hash', $tokenHash)
-            ->where('device_hash', $deviceHash)
-            ->whereNull('revoked_at')
-            ->first();
+        try {
+            $session = MemberSession::where('token_hash', $tokenHash)
+                ->whereNull('revoked_at')
+                ->first();
 
-        if ($session) {
-            // Throttle updates to once per minute to reduce DB writes.
-            if ($session->last_used_at && $session->last_used_at->diffInSeconds(now()) < 60) {
-                return;
-            }
-            $session->forceFill([
-                'last_used_at' => now(),
-                'ip_address' => $ip,
-                'user_agent' => $userAgent ? mb_substr($userAgent, 0, 512) : null,
-            ])->save();
-        } else {
-            MemberSession::updateOrCreate(
-                [
+            if ($session) {
+                // Throttle updates to once per minute to reduce DB writes.
+                if ($session->last_used_at && $session->last_used_at->diffInSeconds(now()) < 60) {
+                    return;
+                }
+                $session->forceFill([
+                    'last_used_at' => now(),
+                    'ip_address' => $ip,
+                    'user_agent' => $userAgent ? mb_substr($userAgent, 0, 512) : null,
+                ])->save();
+            } else {
+                MemberSession::create([
+                    'member_id' => $member->id,
                     'token_hash' => $tokenHash,
                     'device_hash' => $deviceHash,
-                ],
-                [
-                    'member_id' => $member->id,
                     'ip_address' => $ip,
                     'user_agent' => $userAgent ? mb_substr($userAgent, 0, 512) : null,
                     'last_used_at' => now(),
                     'expires_at' => now()->addDays(120),
-                    'revoked_at' => null,
-                ]
-            );
+                ]);
+            }
+        } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+            // Race condition — another request already created it. Just update.
+            MemberSession::where('token_hash', $tokenHash)
+                ->update([
+                    'last_used_at' => now(),
+                    'ip_address' => $ip,
+                    'user_agent' => $userAgent ? mb_substr($userAgent, 0, 512) : null,
+                ]);
         }
     }
 
