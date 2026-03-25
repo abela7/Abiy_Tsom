@@ -176,6 +176,9 @@ Route::middleware('resolve.member.url')->prefix('api/m/{token}')->where(['token'
     Route::post('/tour/complete', [Member\TourController::class, 'complete'])->name('tour.complete');
     Route::post('/tour/reset', [Member\TourController::class, 'reset'])->name('tour.reset');
 
+    // Low-risk preferences (locale, theme) — no identity confirmation needed
+    Route::post('/preferences', [Member\SettingsController::class, 'updatePreferences'])->name('preferences.update');
+
     // Identity confirmation (this IS the verification endpoint)
     Route::post('/confirm-identity', [Member\SettingsController::class, 'confirmIdentity'])->name('confirm-identity');
 
@@ -266,6 +269,9 @@ Route::middleware('api.member')->prefix('api/member')->group(function () {
     Route::post('/banner/{banner}/respond', [Member\BannerController::class, 'respond']);
     Route::post('/tour/complete', [Member\TourController::class, 'complete']);
     Route::post('/tour/reset', [Member\TourController::class, 'reset']);
+
+    // Low-risk preferences (locale, theme) — no identity confirmation needed
+    Route::post('/preferences', [Member\SettingsController::class, 'updatePreferences']);
 
     // Identity confirmation
     Route::post('/confirm-identity', [Member\SettingsController::class, 'confirmIdentity']);

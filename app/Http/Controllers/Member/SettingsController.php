@@ -85,6 +85,35 @@ class SettingsController extends Controller
     }
 
     /**
+     * Update low-risk preferences (locale, theme) — no identity confirmation needed.
+     */
+    public function updatePreferences(Request $request): JsonResponse
+    {
+        $request->validate([
+            'locale' => ['nullable', 'string', 'in:en,am'],
+            'theme' => ['nullable', 'string', 'in:light,dark,sepia'],
+        ]);
+
+        /** @var \App\Models\Member $member */
+        $member = $request->attributes->get('member');
+
+        $updates = [];
+        if ($request->filled('locale')) {
+            $updates['locale'] = $request->input('locale');
+            session(['locale' => $request->input('locale')]);
+        }
+        if ($request->filled('theme')) {
+            $updates['theme'] = $request->input('theme');
+        }
+
+        if ($updates) {
+            $member->forceFill($updates)->save();
+        }
+
+        return response()->json(['success' => true, 'member' => $member->fresh()]);
+    }
+
+    /**
      * Update member preferences (theme, locale).
      */
     public function update(

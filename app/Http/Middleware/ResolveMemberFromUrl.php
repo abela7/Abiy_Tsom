@@ -50,11 +50,20 @@ class ResolveMemberFromUrl
         // Log page view (throttled — only if no log in last 5 minutes for same URL path)
         $this->logPageView($member, $request);
 
-        // Resolve locale from URL query param or member preference.
+        // Resolve locale: URL ?lang= param > session > member DB preference.
+        // SetLocale middleware already ran and set locale from session.
+        // Only override if there's an explicit ?lang= param or if the
+        // session has no locale and the member has a DB preference.
         $urlLang = $request->query('lang');
-        $locale = in_array($urlLang, ['en', 'am'], true)
-            ? $urlLang
-            : ($member->locale && in_array($member->locale, ['en', 'am'], true) ? $member->locale : null);
+        if (in_array($urlLang, ['en', 'am'], true)) {
+            $locale = $urlLang;
+            session(['locale' => $locale]);
+        } elseif (! session()->has('locale') && $member->locale && in_array($member->locale, ['en', 'am'], true)) {
+            $locale = $member->locale;
+            session(['locale' => $locale]);
+        } else {
+            $locale = null; // SetLocale already handled it
+        }
 
         if ($locale) {
             app()->setLocale($locale);

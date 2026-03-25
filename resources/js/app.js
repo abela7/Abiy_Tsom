@@ -32,7 +32,7 @@ document.addEventListener('alpine:init', () => {
             this.theme = order[(i + 1) % 3];
             localStorage.setItem('theme', this.theme);
             this.applyThemeClasses();
-            if (window.AbiyTsom?.api) { AbiyTsom.api('/api/member/settings', { theme: this.theme }); }
+            if (window.AbiyTsom?.api) { AbiyTsom.api('/api/member/preferences', { theme: this.theme }); }
         },
 
         setLocale(lang) {
@@ -43,7 +43,7 @@ document.addEventListener('alpine:init', () => {
                 window.location.href = url.toString();
             };
             if (window.AbiyTsom?.api) {
-                AbiyTsom.api('/api/member/settings', { locale: lang }).finally(reloadWithLang);
+                AbiyTsom.api('/api/member/preferences', { locale: lang }).finally(reloadWithLang);
             } else {
                 reloadWithLang();
             }

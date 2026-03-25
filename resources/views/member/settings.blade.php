@@ -1237,7 +1237,7 @@ function settingsPage() {
         },
         async setLocale(lang) {
             this.locale = lang;
-            await AbiyTsom.api('/api/member/settings', { locale: lang });
+            await AbiyTsom.api('/api/member/preferences', { locale: lang });
             window.location.replace(AbiyTsom.baseUrl + AbiyTsom.memberPath('/settings') + '?lang=' + lang);
         },
         async saveBaptismName() {
@@ -1279,7 +1279,7 @@ function settingsPage() {
             document.documentElement.classList.toggle('dark', t === 'dark');
             document.documentElement.classList.toggle('theme-sepia', t === 'sepia');
             window.dispatchEvent(new CustomEvent('theme-changed', { detail: { theme: t } }));
-            await AbiyTsom.api('/api/member/settings', { theme: t });
+            await AbiyTsom.api('/api/member/preferences', { theme: t });
         },
         async enablePasscode() {
             if (this.newPasscode.length < 4) return;
