@@ -93,8 +93,17 @@ class RequireMemberIdentityConfirmation
     {
         $input = mb_strtolower(trim($input));
 
-        if ($member->whatsapp_phone && mb_strtolower($member->whatsapp_phone) === $input) {
-            return true;
+        if ($member->whatsapp_phone) {
+            $storedPhone = mb_strtolower($member->whatsapp_phone);
+            // Exact match
+            if ($storedPhone === $input) {
+                return true;
+            }
+            // Normalize user input (handles 07..., +447..., 447..., etc.)
+            $normalizedInput = normalizeUkWhatsAppPhone($input);
+            if ($normalizedInput && mb_strtolower($normalizedInput) === $storedPhone) {
+                return true;
+            }
         }
 
         if ($member->email && mb_strtolower($member->email) === $input) {
