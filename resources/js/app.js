@@ -37,12 +37,15 @@ document.addEventListener('alpine:init', () => {
 
         setLocale(lang) {
             this.locale = lang;
+            const reloadWithLang = () => {
+                const url = new URL(window.location.href);
+                url.searchParams.set('lang', lang);
+                window.location.href = url.toString();
+            };
             if (window.AbiyTsom?.api) {
-                AbiyTsom.api('/api/member/settings', { locale: lang }).then(() => {
-                    window.location.reload();
-                });
+                AbiyTsom.api('/api/member/settings', { locale: lang }).finally(reloadWithLang);
             } else {
-                window.location.reload();
+                reloadWithLang();
             }
         }
     });
