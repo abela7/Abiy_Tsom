@@ -48,8 +48,16 @@ class SettingsController extends Controller
         $input = mb_strtolower(trim($request->input('confirm_identity')));
 
         $matches = false;
-        if ($member->whatsapp_phone && mb_strtolower($member->whatsapp_phone) === $input) {
-            $matches = true;
+        if ($member->whatsapp_phone) {
+            $storedPhone = mb_strtolower($member->whatsapp_phone);
+            if ($storedPhone === $input) {
+                $matches = true;
+            }
+            // Normalize user input (handles 07..., +447..., 447..., etc.)
+            $normalizedInput = normalizeUkWhatsAppPhone($input);
+            if ($normalizedInput && mb_strtolower($normalizedInput) === $storedPhone) {
+                $matches = true;
+            }
         }
         if ($member->email && mb_strtolower($member->email) === $input) {
             $matches = true;
