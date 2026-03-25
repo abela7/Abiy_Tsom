@@ -90,7 +90,9 @@ class ResolveMemberFromUrl
         $userAgent = $request->userAgent();
         $deviceHash = hash('sha256', $member->token . '|' . $ip);
 
-        $session = MemberSession::where('member_id', $member->id)
+        $tokenHash = hash('sha256', $member->token);
+
+        $session = MemberSession::where('token_hash', $tokenHash)
             ->where('device_hash', $deviceHash)
             ->whereNull('revoked_at')
             ->first();
@@ -106,15 +108,20 @@ class ResolveMemberFromUrl
                 'user_agent' => $userAgent ? mb_substr($userAgent, 0, 512) : null,
             ])->save();
         } else {
-            MemberSession::create([
-                'member_id' => $member->id,
-                'token_hash' => hash('sha256', $member->token),
-                'device_hash' => $deviceHash,
-                'ip_address' => $ip,
-                'user_agent' => $userAgent ? mb_substr($userAgent, 0, 512) : null,
-                'last_used_at' => now(),
-                'expires_at' => now()->addDays(120),
-            ]);
+            MemberSession::updateOrCreate(
+                [
+                    'token_hash' => $tokenHash,
+                    'device_hash' => $deviceHash,
+                ],
+                [
+                    'member_id' => $member->id,
+                    'ip_address' => $ip,
+                    'user_agent' => $userAgent ? mb_substr($userAgent, 0, 512) : null,
+                    'last_used_at' => now(),
+                    'expires_at' => now()->addDays(120),
+                    'revoked_at' => null,
+                ]
+            );
         }
     }
 
