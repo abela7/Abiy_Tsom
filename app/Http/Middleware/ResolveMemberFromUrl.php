@@ -8,6 +8,7 @@ use App\Models\Member;
 use App\Models\MemberActivityLog;
 use App\Models\MemberSession;
 use App\Models\Translation;
+use App\Services\MemberSessionService;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -38,6 +39,11 @@ class ResolveMemberFromUrl
         $request->attributes->set('member', $member);
         view()->share('currentMember', $member);
 
+        // Establish a cookie-based session so the member is recognised
+        // when they later visit "/" (the root / landing page) without
+        // the token in the URL.
+        $this->ensureCookieSession($member, $request);
+
         // Track activity: create or update a session keyed by token + IP.
         $this->trackActivity($member, $request);
 
@@ -56,6 +62,22 @@ class ResolveMemberFromUrl
         }
 
         return $next($request);
+    }
+
+    /**
+     * If the visitor doesn't already have a valid cookie session,
+     * establish one so "/" redirects to their home page.
+     */
+    private function ensureCookieSession(Member $member, Request $request): void
+    {
+        $sessionService = app(MemberSessionService::class);
+
+        // Already has a valid cookie session — nothing to do.
+        if ($sessionService->resolveMember($request)) {
+            return;
+        }
+
+        $sessionService->establishSession($member, $request);
     }
 
     /**
