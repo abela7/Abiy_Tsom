@@ -56,6 +56,17 @@ class PersistentLoginService
         return $this->normalizePayload($payload) ? trim((string) $payload) : null;
     }
 
+    public function findTrustedDeviceFor(Member $member, Request $request): ?MemberPersistentDevice
+    {
+        return MemberPersistentDevice::with('member')
+            ->where('member_id', $member->id)
+            ->where('device_hash', hash('sha256', $this->deviceFingerprint($request)))
+            ->whereNull('revoked_at')
+            ->where('expires_at', '>', now())
+            ->latest('last_used_at')
+            ->first();
+    }
+
     public function issue(Member $member, Request $request, ?MemberPersistentDevice $replace = null): string
     {
         if ($replace) {

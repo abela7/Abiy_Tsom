@@ -6,6 +6,8 @@ namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
 use App\Models\Member;
+use App\Services\MemberSessionService;
+use App\Services\PersistentLoginService;
 use App\Services\VerificationService;
 use App\Services\WhatsAppReminderConfirmationService;
 use Illuminate\Http\JsonResponse;
@@ -25,6 +27,8 @@ class RegistrationController extends Controller
     public function __construct(
         private readonly VerificationService $verification,
         private readonly WhatsAppReminderConfirmationService $confirmation,
+        private readonly MemberSessionService $sessions,
+        private readonly PersistentLoginService $persistentLogins,
     ) {}
 
     /**
@@ -224,6 +228,7 @@ class RegistrationController extends Controller
         $this->verification->clearCode($member);
 
         MemberActivityLog::log($member, 'verify', 'Identity verified', $request);
+        $this->trustBrowser($member, $request);
 
         return response()->json([
             'success' => true,
@@ -249,6 +254,8 @@ class RegistrationController extends Controller
         }
 
         if ($member->whatsapp_confirmation_status === 'confirmed') {
+            $this->trustBrowser($member, $request);
+
             return response()->json([
                 'status' => 'confirmed',
                 'redirect_url' => $member->personalUrl('/home'),
@@ -265,6 +272,8 @@ class RegistrationController extends Controller
         $isVerified = $member->phone_verified_at !== null || $member->email_verified_at !== null;
 
         if ($isVerified) {
+            $this->trustBrowser($member, $request);
+
             return response()->json([
                 'status' => 'confirmed',
                 'redirect_url' => $member->personalUrl('/home'),
@@ -448,6 +457,7 @@ class RegistrationController extends Controller
         $this->verification->clearCode($member);
 
         MemberActivityLog::log($member, 'login', 'Logged in via email verification', $request);
+        $this->trustBrowser($member, $request);
 
         return response()->json([
             'success' => true,
@@ -480,6 +490,8 @@ class RegistrationController extends Controller
         }
 
         if ($member->whatsapp_confirmation_status === 'confirmed') {
+            $this->trustBrowser($member, $request);
+
             return response()->json([
                 'status' => 'confirmed',
                 'redirect_url' => $member->personalUrl('/home'),
@@ -501,5 +513,34 @@ class RegistrationController extends Controller
         }
 
         return $token;
+    }
+
+    private function trustBrowser(Member $member, Request $request): void
+    {
+        $this->sessions->establishSession($member, $request);
+
+        $persistentDevice = $this->persistentLogins->resolveFromRequest($request);
+        $persistentMatches = $persistentDevice !== null
+            && $persistentDevice->member !== null
+            && $persistentDevice->member->is($member);
+
+        if ($persistentMatches) {
+            $this->persistentLogins->touch(
+                $persistentDevice,
+                $request,
+                $this->persistentLogins->currentPayload($request)
+            );
+
+            return;
+        }
+
+        $sameBrowserDevice = $this->persistentLogins->findTrustedDeviceFor($member, $request);
+        if ($sameBrowserDevice) {
+            $this->persistentLogins->issue($member, $request, $sameBrowserDevice);
+
+            return;
+        }
+
+        $this->persistentLogins->issue($member, $request);
     }
 }

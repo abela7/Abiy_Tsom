@@ -41,8 +41,21 @@ class ResolveMemberFromUrl
         $persistentMatches = $persistentDevice !== null
             && $persistentDevice->member !== null
             && $persistentDevice->member->is($member);
+        $sameBrowserDevice = (! $sessionMatches && ! $persistentMatches)
+            ? $this->persistentLogins->findTrustedDeviceFor($member, $request)
+            : null;
+        $sameBrowserMatches = $sameBrowserDevice !== null;
+        $hasTrustedDevice = $member->persistentDevices()
+            ->whereNull('revoked_at')
+            ->where('expires_at', '>', now())
+            ->exists();
+        $autoTrustFirstBrowser = ! $sessionMatches
+            && ! $persistentMatches
+            && ! $sameBrowserMatches
+            && ! $hasTrustedDevice
+            && $member->whatsapp_confirmation_status === 'confirmed';
 
-        $fullAccess = $sessionMatches || $persistentMatches;
+        $fullAccess = $sessionMatches || $persistentMatches || $sameBrowserMatches || $autoTrustFirstBrowser;
         $guestAccess = ! $fullAccess;
         $persistentPayload = null;
 
@@ -57,6 +70,16 @@ class ResolveMemberFromUrl
 
         if ($persistentMatches && ! $sessionMatches) {
             $this->sessions->establishSession($member, $request);
+        }
+
+        if ($sameBrowserMatches) {
+            $this->sessions->establishSession($member, $request);
+            $persistentPayload = $this->persistentLogins->issue($member, $request, $sameBrowserDevice);
+        }
+
+        if ($autoTrustFirstBrowser) {
+            $this->sessions->establishSession($member, $request);
+            $persistentPayload = $this->persistentLogins->issue($member, $request);
         }
 
         if ($guestAccess && $request->is('api/m/*') && ! $request->routeIs('member.device.send-code', 'member.device.verify-code')) {
