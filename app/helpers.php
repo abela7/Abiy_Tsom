@@ -97,6 +97,10 @@ function memberUrl(string $path): string
     $member = request()->attributes->get('member');
 
     if ($member instanceof \App\Models\Member) {
+        if ((bool) request()->attributes->get('member_full_access', false)) {
+            return url('/member'.$path);
+        }
+
         return url('/m/'.$member->token.$path);
     }
 

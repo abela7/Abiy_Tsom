@@ -3,6 +3,7 @@
 @php
     $locale = app()->getLocale();
     $publicPreview = (bool) ($publicPreview ?? false);
+    $guestAccess = (bool) ($guestAccess ?? false);
     $backUrl = $backUrl ?? ($publicPreview ? route('home') : memberUrl('/calendar'));
     $weekName = $daily->weeklyTheme ? (localized($daily->weeklyTheme, 'name') ?? $daily->weeklyTheme->name_en ?? '-') : '';
     $dayTitle = localized($daily, 'day_title') ?? __('app.day_x', ['day' => $daily->day_number]);
@@ -16,6 +17,20 @@
     $shareDescription = __('app.share_day_description');
     // Use public share URL so social crawlers can read OG meta tags
     $shareUrl = route('share.day', $daily);
+    $memberTokenForLinks = $guestAccess ? ($currentMember->token ?? null) : null;
+    $prevDayHref = $prevDay
+        ? ($prevDayUrl ?? ($guestAccess
+            ? $prevDay->memberDayUrl($memberTokenForLinks)
+            : route('old.member.day.show', ['dayNumber' => $prevDay->day_number, 'daily' => $prevDay])))
+        : null;
+    $nextDayHref = $nextDay
+        ? ($nextDayUrl ?? ($guestAccess
+            ? $nextDay->memberDayUrl($memberTokenForLinks)
+            : route('old.member.day.show', ['dayNumber' => $nextDay->day_number, 'daily' => $nextDay])))
+        : null;
+    $commemorationsHref = $commemorationsUrl ?? ($guestAccess
+        ? $daily->memberCommemorationsUrl($memberTokenForLinks)
+        : route('old.member.commemorations.show', ['dayNumber' => $daily->day_number, 'daily' => $daily]));
 @endphp
 
 @section('title', $shareTitle . ' - ' . __('app.app_name'))
@@ -58,7 +73,7 @@
     {{-- Day title with prev/next navigation --}}
     <div class="flex items-center justify-between">
         @if($prevDay)
-        <a href="{{ $prevDayUrl ?? $prevDay->memberDayUrl($currentMember->token ?? null) }}" class="shrink-0 w-10 h-10 rounded-xl bg-muted hover:bg-border flex items-center justify-center text-muted-text hover:text-primary transition-all active:scale-95">
+        <a href="{{ $prevDayHref }}" class="shrink-0 w-10 h-10 rounded-xl bg-muted hover:bg-border flex items-center justify-center text-muted-text hover:text-primary transition-all active:scale-95">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
         </a>
         @else
@@ -73,7 +88,7 @@
         </div>
 
         @if($nextDay)
-        <a href="{{ $nextDayUrl ?? $nextDay->memberDayUrl($currentMember->token ?? null) }}" class="shrink-0 w-10 h-10 rounded-xl bg-muted hover:bg-border flex items-center justify-center text-muted-text hover:text-primary transition-all active:scale-95">
+        <a href="{{ $nextDayHref }}" class="shrink-0 w-10 h-10 rounded-xl bg-muted hover:bg-border flex items-center justify-center text-muted-text hover:text-primary transition-all active:scale-95">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </a>
         @else
@@ -97,7 +112,7 @@
 
         {{-- Commemorations carousel row --}}
         @if($slides->isNotEmpty() && (($commemorationsUrl ?? null) !== null || !($publicPreview ?? false)))
-        <a href="{{ $commemorationsUrl ?? $daily->memberCommemorationsUrl($currentMember->token ?? null) }}"
+        <a href="{{ $commemorationsHref }}"
            class="flex items-center gap-3 px-4 py-3 bg-accent/5 hover:bg-accent/10 active:scale-[0.98] transition-all group"
            x-data="{ current: 0, total: {{ $slides->count() }}, images: {{ $slides->map(fn($s) => $s['image'] ?? null)->toJson() }}, fallback: '{{ asset('images/Saints.png') }}' }"
            x-init="setInterval(() => current = (current + 1) % total, 3000)">
@@ -1799,7 +1814,7 @@
     @php
         $customChecklistCompleted = ($customChecklist ?? collect())->mapWithKeys(fn ($c) => [(string) $c->member_custom_activity_id => $c->completed])->all();
     @endphp
-    @if(!$publicPreview && ($activities->isNotEmpty() || ($customActivities ?? collect())->isNotEmpty() || $member))
+    @if(!$publicPreview && ! $guestAccess && ($activities->isNotEmpty() || ($customActivities ?? collect())->isNotEmpty() || $member))
     <div data-tour="day-checklist" class="rounded-2xl p-5 shadow-sm border-2 transition-all duration-300"
          x-data="{
              allDone: false,

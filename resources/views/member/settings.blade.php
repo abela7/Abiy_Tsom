@@ -3,6 +3,51 @@
 @section('title', __('app.settings_title') . ' - ' . __('app.app_name'))
 
 @section('content')
+@php
+    $guestAccess = (bool) ($guestAccess ?? false);
+    $maskedWhatsApp = $member?->whatsapp_phone
+        ? mb_substr((string) $member->whatsapp_phone, 0, 4) . str_repeat('*', max(0, mb_strlen((string) $member->whatsapp_phone) - 8)) . mb_substr((string) $member->whatsapp_phone, -4)
+        : null;
+    $emailAtPos = $member?->email ? mb_strpos((string) $member->email, '@') : false;
+    $maskedEmail = ($member?->email && $emailAtPos !== false)
+        ? mb_substr((string) $member->email, 0, 3) . str_repeat('*', max(0, (int) $emailAtPos - 3)) . mb_substr((string) $member->email, (int) $emailAtPos)
+        : null;
+@endphp
+@if($guestAccess)
+<div class="px-4 pt-4 pb-10 space-y-4">
+    <h1 class="text-xl font-bold text-primary">{{ __('app.settings_title') }}</h1>
+
+    <div class="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
+        <div class="px-5 py-5">
+            <div class="w-12 h-12 rounded-2xl bg-amber-500/15 flex items-center justify-center">
+                <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11V7a4 4 0 10-8 0v4m14 0H6a2 2 0 00-2 2v5a2 2 0 002 2h12a2 2 0 002-2v-5a2 2 0 00-2-2z"/>
+                </svg>
+            </div>
+
+            <h2 class="text-lg font-bold text-primary mt-4">{{ __('app.member_guest_settings_title') }}</h2>
+            <p class="text-sm text-secondary mt-2 leading-relaxed">{{ __('app.member_guest_settings_body') }}</p>
+
+            <div class="mt-4 space-y-3">
+                <div class="rounded-xl bg-muted/70 px-4 py-3">
+                    <p class="text-xs font-semibold text-muted-text uppercase tracking-wider">{{ __('app.member_guest_masked_whatsapp') }}</p>
+                    <p class="text-sm font-semibold text-primary mt-1">{{ $maskedWhatsApp ?: __('app.member_guest_no_whatsapp') }}</p>
+                </div>
+                <div class="rounded-xl bg-muted/70 px-4 py-3">
+                    <p class="text-xs font-semibold text-muted-text uppercase tracking-wider">{{ __('app.member_guest_masked_email') }}</p>
+                    <p class="text-sm font-semibold text-primary mt-1">{{ $maskedEmail ?: __('app.member_guest_no_email') }}</p>
+                </div>
+            </div>
+
+            <button type="button"
+                    @click="$dispatch('open-device-verification')"
+                    class="mt-5 w-full py-3 rounded-xl bg-accent text-on-accent text-sm font-semibold hover:bg-accent-hover transition">
+                {{ __('app.member_guest_verify_button') }}
+            </button>
+        </div>
+    </div>
+</div>
+@else
 <div class="px-4 pt-4 pb-10 space-y-3" x-data="settingsPage()" x-init="syncThemeFromStorage()">
     <h1 class="text-xl font-bold text-primary">{{ __('app.settings_title') }}</h1>
 
@@ -734,6 +779,7 @@
         </button>
     </div>
 </div>
+@endif
 @endsection
 
 @push('scripts')

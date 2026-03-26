@@ -70,6 +70,12 @@ Route::get('/auth/go', [TelegramAuthController::class, 'go'])
 Route::get('/auth/access', [TelegramAuthController::class, 'access'])
     ->middleware('throttle:60,1')
     ->name('auth.access');
+Route::get('/auth/member/continue', [Member\PersistentAuthController::class, 'bridge'])
+    ->middleware('throttle:60,1')
+    ->name('member.auth.bridge');
+Route::post('/auth/member/restore', [Member\PersistentAuthController::class, 'restore'])
+    ->middleware('throttle:20,1')
+    ->name('member.auth.restore');
 Route::get('/telegram/mini/connect', [TelegramAuthController::class, 'miniConnect'])->name('telegram.mini.connect');
 Route::get('/telegram/embed', [TelegramAuthController::class, 'embed'])->name('telegram.embed');
 Route::get('/telegram/audio', [TelegramAuthController::class, 'audioPlayer'])->name('telegram.audio');
@@ -158,6 +164,15 @@ Route::middleware('resolve.member.url')->prefix('m/{token}')->where(['token' => 
     })->name('announcement.show');
     Route::get('/progress', [Member\ProgressController::class, 'index'])->name('progress');
     Route::get('/settings', [Member\SettingsController::class, 'index'])->name('settings');
+});
+
+Route::middleware('resolve.member.url')->prefix('api/m/{token}/device')->where(['token' => '[A-Za-z0-9]{64}'])->name('member.device.')->group(function () {
+    Route::post('/send-code', [Member\PersistentAuthController::class, 'sendVerificationCode'])
+        ->middleware('throttle:3,1')
+        ->name('send-code');
+    Route::post('/verify-code', [Member\PersistentAuthController::class, 'verifyCode'])
+        ->middleware('throttle:10,1')
+        ->name('verify-code');
 });
 
 // Token-in-URL API routes (JSON responses)

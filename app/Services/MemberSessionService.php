@@ -16,8 +16,6 @@ class MemberSessionService
 
     public const DEVICE_COOKIE = 'member_device';
 
-    private const SESSION_TTL_DAYS = 120;
-
     public function resolveMember(Request $request): ?Member
     {
         $sessionToken = $this->normalizeCookieValue($request->cookie(self::SESSION_COOKIE), 40);
@@ -41,10 +39,6 @@ class MemberSessionService
             return null;
         }
 
-        // Each MemberSession row is already bound to its own device_hash.
-        // No global trusted_device_hash check — members may use multiple
-        // browsers (Safari, WhatsApp in-app, Chrome) without losing access.
-
         $session->forceFill([
             'last_used_at' => now(),
             'ip_address' => $request->ip(),
@@ -56,18 +50,13 @@ class MemberSessionService
 
     /**
      * Create a new session for the member on the current device.
-     * Only revokes existing sessions for the same device — other devices
-     * (e.g. Safari while opening a WhatsApp link) keep their sessions.
+     * Only revokes existing sessions for the same device.
      */
     public function establishSession(Member $member, Request $request): bool
     {
-        $deviceId = $this->normalizeCookieValue($request->cookie(self::DEVICE_COOKIE), 20) ?? Str::random(80);
+        $deviceId = $this->ensureDeviceId($request);
         $deviceHash = hash('sha256', $deviceId);
 
-        // Revoke any existing session for THIS device only (not all devices).
-        // This allows the member to stay logged in on Safari while also
-        // opening a WhatsApp link in the in-app browser without losing
-        // their Safari session.
         MemberSession::where('member_id', $member->id)
             ->where('device_hash', $deviceHash)
             ->whereNull('revoked_at')
@@ -82,35 +71,10 @@ class MemberSessionService
             'ip_address' => $request->ip(),
             'user_agent' => $this->normalizeUserAgent($request->userAgent()),
             'last_used_at' => now(),
-            'expires_at' => now()->addDays(self::SESSION_TTL_DAYS),
+            'expires_at' => now()->addDays($this->ttlDays()),
         ]);
 
-        $minutes = self::SESSION_TTL_DAYS * 24 * 60;
-        $secure = $request->isSecure() || app()->environment('production');
-
-        Cookie::queue(cookie(
-            self::DEVICE_COOKIE,
-            $deviceId,
-            $minutes,
-            '/',
-            null,
-            $secure,
-            true,
-            false,
-            'lax'
-        ));
-
-        Cookie::queue(cookie(
-            self::SESSION_COOKIE,
-            $plainToken,
-            $minutes,
-            '/',
-            null,
-            $secure,
-            true,
-            false,
-            'lax'
-        ));
+        $this->queueCookie(self::SESSION_COOKIE, $plainToken, $request);
 
         return true;
     }
@@ -144,7 +108,16 @@ class MemberSessionService
     {
         Cookie::queue(Cookie::forget(self::SESSION_COOKIE));
         Cookie::queue(Cookie::forget(self::DEVICE_COOKIE));
+        Cookie::queue(Cookie::forget(PersistentLoginService::COOKIE_NAME));
         Cookie::queue(Cookie::forget('member_token'));
+    }
+
+    public function ensureDeviceId(Request $request): string
+    {
+        $deviceId = $this->normalizeCookieValue($request->cookie(self::DEVICE_COOKIE), 20) ?? Str::random(80);
+        $this->queueCookie(self::DEVICE_COOKIE, $deviceId, $request);
+
+        return $deviceId;
     }
 
     private function normalizeCookieValue(mixed $value, int $minLength): ?string
@@ -168,5 +141,28 @@ class MemberSessionService
         }
 
         return mb_substr($userAgent, 0, 512);
+    }
+
+    private function ttlDays(): int
+    {
+        return max(30, (int) config('session.member_lifetime_days', 365));
+    }
+
+    private function queueCookie(string $name, string $value, Request $request): void
+    {
+        $minutes = $this->ttlDays() * 24 * 60;
+        $secure = $request->isSecure() || app()->environment('production');
+
+        Cookie::queue(cookie(
+            $name,
+            $value,
+            $minutes,
+            '/',
+            null,
+            $secure,
+            true,
+            false,
+            'lax'
+        ));
     }
 }

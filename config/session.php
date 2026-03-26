@@ -184,6 +184,12 @@ return [
 
     'http_only' => env('SESSION_HTTP_ONLY', true),
 
+    'member_lifetime_days' => env('MEMBER_SESSION_DAYS', 365),
+
+    'member_persistent_days' => env('MEMBER_PERSISTENT_DAYS', 365),
+
+    'member_verification_code_minutes' => env('MEMBER_VERIFICATION_CODE_MINUTES', 10),
+
     /*
     |--------------------------------------------------------------------------
     | Same-Site Cookies

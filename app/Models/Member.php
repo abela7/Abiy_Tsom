@@ -119,6 +119,16 @@ class Member extends Model
         return $this->hasMany(MemberSession::class);
     }
 
+    public function persistentDevices(): HasMany
+    {
+        return $this->hasMany(MemberPersistentDevice::class);
+    }
+
+    public function verificationCodes(): HasMany
+    {
+        return $this->hasMany(MemberVerificationCode::class);
+    }
+
     public function activityLogs(): HasMany
     {
         return $this->hasMany(MemberActivityLog::class);

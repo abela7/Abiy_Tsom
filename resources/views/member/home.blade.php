@@ -3,6 +3,21 @@
 @section('title', __('app.nav_home') . ' - ' . __('app.app_name'))
 
 @section('content')
+@php
+    $guestAccess = (bool) ($guestAccess ?? false);
+    $memberTokenForLinks = $guestAccess ? ($currentMember->token ?? null) : null;
+    $todayCtaUrl = ($todayUnavailable ?? false)
+        ? ($currentMember ? memberUrl('/today-unavailable') : '#')
+        : (($viewTodayTarget ?? null)
+            ? ($guestAccess
+                ? $viewTodayTarget->memberDayUrl($memberTokenForLinks)
+                : route('old.member.day.show', ['dayNumber' => $viewTodayTarget->day_number, 'daily' => $viewTodayTarget]))
+            : null);
+    $calendarUrl = $currentMember ? memberUrl('/calendar') : url('/calendar');
+    $weekThemeUrl = isset($weekTheme)
+        ? ($currentMember ? memberUrl('/week/' . $weekTheme->id) : url('/week/' . $weekTheme->id))
+        : null;
+@endphp
 <div class="px-4 pt-4 space-y-4"
      x-data="{}"
      x-init="$nextTick(() => {
@@ -16,7 +31,7 @@
 
     {{-- View Today — hero CTA card --}}
     @if(($todayUnavailable ?? false) || (isset($viewTodayTarget) && $viewTodayTarget))
-    <a href="{{ ($todayUnavailable ?? false) ? ($currentMember ? $currentMember->personalUrl('/today-unavailable') : '#') : $viewTodayTarget->memberDayUrl($currentMember->token ?? null) }}"
+    <a href="{{ $todayCtaUrl }}"
        data-tour="view-today"
        class="group relative block overflow-hidden rounded-3xl bg-gradient-to-br from-accent via-accent to-accent-hover dark:from-accent-hover dark:via-accent-hover dark:to-[#7a5a08] transition-all duration-300 active:scale-[0.98]">
 
@@ -61,7 +76,7 @@
         </div>
     </a>
     @else
-    <a href="{{ $currentMember ? $currentMember->personalUrl('/calendar') : url('/calendar') }}"
+    <a href="{{ $calendarUrl }}"
        data-tour="view-today"
        class="group relative block overflow-hidden rounded-3xl bg-card border border-border shadow-md hover:shadow-lg transition-all duration-300 active:scale-[0.98]">
         <div class="relative flex items-center gap-4 p-5 sm:p-6">
@@ -171,7 +186,7 @@
         $themeName = localized($weekTheme, 'name') ?? $weekTheme->name_en ?? $weekTheme->name_geez ?? '-';
         $themeMeaning = $isAm && $weekTheme->meaning_am ? $weekTheme->meaning_am : $weekTheme->meaning;
     @endphp
-    <a href="{{ $currentMember ? $currentMember->personalUrl('/week/' . $weekTheme->id) : url('/week/' . $weekTheme->id) }}" class="block rounded-2xl bg-card shadow-lg overflow-hidden group">
+    <a href="{{ $weekThemeUrl }}" class="block rounded-2xl bg-card shadow-lg overflow-hidden group">
         <div class="relative overflow-hidden bg-gradient-to-br from-[#0a6286] via-[#134e5e] to-[#0a6286]">
             <div class="absolute -top-20 -right-20 w-56 h-56 rounded-full bg-easter-gold/15 blur-[70px] pointer-events-none"></div>
             <div class="absolute -bottom-16 -left-16 w-40 h-40 rounded-full bg-white/5 blur-[60px] pointer-events-none"></div>

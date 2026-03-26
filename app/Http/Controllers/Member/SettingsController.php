@@ -23,6 +23,7 @@ class SettingsController extends Controller
     public function index(Request $request): View
     {
         $member = $request->attributes->get('member');
+        $guestAccess = (bool) $request->attributes->get('guest_access', false);
         $customActivities = $member
             ? $member->customActivities()->orderBy('sort_order')->get()
             : collect();
@@ -30,7 +31,7 @@ class SettingsController extends Controller
         $botUsername = ltrim((string) config('services.telegram.bot_username', ''), '@');
         $telegramBotUrl = $botUsername ? 'https://t.me/' . $botUsername : null;
 
-        return view('member.settings', compact('member', 'customActivities', 'telegramBotUrl'));
+        return view('member.settings', compact('member', 'customActivities', 'telegramBotUrl', 'guestAccess'));
     }
 
     /**

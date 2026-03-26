@@ -13,6 +13,7 @@ use App\Models\MemberChecklist;
 use App\Models\MemberCustomChecklist;
 use App\Services\AbiyTsomStructure;
 use Carbon\Carbon;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -26,9 +27,13 @@ class ProgressController extends Controller
     /**
      * Progress dashboard with charts.
      */
-    public function index(Request $request): View
+    public function index(Request $request): View|RedirectResponse
     {
         $member = $request->attributes->get('member');
+        if ((bool) $request->attributes->get('guest_access', false) && $member instanceof Member) {
+            return redirect($member->personalUrl('/home').'?verify=1');
+        }
+
         $season = LentSeason::active();
 
         return view('member.progress', compact('member', 'season'));
@@ -43,6 +48,14 @@ class ProgressController extends Controller
     {
         /** @var Member $member */
         $member = $request->attributes->get('member');
+
+        if ((bool) $request->attributes->get('guest_access', false)) {
+            return response()->json([
+                'success' => false,
+                'guest_verification_required' => true,
+                'message' => __('app.member_guest_locked_progress'),
+            ], 403);
+        }
 
         $season = LentSeason::active();
         if (! $season) {
