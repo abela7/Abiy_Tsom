@@ -76,6 +76,14 @@ Route::get('/auth/member/continue', [Member\PersistentAuthController::class, 'br
 Route::post('/auth/member/restore', [Member\PersistentAuthController::class, 'restore'])
     ->middleware('throttle:20,1')
     ->name('member.auth.restore');
+Route::get('/himamat/access/{token}', [Member\HimamatAccessController::class, 'preferences'])
+    ->where('token', '[A-Za-z0-9]{64}')
+    ->middleware('throttle:60,1')
+    ->name('member.himamat.access');
+Route::get('/himamat/access/{token}/{day}/{slot}', [Member\HimamatAccessController::class, 'day'])
+    ->where('token', '[A-Za-z0-9]{64}')
+    ->middleware('throttle:60,1')
+    ->name('member.himamat.access.slot');
 Route::get('/telegram/mini/connect', [TelegramAuthController::class, 'miniConnect'])->name('telegram.mini.connect');
 Route::get('/telegram/embed', [TelegramAuthController::class, 'embed'])->name('telegram.embed');
 Route::get('/telegram/audio', [TelegramAuthController::class, 'audioPlayer'])->name('telegram.audio');
@@ -250,6 +258,10 @@ Route::get('/member/day/{daily}', function (\App\Models\DailyContent $daily) {
 
 // Cookie-auth member page routes (same controllers as /m/{token}/* routes)
 Route::middleware(['member', 'member.passcode'])->prefix('member')->group(function () {
+    Route::get('/himamat', [Member\HimamatController::class, 'index'])->name('member.himamat.index');
+    Route::get('/himamat/preferences', [Member\HimamatController::class, 'preferences'])->name('member.himamat.preferences');
+    Route::get('/himamat/{day}', [Member\HimamatController::class, 'day'])->name('member.himamat.day');
+    Route::get('/himamat/{day}/{slot}', [Member\HimamatController::class, 'slot'])->name('member.himamat.slot');
     Route::get('/home', [Member\HomeController::class, 'index'])->name('old.member.home');
     Route::get('/today-unavailable', [Member\HomeController::class, 'todayUnavailable'])->name('old.member.today-unavailable');
     Route::get('/calendar', [Member\HomeController::class, 'calendar'])->name('old.member.calendar');
@@ -287,6 +299,7 @@ Route::middleware('api.member')->prefix('api/member')->group(function () {
 
     // Write operations: require identity confirmation
     Route::middleware('member.confirm_identity')->group(function () {
+        Route::post('/himamat/preferences', [Member\HimamatPreferenceController::class, 'update']);
         Route::post('/settings', [Member\SettingsController::class, 'update']);
         Route::post('/custom-activities', [Member\CustomActivityController::class, 'store']);
         Route::post('/custom-activities/update', [Member\CustomActivityController::class, 'update']);
@@ -352,6 +365,11 @@ Route::middleware(['auth', 'admin.audit'])->prefix('admin')->name('admin.')->gro
         Route::get('/activities/{activity}/edit', [Admin\ActivityController::class, 'edit'])->name('activities.edit');
         Route::put('/activities/{activity}', [Admin\ActivityController::class, 'update'])->name('activities.update');
         Route::delete('/activities/{activity}', [Admin\ActivityController::class, 'destroy'])->name('activities.destroy');
+        Route::get('/himamat', [Admin\HimamatDayController::class, 'index'])->name('himamat.index');
+        Route::post('/himamat/scaffold', [Admin\HimamatDayController::class, 'scaffold'])->name('himamat.scaffold');
+        Route::get('/himamat/{day}/edit', [Admin\HimamatDayController::class, 'edit'])->name('himamat.edit');
+        Route::get('/himamat/{day}/preview', [Admin\HimamatDayController::class, 'preview'])->name('himamat.preview');
+        Route::put('/himamat/{day}', [Admin\HimamatDayController::class, 'update'])->name('himamat.update');
     });
 
     // Daily content write routes (writer/editor/admin can create, edit, update, delete)

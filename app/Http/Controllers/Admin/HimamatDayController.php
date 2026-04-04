@@ -1,0 +1,163 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\HimamatDay;
+use App\Models\LentSeason;
+use App\Services\HimamatScaffoldService;
+use App\Services\HimamatTimelineService;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
+
+class HimamatDayController extends Controller
+{
+    public function index(): View
+    {
+        $season = LentSeason::active();
+        $days = $season
+            ? HimamatDay::query()
+                ->where('lent_season_id', $season->id)
+                ->with(['slots'])
+                ->orderBy('date')
+                ->orderBy('sort_order')
+                ->get()
+            : collect();
+
+        return view('admin.himamat.index', [
+            'season' => $season,
+            'days' => $days,
+        ]);
+    }
+
+    public function scaffold(HimamatScaffoldService $scaffold): RedirectResponse
+    {
+        $result = $scaffold->scaffoldActiveSeason(auth()->id());
+
+        if (! $result['season']) {
+            return redirect()->route('admin.himamat.index')
+                ->with('error', __('app.no_active_season'));
+        }
+
+        return redirect()->route('admin.himamat.index')
+            ->with('success', __('app.himamat_scaffold_success', [
+                'days' => $result['created_days'],
+                'slots' => $result['created_slots'],
+            ]));
+    }
+
+    public function edit(string $day): View
+    {
+        $himamatDay = $this->resolveDay($day);
+
+        return view('admin.himamat.edit', [
+            'day' => $himamatDay,
+            'season' => $himamatDay->lentSeason,
+        ]);
+    }
+
+    public function preview(string $day, HimamatTimelineService $timeline): View
+    {
+        $himamatDay = $this->resolveDay($day);
+        $timelineData = $timeline->buildTimeline(
+            $himamatDay->load(['slots' => fn ($query) => $query->orderBy('slot_order')]),
+            (string) ($himamatDay->slots->first()?->slot_key ?? 'intro')
+        );
+
+        return view('member.himamat.day', [
+            'member' => null,
+            'day' => $himamatDay,
+            'timeline' => $timelineData,
+            'previousDay' => null,
+            'nextDay' => null,
+            'publicPreview' => true,
+            'previewMode' => true,
+            'backUrl' => route('admin.himamat.edit', ['day' => $himamatDay->getKey()]),
+        ]);
+    }
+
+    public function update(Request $request, string $day): RedirectResponse
+    {
+        $himamatDay = $this->resolveDay($day);
+        $slotIds = $himamatDay->slots()->orderBy('slot_order')->pluck('id')->map(fn ($id): string => (string) $id)->all();
+
+        $validated = $request->validate([
+            'title_en' => ['required', 'string', 'max:255'],
+            'title_am' => ['nullable', 'string', 'max:255'],
+            'date' => ['required', 'date'],
+            'is_published' => ['nullable', 'boolean'],
+            'slots' => ['required', 'array', 'size:5'],
+            'slots.*.id' => ['required', 'integer'],
+            'slots.*.slot_header_en' => ['required', 'string', 'max:255'],
+            'slots.*.slot_header_am' => ['nullable', 'string', 'max:255'],
+            'slots.*.reminder_header_en' => ['required', 'string', 'max:255'],
+            'slots.*.reminder_header_am' => ['nullable', 'string', 'max:255'],
+            'slots.*.spiritual_significance_en' => ['nullable', 'string'],
+            'slots.*.spiritual_significance_am' => ['nullable', 'string'],
+            'slots.*.reading_reference_en' => ['nullable', 'string', 'max:255'],
+            'slots.*.reading_reference_am' => ['nullable', 'string', 'max:255'],
+            'slots.*.reading_text_en' => ['nullable', 'string'],
+            'slots.*.reading_text_am' => ['nullable', 'string'],
+            'slots.*.prostration_count' => ['nullable', 'integer', 'min:0', 'max:500'],
+            'slots.*.prostration_guidance_en' => ['nullable', 'string'],
+            'slots.*.prostration_guidance_am' => ['nullable', 'string'],
+            'slots.*.short_prayer_en' => ['nullable', 'string'],
+            'slots.*.short_prayer_am' => ['nullable', 'string'],
+            'slots.*.is_published' => ['nullable', 'boolean'],
+        ]);
+
+        $himamatDay->update([
+            'title_en' => $validated['title_en'],
+            'title_am' => $validated['title_am'] ?: null,
+            'date' => $validated['date'],
+            'is_published' => $request->boolean('is_published'),
+            'updated_by_id' => auth()->id(),
+        ]);
+
+        $slots = $himamatDay->slots()->get()->keyBy('id');
+        foreach ($validated['slots'] as $slotInput) {
+            $slotId = (string) $slotInput['id'];
+            if (! in_array($slotId, $slotIds, true)) {
+                continue;
+            }
+
+            $slot = $slots->get((int) $slotInput['id']);
+            if (! $slot) {
+                continue;
+            }
+
+            $slot->update([
+                'slot_header_en' => $slotInput['slot_header_en'],
+                'slot_header_am' => $slotInput['slot_header_am'] ?: null,
+                'reminder_header_en' => $slotInput['reminder_header_en'],
+                'reminder_header_am' => $slotInput['reminder_header_am'] ?: null,
+                'spiritual_significance_en' => $slotInput['spiritual_significance_en'] ?: null,
+                'spiritual_significance_am' => $slotInput['spiritual_significance_am'] ?: null,
+                'reading_reference_en' => $slotInput['reading_reference_en'] ?: null,
+                'reading_reference_am' => $slotInput['reading_reference_am'] ?: null,
+                'reading_text_en' => $slotInput['reading_text_en'] ?: null,
+                'reading_text_am' => $slotInput['reading_text_am'] ?: null,
+                'prostration_count' => $slotInput['prostration_count'] ?? 0,
+                'prostration_guidance_en' => $slotInput['prostration_guidance_en'] ?: null,
+                'prostration_guidance_am' => $slotInput['prostration_guidance_am'] ?: null,
+                'short_prayer_en' => $slotInput['short_prayer_en'] ?: null,
+                'short_prayer_am' => $slotInput['short_prayer_am'] ?: null,
+                'is_published' => (bool) ($slotInput['is_published'] ?? false),
+                'updated_by_id' => auth()->id(),
+            ]);
+        }
+
+        return redirect()->route('admin.himamat.index')
+            ->with('success', __('app.himamat_updated'));
+    }
+
+    private function resolveDay(string $day): HimamatDay
+    {
+        return HimamatDay::query()
+            ->with(['lentSeason', 'slots' => fn ($query) => $query->orderBy('slot_order')])
+            ->findOrFail((int) $day);
+    }
+}

@@ -47,6 +47,11 @@ class LentSeason extends Model
         return $this->hasMany(DailyContent::class);
     }
 
+    public function himamatDays(): HasMany
+    {
+        return $this->hasMany(HimamatDay::class);
+    }
+
     /**
      * Activities defined for this season.
      */

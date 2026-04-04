@@ -144,6 +144,16 @@ class Member extends Model
         return $this->hasMany(MemberDailyView::class);
     }
 
+    public function himamatPreferences(): HasMany
+    {
+        return $this->hasMany(MemberHimamatPreference::class);
+    }
+
+    public function himamatReminderDeliveries(): HasMany
+    {
+        return $this->hasMany(MemberHimamatReminderDelivery::class);
+    }
+
     public function referrer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'referred_by');
