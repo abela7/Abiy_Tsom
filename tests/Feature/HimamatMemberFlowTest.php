@@ -205,6 +205,32 @@ class HimamatMemberFlowTest extends TestCase
             ->assertSee('Manual Linked Saint');
     }
 
+    public function test_access_slot_route_falls_back_to_preferences_when_day_is_not_published(): void
+    {
+        $this->createSeason();
+        $member = $this->createMember('g');
+        $day = $this->createPublishedDayWithSlots('holy-monday', '2026-04-06', 'Holy Monday');
+        $day->update(['is_published' => false]);
+
+        $this->get('/himamat/access/'.$member->token.'/'.$day->slug.'/intro')
+            ->assertRedirect(route('member.himamat.preferences'));
+    }
+
+    public function test_access_slot_route_falls_back_to_preferences_when_slot_is_not_published(): void
+    {
+        $this->createSeason();
+        $member = $this->createMember('h');
+        $day = $this->createPublishedDayWithSlots('holy-monday', '2026-04-06', 'Holy Monday');
+
+        HimamatSlot::query()
+            ->where('himamat_day_id', $day->id)
+            ->where('slot_key', 'intro')
+            ->update(['is_published' => false]);
+
+        $this->get('/himamat/access/'.$member->token.'/'.$day->slug.'/intro')
+            ->assertRedirect(route('member.himamat.preferences'));
+    }
+
     private function createSeason(array $overrides = []): LentSeason
     {
         return LentSeason::create(array_merge([

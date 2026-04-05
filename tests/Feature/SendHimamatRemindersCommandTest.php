@@ -268,6 +268,59 @@ class SendHimamatRemindersCommandTest extends TestCase
         });
     }
 
+    public function test_sample_reminder_command_refuses_unpublished_day_or_slot_before_sending(): void
+    {
+        config()->set('services.ultramsg.instance_id', 'instance999');
+        config()->set('services.ultramsg.token', 'token-123');
+        config()->set('app.url', 'https://abiytsom.abuneteklehaymanot.org');
+
+        $season = LentSeason::create([
+            'year' => 2026,
+            'start_date' => '2026-02-15',
+            'end_date' => '2026-04-12',
+            'total_days' => 55,
+            'is_active' => true,
+        ]);
+
+        $day = HimamatDay::create([
+            'lent_season_id' => $season->id,
+            'slug' => 'holy-monday',
+            'sort_order' => 2,
+            'date' => '2026-04-06',
+            'title_en' => 'Holy Monday',
+            'is_published' => false,
+        ]);
+
+        HimamatSlot::create([
+            'himamat_day_id' => $day->id,
+            'slot_key' => 'intro',
+            'slot_order' => 1,
+            'scheduled_time_london' => '07:00:00',
+            'slot_header_en' => 'Daily Introduction',
+            'reminder_header_en' => 'Holy Monday has begun.',
+            'reading_reference_en' => 'Mark 11:12-26',
+            'is_published' => true,
+        ]);
+
+        $member = Member::create([
+            'baptism_name' => 'Abel Teklu',
+            'token' => str_repeat('z', 64),
+            'locale' => 'en',
+            'theme' => 'light',
+            'whatsapp_phone' => '+447700900111',
+            'whatsapp_confirmation_status' => 'confirmed',
+        ]);
+
+        Http::fake();
+
+        $this->artisan(sprintf(
+            'himamat:send-sample-reminder --member-id=%d --sample-phone=+447700900999 --day=holy-monday --slot=intro',
+            $member->id
+        ))->assertExitCode(1);
+
+        Http::assertNothingSent();
+    }
+
     public function test_sample_reminder_command_sends_only_to_the_requested_sample_phone(): void
     {
         config()->set('services.ultramsg.instance_id', 'instance999');

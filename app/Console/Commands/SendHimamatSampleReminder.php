@@ -77,6 +77,13 @@ class SendHimamatSampleReminder extends Command
             return self::FAILURE;
         }
 
+        if (! $day->is_published || ! $slot->is_published) {
+            $this->error('The requested Himamat day or slot is not published yet, so the access link would not open for members.');
+            $this->line('Publish the Himamat day and the target slot first, then send the sample again.');
+
+            return self::FAILURE;
+        }
+
         $rendered = $templateService->renderReminder(
             $member,
             $day,

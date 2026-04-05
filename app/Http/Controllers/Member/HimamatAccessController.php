@@ -54,10 +54,14 @@ class HimamatAccessController extends Controller
             ? HimamatDay::query()
                 ->where('lent_season_id', $season->id)
                 ->where('slug', $day)
+                ->where('is_published', true)
                 ->first()
             : null;
 
-        if (! $himamatDay || ! $himamatDay->slots()->where('slot_key', $slot)->exists()) {
+        if (! $himamatDay || ! $himamatDay->slots()
+            ->where('slot_key', $slot)
+            ->where('is_published', true)
+            ->exists()) {
             return $this->establishAccess($request, $member, $sessions, $persistentLogins)
                 ->route('member.himamat.preferences');
         }
