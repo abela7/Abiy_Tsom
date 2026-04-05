@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\HimamatDay;
 use App\Models\LentSeason;
 use App\Models\MemberHimamatPreference;
+use App\Services\EthiopianCalendarService;
 use App\Services\HimamatTimelineService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -98,7 +99,8 @@ class HimamatController extends Controller
         Request $request,
         string $day,
         string $slot,
-        HimamatTimelineService $timeline
+        HimamatTimelineService $timeline,
+        EthiopianCalendarService $ethCalendar
     ): View|RedirectResponse {
         $member = $request->attributes->get('member');
         $season = LentSeason::active();
@@ -124,11 +126,15 @@ class HimamatController extends Controller
         $dayIndex = $publishedDays->search(fn (HimamatDay $item): bool => $item->id === $himamatDay->id);
         $previousDay = $dayIndex !== false && $dayIndex > 0 ? $publishedDays->get($dayIndex - 1) : null;
         $nextDay = $dayIndex !== false ? $publishedDays->get($dayIndex + 1) : null;
+        $ethDateInfo = $himamatDay->date
+            ? $ethCalendar->getDateInfo($himamatDay->date->copy(), app()->getLocale())
+            : null;
 
         return view('member.himamat.day', [
             'member' => $member,
             'day' => $himamatDay,
             'timeline' => $timelineData,
+            'ethDateInfo' => $ethDateInfo,
             'previousDay' => $previousDay,
             'nextDay' => $nextDay,
             'publicPreview' => false,
@@ -145,9 +151,12 @@ class HimamatController extends Controller
             ->where('lent_season_id', $seasonId)
             ->where('slug', $slug)
             ->where('is_published', true)
-            ->with(['slots' => fn ($query) => $query
-                ->where('is_published', true)
-                ->orderBy('slot_order')])
+            ->with([
+                'slots' => fn ($query) => $query
+                    ->where('is_published', true)
+                    ->orderBy('slot_order'),
+                'faqs' => fn ($query) => $query->orderBy('sort_order'),
+            ])
             ->first();
     }
 }

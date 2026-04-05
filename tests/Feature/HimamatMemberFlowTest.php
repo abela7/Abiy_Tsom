@@ -6,6 +6,7 @@ namespace Tests\Feature;
 
 use App\Http\Middleware\RequireMemberIdentityConfirmation;
 use App\Models\HimamatDay;
+use App\Models\HimamatDayFaq;
 use App\Models\HimamatSlot;
 use App\Models\LentSeason;
 use App\Models\Member;
@@ -119,6 +120,10 @@ class HimamatMemberFlowTest extends TestCase
             ->get('/member/himamat/'.$day->slug.'/ninth')
             ->assertOk()
             ->assertSee('Good Friday')
+            ->assertSee('The fig tree shows the call to repentance.')
+            ->assertSee('Wear black in mourning and keep reverent silence.')
+            ->assertSee('Why do we say Kiryalaisson 12 times?')
+            ->assertSee('To keep watch with repentance and mercy.')
             ->assertSee('Sacred Timeline')
             ->assertSee('Current')
             ->assertSee('Ninth Hour');
@@ -157,7 +162,16 @@ class HimamatMemberFlowTest extends TestCase
             'sort_order' => 1,
             'date' => $date,
             'title_en' => $title,
+            'spiritual_meaning_en' => 'The fig tree shows the call to repentance.',
+            'ritual_guide_intro_en' => 'Wear black in mourning and keep reverent silence.',
             'is_published' => true,
+        ]);
+
+        HimamatDayFaq::create([
+            'himamat_day_id' => $day->id,
+            'sort_order' => 1,
+            'question_en' => 'Why do we say Kiryalaisson 12 times?',
+            'answer_en' => 'To keep watch with repentance and mercy.',
         ]);
 
         $headers = [

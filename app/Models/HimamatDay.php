@@ -18,6 +18,10 @@ class HimamatDay extends Model
         'date',
         'title_en',
         'title_am',
+        'spiritual_meaning_en',
+        'spiritual_meaning_am',
+        'ritual_guide_intro_en',
+        'ritual_guide_intro_am',
         'is_published',
         'created_by_id',
         'updated_by_id',
@@ -52,6 +56,11 @@ class HimamatDay extends Model
         return $this->hasMany(HimamatSlot::class)
             ->where('is_published', true)
             ->orderBy('slot_order');
+    }
+
+    public function faqs(): HasMany
+    {
+        return $this->hasMany(HimamatDayFaq::class)->orderBy('sort_order');
     }
 
     public function createdBy(): BelongsTo

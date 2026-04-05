@@ -7,6 +7,22 @@
     $targetSlotKey = $timeline['target_slot_key'];
     $nowLondon = $timeline['now'];
     $backUrl = $backUrl ?? route('member.himamat.preferences');
+    $localizedDayMeaning = localized($day, 'spiritual_meaning') ?? '';
+    $localizedRitualIntro = localized($day, 'ritual_guide_intro') ?? '';
+    $annualCelebrations = collect($ethDateInfo['annual_celebrations'] ?? [])
+        ->map(fn ($celebration) => localized($celebration, 'celebration') ?? $celebration->celebration_en ?? null)
+        ->filter()
+        ->unique()
+        ->values();
+    $monthlyCelebrations = collect($ethDateInfo['monthly_celebrations'] ?? [])
+        ->map(fn ($celebration) => localized($celebration, 'celebration') ?? $celebration->celebration_en ?? null)
+        ->filter()
+        ->unique()
+        ->values();
+    $hasDayLayer = $localizedDayMeaning !== ''
+        || $localizedRitualIntro !== ''
+        || $annualCelebrations->isNotEmpty()
+        || $monthlyCelebrations->isNotEmpty();
 @endphp
 <div class="px-4 pt-4 pb-12 space-y-4"
      x-data="{ openSlot: @js($targetSlotKey) }"
@@ -59,6 +75,81 @@
             @endif
         </div>
     </section>
+
+    @if($hasDayLayer)
+    <section class="rounded-[2rem] border border-border bg-card px-5 py-5 shadow-sm">
+        <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_global_info_title') }}</p>
+            <h2 class="mt-1 text-lg font-bold text-primary">{{ __('app.himamat_global_info_title') }}</h2>
+        </div>
+
+        <div class="mt-5 grid gap-4">
+            @if($localizedDayMeaning !== '')
+                <div class="rounded-2xl border border-border/80 bg-muted/40 p-4">
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_day_meaning_title') }}</p>
+                    <p class="mt-2 text-sm leading-relaxed text-primary whitespace-pre-line">{{ $localizedDayMeaning }}</p>
+                </div>
+            @endif
+
+            @if($annualCelebrations->isNotEmpty() || $monthlyCelebrations->isNotEmpty())
+                <div class="rounded-2xl border border-border/80 bg-muted/40 p-4">
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_synaxarium_title') }}</p>
+
+                    @if($annualCelebrations->isNotEmpty())
+                        <div class="mt-3">
+                            <p class="text-sm font-semibold text-primary">{{ __('app.himamat_synaxarium_annual') }}</p>
+                            <div class="mt-2 space-y-2">
+                                @foreach($annualCelebrations as $celebration)
+                                    <p class="text-sm leading-relaxed text-secondary">{{ $celebration }}</p>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
+                    @if($monthlyCelebrations->isNotEmpty())
+                        <div class="{{ $annualCelebrations->isNotEmpty() ? 'mt-4 border-t border-border/70 pt-4' : 'mt-3' }}">
+                            <p class="text-sm font-semibold text-primary">{{ __('app.himamat_synaxarium_monthly') }}</p>
+                            <div class="mt-2 space-y-2">
+                                @foreach($monthlyCelebrations as $celebration)
+                                    <p class="text-sm leading-relaxed text-secondary">{{ $celebration }}</p>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            @endif
+
+            @if($localizedRitualIntro !== '')
+                <div class="rounded-2xl border border-border/80 bg-muted/40 p-4">
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_ritual_intro_title') }}</p>
+                    <p class="mt-2 text-sm leading-relaxed text-primary whitespace-pre-line">{{ $localizedRitualIntro }}</p>
+                </div>
+            @endif
+        </div>
+    </section>
+    @endif
+
+    @if($day->faqs->isNotEmpty())
+    <section class="rounded-[2rem] border border-border bg-card px-5 py-5 shadow-sm">
+        <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_faq_title') }}</p>
+            <h2 class="mt-1 text-lg font-bold text-primary">{{ __('app.himamat_faq_title') }}</h2>
+        </div>
+
+        <div class="mt-5 space-y-4">
+            @foreach($day->faqs as $faq)
+                @php
+                    $localizedQuestion = localized($faq, 'question') ?? $faq->question_en;
+                    $localizedAnswer = localized($faq, 'answer') ?? $faq->answer_en;
+                @endphp
+                <article class="rounded-2xl border border-border/80 bg-muted/40 p-4">
+                    <p class="text-sm font-semibold text-primary">{{ $localizedQuestion }}</p>
+                    <p class="mt-2 text-sm leading-relaxed text-secondary whitespace-pre-line">{{ $localizedAnswer }}</p>
+                </article>
+            @endforeach
+        </div>
+    </section>
+    @endif
 
     <section class="rounded-[2rem] border border-border bg-card px-5 py-5 shadow-sm">
         <div class="flex items-center justify-between gap-3">
