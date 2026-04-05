@@ -2040,6 +2040,8 @@ return [
     'himamat_edit_title' => 'Edit Himamat Day',
     'himamat_updated' => 'Himamat day updated.',
     'himamat_editor_fix_errors' => 'Please correct the highlighted Himamat fields and save again.',
+    'himamat_save_draft' => 'ረቂቅ አስቀምጥ',
+    'himamat_draft_saved' => 'ረቂቁ ተቀምጧል። ይህን ክፍል ማርትዕ መቀጠል ይችላሉ።',
     'himamat_global_info_title' => 'Global Day Information',
     'himamat_global_info_hint' => 'These fields describe the meaning and rituals for the whole Holy Week day before the hourly readings begin.',
     'himamat_day_reminder_time' => 'Day Reminder Time',

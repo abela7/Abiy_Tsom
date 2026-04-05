@@ -191,6 +191,8 @@ class HimamatDayController extends Controller
     public function update(Request $request, string $day): RedirectResponse
     {
         $himamatDay = $this->resolveDay($day);
+        $saveMode = trim((string) $request->input('save_mode', 'exit'));
+        $saveSection = trim((string) $request->input('save_section', ''));
         $slotIds = $himamatDay->slots()->orderBy('slot_order')->pluck('id')->map(fn ($id): string => (string) $id)->all();
         $faqIds = $himamatDay->faqs()->pluck('id')->map(fn ($id): string => (string) $id)->all();
 
@@ -338,6 +340,16 @@ class HimamatDayController extends Controller
 
             $this->syncFaqs($himamatDay, $faqPayloads);
         });
+
+        if ($saveMode === 'stay') {
+            $target = route('admin.himamat.edit', ['day' => $himamatDay->getKey()]);
+            if ($saveSection !== '') {
+                $target .= '#'.$saveSection;
+            }
+
+            return redirect($target)
+                ->with('success', __('app.himamat_draft_saved'));
+        }
 
         return redirect()->route('admin.himamat.index')
             ->with('success', __('app.himamat_updated'));

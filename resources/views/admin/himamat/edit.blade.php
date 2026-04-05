@@ -68,15 +68,25 @@
 @endif
 
 <form action="{{ route('admin.himamat.update', ['day' => $day->getKey()]) }}" method="POST" enctype="multipart/form-data" class="space-y-5"
+      x-ref="form"
       x-data="{
           synaxariumSource: @js($synaxariumSource),
           dayReminderTitleEn: @js($dayReminderTitleEn),
-          dayReminderTitleAm: @js($dayReminderTitleAm)
+          dayReminderTitleAm: @js($dayReminderTitleAm),
+          saveMode: 'exit',
+          saveSection: '',
+          saveDraft(sectionId) {
+              this.saveMode = 'stay';
+              this.saveSection = sectionId;
+              this.$nextTick(() => this.$refs.form.submit());
+          }
       }">
     @csrf
     @method('PUT')
+    <input type="hidden" name="save_mode" x-model="saveMode">
+    <input type="hidden" name="save_section" x-model="saveSection">
 
-    <section class="rounded-2xl border border-border bg-card p-5 shadow-sm">
+    <section id="himamat-global-info" class="rounded-2xl border border-border bg-card p-5 shadow-sm">
         <div class="flex items-start justify-between gap-4">
             <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_global_info_title') }}</p>
@@ -150,9 +160,17 @@
                           class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">{{ old('ritual_guide_intro_am', $day->ritual_guide_intro_am) }}</textarea>
             </div>
         </div>
+
+        <div class="mt-5 flex justify-end">
+            <button type="button"
+                    @click="saveDraft('himamat-global-info')"
+                    class="inline-flex items-center justify-center rounded-xl border border-border bg-muted px-4 py-2.5 text-sm font-semibold text-secondary transition hover:bg-border">
+                {{ __('app.himamat_save_draft') }}
+            </button>
+        </div>
     </section>
 
-    <section class="rounded-2xl border border-border bg-card p-5 shadow-sm">
+    <section id="himamat-synaxarium" class="rounded-2xl border border-border bg-card p-5 shadow-sm">
         <div class="flex items-start justify-between gap-4">
             <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_synaxarium_title') }}</p>
@@ -265,9 +283,17 @@
                 </div>
             </div>
         </div>
+
+        <div class="mt-5 flex justify-end">
+            <button type="button"
+                    @click="saveDraft('himamat-synaxarium')"
+                    class="inline-flex items-center justify-center rounded-xl border border-border bg-muted px-4 py-2.5 text-sm font-semibold text-secondary transition hover:bg-border">
+                {{ __('app.himamat_save_draft') }}
+            </button>
+        </div>
     </section>
 
-    <section class="rounded-2xl border border-border bg-card p-5 shadow-sm"
+    <section id="himamat-faq" class="rounded-2xl border border-border bg-card p-5 shadow-sm"
              x-data="himamatFaqEditor(@js($faqItems))">
         <div class="flex items-start justify-between gap-4">
             <div>
@@ -329,6 +355,14 @@
                 </div>
             </template>
         </div>
+
+        <div class="mt-5 flex justify-end">
+            <button type="button"
+                    @click="saveDraft('himamat-faq')"
+                    class="inline-flex items-center justify-center rounded-xl border border-border bg-muted px-4 py-2.5 text-sm font-semibold text-secondary transition hover:bg-border">
+                {{ __('app.himamat_save_draft') }}
+            </button>
+        </div>
     </section>
 
     <section class="rounded-2xl border border-border bg-card p-5 shadow-sm">
@@ -359,7 +393,7 @@
                     ->all();
             }
         @endphp
-        <section class="rounded-2xl border border-border bg-card p-5 shadow-sm">
+        <section id="himamat-slot-{{ $slot->slot_key }}" class="rounded-2xl border border-border bg-card p-5 shadow-sm">
             <div class="flex items-start justify-between gap-4">
                 <div>
                     <p class="text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ substr((string) $slot->scheduled_time_london, 0, 5) }}</p>
@@ -547,11 +581,20 @@
                     </div>
                 </div>
             </div>
+
+            <div class="mt-5 flex justify-end">
+                <button type="button"
+                        @click="saveDraft('himamat-slot-{{ $slot->slot_key }}')"
+                        class="inline-flex items-center justify-center rounded-xl border border-border bg-muted px-4 py-2.5 text-sm font-semibold text-secondary transition hover:bg-border">
+                    {{ __('app.himamat_save_draft') }}
+                </button>
+            </div>
         </section>
     @endforeach
 
     <div class="flex justify-end">
         <button type="submit"
+                @click="saveMode = 'exit'; saveSection = ''"
                 class="inline-flex items-center justify-center rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-on-accent transition hover:bg-accent-hover">
             {{ __('app.save_changes') }}
         </button>

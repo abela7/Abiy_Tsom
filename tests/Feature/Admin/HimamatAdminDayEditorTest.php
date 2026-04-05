@@ -255,6 +255,40 @@ class HimamatAdminDayEditorTest extends TestCase
             ->assertSessionHasErrors('day_reminder_time');
     }
 
+    public function test_section_draft_save_keeps_admin_on_edit_page_and_persists_changes(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'admin',
+        ]);
+
+        $season = LentSeason::create([
+            'year' => 2026,
+            'start_date' => '2026-04-06',
+            'end_date' => '2026-04-12',
+            'total_days' => 55,
+            'is_active' => true,
+        ]);
+
+        $day = $this->createDayWithSlots($season, 'holy-thursday');
+        $slots = $day->slots()->orderBy('slot_order')->get()->values();
+
+        $payload = $this->basePayload($slots, [
+            'title_en' => 'Holy Thursday - Draft Save',
+            'save_mode' => 'stay',
+            'save_section' => 'himamat-global-info',
+        ]);
+
+        $this->actingAs($admin)
+            ->put(route('admin.himamat.update', ['day' => $day->id]), $payload)
+            ->assertRedirect(route('admin.himamat.edit', ['day' => $day->id]).'#himamat-global-info')
+            ->assertSessionHas('success', 'Draft saved. You can keep editing this section.');
+
+        $this->assertDatabaseHas('himamat_days', [
+            'id' => $day->id,
+            'title_en' => 'Holy Thursday - Draft Save',
+        ]);
+    }
+
     private function createDayWithSlots(LentSeason $season, string $slug): HimamatDay
     {
         $day = HimamatDay::create([
