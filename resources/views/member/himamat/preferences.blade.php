@@ -39,8 +39,7 @@
                 <div class="rounded-2xl border border-border/80 bg-muted/50 p-4">
                     <div class="flex items-start justify-between gap-3">
                         <div>
-                            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-muted-text">{{ $slot['time'] }}</p>
-                            <h3 class="mt-1 text-sm font-semibold text-primary">{{ $slot['title'] }}</h3>
+                            <h3 class="text-sm font-semibold text-primary">{{ __($slot['label_key']) }}</h3>
                         </div>
                         <button type="button"
                                 @click="toggleSlot('{{ $slot['key'] }}')"
@@ -61,7 +60,7 @@
                     @click="save()"
                     :disabled="saving"
                     class="inline-flex items-center justify-center rounded-xl bg-accent px-4 py-3 text-sm font-semibold text-on-accent transition hover:bg-accent-hover disabled:opacity-60">
-                <span x-show="!saving">{{ __('app.save') }}</span>
+                <span x-show="!saving">{{ __('app.himamat_save_button') }}</span>
                 <span x-show="saving">{{ __('app.loading') }}</span>
             </button>
         </div>

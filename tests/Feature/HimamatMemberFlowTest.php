@@ -57,7 +57,9 @@ class HimamatMemberFlowTest extends TestCase
         $this->actingAsRememberedMember($member)
             ->get('/member/himamat/preferences')
             ->assertOk()
-            ->assertSee('Set Your Holy Week Reminders');
+            ->assertSee('Holy Week Reminders')
+            ->assertSee('Daily Introduction (7:00 AM)')
+            ->assertSee('Save My Preferences');
 
         $this->assertDatabaseHas('member_himamat_preferences', [
             'member_id' => $member->id,
@@ -101,6 +103,19 @@ class HimamatMemberFlowTest extends TestCase
             'ninth_enabled' => 1,
             'eleventh_enabled' => 0,
         ]);
+    }
+
+    public function test_preferences_page_uses_amharic_translation_keys_for_amharic_members(): void
+    {
+        $this->createSeason();
+        $member = $this->createMember('e', 'am');
+
+        $this->actingAsRememberedMember($member)
+            ->get('/member/himamat/preferences')
+            ->assertOk()
+            ->assertSee('የሕማማት ሳምንት ማሳሰቢያዎች')
+            ->assertSee('የዕለቱ መክፈቻ (7:00 AM)')
+            ->assertSee('ምርጫዬን አስቀምጥ');
     }
 
     public function test_member_himamat_index_redirects_to_current_london_slot_and_day_view_renders(): void
@@ -174,12 +189,12 @@ class HimamatMemberFlowTest extends TestCase
         ], $overrides));
     }
 
-    private function createMember(string $fill): Member
+    private function createMember(string $fill, string $locale = 'en'): Member
     {
         return Member::create([
             'baptism_name' => 'Member '.$fill,
             'token' => str_repeat($fill, 64),
-            'locale' => 'en',
+            'locale' => $locale,
             'theme' => 'sepia',
             'whatsapp_phone' => '+447700900123',
             'whatsapp_confirmation_status' => 'confirmed',

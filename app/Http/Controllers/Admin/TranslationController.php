@@ -32,6 +32,7 @@ class TranslationController extends Controller
                 'whatsapp_member' => __('app.group_whatsapp_member'),
                 'navigation' => __('app.group_navigation'),
                 'home' => __('app.group_home'),
+                'himamat' => __('app.group_himamat'),
                 'content_sections' => __('app.group_day_content'),
                 'week_detail' => __('app.group_week_detail'),
                 'calendar' => __('app.group_calendar'),

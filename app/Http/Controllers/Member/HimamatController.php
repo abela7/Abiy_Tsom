@@ -58,11 +58,18 @@ class HimamatController extends Controller
             ->orderBy('sort_order')
             ->get();
 
+        $slotLabelKeys = [
+            'intro' => 'app.himamat_slot_7am',
+            'third' => 'app.himamat_slot_9am',
+            'sixth' => 'app.himamat_slot_12pm',
+            'ninth' => 'app.himamat_slot_3pm',
+            'eleventh' => 'app.himamat_slot_5pm',
+        ];
+
         $slotDefinitions = collect(config('himamat.slots', []))
             ->map(fn (array $slot): array => [
                 'key' => (string) ($slot['key'] ?? ''),
-                'time' => substr((string) ($slot['time'] ?? ''), 0, 5),
-                'title' => (string) ($slot['default_slot_header_en'] ?? ''),
+                'label_key' => $slotLabelKeys[(string) ($slot['key'] ?? '')] ?? 'app.himamat_title',
             ]);
 
         return view('member.himamat.preferences', [
