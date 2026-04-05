@@ -20,8 +20,8 @@ class SendHimamatInvitationsCommandTest extends TestCase
         config()->set('app.url', 'https://abiytsom.abuneteklehaymanot.org');
 
         $this->createActiveSeason();
-        $firstMember = $this->createMember('a', '+447700900111');
-        $secondMember = $this->createMember('b', '+447700900222');
+        $firstMember = $this->createMember('Abel Teklu', '+447700900111', 'en', 'a');
+        $secondMember = $this->createMember('ማርታ ሐና', '+447700900222', 'am', 'b');
 
         Http::fake([
             'https://api.ultramsg.com/instance999/messages/chat' => Http::response([
@@ -42,14 +42,14 @@ class SendHimamatInvitationsCommandTest extends TestCase
             $body = (string) $request['body'];
 
             return $request['to'] === '+447700900111'
-                && str_contains($body, 'Greetings Member a')
+                && str_contains($body, 'Greetings Abel, Happy Hosanna!')
                 && str_contains($body, '/himamat/access/'.$firstMember->token);
         });
         Http::assertSent(function (\Illuminate\Http\Client\Request $request) use ($secondMember): bool {
             $body = (string) $request['body'];
 
             return $request['to'] === '+447700900222'
-                && str_contains($body, 'Greetings Member b')
+                && str_contains($body, 'ማርታ፣ እንኳን ለሆሣዕና በዓል በሰላም አደረሰዎት።')
                 && str_contains($body, '/himamat/access/'.$secondMember->token);
         });
 
@@ -75,7 +75,7 @@ class SendHimamatInvitationsCommandTest extends TestCase
         config()->set('app.url', 'https://abiytsom.abuneteklehaymanot.org');
 
         $this->createActiveSeason();
-        $member = $this->createMember('s', '+447700900333');
+        $member = $this->createMember('Samuel Yohannes', '+447700900333', '', 's');
 
         Http::fake([
             'https://api.ultramsg.com/instance999/messages/chat' => Http::response([
@@ -95,7 +95,7 @@ class SendHimamatInvitationsCommandTest extends TestCase
             $body = (string) $request['body'];
 
             return $request['to'] === '+447700900999'
-                && str_contains($body, 'Greetings Member s')
+                && str_contains($body, 'Samuel፣ እንኳን ለሆሣዕና በዓል በሰላም አደረሰዎት።')
                 && str_contains($body, '/himamat/access/'.$member->token);
         });
 
@@ -113,12 +113,12 @@ class SendHimamatInvitationsCommandTest extends TestCase
         ]);
     }
 
-    private function createMember(string $fill, string $phone): Member
+    private function createMember(string $name, string $phone, ?string $locale, string $tokenFill): Member
     {
         return Member::create([
-            'baptism_name' => 'Member '.$fill,
-            'token' => str_repeat($fill, 64),
-            'locale' => 'en',
+            'baptism_name' => $name,
+            'token' => str_repeat($tokenFill, 64),
+            'locale' => $locale,
             'theme' => 'sepia',
             'whatsapp_phone' => $phone,
             'whatsapp_confirmation_status' => 'confirmed',

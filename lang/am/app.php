@@ -1979,7 +1979,7 @@ return [
     // Himamat
     'himamat_title' => 'Himamat',
     'himamat_eyebrow' => 'Holy Week Companion',
-    'himamat_invitation_message' => 'Greetings :name, customize your Holy Week reminders and join us for Holy Monday rituals: :url',
+    'himamat_invitation_message' => ":name፣ እንኳን ለሆሣዕና በዓል በሰላም አደረሰዎት። በመጪው የሕማማት ሳምንት በቀን 5 ጊዜ ወሳኝ በሆኑ ሰዓታት ላይ የማስታወሻ መልእክት እንልካለን። ይህ መልእክት እንዲደርስዎት ካልፈለጉ የሚከተለው ሊንክ ላይ ገብተው ምርጫዎን ያስተካክሉ ወይም ያጥፉት። ካልሆነ ግን ከዚህ በፊት የነበረውን በቀን አንድ ማስታወሻ በሕማማት ሳምንት ከፍ አድርገነዋል፤ ስለሆነም ከነገ ጀምሮ እስከ ዓርብ ድረስ በተለያዩ ሰዓታት የማስታወሻ መልእክት ይደርስዎታል።\n\nመልካም የሕማማት ሳምንት!\n:url",
     'himamat_unavailable_title' => 'Himamat is not ready yet.',
     'himamat_unavailable_body' => 'Holy Week content will appear here once the current season is prepared and published.',
     'himamat_preferences_title' => 'Set Your Holy Week Reminders',

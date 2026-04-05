@@ -17,7 +17,7 @@ class HimamatInvitationTemplateService
     {
         $locale = $this->preferredLocale($member);
         $message = Lang::get('app.himamat_invitation_message', [
-            'name' => trim((string) ($member->baptism_name ?? '')),
+            'name' => $this->firstName($member),
             'url' => $this->ensureHttpsUrl($url),
         ], $locale);
 
@@ -29,12 +29,24 @@ class HimamatInvitationTemplateService
 
     private function preferredLocale(Member $member): string
     {
-        $locale = (string) ($member->locale ?: $member->whatsapp_language ?: 'en');
-        $locale = in_array($locale, ['en', 'am'], true) ? $locale : 'en';
+        $locale = trim((string) ($member->locale ?? ''));
+        $locale = in_array($locale, ['en', 'am'], true) ? $locale : 'am';
 
         Translation::loadFromDb($locale);
 
         return $locale;
+    }
+
+    private function firstName(Member $member): string
+    {
+        $fullName = trim((string) ($member->baptism_name ?? ''));
+        if ($fullName === '') {
+            return '';
+        }
+
+        $parts = preg_split('/\s+/u', $fullName, -1, PREG_SPLIT_NO_EMPTY);
+
+        return $parts[0] ?? $fullName;
     }
 
     private function ensureHttpsUrl(string $url): string

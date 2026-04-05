@@ -1999,7 +1999,7 @@ return [
     // Himamat
     'himamat_title' => 'Himamat',
     'himamat_eyebrow' => 'Holy Week Companion',
-    'himamat_invitation_message' => 'Greetings :name, customize your Holy Week reminders and join us for Holy Monday rituals: :url',
+    'himamat_invitation_message' => "Greetings :name, Happy Hosanna! During the upcoming Holy Week, we will be sending reminders 5 times a day at key hours. If you prefer not to receive these, please use the link below to adjust your preferences or opt-out. Otherwise, we have upgraded our standard daily reminder for this sacred week; you will receive notifications at various times from tomorrow through Friday.\n\nHave a blessed Holy Week!\n:url",
     'himamat_unavailable_title' => 'Himamat is not ready yet.',
     'himamat_unavailable_body' => 'Holy Week content will appear here once the current season is prepared and published.',
     'himamat_preferences_title' => 'Set Your Holy Week Reminders',
