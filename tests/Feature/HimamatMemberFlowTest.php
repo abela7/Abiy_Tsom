@@ -58,7 +58,7 @@ class HimamatMemberFlowTest extends TestCase
             ->get('/member/himamat/preferences')
             ->assertOk()
             ->assertSee('Holy Week Reminders')
-            ->assertSee('Daily Introduction (7:00 AM)')
+            ->assertSee('7 oclock - (7:00am)')
             ->assertSee('Save My Preferences');
 
         $this->assertDatabaseHas('member_himamat_preferences', [
@@ -114,7 +114,7 @@ class HimamatMemberFlowTest extends TestCase
             ->get('/member/himamat/preferences')
             ->assertOk()
             ->assertSee('የሕማማት ሳምንት ማሳሰቢያዎች')
-            ->assertSee('የዕለቱ መክፈቻ (7:00 AM)')
+            ->assertSee('7 ሰዓት - (7:00am)')
             ->assertSee('ምርጫዬን አስቀምጥ');
     }
 

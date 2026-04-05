@@ -27,7 +27,7 @@ class HimamatTranslationsSyncTest extends TestCase
             'group' => 'himamat',
             'locale' => 'am',
             'key' => 'himamat_slot_9am',
-            'value' => '3 ሰዓት - ሰዓተ ሣልስት (9:00 AM)',
+            'value' => '3 ሰዓት - (9:00am)',
         ]);
 
         $this->assertDatabaseMissing('translations', [
