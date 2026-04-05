@@ -158,15 +158,6 @@
         @endif
     </div>
 
-    @if($isHimamatDaily)
-        @include('member.partials.himamat-linked-sections', [
-            'himamatDay' => $himamatDay,
-            'himamatTimeline' => $himamatTimeline ?? [],
-            'ethDateInfo' => $ethDateInfo ?? [],
-        ])
-    @endif
-
-
     {{-- Bible Reading --}}
     @if(!$isHimamatDaily && localized($daily, 'bible_reference'))
     @php
@@ -663,6 +654,14 @@
             @endforeach
         </div>
     </div>
+    @endif
+
+    @if($isHimamatDaily)
+        @include('member.partials.himamat-linked-sections', [
+            'himamatDay' => $himamatDay,
+            'himamatTimeline' => $himamatTimeline ?? [],
+            'ethDateInfo' => $ethDateInfo ?? [],
+        ])
     @endif
 
     {{-- Sinksar (Synaxarium) — Read / Listen toggle with immersive reader --}}

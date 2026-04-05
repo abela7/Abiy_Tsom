@@ -91,8 +91,14 @@ class MemberHimamatDailyVariantTest extends TestCase
             ->assertSee('Holy Monday')
             ->assertSee('Sacred Timeline')
             ->assertSee('Hosanna Hymn')
-            ->assertSee('Synaxarium')
-            ->assertSee('Daily Message')
+            ->assertSee('Synaxarium Heading')
+            ->assertSee('Daily Message Heading')
+            ->assertSeeInOrder([
+                'Hosanna Hymn',
+                'Holy Monday',
+                'Synaxarium Heading',
+                'Daily Message Heading',
+            ])
             ->assertDontSeeText('This daily Bible block should disappear for Himamat days.')
             ->assertDontSeeText('John 12:1-11')
             ->assertDontSeeText('Hidden Lectionary');
