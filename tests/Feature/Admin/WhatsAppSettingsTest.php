@@ -42,6 +42,9 @@ class WhatsAppSettingsTest extends TestCase
         ]);
 
         Http::fake([
+            'https://api.ultramsg.com/instance999/contacts/check*' => Http::response([
+                'status' => 'valid',
+            ]),
             'https://api.ultramsg.com/instance999/messages/chat' => Http::response([
                 'sent' => 'true',
                 'message' => 'ok',
@@ -62,6 +65,40 @@ class WhatsAppSettingsTest extends TestCase
             return $request->url() === 'https://api.ultramsg.com/instance999/messages/chat'
                 && $request['to'] === '+447700900456'
                 && $request['token'] === 'test-token-123';
+        });
+    }
+
+    public function test_admin_test_rejects_invalid_ultramsg_recipient_before_sending(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin',
+            'username' => 'admin',
+            'email' => null,
+            'password' => bcrypt('password'),
+            'role' => 'admin',
+            'is_super_admin' => true,
+        ]);
+
+        Http::fake([
+            'https://api.ultramsg.com/instance999/contacts/check*' => Http::response([
+                'status' => 'invalid',
+            ]),
+        ]);
+
+        $response = $this->actingAs($admin)->postJson('/admin/whatsapp/test', [
+            'instance_id' => 'instance999',
+            'token' => 'test-token-123',
+            'test_phone' => '+447700900456',
+        ]);
+
+        $response->assertStatus(400)
+            ->assertJson([
+                'success' => false,
+            ]);
+
+        Http::assertSentCount(1);
+        Http::assertSent(function (\Illuminate\Http\Client\Request $request): bool {
+            return str_starts_with($request->url(), 'https://api.ultramsg.com/instance999/contacts/check');
         });
     }
 

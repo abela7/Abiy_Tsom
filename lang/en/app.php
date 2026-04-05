@@ -644,6 +644,7 @@ return [
     'testing' => 'Testing',
     'whatsapp_test_success' => 'Test message sent successfully! Check your WhatsApp.',
     'whatsapp_test_failed' => 'Failed to send test message. Check your credentials and try again.',
+    'whatsapp_test_invalid_recipient' => 'UltraMsg reports :phone as an invalid WhatsApp recipient. If this is the same number connected to the UltraMsg session, test with a different recipient number.',
     'whatsapp_test_error' => 'Connection error. Please try again.',
     'whatsapp_test_not_configured' => 'Please enter Instance ID and Token first.',
     'whatsapp_test_fill_all' => 'Please fill in Instance ID, Token, and Test Phone Number.',

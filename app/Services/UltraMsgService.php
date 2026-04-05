@@ -68,6 +68,72 @@ final class UltraMsgService
     }
 
     /**
+     * Check whether UltraMsg currently sees a recipient as a valid WhatsApp contact.
+     *
+     * @return array{chat_id: string, status: 'valid'|'invalid'|'unknown', payload: array<string, mixed>|null}|null
+     */
+    public function checkContact(string $to, bool $nocache = true): ?array
+    {
+        $chatId = $this->toChatId($to);
+        if ($chatId === null) {
+            return null;
+        }
+
+        try {
+            $response = Http::acceptJson()
+                ->timeout(15)
+                ->get($this->contactsCheckEndpoint(), [
+                    'token' => $this->token(),
+                    'chatId' => $chatId,
+                    'nocache' => $nocache ? 'true' : 'false',
+                ]);
+        } catch (ConnectionException $e) {
+            Log::warning('UltraMsg connection error checking contact.', [
+                'to' => $to,
+                'chat_id' => $chatId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return [
+                'chat_id' => $chatId,
+                'status' => 'unknown',
+                'payload' => null,
+            ];
+        }
+
+        $payload = $response->json();
+
+        if (! $response->successful()) {
+            Log::warning('UltraMsg contact check failed.', [
+                'status' => $response->status(),
+                'to' => $to,
+                'chat_id' => $chatId,
+                'response' => $response->body(),
+            ]);
+
+            return [
+                'chat_id' => $chatId,
+                'status' => 'unknown',
+                'payload' => is_array($payload) ? $payload : null,
+            ];
+        }
+
+        $status = is_array($payload)
+            ? strtolower((string) ($payload['status'] ?? 'unknown'))
+            : 'unknown';
+
+        if (! in_array($status, ['valid', 'invalid'], true)) {
+            $status = 'unknown';
+        }
+
+        return [
+            'chat_id' => $chatId,
+            'status' => $status,
+            'payload' => is_array($payload) ? $payload : null,
+        ];
+    }
+
+    /**
      * Get current instance settings from UltraMsg.
      *
      * @return array<string, mixed>|null
@@ -154,6 +220,15 @@ final class UltraMsgService
         );
     }
 
+    private function contactsCheckEndpoint(): string
+    {
+        return sprintf(
+            '%s/%s/contacts/check',
+            rtrim((string) config('services.ultramsg.base_url', 'https://api.ultramsg.com'), '/'),
+            $this->instanceId()
+        );
+    }
+
     private function instanceId(): string
     {
         return trim((string) config('services.ultramsg.instance_id', ''));
@@ -179,5 +254,36 @@ final class UltraMsgService
         }
 
         return in_array(strtolower($value), ['1', 'true', 'yes', 'ok'], true);
+    }
+
+    private function toChatId(string $to): ?string
+    {
+        $candidate = trim($to);
+        if ($candidate === '') {
+            return null;
+        }
+
+        if (preg_match('/^([0-9]+)@c\.us$/i', $candidate, $matches) === 1) {
+            return $matches[1].'@c.us';
+        }
+
+        $ukNormalized = function_exists('normalizeUkWhatsAppPhone')
+            ? normalizeUkWhatsAppPhone($candidate)
+            : null;
+
+        if (is_string($ukNormalized) && $ukNormalized !== '') {
+            return ltrim($ukNormalized, '+').'@c.us';
+        }
+
+        $digits = preg_replace('/\D/', '', $candidate);
+        if (! is_string($digits) || $digits === '') {
+            return null;
+        }
+
+        if (str_starts_with($digits, '00')) {
+            $digits = substr($digits, 2);
+        }
+
+        return $digits !== '' ? $digits.'@c.us' : null;
     }
 }

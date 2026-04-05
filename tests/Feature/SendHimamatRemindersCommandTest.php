@@ -89,6 +89,9 @@ class SendHimamatRemindersCommandTest extends TestCase
         ]);
 
         Http::fake([
+            'https://api.ultramsg.com/instance999/contacts/check*' => Http::response([
+                'status' => 'valid',
+            ]),
             'https://api.ultramsg.com/instance999/messages/chat' => Http::response([
                 'sent' => 'true',
                 'message' => 'ok',
@@ -205,6 +208,66 @@ class SendHimamatRemindersCommandTest extends TestCase
         $this->assertDatabaseCount('member_himamat_reminder_deliveries', 0);
     }
 
+    public function test_sample_reminder_command_refuses_invalid_recipient_reported_by_ultramsg(): void
+    {
+        config()->set('services.ultramsg.instance_id', 'instance999');
+        config()->set('services.ultramsg.token', 'token-123');
+        config()->set('app.url', 'https://abiytsom.abuneteklehaymanot.org');
+
+        $season = LentSeason::create([
+            'year' => 2026,
+            'start_date' => '2026-02-15',
+            'end_date' => '2026-04-12',
+            'total_days' => 55,
+            'is_active' => true,
+        ]);
+
+        $day = HimamatDay::create([
+            'lent_season_id' => $season->id,
+            'slug' => 'holy-monday',
+            'sort_order' => 2,
+            'date' => '2026-04-06',
+            'title_en' => 'Holy Monday',
+            'is_published' => true,
+        ]);
+
+        HimamatSlot::create([
+            'himamat_day_id' => $day->id,
+            'slot_key' => 'intro',
+            'slot_order' => 1,
+            'scheduled_time_london' => '07:00:00',
+            'slot_header_en' => 'Daily Introduction',
+            'reminder_header_en' => 'Holy Monday has begun.',
+            'reading_reference_en' => 'Mark 11:12-26',
+            'is_published' => true,
+        ]);
+
+        $member = Member::create([
+            'baptism_name' => 'Abel Teklu',
+            'token' => str_repeat('z', 64),
+            'locale' => 'en',
+            'theme' => 'light',
+            'whatsapp_phone' => '+447700900111',
+            'whatsapp_confirmation_status' => 'confirmed',
+        ]);
+
+        Http::fake([
+            'https://api.ultramsg.com/instance999/contacts/check*' => Http::response([
+                'status' => 'invalid',
+            ]),
+        ]);
+
+        $this->artisan(sprintf(
+            'himamat:send-sample-reminder --member-id=%d --sample-phone=+447700900999 --day=holy-monday --slot=intro',
+            $member->id
+        ))->assertExitCode(1);
+
+        Http::assertSentCount(1);
+        Http::assertSent(function (\Illuminate\Http\Client\Request $request): bool {
+            return str_starts_with($request->url(), 'https://api.ultramsg.com/instance999/contacts/check');
+        });
+    }
+
     public function test_sample_reminder_command_sends_only_to_the_requested_sample_phone(): void
     {
         config()->set('services.ultramsg.instance_id', 'instance999');
@@ -249,6 +312,9 @@ class SendHimamatRemindersCommandTest extends TestCase
         ]);
 
         Http::fake([
+            'https://api.ultramsg.com/instance999/contacts/check*' => Http::response([
+                'status' => 'valid',
+            ]),
             'https://api.ultramsg.com/instance999/messages/chat' => Http::response([
                 'sent' => 'true',
                 'message' => 'ok',
@@ -261,8 +327,12 @@ class SendHimamatRemindersCommandTest extends TestCase
             $member->id
         ))->assertExitCode(0);
 
-        Http::assertSentCount(1);
+        Http::assertSentCount(2);
         Http::assertSent(function (\Illuminate\Http\Client\Request $request) use ($member, $day): bool {
+            if ($request->url() !== 'https://api.ultramsg.com/instance999/messages/chat') {
+                return false;
+            }
+
             $body = (string) $request['body'];
 
             return $request['to'] === '+447700900999'

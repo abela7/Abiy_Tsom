@@ -24,6 +24,9 @@ class SendHimamatInvitationsCommandTest extends TestCase
         $secondMember = $this->createMember('ማርታ ሐና', '+447700900222', 'am', 'b');
 
         Http::fake([
+            'https://api.ultramsg.com/instance999/contacts/check*' => Http::response([
+                'status' => 'valid',
+            ]),
             'https://api.ultramsg.com/instance999/messages/chat' => Http::response([
                 'sent' => 'true',
                 'message' => 'ok',
@@ -78,6 +81,9 @@ class SendHimamatInvitationsCommandTest extends TestCase
         $member = $this->createMember('Samuel Yohannes', '+447700900333', '', 's');
 
         Http::fake([
+            'https://api.ultramsg.com/instance999/contacts/check*' => Http::response([
+                'status' => 'valid',
+            ]),
             'https://api.ultramsg.com/instance999/messages/chat' => Http::response([
                 'sent' => 'true',
                 'message' => 'ok',
@@ -90,8 +96,12 @@ class SendHimamatInvitationsCommandTest extends TestCase
             $member->id
         ))->assertExitCode(0);
 
-        Http::assertSentCount(1);
+        Http::assertSentCount(2);
         Http::assertSent(function (\Illuminate\Http\Client\Request $request) use ($member): bool {
+            if ($request->url() !== 'https://api.ultramsg.com/instance999/messages/chat') {
+                return false;
+            }
+
             $body = (string) $request['body'];
 
             return $request['to'] === '+447700900999'
@@ -100,6 +110,32 @@ class SendHimamatInvitationsCommandTest extends TestCase
         });
 
         $this->assertDatabaseCount('member_himamat_invitation_deliveries', 0);
+    }
+
+    public function test_sample_invitation_refuses_invalid_recipient_reported_by_ultramsg(): void
+    {
+        config()->set('services.ultramsg.instance_id', 'instance999');
+        config()->set('services.ultramsg.token', 'token-123');
+        config()->set('app.url', 'https://abiytsom.abuneteklehaymanot.org');
+
+        $this->createActiveSeason();
+        $member = $this->createMember('Samuel Yohannes', '+447700900333', '', 's');
+
+        Http::fake([
+            'https://api.ultramsg.com/instance999/contacts/check*' => Http::response([
+                'status' => 'invalid',
+            ]),
+        ]);
+
+        $this->artisan(sprintf(
+            'himamat:send-invitations --campaign=holy-monday-launch --sample-member-id=%d --sample-phone=+447700900999 --send-now',
+            $member->id
+        ))->assertExitCode(1);
+
+        Http::assertSentCount(1);
+        Http::assertSent(function (\Illuminate\Http\Client\Request $request): bool {
+            return str_starts_with($request->url(), 'https://api.ultramsg.com/instance999/contacts/check');
+        });
     }
 
     private function createActiveSeason(): void

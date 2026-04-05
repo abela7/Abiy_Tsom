@@ -318,6 +318,18 @@ class WhatsAppTemplateController extends Controller
         $message = $whatsAppTemplateService
             ->renderDailyReminder($member, $dailyContent, $dayUrl, $localeOverride)['message'];
 
+        if ($this->contactIsInvalid($ultraMsg, (string) $member->whatsapp_phone)) {
+            return redirect()
+                ->route('admin.whatsapp.template')
+                ->withInput([
+                    'template_test_member_id' => $member->id,
+                    'template_test_locale' => $testLocale,
+                ])
+                ->with('error', __('app.whatsapp_test_invalid_recipient', [
+                    'phone' => (string) $member->whatsapp_phone,
+                ]));
+        }
+
         if (! $ultraMsg->sendTextMessage((string) $member->whatsapp_phone, $message)) {
             return redirect()
                 ->route('admin.whatsapp.template')
@@ -457,6 +469,17 @@ class WhatsAppTemplateController extends Controller
         $message = $whatsAppTemplateService
             ->renderBulkMessage($member, $englishMessage, $amharicMessage)['message'];
 
+        if ($this->contactIsInvalid($ultraMsg, (string) $member->whatsapp_phone)) {
+            return redirect()
+                ->route('admin.whatsapp.template')
+                ->withInput([
+                    'bulk_sample_member_id' => $member->id,
+                ])
+                ->with('error', __('app.whatsapp_test_invalid_recipient', [
+                    'phone' => (string) $member->whatsapp_phone,
+                ]));
+        }
+
         if ($message === '' || ! $ultraMsg->sendTextMessage((string) $member->whatsapp_phone, $message)) {
             return redirect()
                 ->route('admin.whatsapp.template')
@@ -547,5 +570,10 @@ class WhatsAppTemplateController extends Controller
         } catch (Throwable) {
             return 0;
         }
+    }
+
+    private function contactIsInvalid(UltraMsgService $ultraMsg, string $phone): bool
+    {
+        return ($ultraMsg->checkContact($phone)['status'] ?? 'unknown') === 'invalid';
     }
 }

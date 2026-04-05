@@ -123,6 +123,20 @@ class WhatsAppSettingsController extends Controller
                 ], 400);
             }
 
+            $contact = $ultraMsgService->checkContact($validated['test_phone']);
+            if (($contact['status'] ?? 'unknown') === 'invalid') {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('app.whatsapp_test_invalid_recipient', [
+                        'phone' => $validated['test_phone'],
+                    ]),
+                    'details' => [
+                        'chat_id' => $contact['chat_id'],
+                        'status' => $contact['status'],
+                    ],
+                ], 400);
+            }
+
             $testMessage = __('app.whatsapp_test_message', ['app' => config('app.name', 'Abiy Tsom')]);
             $sent = $ultraMsgService->sendTextMessage($validated['test_phone'], $testMessage);
 

@@ -139,6 +139,9 @@ class WhatsAppBulkMessageTest extends TestCase
         config()->set('services.ultramsg.token', 'token-123');
 
         Http::fake([
+            'https://api.ultramsg.com/instance999/contacts/check*' => Http::response([
+                'status' => 'valid',
+            ]),
             'https://api.ultramsg.com/instance999/messages/chat' => Http::response([
                 'sent' => 'true',
                 'message' => 'ok',
@@ -160,6 +163,10 @@ class WhatsAppBulkMessageTest extends TestCase
             ->assertSessionHas('success');
 
         Http::assertSent(function (\Illuminate\Http\Client\Request $request): bool {
+            if ($request->url() !== 'https://api.ultramsg.com/instance999/messages/chat') {
+                return false;
+            }
+
             return $request->url() === 'https://api.ultramsg.com/instance999/messages/chat'
                 && $request['to'] === '+447700900111'
                 && str_contains((string) $request['body'], 'ሰላም Abel, የአማርኛ ሙከራ መልእክት።');
@@ -172,6 +179,9 @@ class WhatsAppBulkMessageTest extends TestCase
         config()->set('services.ultramsg.token', 'token-123');
 
         Http::fake([
+            'https://api.ultramsg.com/instance999/contacts/check*' => Http::response([
+                'status' => 'valid',
+            ]),
             'https://api.ultramsg.com/instance999/messages/chat' => Http::response([
                 'sent' => 'true',
                 'message' => 'ok',
@@ -193,6 +203,10 @@ class WhatsAppBulkMessageTest extends TestCase
             ->assertSessionHas('success');
 
         Http::assertSent(function (\Illuminate\Http\Client\Request $request): bool {
+            if ($request->url() !== 'https://api.ultramsg.com/instance999/messages/chat') {
+                return false;
+            }
+
             return $request['to'] === '+447700900111'
                 && str_contains((string) $request['body'], 'Hello Abel, English sample.');
         });
@@ -204,6 +218,9 @@ class WhatsAppBulkMessageTest extends TestCase
         config()->set('services.ultramsg.token', 'token-123');
 
         Http::fake([
+            'https://api.ultramsg.com/instance999/contacts/check*' => Http::response([
+                'status' => 'valid',
+            ]),
             'https://api.ultramsg.com/instance999/messages/chat' => Http::response([
                 'sent' => 'true',
                 'message' => 'ok',
@@ -227,6 +244,10 @@ class WhatsAppBulkMessageTest extends TestCase
             ->assertSessionHas('success');
 
         Http::assertSent(function (\Illuminate\Http\Client\Request $request): bool {
+            if ($request->url() !== 'https://api.ultramsg.com/instance999/messages/chat') {
+                return false;
+            }
+
             return $request['to'] === '+447700900112'
                 && str_contains((string) $request['body'], 'Hello Sara, English sample.');
         });

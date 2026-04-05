@@ -92,7 +92,34 @@ class SendHimamatSampleReminder extends Command
                 $rendered['message']
             ));
 
+            $contact = $ultraMsgService->checkContact($samplePhone);
+            if ($contact !== null) {
+                $this->newLine();
+                $this->line(sprintf(
+                    'UltraMsg contact check: %s (%s)',
+                    strtoupper($contact['status']),
+                    $contact['chat_id']
+                ));
+
+                if ($contact['status'] === 'invalid') {
+                    $this->warn('UltraMsg says this recipient is invalid, so a real send will not arrive.');
+                    $this->line('If this is the same WhatsApp number connected to your UltraMsg instance, test with a different recipient number.');
+                }
+            }
+
             return self::SUCCESS;
+        }
+
+        $contact = $ultraMsgService->checkContact($samplePhone);
+        if (($contact['status'] ?? 'unknown') === 'invalid') {
+            $this->error(sprintf(
+                'UltraMsg reports %s as INVALID (%s). The message will not be delivered.',
+                $samplePhone,
+                $contact['chat_id']
+            ));
+            $this->line('If this is the same WhatsApp number connected to your UltraMsg instance, test with a different recipient number.');
+
+            return self::FAILURE;
         }
 
         if (! $ultraMsgService->sendTextMessage($samplePhone, $rendered['message'])) {
