@@ -94,7 +94,7 @@ final class SendHimamatReminderJob implements ShouldQueue
             $member,
             $slot->himamatDay,
             $slot,
-            $slot->himamatDay->accessPath($member, $slot->slot_key)
+            $slot->himamatDay->accessUrl($member, $slot->slot_key)
         )['message'];
 
         if (! $ultraMsgService->sendTextMessage((string) $member->whatsapp_phone, $message)) {

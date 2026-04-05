@@ -81,7 +81,7 @@ class SendHimamatSampleReminder extends Command
             $member,
             $day,
             $slot,
-            $day->accessPath($member, $slot->slot_key)
+            $day->accessUrl($member, $slot->slot_key)
         );
 
         if ($dryRun) {

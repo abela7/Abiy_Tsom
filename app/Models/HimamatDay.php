@@ -93,4 +93,9 @@ class HimamatDay extends Model
 
         return $slotKey ? $path.'/'.$slotKey : $path;
     }
+
+    public function accessUrl(Member $member, ?string $slotKey = null): string
+    {
+        return url($this->accessPath($member, $slotKey));
+    }
 }
