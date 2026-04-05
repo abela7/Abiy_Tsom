@@ -29,5 +29,11 @@ class HimamatTranslationsSyncTest extends TestCase
             'key' => 'himamat_slot_9am',
             'value' => '3 ሰዓት - ሰዓተ ሣልስት (9:00 AM)',
         ]);
+
+        $this->assertDatabaseMissing('translations', [
+            'group' => 'himamat',
+            'locale' => 'en',
+            'key' => 'himamat_admin_subtitle',
+        ]);
     }
 }

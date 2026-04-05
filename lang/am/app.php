@@ -1251,7 +1251,7 @@ return [
     'group_whatsapp_member' => 'WhatsApp Reminder (Member Settings)',
     'group_navigation' => 'መርካቶ',
     'group_home' => 'መነሻ',
-    'group_himamat' => 'ሕማማት',
+    'group_himamat' => 'የሕማማት ምርጫ ገጽ',
     'group_day_content' => 'የቀን ይዘት (መጽሐፍ ቅዱስ፣ መዝሙር፣ ወዘተ)',
     'group_week_detail' => 'የሳምንት ዝርዝር ገጽ',
 
