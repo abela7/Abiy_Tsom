@@ -21,12 +21,6 @@
             <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         </div>
         <div class="min-w-0 flex-1">
-            <div class="flex items-center gap-2 flex-wrap">
-                <span class="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted px-2.5 py-1 text-[10px] font-semibold text-muted-text">
-                    <span class="h-1.5 w-1.5 rounded-full {{ ($himamatTimeline['is_today'] ?? false) ? 'bg-accent animate-pulse' : 'bg-accent-secondary' }}"></span>
-                    {{ ($himamatTimeline['is_today'] ?? false) ? __('app.today') : $himamatDay->date?->format('D') }}
-                </span>
-            </div>
             <h2 class="mt-1 text-lg font-bold text-primary leading-snug">{{ $localizedHimamatTitle }}</h2>
         </div>
     </div>
