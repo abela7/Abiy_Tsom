@@ -9,6 +9,7 @@ use App\Models\Activity;
 use App\Models\Announcement;
 use App\Models\Banner;
 use App\Models\DailyContent;
+use App\Models\HimamatDay;
 use App\Models\Lectionary;
 use App\Models\LentSeason;
 use App\Models\MemberChecklist;
@@ -17,6 +18,7 @@ use App\Models\MemberDailyView;
 use App\Models\WeeklyTheme;
 use App\Services\AbiyTsomStructure;
 use App\Services\EthiopianCalendarService;
+use App\Services\HimamatTimelineService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -490,6 +492,11 @@ class HomeController extends Controller
             ->where('day', $ethDateInfo['ethiopian_date']['day'])
             ->first();
 
+        $himamatDay = $this->resolveLinkedHimamatDay($daily);
+        $himamatTimeline = $himamatDay
+            ? app(HimamatTimelineService::class)->buildTimeline($himamatDay)
+            : null;
+
         return view('member.day', compact(
             'member',
             'daily',
@@ -501,6 +508,28 @@ class HomeController extends Controller
             'prevDay',
             'nextDay',
             'lectionary',
+            'himamatDay',
+            'himamatTimeline',
         ));
+    }
+
+    private function resolveLinkedHimamatDay(DailyContent $daily): ?HimamatDay
+    {
+        if ($daily->day_number < 50 || $daily->day_number > 55) {
+            return null;
+        }
+
+        return HimamatDay::query()
+            ->where('lent_season_id', $daily->lent_season_id)
+            ->whereDate('date', $daily->date)
+            ->where('is_published', true)
+            ->with([
+                'slots' => fn ($query) => $query
+                    ->where('is_published', true)
+                    ->with(['resources' => fn ($resourceQuery) => $resourceQuery->orderBy('sort_order')])
+                    ->orderBy('slot_order'),
+                'faqs' => fn ($query) => $query->orderBy('sort_order'),
+            ])
+            ->first();
     }
 }

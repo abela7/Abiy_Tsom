@@ -4,6 +4,7 @@
     $locale = app()->getLocale();
     $publicPreview = (bool) ($publicPreview ?? false);
     $guestAccess = (bool) ($guestAccess ?? false);
+    $isHimamatDaily = isset($himamatDay) && $himamatDay !== null;
     $backUrl = $backUrl ?? ($publicPreview ? route('home') : memberUrl('/calendar'));
     $weekName = $daily->weeklyTheme ? (localized($daily->weeklyTheme, 'name') ?? $daily->weeklyTheme->name_en ?? '-') : '';
     $dayTitle = localized($daily, 'day_title') ?? __('app.day_x', ['day' => $daily->day_number]);
@@ -157,9 +158,17 @@
         @endif
     </div>
 
+    @if($isHimamatDaily)
+        @include('member.partials.himamat-linked-sections', [
+            'himamatDay' => $himamatDay,
+            'himamatTimeline' => $himamatTimeline ?? [],
+            'ethDateInfo' => $ethDateInfo ?? [],
+        ])
+    @endif
+
 
     {{-- Bible Reading --}}
-    @if(localized($daily, 'bible_reference'))
+    @if(!$isHimamatDaily && localized($daily, 'bible_reference'))
     @php
         $bibleText     = localized($daily, 'bible_text');
         $bibleAudioAm  = $daily->bible_audio_url_am ?: null;
@@ -1203,7 +1212,7 @@
     @endif
 
     {{-- Lectionary (ግጻዌ) --}}
-    @if(isset($lectionary) && $lectionary && $lectionary->hasContent())
+    @if(!$isHimamatDaily && isset($lectionary) && $lectionary && $lectionary->hasContent())
     @php
     $lecReadings = [
         ['key'=>'pauline','num'=>1,'label_key'=>'app.lectionary_pauline',

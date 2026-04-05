@@ -60,13 +60,13 @@ class Lectionary extends Model
     protected function casts(): array
     {
         return [
-            'month'           => 'integer',
-            'day'             => 'integer',
+            'month' => 'integer',
+            'day' => 'integer',
             'pauline_chapter' => 'integer',
-            'catholic_chapter'=> 'integer',
-            'acts_chapter'    => 'integer',
-            'mesbak_psalm'    => 'integer',
-            'gospel_chapter'  => 'integer',
+            'catholic_chapter' => 'integer',
+            'acts_chapter' => 'integer',
+            'mesbak_psalm' => 'integer',
+            'gospel_chapter' => 'integer',
         ];
     }
 
@@ -76,9 +76,14 @@ class Lectionary extends Model
     public function hasContent(): bool
     {
         return filled($this->pauline_book_am)
+            || filled($this->pauline_book_en)
             || filled($this->catholic_book_am)
+            || filled($this->catholic_book_en)
             || filled($this->acts_chapter)
             || filled($this->mesbak_psalm)
-            || filled($this->gospel_book_am);
+            || filled($this->gospel_book_am)
+            || filled($this->gospel_book_en)
+            || filled($this->qiddase_am)
+            || filled($this->qiddase_en);
     }
 }
