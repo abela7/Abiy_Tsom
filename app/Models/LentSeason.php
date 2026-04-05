@@ -65,6 +65,9 @@ class LentSeason extends Model
      */
     public static function active(): ?self
     {
-        return self::where('is_active', true)->first();
+        return self::query()
+            ->where('is_active', true)
+            ->latest('id')
+            ->first();
     }
 }
