@@ -6,7 +6,6 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
-use Throwable;
 
 return new class extends Migration
 {
@@ -31,7 +30,7 @@ return new class extends Migration
                     ->on('himamat_reminder_dispatches')
                     ->nullOnDelete();
             });
-        } catch (Throwable $exception) {
+        } catch (\Throwable $exception) {
             if (! $this->isDuplicateDefinitionError($exception)) {
                 throw $exception;
             }
@@ -44,7 +43,7 @@ return new class extends Migration
                     self::INDEX_NAME
                 );
             });
-        } catch (Throwable $exception) {
+        } catch (\Throwable $exception) {
             if (! $this->isDuplicateDefinitionError($exception)) {
                 throw $exception;
             }
@@ -57,14 +56,14 @@ return new class extends Migration
             Schema::table('member_himamat_reminder_deliveries', function (Blueprint $table): void {
                 $table->dropIndex(self::INDEX_NAME);
             });
-        } catch (Throwable) {
+        } catch (\Throwable) {
         }
 
         try {
             Schema::table('member_himamat_reminder_deliveries', function (Blueprint $table): void {
                 $table->dropForeign(self::FOREIGN_KEY_NAME);
             });
-        } catch (Throwable) {
+        } catch (\Throwable) {
         }
 
         if (Schema::hasColumn('member_himamat_reminder_deliveries', 'himamat_reminder_dispatch_id')) {
@@ -74,7 +73,7 @@ return new class extends Migration
         }
     }
 
-    private function isDuplicateDefinitionError(Throwable $exception): bool
+    private function isDuplicateDefinitionError(\Throwable $exception): bool
     {
         $message = Str::lower($exception->getMessage());
 
