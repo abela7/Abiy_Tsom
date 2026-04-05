@@ -105,6 +105,9 @@ class HimamatDayController extends Controller
             'title_en' => ['required', 'string', 'max:255'],
             'title_am' => ['nullable', 'string', 'max:255'],
             'date' => ['required', 'date'],
+            'day_reminder_time' => ['required', 'date_format:H:i'],
+            'day_reminder_title_en' => ['nullable', 'string', 'max:255'],
+            'day_reminder_title_am' => ['nullable', 'string', 'max:255'],
             'spiritual_meaning_en' => ['nullable', 'string'],
             'spiritual_meaning_am' => ['nullable', 'string'],
             'ritual_guide_intro_en' => ['nullable', 'string'],
@@ -140,8 +143,28 @@ class HimamatDayController extends Controller
         ]);
 
         $faqPayloads = $this->normalizeFaqPayloads($validated['faqs'] ?? [], $faqIds);
+        $resolvedReminderTime = $validated['day_reminder_time'].':00';
+        $resolvedReminderTitleEn = $this->resolveReminderTitle(
+            $validated['day_reminder_title_en'] ?? null,
+            $validated['title_en']
+        );
+        $resolvedReminderTitleAm = $this->resolveReminderTitle(
+            $validated['day_reminder_title_am'] ?? null,
+            $validated['title_am'] ?? null
+        );
 
-        DB::transaction(function () use ($faqPayloads, $himamatDay, $request, $slotIds, $validated): void {
+        $this->validateTimelineOrdering($himamatDay, $resolvedReminderTime);
+
+        DB::transaction(function () use (
+            $faqPayloads,
+            $himamatDay,
+            $request,
+            $resolvedReminderTime,
+            $resolvedReminderTitleAm,
+            $resolvedReminderTitleEn,
+            $slotIds,
+            $validated
+        ): void {
             $himamatDay->update([
                 'title_en' => $validated['title_en'],
                 'title_am' => $validated['title_am'] ?: null,
@@ -173,7 +196,7 @@ class HimamatDayController extends Controller
                     continue;
                 }
 
-                $slot->update([
+                $slotAttributes = [
                     'slot_header_en' => $slotInput['slot_header_en'],
                     'slot_header_am' => $slotInput['slot_header_am'] ?: null,
                     'reminder_header_en' => $slotInput['reminder_header_en'],
@@ -191,7 +214,15 @@ class HimamatDayController extends Controller
                     'short_prayer_am' => $slotInput['short_prayer_am'] ?: null,
                     'is_published' => (bool) ($slotInput['is_published'] ?? false),
                     'updated_by_id' => auth()->id(),
-                ]);
+                ];
+
+                if ($slot->slot_key === 'intro') {
+                    $slotAttributes['scheduled_time_london'] = $resolvedReminderTime;
+                    $slotAttributes['reminder_header_en'] = $resolvedReminderTitleEn;
+                    $slotAttributes['reminder_header_am'] = $resolvedReminderTitleAm;
+                }
+
+                $slot->update($slotAttributes);
             }
 
             $this->syncFaqs($himamatDay, $faqPayloads);
@@ -246,6 +277,46 @@ class HimamatDayController extends Controller
         }
 
         return $normalized;
+    }
+
+    private function resolveReminderTitle(?string $preferredValue, ?string $fallbackValue): ?string
+    {
+        $preferred = trim((string) $preferredValue);
+        if ($preferred !== '') {
+            return $preferred;
+        }
+
+        $fallback = trim((string) $fallbackValue);
+
+        return $fallback !== '' ? $fallback : null;
+    }
+
+    private function validateTimelineOrdering(HimamatDay $day, string $introTime): void
+    {
+        $slots = $day->slots()->orderBy('slot_order')->get();
+        if ($slots->count() < 2) {
+            return;
+        }
+
+        $orderedTimes = $slots->map(function ($slot) use ($introTime): array {
+            return [
+                'slot_key' => (string) $slot->slot_key,
+                'time' => $slot->slot_key === 'intro'
+                    ? $introTime
+                    : (string) $slot->scheduled_time_london,
+            ];
+        })->values();
+
+        for ($index = 0; $index < $orderedTimes->count() - 1; $index++) {
+            $current = $orderedTimes[$index];
+            $next = $orderedTimes[$index + 1];
+
+            if ($current['time'] >= $next['time']) {
+                throw ValidationException::withMessages([
+                    'day_reminder_time' => __('app.himamat_day_reminder_time_order_error'),
+                ]);
+            }
+        }
     }
 
     /**

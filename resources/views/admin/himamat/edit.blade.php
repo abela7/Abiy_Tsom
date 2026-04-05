@@ -6,6 +6,10 @@
     $synaxariumSource = old('synaxarium_source', $day->synaxarium_source ?? 'automatic');
     $synaxariumMonth = old('synaxarium_month', $day->synaxarium_month);
     $synaxariumDay = old('synaxarium_day', $day->synaxarium_day);
+    $introSlot = $day->slots->firstWhere('slot_key', 'intro');
+    $dayReminderTime = old('day_reminder_time', $introSlot ? substr((string) $introSlot->scheduled_time_london, 0, 5) : '07:00');
+    $dayReminderTitleEn = old('day_reminder_title_en', $introSlot?->reminder_header_en);
+    $dayReminderTitleAm = old('day_reminder_title_am', $introSlot?->reminder_header_am);
     $faqItems = old('faqs');
     if ($faqItems === null) {
         $faqItems = $day->faqs
@@ -64,7 +68,11 @@
 @endif
 
 <form action="{{ route('admin.himamat.update', ['day' => $day->getKey()]) }}" method="POST" class="space-y-5"
-      x-data="{ synaxariumSource: @js($synaxariumSource) }">
+      x-data="{
+          synaxariumSource: @js($synaxariumSource),
+          dayReminderTitleEn: @js($dayReminderTitleEn),
+          dayReminderTitleAm: @js($dayReminderTitleAm)
+      }">
     @csrf
     @method('PUT')
 
@@ -99,9 +107,27 @@
                 <input type="date" name="date" value="{{ old('date', $day->date?->format('Y-m-d')) }}"
                        class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">
             </div>
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_day_reminder_time') }}</label>
+                <input type="time" name="day_reminder_time" value="{{ $dayReminderTime }}" step="60"
+                       class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">
+                <p class="mt-2 text-xs text-secondary">{{ __('app.himamat_day_reminder_time_hint') }}</p>
+            </div>
             <div class="rounded-xl border border-border bg-muted px-4 py-3">
                 <p class="text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_timezone_label') }}</p>
                 <p class="mt-2 text-sm font-semibold text-primary">{{ __('app.himamat_timezone_value') }}</p>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_day_reminder_title') }} (EN)</label>
+                <input type="text" name="day_reminder_title_en" x-model="dayReminderTitleEn"
+                       class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">
+                <p class="mt-2 text-xs text-secondary">{{ __('app.himamat_day_reminder_title_hint') }}</p>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_day_reminder_title') }} (AM)</label>
+                <input type="text" name="day_reminder_title_am" x-model="dayReminderTitleAm"
+                       class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">
+                <p class="mt-2 text-xs text-secondary">{{ __('app.himamat_day_reminder_title_hint') }}</p>
             </div>
             <div class="md:col-span-2">
                 <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_day_meaning_title') }} (EN)</label>
@@ -314,16 +340,25 @@
                     <input type="text" name="slots[{{ $index }}][slot_header_am]" value="{{ old("slots.$index.slot_header_am", $slot->slot_header_am) }}"
                            class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">Reminder Header (EN)</label>
-                    <input type="text" name="slots[{{ $index }}][reminder_header_en]" value="{{ old("slots.$index.reminder_header_en", $slot->reminder_header_en) }}"
-                           class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">Reminder Header (AM)</label>
-                    <input type="text" name="slots[{{ $index }}][reminder_header_am]" value="{{ old("slots.$index.reminder_header_am", $slot->reminder_header_am) }}"
-                           class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">
-                </div>
+                @if($slot->slot_key === 'intro')
+                    <input type="hidden" name="slots[{{ $index }}][reminder_header_en]" :value="dayReminderTitleEn">
+                    <input type="hidden" name="slots[{{ $index }}][reminder_header_am]" :value="dayReminderTitleAm">
+                    <div class="md:col-span-2 rounded-2xl border border-border/80 bg-muted/40 p-4">
+                        <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_day_reminder_title') }}</p>
+                        <p class="mt-2 text-sm leading-relaxed text-secondary">{{ __('app.himamat_day_reminder_managed_note') }}</p>
+                    </div>
+                @else
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">Reminder Header (EN)</label>
+                        <input type="text" name="slots[{{ $index }}][reminder_header_en]" value="{{ old("slots.$index.reminder_header_en", $slot->reminder_header_en) }}"
+                               class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">Reminder Header (AM)</label>
+                        <input type="text" name="slots[{{ $index }}][reminder_header_am]" value="{{ old("slots.$index.reminder_header_am", $slot->reminder_header_am) }}"
+                               class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">
+                    </div>
+                @endif
                 <div>
                     <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_significance_title') }} (EN)</label>
                     <textarea name="slots[{{ $index }}][spiritual_significance_en]" rows="4"
