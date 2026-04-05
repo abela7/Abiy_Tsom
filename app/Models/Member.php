@@ -154,6 +154,11 @@ class Member extends Model
         return $this->hasMany(MemberHimamatReminderDelivery::class);
     }
 
+    public function himamatInvitationDeliveries(): HasMany
+    {
+        return $this->hasMany(MemberHimamatInvitationDelivery::class);
+    }
+
     public function referrer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'referred_by');
