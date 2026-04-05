@@ -657,11 +657,32 @@
     @endif
 
     @if($isHimamatDaily)
+        {{-- Section divider: Daily → Himamat transition --}}
+        <div class="flex items-center gap-3 px-1">
+            <div class="h-px flex-1 bg-gradient-to-r from-transparent via-accent/25 to-transparent"></div>
+            <div class="flex items-center gap-1.5 shrink-0">
+                <svg class="w-3.5 h-3.5 text-accent/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span class="text-[11px] font-bold uppercase tracking-[0.16em] text-accent/70">{{ __('app.himamat_eyebrow') }}</span>
+            </div>
+            <div class="h-px flex-1 bg-gradient-to-r from-transparent via-accent/25 to-transparent"></div>
+        </div>
+
         @include('member.partials.himamat-linked-sections', [
             'himamatDay' => $himamatDay,
             'himamatTimeline' => $himamatTimeline ?? [],
             'ethDateInfo' => $ethDateInfo ?? [],
         ])
+
+        {{-- Continue Daily Content bridge --}}
+        <div class="flex flex-col items-center gap-2 py-1">
+            <div class="h-px w-full bg-gradient-to-r from-transparent via-border to-transparent"></div>
+            <div class="flex items-center gap-2 text-muted-text">
+                <svg class="w-3.5 h-3.5 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+                <span class="text-[11px] font-semibold uppercase tracking-[0.14em]">{{ app()->getLocale() === 'am' ? 'ዕለታዊ ይዘት ይቀጥሉ' : 'Continue Daily Content' }}</span>
+                <svg class="w-3.5 h-3.5 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+            </div>
+            <div class="h-px w-full bg-gradient-to-r from-transparent via-border to-transparent"></div>
+        </div>
     @endif
 
     {{-- Sinksar (Synaxarium) — Read / Listen toggle with immersive reader --}}
