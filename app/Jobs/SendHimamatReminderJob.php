@@ -4,15 +4,11 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
-use App\Models\HimamatSlot;
-use App\Models\Member;
-use App\Models\MemberHimamatPreference;
 use App\Models\MemberHimamatReminderDelivery;
-use App\Services\HimamatWhatsAppTemplateService;
 use App\Services\UltraMsgService;
-use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\Middleware\RateLimited;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
 use Throwable;
@@ -21,7 +17,7 @@ final class SendHimamatReminderJob implements ShouldQueue
 {
     use Queueable;
 
-    public const QUEUE_NAME = 'whatsapp-himamat';
+    public const QUEUE_NAME = 'whatsapp-himamat-reminders';
 
     public int $tries = 3;
 
@@ -31,57 +27,63 @@ final class SendHimamatReminderJob implements ShouldQueue
     public array $backoff = [10, 30];
 
     public function __construct(
-        public readonly int $memberId,
-        public readonly int $himamatSlotId,
-        public readonly string $dueAtLondon,
+        public readonly int $deliveryId,
     ) {
-        $this->onQueue(self::QUEUE_NAME);
+        $this->onQueue((string) config('himamat.reminders.queues.reminders', self::QUEUE_NAME));
+    }
+
+    /**
+     * @return array<int, object>
+     */
+    public function middleware(): array
+    {
+        return [
+            new RateLimited('himamat-whatsapp-reminders'),
+        ];
     }
 
     public function handle(
         UltraMsgService $ultraMsgService,
-        HimamatWhatsAppTemplateService $templateService
+        \App\Services\HimamatWhatsAppTemplateService $templateService
     ): void {
-        $member = Member::query()->find($this->memberId);
+        $delivery = MemberHimamatReminderDelivery::query()
+            ->with(['member', 'himamatSlot.himamatDay'])
+            ->find($this->deliveryId);
+
+        if (! $delivery || $delivery->status === 'sent' || $delivery->status === 'skipped') {
+            return;
+        }
+
+        $member = $delivery->member;
         if (! $member
             || $member->whatsapp_confirmation_status !== 'confirmed'
             || ! $member->whatsapp_phone
             || trim((string) $member->whatsapp_phone) === ''
         ) {
+            $this->markSkipped($delivery, 'Member is no longer eligible for confirmed WhatsApp reminders.');
+
             return;
         }
 
-        $slot = HimamatSlot::query()
-            ->with('himamatDay')
-            ->whereKey($this->himamatSlotId)
-            ->where('is_published', true)
-            ->first();
+        $slot = $delivery->himamatSlot;
+        if (! $slot || ! $slot->himamatDay || ! $slot->is_published || ! $slot->himamatDay->is_published) {
+            $this->markSkipped($delivery, 'The Himamat slot is no longer published.');
 
-        if (! $slot || ! $slot->himamatDay || ! $slot->himamatDay->is_published) {
             return;
         }
 
-        $preferences = MemberHimamatPreference::query()
+        $preferences = \App\Models\MemberHimamatPreference::query()
             ->where('member_id', $member->id)
             ->where('lent_season_id', $slot->himamatDay->lent_season_id)
             ->first();
 
         if (! $preferences || ! $preferences->slotEnabled((string) $slot->slot_key)) {
-            return;
-        }
+            $this->markSkipped($delivery, 'The member disabled this Himamat slot before delivery.');
 
-        $delivery = MemberHimamatReminderDelivery::query()->firstOrNew([
-            'member_id' => $member->id,
-            'himamat_slot_id' => $slot->id,
-            'channel' => 'whatsapp',
-        ]);
-
-        if ($delivery->exists && $delivery->status === 'sent') {
             return;
         }
 
         $delivery->forceFill([
-            'due_at_london' => CarbonImmutable::parse($this->dueAtLondon, config('himamat.timezone', 'Europe/London')),
             'status' => 'sending',
             'attempt_count' => (int) $delivery->attempt_count + 1,
             'last_attempt_at' => now(),
@@ -117,10 +119,17 @@ final class SendHimamatReminderJob implements ShouldQueue
     public function failed(Throwable $exception): void
     {
         Log::warning('Queued Himamat reminder failed.', [
-            'member_id' => $this->memberId,
-            'himamat_slot_id' => $this->himamatSlotId,
-            'due_at_london' => $this->dueAtLondon,
+            'delivery_id' => $this->deliveryId,
             'error' => $exception->getMessage(),
         ]);
+    }
+
+    private function markSkipped(MemberHimamatReminderDelivery $delivery, string $reason): void
+    {
+        $delivery->forceFill([
+            'status' => 'skipped',
+            'failure_reason' => $reason,
+            'last_attempt_at' => now(),
+        ])->save();
     }
 }

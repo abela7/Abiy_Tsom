@@ -9,6 +9,10 @@
         <p class="mt-1 text-sm text-secondary">{{ __('app.himamat_admin_subtitle') }}</p>
     </div>
     <div class="flex flex-col gap-2 sm:flex-row">
+        <a href="{{ route('admin.himamat.reminder-health') }}"
+           class="inline-flex w-full items-center justify-center rounded-xl border border-border bg-muted px-4 py-2.5 text-sm font-semibold text-secondary transition hover:bg-border sm:w-auto">
+            {{ __('app.himamat_reminder_health_title') }}
+        </a>
         <a href="{{ route('admin.himamat.tracking') }}"
            class="inline-flex w-full items-center justify-center rounded-xl border border-border bg-muted px-4 py-2.5 text-sm font-semibold text-secondary transition hover:bg-border sm:w-auto">
             {{ __('app.himamat_tracking_title') }}

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Models\HimamatDay;
+use App\Models\HimamatReminderDispatch;
 use App\Models\HimamatSlot;
 use App\Models\LentSeason;
 use App\Models\Member;
@@ -25,14 +26,15 @@ class SendHimamatRemindersCommandTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_command_sends_due_himamat_reminder_once_and_records_delivery(): void
+    public function test_command_catches_up_due_himamat_reminder_once_and_records_delivery(): void
     {
         config()->set('services.ultramsg.instance_id', 'instance999');
         config()->set('services.ultramsg.token', 'token-123');
         config()->set('app.url', 'https://abiytsom.abuneteklehaymanot.org');
+        config()->set('himamat.reminders.dispatch_grace_minutes', 15);
 
         CarbonImmutable::setTestNow(
-            CarbonImmutable::parse('2026-04-10 15:00:00', 'Europe/London')
+            CarbonImmutable::parse('2026-04-10 15:04:00', 'Europe/London')
         );
 
         $season = LentSeason::create([
@@ -118,5 +120,88 @@ class SendHimamatRemindersCommandTest extends TestCase
             'channel' => 'whatsapp',
             'status' => 'sent',
         ]);
+
+        $this->assertDatabaseHas('himamat_reminder_dispatches', [
+            'himamat_slot_id' => $slot->id,
+            'channel' => 'whatsapp',
+            'status' => HimamatReminderDispatch::STATUS_COMPLETED,
+            'recipient_count' => 1,
+            'sent_count' => 1,
+            'failed_count' => 0,
+        ]);
+    }
+
+    public function test_command_marks_slot_as_missed_once_it_is_past_the_catch_up_window(): void
+    {
+        config()->set('services.ultramsg.instance_id', 'instance999');
+        config()->set('services.ultramsg.token', 'token-123');
+        config()->set('himamat.reminders.dispatch_grace_minutes', 10);
+
+        CarbonImmutable::setTestNow(
+            CarbonImmutable::parse('2026-04-10 15:45:00', 'Europe/London')
+        );
+
+        $season = LentSeason::create([
+            'year' => 2026,
+            'start_date' => '2026-02-15',
+            'end_date' => '2026-04-12',
+            'total_days' => 55,
+            'is_active' => true,
+        ]);
+
+        $day = HimamatDay::create([
+            'lent_season_id' => $season->id,
+            'slug' => 'good-friday',
+            'sort_order' => 6,
+            'date' => '2026-04-10',
+            'title_en' => 'Good Friday',
+            'is_published' => true,
+        ]);
+
+        $slot = HimamatSlot::create([
+            'himamat_day_id' => $day->id,
+            'slot_key' => 'ninth',
+            'slot_order' => 4,
+            'scheduled_time_london' => '15:00:00',
+            'slot_header_en' => 'Ninth Hour',
+            'reminder_header_en' => 'The hour our Lord gave Himself for the life of the world.',
+            'reading_reference_en' => 'John 19:28-30',
+            'is_published' => true,
+        ]);
+
+        $member = Member::create([
+            'baptism_name' => 'Abel',
+            'token' => str_repeat('a', 64),
+            'locale' => 'en',
+            'theme' => 'light',
+            'whatsapp_phone' => '+447700900111',
+            'whatsapp_confirmation_status' => 'confirmed',
+        ]);
+
+        MemberHimamatPreference::create([
+            'member_id' => $member->id,
+            'lent_season_id' => $season->id,
+            'enabled' => true,
+            'intro_enabled' => true,
+            'third_enabled' => true,
+            'sixth_enabled' => true,
+            'ninth_enabled' => true,
+            'eleventh_enabled' => true,
+        ]);
+
+        Http::fake();
+
+        $this->artisan('himamat:send-whatsapp-reminders')
+            ->assertExitCode(0);
+
+        Http::assertNothingSent();
+
+        $this->assertDatabaseHas('himamat_reminder_dispatches', [
+            'himamat_slot_id' => $slot->id,
+            'channel' => 'whatsapp',
+            'status' => HimamatReminderDispatch::STATUS_MISSED,
+        ]);
+
+        $this->assertDatabaseCount('member_himamat_reminder_deliveries', 0);
     }
 }

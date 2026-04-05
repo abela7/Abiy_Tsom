@@ -54,6 +54,11 @@ class HimamatSlot extends Model
         return $this->hasMany(MemberHimamatReminderDelivery::class);
     }
 
+    public function reminderDispatches(): HasMany
+    {
+        return $this->hasMany(HimamatReminderDispatch::class);
+    }
+
     public function resources(): HasMany
     {
         return $this->hasMany(HimamatSlotResource::class)->orderBy('sort_order');

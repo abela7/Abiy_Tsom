@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Jobs\SendHimamatReminderJob;
-use App\Models\HimamatSlot;
 use App\Models\LentSeason;
-use App\Models\MemberHimamatPreference;
+use App\Services\HimamatReminderDispatchService;
 use App\Services\UltraMsgService;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
@@ -21,8 +19,10 @@ class SendHimamatWhatsAppReminders extends Command
 
     protected $description = 'Send Holy Week WhatsApp reminders using the separate Himamat pipeline';
 
-    public function handle(UltraMsgService $ultraMsgService): int
-    {
+    public function handle(
+        UltraMsgService $ultraMsgService,
+        HimamatReminderDispatchService $dispatches
+    ): int {
         $lock = Cache::lock('himamat:send-whatsapp-reminders', 3600);
 
         if (! $lock->get()) {
@@ -38,10 +38,8 @@ class SendHimamatWhatsAppReminders extends Command
                 return self::FAILURE;
             }
 
-            $timezone = (string) config('himamat.timezone', 'Europe/London');
+            $timezone = $dispatches->timezone();
             $nowLondon = CarbonImmutable::now($timezone);
-            $today = $nowLondon->toDateString();
-            $currentTime = $nowLondon->format('H:i:00');
             $dryRun = (bool) $this->option('dry-run');
             $shouldQueue = (bool) $this->option('queue');
 
@@ -56,20 +54,12 @@ class SendHimamatWhatsAppReminders extends Command
                 return self::SUCCESS;
             }
 
-            $slot = HimamatSlot::query()
-                ->where('is_published', true)
-                ->where('scheduled_time_london', $currentTime)
-                ->whereHas('himamatDay', function ($query) use ($season, $today): void {
-                    $query->where('lent_season_id', $season->id)
-                        ->where('is_published', true)
-                        ->whereDate('date', $today);
-                })
-                ->with('himamatDay')
-                ->first();
+            $dispatches->refreshOpenDispatches($nowLondon);
 
-            if (! $slot || ! $slot->himamatDay) {
+            $dueSlots = $dispatches->dueSlots($season, $nowLondon);
+            if ($dueSlots->isEmpty()) {
                 $this->line(sprintf(
-                    'No Himamat slot due at %s (%s).',
+                    'No Himamat slots are due as of %s (%s).',
                     $nowLondon->format('H:i'),
                     $timezone
                 ));
@@ -77,115 +67,86 @@ class SendHimamatWhatsAppReminders extends Command
                 return self::SUCCESS;
             }
 
-            $preferenceColumn = $slot->slot_key.'_enabled';
+            $processedSlots = 0;
+            $recipientCount = 0;
+            $missedSlots = 0;
 
-            $dueQuery = MemberHimamatPreference::query()
-                ->with('member')
-                ->where('lent_season_id', $season->id)
-                ->where('enabled', true)
-                ->where($preferenceColumn, true)
-                ->whereHas('member', function ($query): void {
-                    $query->where('whatsapp_confirmation_status', 'confirmed')
-                        ->whereNotNull('whatsapp_phone')
-                        ->where('whatsapp_phone', '!=', '');
-                });
+            foreach ($dueSlots as $slot) {
+                if (! $slot->himamatDay) {
+                    continue;
+                }
 
-            $dueCount = (clone $dueQuery)->count();
-            if ($dueCount === 0) {
-                $this->line(sprintf(
-                    'No Himamat reminders due at %s (%s).',
-                    $nowLondon->format('H:i'),
-                    $timezone
-                ));
+                $dueAtLondon = $dispatches->dueAtLondon($slot);
 
-                return self::SUCCESS;
-            }
-
-            $this->line(sprintf(
-                '%s %d Himamat reminder(s) for %s at %s (%s).',
-                $shouldQueue ? 'Dispatching' : 'Processing',
-                $dueCount,
-                $slot->himamatDay->slug,
-                $nowLondon->format('H:i'),
-                $timezone
-            ));
-
-            $processed = 0;
-            $failed = 0;
-            $dueAtLondon = $slot->himamatDay->date->copy()
-                ->setTimezone($timezone)
-                ->setTimeFromTimeString((string) $slot->scheduled_time_london)
-                ->toIso8601String();
-
-            $dueQuery
-                ->orderBy('id')
-                ->chunkById(200, function ($preferences) use ($slot, $dueAtLondon, $dryRun, $shouldQueue, &$processed, &$failed): void {
-                    foreach ($preferences as $preference) {
-                        $member = $preference->member;
-                        if (! $member) {
-                            continue;
-                        }
-
-                        $alreadySent = $member->himamatReminderDeliveries()
-                            ->where('himamat_slot_id', $slot->id)
-                            ->where('channel', 'whatsapp')
-                            ->where('status', 'sent')
-                            ->exists();
-
-                        if ($alreadySent) {
-                            continue;
-                        }
-
-                        if ($dryRun) {
-                            $processed++;
-
-                            continue;
-                        }
-
-                        if ($shouldQueue) {
-                            SendHimamatReminderJob::dispatch($member->id, $slot->id, $dueAtLondon)
-                                ->onQueue(SendHimamatReminderJob::QUEUE_NAME);
-                            $processed++;
-
-                            continue;
-                        }
-
-                        try {
-                            (new SendHimamatReminderJob($member->id, $slot->id, $dueAtLondon))->handle(
-                                app(UltraMsgService::class),
-                                app(\App\Services\HimamatWhatsAppTemplateService::class)
-                            );
-                            $processed++;
-                        } catch (\Throwable $exception) {
-                            report($exception);
-                            $failed++;
-                        }
+                if ($dryRun) {
+                    $previewCount = $dispatches->previewRecipientCount($slot);
+                    if ($previewCount === 0) {
+                        continue;
                     }
-                });
+
+                    $processedSlots++;
+                    $recipientCount += $previewCount;
+
+                    $this->line(sprintf(
+                        '[dry-run] %s %s at %s (%s) -> %d recipient(s)',
+                        $slot->himamatDay->slug,
+                        $slot->slot_key,
+                        $dueAtLondon->format('H:i'),
+                        $timezone,
+                        $previewCount
+                    ));
+
+                    continue;
+                }
+
+                $result = $dispatches->processDueSlot($slot, $nowLondon, $shouldQueue);
+                if (in_array($result['status'], ['already_tracked', 'no_recipients'], true)) {
+                    continue;
+                }
+
+                if ($result['status'] === 'missed') {
+                    $missedSlots++;
+                    $processedSlots++;
+                    $this->warn(sprintf(
+                        'Marked %s %s as missed. The scheduler reached it after the catch-up window.',
+                        $slot->himamatDay->slug,
+                        $slot->slot_key
+                    ));
+
+                    continue;
+                }
+
+                $processedSlots++;
+                $recipientCount += $result['recipient_count'];
+
+                $this->line(sprintf(
+                    '%s %d Himamat reminder(s) for %s %s due at %s (%s).',
+                    $shouldQueue ? 'Dispatched' : 'Processed',
+                    $result['recipient_count'],
+                    $slot->himamatDay->slug,
+                    $slot->slot_key,
+                    $dueAtLondon->format('H:i'),
+                    $timezone
+                ));
+            }
 
             if ($dryRun) {
                 $this->line(sprintf(
-                    'Finished Himamat reminders. Due: %d (dry-run)%s',
-                    $processed,
-                    $shouldQueue ? ' [queue mode]' : ''
+                    'Finished Himamat reminder preview. Slots: %d, Recipients: %d',
+                    $processedSlots,
+                    $recipientCount
                 ));
 
                 return self::SUCCESS;
             }
 
-            if ($shouldQueue) {
-                $this->line(sprintf(
-                    'Finished Himamat reminders. Dispatched: %d',
-                    $processed
-                ));
-
-                return self::SUCCESS;
-            }
+            $dispatches->refreshOpenDispatches($nowLondon);
 
             $this->line(sprintf(
-                'Finished Himamat reminders. Sent: %d, Failed: %d',
-                $processed,
-                $failed
+                'Finished Himamat reminders. Slots handled: %d, Recipients queued/processed: %d, Missed slots: %d',
+                $processedSlots,
+                $recipientCount,
+                $missedSlots
             ));
 
             return self::SUCCESS;

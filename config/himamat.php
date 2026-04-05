@@ -5,6 +5,18 @@ declare(strict_types=1);
 return [
     'timezone' => 'Europe/London',
 
+    'reminders' => [
+        'dispatch_grace_minutes' => (int) env('HIMAMAT_REMINDER_DISPATCH_GRACE_MINUTES', 20),
+        'queues' => [
+            'reminders' => env('HIMAMAT_REMINDER_QUEUE', 'whatsapp-himamat-reminders'),
+            'invitations' => env('HIMAMAT_INVITATION_QUEUE', 'whatsapp-himamat-invitations'),
+        ],
+        'rate_limits' => [
+            'reminders_per_minute' => (int) env('HIMAMAT_REMINDER_RATE_PER_MINUTE', 240),
+            'invitations_per_minute' => (int) env('HIMAMAT_INVITATION_RATE_PER_MINUTE', 120),
+        ],
+    ],
+
     'days' => [
         [
             'slug' => 'hosanna-sunday',

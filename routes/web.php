@@ -368,6 +368,7 @@ Route::middleware(['auth', 'admin.audit'])->prefix('admin')->name('admin.')->gro
         Route::delete('/activities/{activity}', [Admin\ActivityController::class, 'destroy'])->name('activities.destroy');
         Route::get('/himamat', [Admin\HimamatDayController::class, 'index'])->name('himamat.index');
         Route::get('/himamat/tracking', [Admin\HimamatDayController::class, 'tracking'])->name('himamat.tracking');
+        Route::get('/himamat/reminder-health', [Admin\HimamatDayController::class, 'reminderHealth'])->name('himamat.reminder-health');
         Route::post('/himamat/scaffold', [Admin\HimamatDayController::class, 'scaffold'])->name('himamat.scaffold');
         Route::get('/himamat/{day}/edit', [Admin\HimamatDayController::class, 'edit'])->name('himamat.edit');
         Route::get('/himamat/{day}/preview', [Admin\HimamatDayController::class, 'preview'])->name('himamat.preview');

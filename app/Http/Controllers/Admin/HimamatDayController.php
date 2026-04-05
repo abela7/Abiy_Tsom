@@ -7,14 +7,17 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\HimamatDay;
 use App\Models\HimamatDayFaq;
+use App\Models\HimamatReminderDispatch;
 use App\Models\HimamatSlot;
 use App\Models\HimamatSlotResource;
 use App\Models\LentSeason;
 use App\Models\MemberHimamatInvitationDelivery;
 use App\Models\MemberHimamatPreference;
+use App\Services\HimamatReminderDispatchService;
 use App\Services\HimamatScaffoldService;
 use App\Services\HimamatSynaxariumService;
 use App\Services\HimamatTimelineService;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -126,6 +129,39 @@ class HimamatDayController extends Controller
             'totalClicked' => $totalClicked,
             'totalNotClicked' => $totalNotClicked,
             'totalPreferencesRecorded' => $totalPreferencesRecorded,
+        ]);
+    }
+
+    public function reminderHealth(
+        Request $request,
+        HimamatReminderDispatchService $dispatches
+    ): View {
+        $season = LentSeason::active();
+        $nowLondon = CarbonImmutable::now($dispatches->timezone());
+        $selectedDate = trim((string) $request->query('date', $nowLondon->toDateString()));
+
+        $dispatches->refreshOpenDispatches($nowLondon);
+
+        $runs = HimamatReminderDispatch::query()
+            ->with(['himamatSlot.himamatDay'])
+            ->where('channel', 'whatsapp')
+            ->whereDate('due_at_london', $selectedDate)
+            ->when($season, function ($query) use ($season): void {
+                $query->whereHas('himamatSlot.himamatDay', function ($dayQuery) use ($season): void {
+                    $dayQuery->where('lent_season_id', $season->id);
+                });
+            })
+            ->orderBy('due_at_london')
+            ->get();
+
+        $summary = $this->summarizeReminderRuns($runs);
+
+        return view('admin.himamat.reminder-health', [
+            'season' => $season,
+            'selectedDate' => $selectedDate,
+            'timezone' => $dispatches->timezone(),
+            'runs' => $runs,
+            'summary' => $summary,
         ]);
     }
 
@@ -400,6 +436,76 @@ class HimamatDayController extends Controller
         }
 
         return $normalized;
+    }
+
+    /**
+     * @param  \Illuminate\Support\Collection<int, HimamatReminderDispatch>  $runs
+     * @return array<string, int|float|null>
+     */
+    private function summarizeReminderRuns(\Illuminate\Support\Collection $runs): array
+    {
+        $totalRuns = $runs->count();
+        $totalRecipients = (int) $runs->sum('recipient_count');
+        $totalSent = (int) $runs->sum('sent_count');
+        $totalFailed = (int) $runs->sum('failed_count');
+        $totalSkipped = (int) $runs->sum('skipped_count');
+        $completedRuns = $runs->where('status', HimamatReminderDispatch::STATUS_COMPLETED)->count();
+        $partialRuns = $runs->where('status', HimamatReminderDispatch::STATUS_COMPLETED_WITH_FAILURES)->count();
+        $processingRuns = $runs->whereIn('status', [
+            HimamatReminderDispatch::STATUS_QUEUED,
+            HimamatReminderDispatch::STATUS_PROCESSING,
+        ])->count();
+        $missedRuns = $runs->where('status', HimamatReminderDispatch::STATUS_MISSED)->count();
+
+        $startDelaySeconds = $runs
+            ->filter(fn (HimamatReminderDispatch $run): bool => $run->dispatch_started_at !== null)
+            ->map(fn (HimamatReminderDispatch $run): int => (int) max(
+                0,
+                $run->due_at_london?->diffInSeconds($run->dispatch_started_at) ?? 0
+            ));
+
+        $finishDelaySeconds = $runs
+            ->filter(fn (HimamatReminderDispatch $run): bool => $run->dispatch_finished_at !== null)
+            ->map(fn (HimamatReminderDispatch $run): int => (int) max(
+                0,
+                $run->due_at_london?->diffInSeconds($run->dispatch_finished_at) ?? 0
+            ));
+
+        $throughputs = $runs
+            ->filter(function (HimamatReminderDispatch $run): bool {
+                return $run->dispatch_started_at !== null
+                    && $run->dispatch_finished_at !== null
+                    && $run->sent_count > 0;
+            })
+            ->map(function (HimamatReminderDispatch $run): float {
+                $durationSeconds = max(1, $run->dispatch_started_at?->diffInSeconds($run->dispatch_finished_at) ?? 1);
+
+                return round($run->sent_count / ($durationSeconds / 60), 1);
+            });
+
+        return [
+            'total_runs' => $totalRuns,
+            'completed_runs' => $completedRuns,
+            'partial_runs' => $partialRuns,
+            'processing_runs' => $processingRuns,
+            'missed_runs' => $missedRuns,
+            'total_recipients' => $totalRecipients,
+            'total_sent' => $totalSent,
+            'total_failed' => $totalFailed,
+            'total_skipped' => $totalSkipped,
+            'success_rate' => $totalRecipients > 0
+                ? round(($totalSent / $totalRecipients) * 100, 1)
+                : null,
+            'avg_start_delay_seconds' => $startDelaySeconds->isNotEmpty()
+                ? (int) round($startDelaySeconds->avg())
+                : null,
+            'avg_finish_delay_seconds' => $finishDelaySeconds->isNotEmpty()
+                ? (int) round($finishDelaySeconds->avg())
+                : null,
+            'avg_throughput_per_minute' => $throughputs->isNotEmpty()
+                ? round($throughputs->avg(), 1)
+                : null,
+        ];
     }
 
     private function resolveReminderTitle(?string $preferredValue, ?string $fallbackValue): ?string

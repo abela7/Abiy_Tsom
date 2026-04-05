@@ -10,6 +10,7 @@ use App\Services\HimamatInvitationTemplateService;
 use App\Services\UltraMsgService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\Middleware\RateLimited;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
 use Throwable;
@@ -18,7 +19,7 @@ final class SendHimamatInvitationJob implements ShouldQueue
 {
     use Queueable;
 
-    public const QUEUE_NAME = 'whatsapp-himamat';
+    public const QUEUE_NAME = 'whatsapp-himamat-invitations';
 
     public int $tries = 3;
 
@@ -33,7 +34,17 @@ final class SendHimamatInvitationJob implements ShouldQueue
         public readonly ?string $destinationPhone = null,
         public readonly bool $recordDelivery = true,
     ) {
-        $this->onQueue(self::QUEUE_NAME);
+        $this->onQueue((string) config('himamat.reminders.queues.invitations', self::QUEUE_NAME));
+    }
+
+    /**
+     * @return array<int, object>
+     */
+    public function middleware(): array
+    {
+        return [
+            new RateLimited('himamat-whatsapp-invitations'),
+        ];
     }
 
     public function handle(

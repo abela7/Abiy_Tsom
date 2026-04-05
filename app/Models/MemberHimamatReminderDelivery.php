@@ -14,6 +14,7 @@ class MemberHimamatReminderDelivery extends Model
         'member_id',
         'himamat_slot_id',
         'channel',
+        'himamat_reminder_dispatch_id',
         'due_at_london',
         'status',
         'attempt_count',
@@ -40,5 +41,10 @@ class MemberHimamatReminderDelivery extends Model
     public function himamatSlot(): BelongsTo
     {
         return $this->belongsTo(HimamatSlot::class);
+    }
+
+    public function reminderDispatch(): BelongsTo
+    {
+        return $this->belongsTo(HimamatReminderDispatch::class, 'himamat_reminder_dispatch_id');
     }
 }
