@@ -11,6 +11,7 @@
     $localizedRitualIntro = localized($day, 'ritual_guide_intro') ?? '';
     $localizedSynaxariumTitle = localized($day, 'synaxarium_title') ?? '';
     $localizedSynaxariumText = localized($day, 'synaxarium_text') ?? '';
+    $previewLiveStatus = $previewLiveStatus ?? null;
     $annualCelebrations = collect($ethDateInfo['annual_celebrations'] ?? [])
         ->map(fn ($celebration) => localized($celebration, 'celebration') ?? $celebration->celebration_en ?? null)
         ->filter()
@@ -34,7 +35,16 @@
     @if($publicPreview ?? false)
     <div class="rounded-2xl border border-accent/25 bg-accent/10 px-4 py-3 text-sm text-secondary">
         <div class="flex items-center justify-between gap-3">
-            <p>{{ __('app.himamat_preview_banner') }}</p>
+            <div class="space-y-1">
+                <p>{{ __('app.himamat_preview_banner') }}</p>
+                @if(is_array($previewLiveStatus) && !($previewLiveStatus['day_published'] ?? false))
+                    <p class="text-xs text-danger">{{ __('app.himamat_preview_day_unpublished') }}</p>
+                @elseif(is_array($previewLiveStatus) && !empty($previewLiveStatus['unpublished_slots'] ?? []))
+                    <p class="text-xs text-danger">
+                        {{ __('app.himamat_preview_unpublished_slots', ['slots' => implode(', ', collect($previewLiveStatus['unpublished_slots'])->all())]) }}
+                    </p>
+                @endif
+            </div>
             <a href="{{ $backUrl }}"
                class="inline-flex items-center justify-center rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold text-primary transition hover:bg-muted">
                 {{ __('app.back') }}

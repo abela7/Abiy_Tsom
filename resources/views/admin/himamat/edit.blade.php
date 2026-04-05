@@ -7,6 +7,13 @@
     $synaxariumMonth = old('synaxarium_month', $day->synaxarium_month);
     $synaxariumDay = old('synaxarium_day', $day->synaxarium_day);
     $introSlot = $day->slots->firstWhere('slot_key', 'intro');
+    $slotStatusLabels = [
+        'intro' => __('app.himamat_slot_7am'),
+        'third' => __('app.himamat_slot_9am'),
+        'sixth' => __('app.himamat_slot_12pm'),
+        'ninth' => __('app.himamat_slot_3pm'),
+        'eleventh' => __('app.himamat_slot_5pm'),
+    ];
     $dayReminderTime = old('day_reminder_time', $introSlot ? substr((string) $introSlot->scheduled_time_london, 0, 5) : '07:00');
     $dayReminderTitleEn = old('day_reminder_title_en', $introSlot?->reminder_header_en);
     $dayReminderTitleAm = old('day_reminder_title_am', $introSlot?->reminder_header_am);
@@ -35,6 +42,10 @@
         ->filter()
         ->unique()
         ->values();
+    $unpublishedSlots = $day->slots
+        ->filter(fn ($slot) => ! $slot->is_published)
+        ->map(fn ($slot) => $slotStatusLabels[$slot->slot_key] ?? (localized($slot, 'slot_header') ?? $slot->slot_header_en))
+        ->values();
 @endphp
 
 @section('content')
@@ -47,7 +58,7 @@
         <a href="{{ route('admin.himamat.preview', ['day' => $day->getKey()]) }}"
            target="_blank" rel="noopener"
            class="inline-flex items-center justify-center rounded-xl border border-border bg-muted px-4 py-2.5 text-sm font-semibold text-secondary transition hover:bg-border">
-            {{ __('app.view') }}
+            {{ __('app.himamat_admin_preview') }}
         </a>
         <a href="{{ route('admin.himamat.index') }}"
            class="inline-flex items-center justify-center rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold text-secondary transition hover:bg-muted">
@@ -66,6 +77,48 @@
         </ul>
     </div>
 @endif
+
+<section class="mb-5 rounded-2xl border border-border bg-card p-5 shadow-sm">
+    <div>
+        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_live_status_title') }}</p>
+        <h2 class="mt-1 text-lg font-bold text-primary">{{ __('app.himamat_live_status_title') }}</h2>
+        <p class="mt-1 text-sm text-secondary">{{ __('app.himamat_live_status_hint') }}</p>
+    </div>
+
+    <div class="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <div class="rounded-2xl border border-border bg-muted/40 p-4">
+            <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_live_status_day') }}</p>
+            <p class="mt-2 text-sm font-semibold {{ $day->is_published ? 'text-success' : 'text-danger' }}">
+                {{ $day->is_published ? __('app.himamat_live_status_live') : __('app.himamat_live_status_draft') }}
+            </p>
+        </div>
+
+        @foreach($day->slots as $slot)
+            <div class="rounded-2xl border border-border bg-muted/40 p-4">
+                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-text">
+                    {{ __('app.himamat_live_status_slot', ['slot' => $slotStatusLabels[$slot->slot_key] ?? (localized($slot, 'slot_header') ?? $slot->slot_header_en)]) }}
+                </p>
+                <p class="mt-2 text-sm font-semibold {{ $slot->is_published ? 'text-success' : 'text-danger' }}">
+                    {{ $slot->is_published ? __('app.himamat_live_status_live') : __('app.himamat_live_status_draft') }}
+                </p>
+            </div>
+        @endforeach
+    </div>
+
+    @if(! $day->is_published || $unpublishedSlots->isNotEmpty())
+        <div class="mt-4 rounded-2xl border border-danger/20 bg-danger/5 px-4 py-3 text-sm text-danger">
+            @if(! $day->is_published)
+                <p>{{ __('app.himamat_live_status_day_warning') }}</p>
+            @endif
+
+            @if($unpublishedSlots->isNotEmpty())
+                <p class="{{ ! $day->is_published ? 'mt-2' : '' }}">
+                    {{ __('app.himamat_live_status_slot_warning', ['slots' => $unpublishedSlots->implode(', ')]) }}
+                </p>
+            @endif
+        </div>
+    @endif
+</section>
 
 <form action="{{ route('admin.himamat.update', ['day' => $day->getKey()]) }}" method="POST" enctype="multipart/form-data" class="space-y-5"
       x-ref="form"

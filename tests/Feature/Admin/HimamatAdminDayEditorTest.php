@@ -289,6 +289,45 @@ class HimamatAdminDayEditorTest extends TestCase
         ]);
     }
 
+    public function test_admin_preview_only_shows_live_published_slots(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'admin',
+        ]);
+
+        $season = LentSeason::create([
+            'year' => 2026,
+            'start_date' => '2026-04-06',
+            'end_date' => '2026-04-12',
+            'total_days' => 55,
+            'is_active' => true,
+        ]);
+
+        $day = $this->createDayWithSlots($season, 'holy-monday');
+        $day->update(['is_published' => true]);
+
+        $intro = $day->slots()->where('slot_key', 'intro')->firstOrFail();
+        $third = $day->slots()->where('slot_key', 'third')->firstOrFail();
+
+        $intro->update([
+            'slot_header_en' => 'Intro Draft Only',
+            'is_published' => false,
+        ]);
+
+        $third->update([
+            'slot_header_en' => 'Third Hour Live',
+            'is_published' => true,
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.himamat.preview', ['day' => $day->id]))
+            ->assertOk()
+            ->assertSee('Third Hour Live')
+            ->assertSee('These slots are still unpublished')
+            ->assertSee('Intro Draft Only')
+            ->assertDontSee('<h3 class="mt-1 text-base font-semibold text-primary">Intro Draft Only</h3>', false);
+    }
+
     private function createDayWithSlots(LentSeason $season, string $slug): HimamatDay
     {
         $day = HimamatDay::create([

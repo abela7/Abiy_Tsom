@@ -200,26 +200,40 @@ class HimamatDayController extends Controller
         HimamatSynaxariumService $synaxarium
     ): View {
         $himamatDay = $this->resolveDay($day);
+        $allSlots = $himamatDay->slots;
+        $publishedSlots = $himamatDay->slots
+            ->filter(fn (HimamatSlot $slot): bool => $slot->is_published)
+            ->values();
+
+        $previewDay = clone $himamatDay;
+        $previewDay->setRelation(
+            'slots',
+            $himamatDay->is_published ? $publishedSlots : collect()
+        );
+
         $timelineData = $timeline->buildTimeline(
-            $himamatDay->load([
-                'slots' => fn ($query) => $query
-                    ->with(['resources' => fn ($resourceQuery) => $resourceQuery->orderBy('sort_order')])
-                    ->orderBy('slot_order'),
-                'faqs' => fn ($query) => $query->orderBy('sort_order'),
-            ]),
-            (string) ($himamatDay->slots->first()?->slot_key ?? 'intro')
+            $previewDay,
+            (string) ($previewDay->slots->first()?->slot_key ?? 'intro')
         );
         $ethDateInfo = $synaxarium->resolveDateInfo($himamatDay, app()->getLocale());
+        $unpublishedSlots = $allSlots
+            ->filter(fn (HimamatSlot $slot): bool => ! $slot->is_published)
+            ->map(fn (HimamatSlot $slot): string => (string) ($slot->slot_header_en ?: $slot->slot_key))
+            ->values();
 
         return view('member.himamat.day', [
             'member' => null,
-            'day' => $himamatDay,
+            'day' => $previewDay,
             'timeline' => $timelineData,
             'ethDateInfo' => $ethDateInfo,
             'previousDay' => null,
             'nextDay' => null,
             'publicPreview' => true,
             'previewMode' => true,
+            'previewLiveStatus' => [
+                'day_published' => $himamatDay->is_published,
+                'unpublished_slots' => $unpublishedSlots,
+            ],
             'backUrl' => route('admin.himamat.edit', ['day' => $himamatDay->getKey()]),
         ]);
     }
