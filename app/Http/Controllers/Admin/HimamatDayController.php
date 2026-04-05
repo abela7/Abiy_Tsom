@@ -10,6 +10,8 @@ use App\Models\HimamatDayFaq;
 use App\Models\HimamatSlot;
 use App\Models\HimamatSlotResource;
 use App\Models\LentSeason;
+use App\Models\MemberHimamatInvitationDelivery;
+use App\Models\MemberHimamatPreference;
 use App\Services\HimamatScaffoldService;
 use App\Services\HimamatSynaxariumService;
 use App\Services\HimamatTimelineService;
@@ -38,6 +40,92 @@ class HimamatDayController extends Controller
         return view('admin.himamat.index', [
             'season' => $season,
             'days' => $days,
+        ]);
+    }
+
+    public function tracking(Request $request): View
+    {
+        $season = LentSeason::active();
+        $campaigns = MemberHimamatInvitationDelivery::query()
+            ->select('campaign_key')
+            ->distinct()
+            ->orderByDesc('campaign_key')
+            ->pluck('campaign_key');
+
+        $selectedCampaign = trim((string) $request->query('campaign', ''));
+        if ($selectedCampaign === '' && $campaigns->isNotEmpty()) {
+            $selectedCampaign = (string) $campaigns->first();
+        }
+
+        $search = trim((string) $request->query('search', ''));
+
+        $deliveriesQuery = MemberHimamatInvitationDelivery::query()
+            ->with([
+                'member',
+                'member.himamatPreferences' => fn ($query) => $query
+                    ->when($season, fn ($seasonQuery) => $seasonQuery->where('lent_season_id', $season->id)),
+            ])
+            ->where('channel', 'whatsapp')
+            ->when($selectedCampaign !== '', fn ($query) => $query->where('campaign_key', $selectedCampaign))
+            ->when($search !== '', function ($query) use ($search): void {
+                $query->whereHas('member', function ($memberQuery) use ($search): void {
+                    $memberQuery->where('baptism_name', 'like', '%'.$search.'%')
+                        ->orWhere('whatsapp_phone', 'like', '%'.$search.'%');
+                });
+            })
+            ->orderByDesc('delivered_at')
+            ->orderByDesc('id');
+
+        $summaryQuery = clone $deliveriesQuery;
+        $totalSent = (clone $summaryQuery)->count();
+        $totalClicked = (clone $summaryQuery)->whereNotNull('first_opened_at')->count();
+        $totalNotClicked = max($totalSent - $totalClicked, 0);
+
+        $preferencesQuery = MemberHimamatPreference::query()
+            ->when($season, fn ($query) => $query->where('lent_season_id', $season->id))
+            ->when($selectedCampaign !== '', function ($query) use ($selectedCampaign): void {
+                $query->whereHas('member.himamatInvitationDeliveries', function ($deliveryQuery) use ($selectedCampaign): void {
+                    $deliveryQuery->where('campaign_key', $selectedCampaign)
+                        ->where('channel', 'whatsapp');
+                });
+            })
+            ->when($search !== '', function ($query) use ($search): void {
+                $query->whereHas('member', function ($memberQuery) use ($search): void {
+                    $memberQuery->where('baptism_name', 'like', '%'.$search.'%')
+                        ->orWhere('whatsapp_phone', 'like', '%'.$search.'%');
+                });
+            });
+
+        $totalPreferencesRecorded = (clone $preferencesQuery)->count();
+
+        $slotLabelKeys = [
+            'intro' => 'app.himamat_slot_7am',
+            'third' => 'app.himamat_slot_9am',
+            'sixth' => 'app.himamat_slot_12pm',
+            'ninth' => 'app.himamat_slot_3pm',
+            'eleventh' => 'app.himamat_slot_5pm',
+        ];
+
+        $slotDefinitions = collect(config('himamat.slots', []))
+            ->map(fn (array $slot): array => [
+                'key' => (string) ($slot['key'] ?? ''),
+                'label' => __($slotLabelKeys[(string) ($slot['key'] ?? '')] ?? 'app.himamat_title'),
+            ])
+            ->values();
+
+        $deliveries = $deliveriesQuery->paginate(30)->withQueryString();
+
+        return view('admin.himamat.tracking', [
+            'season' => $season,
+            'campaigns' => $campaigns,
+            'selectedCampaign' => $selectedCampaign,
+            'search' => $search,
+            'slotDefinitions' => $slotDefinitions,
+            'deliveries' => $deliveries,
+            'totalSent' => $totalSent,
+            'totalClicked' => $totalClicked,
+            'totalNotClicked' => $totalNotClicked,
+            'totalPreferencesRecorded' => $totalPreferencesRecorded,
         ]);
     }
 

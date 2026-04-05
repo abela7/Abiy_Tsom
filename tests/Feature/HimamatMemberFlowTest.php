@@ -12,6 +12,7 @@ use App\Models\HimamatSlot;
 use App\Models\HimamatSlotResource;
 use App\Models\LentSeason;
 use App\Models\Member;
+use App\Models\MemberHimamatInvitationDelivery;
 use App\Models\MemberPersistentDevice;
 use App\Models\MemberSession;
 use App\Services\MemberSessionService;
@@ -103,6 +104,30 @@ class HimamatMemberFlowTest extends TestCase
             'ninth_enabled' => 1,
             'eleventh_enabled' => 0,
         ]);
+    }
+
+    public function test_access_route_records_himamat_invitation_clicks(): void
+    {
+        $this->createSeason();
+        $member = $this->createMember('f');
+
+        $delivery = MemberHimamatInvitationDelivery::create([
+            'member_id' => $member->id,
+            'campaign_key' => 'holy-monday-launch',
+            'channel' => 'whatsapp',
+            'destination_phone' => $member->whatsapp_phone,
+            'status' => 'sent',
+            'delivered_at' => now(),
+        ]);
+
+        $this->get('/himamat/access/'.$member->token.'?campaign=holy-monday-launch')
+            ->assertRedirect(route('member.himamat.preferences'));
+
+        $delivery->refresh();
+
+        $this->assertSame(1, $delivery->open_count);
+        $this->assertNotNull($delivery->first_opened_at);
+        $this->assertNotNull($delivery->last_opened_at);
     }
 
     public function test_preferences_page_uses_amharic_translation_keys_for_amharic_members(): void

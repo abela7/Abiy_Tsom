@@ -17,8 +17,11 @@ class MemberHimamatInvitationDelivery extends Model
         'destination_phone',
         'status',
         'attempt_count',
+        'open_count',
         'last_attempt_at',
         'delivered_at',
+        'first_opened_at',
+        'last_opened_at',
         'failure_reason',
     ];
 
@@ -28,6 +31,8 @@ class MemberHimamatInvitationDelivery extends Model
         return [
             'last_attempt_at' => 'datetime',
             'delivered_at' => 'datetime',
+            'first_opened_at' => 'datetime',
+            'last_opened_at' => 'datetime',
         ];
     }
 

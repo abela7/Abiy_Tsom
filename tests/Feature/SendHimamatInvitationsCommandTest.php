@@ -43,14 +43,14 @@ class SendHimamatInvitationsCommandTest extends TestCase
 
             return $request['to'] === '+447700900111'
                 && str_contains($body, 'Greetings Abel, Happy Hosanna!')
-                && str_contains($body, '/himamat/access/'.$firstMember->token);
+                && str_contains($body, '/himamat/access/'.$firstMember->token.'?campaign=holy-monday-launch');
         });
         Http::assertSent(function (\Illuminate\Http\Client\Request $request) use ($secondMember): bool {
             $body = (string) $request['body'];
 
             return $request['to'] === '+447700900222'
                 && str_contains($body, 'ማርታ፣ እንኳን ለሆሣዕና በዓል በሰላም አደረሰዎት።')
-                && str_contains($body, '/himamat/access/'.$secondMember->token);
+                && str_contains($body, '/himamat/access/'.$secondMember->token.'?campaign=holy-monday-launch');
         });
 
         $this->assertDatabaseHas('member_himamat_invitation_deliveries', [
@@ -96,7 +96,7 @@ class SendHimamatInvitationsCommandTest extends TestCase
 
             return $request['to'] === '+447700900999'
                 && str_contains($body, 'Samuel፣ እንኳን ለሆሣዕና በዓል በሰላም አደረሰዎት።')
-                && str_contains($body, '/himamat/access/'.$member->token);
+                && str_contains($body, '/himamat/access/'.$member->token.'?campaign=holy-monday-launch');
         });
 
         $this->assertDatabaseCount('member_himamat_invitation_deliveries', 0);

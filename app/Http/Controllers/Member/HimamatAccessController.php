@@ -9,6 +9,7 @@ use App\Http\Middleware\RequireMemberIdentityConfirmation;
 use App\Models\HimamatDay;
 use App\Models\LentSeason;
 use App\Models\Member;
+use App\Models\MemberHimamatInvitationDelivery;
 use App\Services\MemberSessionService;
 use App\Services\PersistentLoginService;
 use Illuminate\Http\RedirectResponse;
@@ -27,6 +28,8 @@ class HimamatAccessController extends Controller
             return redirect()->route('home');
         }
 
+        $this->recordInvitationOpen($request, $member);
+
         return $this->establishAccess($request, $member, $sessions, $persistentLogins)
             ->route('member.himamat.preferences');
     }
@@ -43,6 +46,8 @@ class HimamatAccessController extends Controller
         if (! $member) {
             return redirect()->route('home');
         }
+
+        $this->recordInvitationOpen($request, $member);
 
         $season = LentSeason::active();
         $himamatDay = $season
@@ -88,6 +93,52 @@ class HimamatAccessController extends Controller
         RequireMemberIdentityConfirmation::confirm();
 
         return new HimamatRedirector($member);
+    }
+
+    private function recordInvitationOpen(Request $request, Member $member): void
+    {
+        $campaignKey = trim((string) $request->query('campaign', ''));
+
+        $deliveryQuery = MemberHimamatInvitationDelivery::query()
+            ->where('member_id', $member->id)
+            ->where('channel', 'whatsapp')
+            ->where('status', 'sent');
+
+        if ($campaignKey !== '') {
+            $deliveryQuery->where('campaign_key', $campaignKey);
+        }
+
+        /** @var MemberHimamatInvitationDelivery|null $delivery */
+        $delivery = $deliveryQuery
+            ->orderByDesc('delivered_at')
+            ->orderByDesc('id')
+            ->first();
+
+        if (! $delivery && $campaignKey === '') {
+            return;
+        }
+
+        if (! $delivery) {
+            $delivery = MemberHimamatInvitationDelivery::query()
+                ->where('member_id', $member->id)
+                ->where('channel', 'whatsapp')
+                ->where('status', 'sent')
+                ->orderByDesc('delivered_at')
+                ->orderByDesc('id')
+                ->first();
+        }
+
+        if (! $delivery) {
+            return;
+        }
+
+        $now = now();
+
+        $delivery->forceFill([
+            'open_count' => (int) $delivery->open_count + 1,
+            'first_opened_at' => $delivery->first_opened_at ?: $now,
+            'last_opened_at' => $now,
+        ])->save();
     }
 }
 

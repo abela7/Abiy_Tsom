@@ -73,7 +73,10 @@ final class SendHimamatInvitationJob implements ShouldQueue
 
         $message = $templateService->render(
             $member,
-            url('/himamat/access/'.$member->token)
+            route('member.himamat.access', [
+                'token' => $member->token,
+                'campaign' => $this->campaignKey,
+            ])
         )['message'];
 
         if (! $ultraMsgService->sendTextMessage($destinationPhone, $message)) {

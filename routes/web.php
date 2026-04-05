@@ -194,6 +194,7 @@ Route::middleware('resolve.member.url')->prefix('api/m/{token}')->where(['token'
     Route::post('/fundraising/interested', [Member\FundraisingController::class, 'interested'])->name('fundraising.interested');
     Route::post('/banner/{banner}/respond', function (\Illuminate\Http\Request $request, string $token, string $banner) {
         $model = \App\Models\Banner::findOrFail($banner);
+
         return app(Member\BannerController::class)->respond($request, $model);
     })->name('banner.respond');
     Route::post('/tour/complete', [Member\TourController::class, 'complete'])->name('tour.complete');
@@ -366,6 +367,7 @@ Route::middleware(['auth', 'admin.audit'])->prefix('admin')->name('admin.')->gro
         Route::put('/activities/{activity}', [Admin\ActivityController::class, 'update'])->name('activities.update');
         Route::delete('/activities/{activity}', [Admin\ActivityController::class, 'destroy'])->name('activities.destroy');
         Route::get('/himamat', [Admin\HimamatDayController::class, 'index'])->name('himamat.index');
+        Route::get('/himamat/tracking', [Admin\HimamatDayController::class, 'tracking'])->name('himamat.tracking');
         Route::post('/himamat/scaffold', [Admin\HimamatDayController::class, 'scaffold'])->name('himamat.scaffold');
         Route::get('/himamat/{day}/edit', [Admin\HimamatDayController::class, 'edit'])->name('himamat.edit');
         Route::get('/himamat/{day}/preview', [Admin\HimamatDayController::class, 'preview'])->name('himamat.preview');
