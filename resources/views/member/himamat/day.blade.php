@@ -169,12 +169,8 @@
                     $slot = $item['slot'];
                     $state = $item['temporal_state'];
                     $localizedHeader = localized($slot, 'slot_header') ?? $slot->slot_header_en;
-                    $localizedReminder = localized($slot, 'reminder_header') ?? $slot->reminder_header_en;
-                    $localizedMeaning = localized($slot, 'spiritual_significance') ?? '';
                     $localizedReadingRef = localized($slot, 'reading_reference') ?? '';
                     $localizedReading = localized($slot, 'reading_text') ?? '';
-                    $localizedGuidance = localized($slot, 'prostration_guidance') ?? '';
-                    $localizedPrayer = localized($slot, 'short_prayer') ?? '';
                 @endphp
                 <article id="himamat-slot-{{ $slot->slot_key }}"
                          class="relative rounded-[1.75rem] border p-4 transition"
@@ -190,7 +186,9 @@
                                     {{ \Carbon\CarbonImmutable::parse($item['scheduled_at'])->format('H:i') }}
                                 </p>
                                 <h3 class="mt-1 text-base font-semibold text-primary">{{ $localizedHeader }}</h3>
-                                <p class="mt-2 text-sm leading-relaxed text-secondary">{{ $localizedReminder }}</p>
+                                @if($localizedReadingRef !== '')
+                                    <p class="mt-2 text-sm leading-relaxed text-secondary">{{ $localizedReadingRef }}</p>
+                                @endif
                             </div>
                             <div class="shrink-0 text-right">
                                 <span class="inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold {{ $state === 'current' ? 'bg-accent text-on-accent' : ($state === 'past' ? 'bg-accent-secondary/15 text-accent-secondary' : 'bg-muted text-muted-text') }}">
@@ -208,14 +206,7 @@
                     <div x-show="openSlot === '{{ $slot->slot_key }}'" x-cloak x-transition class="pl-7 pt-5 space-y-4">
                         <div class="grid gap-4">
                             <div class="rounded-2xl border border-border/80 bg-muted/40 p-4">
-                                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_significance_title') }}</p>
-                                <p class="mt-2 text-sm leading-relaxed text-primary">
-                                    {{ $localizedMeaning !== '' ? $localizedMeaning : __('app.himamat_slot_content_pending') }}
-                                </p>
-                            </div>
-
-                            <div class="rounded-2xl border border-border/80 bg-muted/40 p-4">
-                                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_reading_title') }}</p>
+                                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_bible_section_title') }}</p>
                                 @if($localizedReadingRef !== '')
                                     <p class="mt-2 text-sm font-semibold text-primary">{{ $localizedReadingRef }}</p>
                                 @endif
@@ -224,26 +215,41 @@
                                 </p>
                             </div>
 
-                            <div class="rounded-2xl border border-border/80 bg-muted/40 p-4">
-                                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_bows_title') }}</p>
-                                <p class="mt-2 text-sm font-semibold text-primary">
-                                    @if((int) $slot->prostration_count > 0)
-                                        {{ __('app.himamat_bows_offered', ['count' => $slot->prostration_count]) }}
-                                    @else
-                                        {{ __('app.himamat_bows_none') }}
-                                    @endif
-                                </p>
-                                <p class="mt-2 text-sm leading-relaxed text-secondary">
-                                    {{ $localizedGuidance !== '' ? $localizedGuidance : __('app.himamat_bows_manual_note') }}
-                                </p>
-                            </div>
+                            @if($slot->resources->isNotEmpty())
+                                <div class="rounded-2xl border border-border/80 bg-muted/40 p-4">
+                                    <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_hour_resources_title') }}</p>
+                                    <div class="mt-3 grid gap-3 md:grid-cols-2">
+                                        @foreach($slot->resources as $resource)
+                                            @php
+                                                $resourceTitle = localized($resource, 'title') ?? $resource->title_en ?? __('app.himamat_resource_type_'.$resource->type);
+                                                $resourceUrl = $resource->resolvedUrl();
+                                            @endphp
+                                            <article class="rounded-2xl border border-border bg-card p-3">
+                                                @if($resource->isPhoto() && $resourceUrl)
+                                                    <img src="{{ $resourceUrl }}"
+                                                         alt="{{ $resourceTitle }}"
+                                                         class="h-44 w-full rounded-xl object-cover">
+                                                @endif
 
-                            <div class="rounded-2xl border border-border/80 bg-muted/40 p-4">
-                                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_prayer_title') }}</p>
-                                <p class="mt-2 text-sm leading-relaxed text-primary whitespace-pre-line">
-                                    {{ $localizedPrayer !== '' ? $localizedPrayer : __('app.himamat_slot_content_pending') }}
-                                </p>
-                            </div>
+                                                <div class="{{ $resource->isPhoto() && $resourceUrl ? 'mt-3' : '' }}">
+                                                    <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-text">
+                                                        {{ __('app.himamat_resource_type_'.$resource->type) }}
+                                                    </p>
+                                                    <p class="mt-2 text-sm font-semibold text-primary">{{ $resourceTitle }}</p>
+
+                                                    @if($resourceUrl)
+                                                        <a href="{{ $resourceUrl }}"
+                                                           target="_blank" rel="noopener"
+                                                           class="mt-3 inline-flex items-center justify-center rounded-lg border border-border bg-muted px-3 py-2 text-sm font-semibold text-secondary transition hover:bg-border">
+                                                            {{ __('app.himamat_resource_open') }}
+                                                        </a>
+                                                    @endif
+                                                </div>
+                                            </article>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </article>

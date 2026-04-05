@@ -152,6 +152,7 @@ class HimamatController extends Controller
             ->with([
                 'slots' => fn ($query) => $query
                     ->where('is_published', true)
+                    ->with(['resources' => fn ($resourceQuery) => $resourceQuery->orderBy('sort_order')])
                     ->orderBy('slot_order'),
                 'faqs' => fn ($query) => $query->orderBy('sort_order'),
             ])

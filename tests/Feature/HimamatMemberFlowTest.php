@@ -9,6 +9,7 @@ use App\Models\EthiopianSynaxariumAnnual;
 use App\Models\HimamatDay;
 use App\Models\HimamatDayFaq;
 use App\Models\HimamatSlot;
+use App\Models\HimamatSlotResource;
 use App\Models\LentSeason;
 use App\Models\Member;
 use App\Models\MemberPersistentDevice;
@@ -127,7 +128,9 @@ class HimamatMemberFlowTest extends TestCase
             ->assertSee('To keep watch with repentance and mercy.')
             ->assertSee('Sacred Timeline')
             ->assertSee('Current')
-            ->assertSee('Ninth Hour');
+            ->assertSee('Ninth Hour')
+            ->assertSee('Bible Section')
+            ->assertSee('Cross icon');
     }
 
     public function test_member_day_uses_manual_synaxarium_link_when_configured(): void
@@ -219,15 +222,24 @@ class HimamatMemberFlowTest extends TestCase
                 'scheduled_time_london' => $slot['time'],
                 'slot_header_en' => $headers[$slot['key']],
                 'reminder_header_en' => $headers[$slot['key']],
-                'spiritual_significance_en' => 'Meaning for '.$headers[$slot['key']],
                 'reading_reference_en' => 'Reading '.$headers[$slot['key']],
                 'reading_text_en' => 'Text for '.$headers[$slot['key']],
-                'prostration_count' => 12,
-                'prostration_guidance_en' => 'Bow with prayer.',
-                'short_prayer_en' => 'Lord, remember us.',
                 'is_published' => true,
             ]);
         }
+
+        $ninthSlot = HimamatSlot::query()
+            ->where('himamat_day_id', $day->id)
+            ->where('slot_key', 'ninth')
+            ->firstOrFail();
+
+        HimamatSlotResource::create([
+            'himamat_slot_id' => $ninthSlot->id,
+            'type' => HimamatSlotResource::TYPE_WEBSITE,
+            'sort_order' => 1,
+            'title_en' => 'Cross icon',
+            'url' => 'https://example.com/cross-icon',
+        ]);
 
         return $day;
     }

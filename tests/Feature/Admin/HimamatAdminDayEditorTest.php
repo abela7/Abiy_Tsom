@@ -7,9 +7,12 @@ namespace Tests\Feature\Admin;
 use App\Models\HimamatDay;
 use App\Models\HimamatDayFaq;
 use App\Models\HimamatSlot;
+use App\Models\HimamatSlotResource;
 use App\Models\LentSeason;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class HimamatAdminDayEditorTest extends TestCase
@@ -18,6 +21,8 @@ class HimamatAdminDayEditorTest extends TestCase
 
     public function test_admin_can_save_global_himamat_fields_and_faq_rows(): void
     {
+        Storage::fake('public');
+
         $admin = User::factory()->create([
             'role' => 'admin',
         ]);
@@ -78,22 +83,38 @@ class HimamatAdminDayEditorTest extends TestCase
                 'slot_header_am' => '',
                 'reminder_header_en' => $slot->reminder_header_en,
                 'reminder_header_am' => '',
-                'spiritual_significance_en' => 'Meaning for '.$slot->slot_key,
-                'spiritual_significance_am' => '',
                 'reading_reference_en' => 'Reference for '.$slot->slot_key,
                 'reading_reference_am' => '',
                 'reading_text_en' => 'Reading text for '.$slot->slot_key,
                 'reading_text_am' => '',
-                'prostration_count' => 12,
-                'prostration_guidance_en' => 'Offer bows with reverence.',
-                'prostration_guidance_am' => '',
-                'short_prayer_en' => 'Lord, remember us.',
-                'short_prayer_am' => '',
+                'resources' => $slot->slot_key === 'third'
+                    ? [
+                        [
+                            'id' => '',
+                            'type' => HimamatSlotResource::TYPE_VIDEO,
+                            'title_en' => 'Temple teaching video',
+                            'title_am' => '',
+                            'url' => 'https://www.youtube.com/watch?v=holy-third-hour',
+                            'file_path' => '',
+                        ],
+                        [
+                            'id' => '',
+                            'type' => HimamatSlotResource::TYPE_PHOTO,
+                            'title_en' => 'Temple photo',
+                            'title_am' => '',
+                            'url' => '',
+                            'file_path' => '',
+                            'upload' => UploadedFile::fake()->create('temple-photo.png', 200, 'image/png'),
+                        ],
+                    ]
+                    : [],
                 'is_published' => '1',
             ])->all(),
         ];
 
-        $response = $this->actingAs($admin)->put(route('admin.himamat.update', ['day' => $day->id]), $payload);
+        $response = $this->actingAs($admin)->post(route('admin.himamat.update', ['day' => $day->id]), array_merge($payload, [
+            '_method' => 'PUT',
+        ]));
 
         $response->assertRedirect(route('admin.himamat.index'));
 
@@ -128,6 +149,22 @@ class HimamatAdminDayEditorTest extends TestCase
             'answer_en' => 'With silence, prayer, and reverence.',
             'sort_order' => 2,
         ]);
+
+        $this->assertDatabaseHas('himamat_slot_resources', [
+            'himamat_slot_id' => $slots[1]->id,
+            'type' => HimamatSlotResource::TYPE_VIDEO,
+            'title_en' => 'Temple teaching video',
+            'url' => 'https://www.youtube.com/watch?v=holy-third-hour',
+        ]);
+
+        $photoResource = HimamatSlotResource::query()
+            ->where('himamat_slot_id', $slots[1]->id)
+            ->where('type', HimamatSlotResource::TYPE_PHOTO)
+            ->first();
+
+        $this->assertNotNull($photoResource);
+        $this->assertNotNull($photoResource->file_path);
+        Storage::disk('public')->assertExists($photoResource->file_path);
 
         $this->assertSame(2, HimamatDayFaq::where('himamat_day_id', $day->id)->count());
     }
@@ -250,17 +287,11 @@ class HimamatAdminDayEditorTest extends TestCase
                 'slot_header_am' => '',
                 'reminder_header_en' => $slot->reminder_header_en,
                 'reminder_header_am' => '',
-                'spiritual_significance_en' => 'Meaning for '.$slot->slot_key,
-                'spiritual_significance_am' => '',
                 'reading_reference_en' => 'Reference for '.$slot->slot_key,
                 'reading_reference_am' => '',
                 'reading_text_en' => 'Reading text for '.$slot->slot_key,
                 'reading_text_am' => '',
-                'prostration_count' => 12,
-                'prostration_guidance_en' => 'Offer bows with reverence.',
-                'prostration_guidance_am' => '',
-                'short_prayer_en' => 'Lord, remember us.',
-                'short_prayer_am' => '',
+                'resources' => [],
                 'is_published' => '1',
             ])->all(),
         ], $overrides);

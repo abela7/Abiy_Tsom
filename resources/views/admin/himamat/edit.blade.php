@@ -67,7 +67,7 @@
     </div>
 @endif
 
-<form action="{{ route('admin.himamat.update', ['day' => $day->getKey()]) }}" method="POST" class="space-y-5"
+<form action="{{ route('admin.himamat.update', ['day' => $day->getKey()]) }}" method="POST" enctype="multipart/form-data" class="space-y-5"
       x-data="{
           synaxariumSource: @js($synaxariumSource),
           dayReminderTitleEn: @js($dayReminderTitleEn),
@@ -313,6 +313,23 @@
     </section>
 
     @foreach($day->slots as $index => $slot)
+        @php
+            $slotResources = old("slots.$index.resources");
+            if ($slotResources === null) {
+                $slotResources = $slot->resources
+                    ->map(fn ($resource) => [
+                        'id' => $resource->id,
+                        'type' => $resource->type,
+                        'title_en' => $resource->title_en,
+                        'title_am' => $resource->title_am,
+                        'url' => $resource->url,
+                        'file_path' => $resource->file_path,
+                        'file_url' => $resource->resolvedUrl(),
+                    ])
+                    ->values()
+                    ->all();
+            }
+        @endphp
         <section class="rounded-2xl border border-border bg-card p-5 shadow-sm">
             <div class="flex items-start justify-between gap-4">
                 <div>
@@ -331,12 +348,12 @@
 
             <div class="mt-5 grid gap-4 md:grid-cols-2">
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">Slot Header (EN)</label>
+                    <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_hour_title') }} (EN)</label>
                     <input type="text" name="slots[{{ $index }}][slot_header_en]" value="{{ old("slots.$index.slot_header_en", $slot->slot_header_en) }}"
                            class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">Slot Header (AM)</label>
+                    <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_hour_title') }} (AM)</label>
                     <input type="text" name="slots[{{ $index }}][slot_header_am]" value="{{ old("slots.$index.slot_header_am", $slot->slot_header_am) }}"
                            class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">
                 </div>
@@ -349,70 +366,139 @@
                     </div>
                 @else
                     <div>
-                        <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">Reminder Header (EN)</label>
+                        <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_slot_reminder_title') }} (EN)</label>
                         <input type="text" name="slots[{{ $index }}][reminder_header_en]" value="{{ old("slots.$index.reminder_header_en", $slot->reminder_header_en) }}"
                                class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">Reminder Header (AM)</label>
+                        <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_slot_reminder_title') }} (AM)</label>
                         <input type="text" name="slots[{{ $index }}][reminder_header_am]" value="{{ old("slots.$index.reminder_header_am", $slot->reminder_header_am) }}"
                                class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">
                     </div>
                 @endif
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_significance_title') }} (EN)</label>
-                    <textarea name="slots[{{ $index }}][spiritual_significance_en]" rows="4"
-                              class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">{{ old("slots.$index.spiritual_significance_en", $slot->spiritual_significance_en) }}</textarea>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_significance_title') }} (AM)</label>
-                    <textarea name="slots[{{ $index }}][spiritual_significance_am]" rows="4"
-                              class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">{{ old("slots.$index.spiritual_significance_am", $slot->spiritual_significance_am) }}</textarea>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_reading_title') }} Ref (EN)</label>
+                    <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_bible_reference') }} (EN)</label>
                     <input type="text" name="slots[{{ $index }}][reading_reference_en]" value="{{ old("slots.$index.reading_reference_en", $slot->reading_reference_en) }}"
                            class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_reading_title') }} Ref (AM)</label>
+                    <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_bible_reference') }} (AM)</label>
                     <input type="text" name="slots[{{ $index }}][reading_reference_am]" value="{{ old("slots.$index.reading_reference_am", $slot->reading_reference_am) }}"
                            class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_reading_title') }} Text (EN)</label>
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_bible_passage') }} (EN)</label>
                     <textarea name="slots[{{ $index }}][reading_text_en]" rows="5"
                               class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">{{ old("slots.$index.reading_text_en", $slot->reading_text_en) }}</textarea>
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_reading_title') }} Text (AM)</label>
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_bible_passage') }} (AM)</label>
                     <textarea name="slots[{{ $index }}][reading_text_am]" rows="5"
                               class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">{{ old("slots.$index.reading_text_am", $slot->reading_text_am) }}</textarea>
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_bows_title') }}</label>
-                    <input type="number" min="0" max="500" name="slots[{{ $index }}][prostration_count]" value="{{ old("slots.$index.prostration_count", $slot->prostration_count) }}"
-                           class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_bows_title') }} Guidance (EN)</label>
-                    <textarea name="slots[{{ $index }}][prostration_guidance_en]" rows="4"
-                              class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">{{ old("slots.$index.prostration_guidance_en", $slot->prostration_guidance_en) }}</textarea>
-                </div>
-                <div class="md:col-span-2">
-                    <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_bows_title') }} Guidance (AM)</label>
-                    <textarea name="slots[{{ $index }}][prostration_guidance_am]" rows="4"
-                              class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">{{ old("slots.$index.prostration_guidance_am", $slot->prostration_guidance_am) }}</textarea>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_prayer_title') }} (EN)</label>
-                    <textarea name="slots[{{ $index }}][short_prayer_en]" rows="4"
-                              class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">{{ old("slots.$index.short_prayer_en", $slot->short_prayer_en) }}</textarea>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_prayer_title') }} (AM)</label>
-                    <textarea name="slots[{{ $index }}][short_prayer_am]" rows="4"
-                              class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">{{ old("slots.$index.short_prayer_am", $slot->short_prayer_am) }}</textarea>
+                <div class="md:col-span-2"
+                     x-data="himamatSlotResourceEditor(@js($slotResources))">
+                    <div class="rounded-2xl border border-border/80 bg-muted/40 p-4">
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_hour_resources_title') }}</p>
+                                <p class="mt-2 text-sm leading-relaxed text-secondary">{{ __('app.himamat_hour_resources_hint') }}</p>
+                            </div>
+                            <button type="button"
+                                    @click="addResource()"
+                                    class="inline-flex items-center justify-center rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold text-secondary transition hover:bg-muted">
+                                {{ __('app.himamat_resource_add') }}
+                            </button>
+                        </div>
+
+                        <div class="mt-4 space-y-4">
+                            <template x-if="resources.length === 0">
+                                <div class="rounded-xl border border-dashed border-border bg-card px-4 py-4 text-sm text-secondary">
+                                    {{ __('app.himamat_resource_empty') }}
+                                </div>
+                            </template>
+
+                            <template x-for="(resource, resourceIndex) in resources" :key="resource.uid">
+                                <div class="rounded-2xl border border-border bg-card p-4">
+                                    <div class="flex items-center justify-between gap-3">
+                                        <p class="text-sm font-semibold text-primary" x-text="resourceHeading(resource, resourceIndex)"></p>
+                                        <button type="button"
+                                                @click="removeResource(resourceIndex)"
+                                                class="inline-flex items-center justify-center rounded-lg border border-border bg-muted px-3 py-2 text-xs font-semibold text-secondary transition hover:bg-border">
+                                            {{ __('app.himamat_resource_remove') }}
+                                        </button>
+                                    </div>
+
+                                    <input type="hidden" :name="`slots[{{ $index }}][resources][${resourceIndex}][id]`" x-model="resource.id">
+                                    <input type="hidden" :name="`slots[{{ $index }}][resources][${resourceIndex}][file_path]`" x-model="resource.file_path">
+
+                                    <div class="mt-4 grid gap-4 md:grid-cols-2">
+                                        <div>
+                                            <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_resource_type') }}</label>
+                                            <select :name="`slots[{{ $index }}][resources][${resourceIndex}][type]`"
+                                                    x-model="resource.type"
+                                                    class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">
+                                                <option value="video">{{ __('app.himamat_resource_type_video') }}</option>
+                                                <option value="website">{{ __('app.himamat_resource_type_website') }}</option>
+                                                <option value="pdf">{{ __('app.himamat_resource_type_pdf') }}</option>
+                                                <option value="photo">{{ __('app.himamat_resource_type_photo') }}</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_resource_title') }} (EN)</label>
+                                            <input type="text"
+                                                   :name="`slots[{{ $index }}][resources][${resourceIndex}][title_en]`"
+                                                   x-model="resource.title_en"
+                                                   class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_resource_title') }} (AM)</label>
+                                            <input type="text"
+                                                   :name="`slots[{{ $index }}][resources][${resourceIndex}][title_am]`"
+                                                   x-model="resource.title_am"
+                                                   class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_resource_url') }}</label>
+                                            <input type="url"
+                                                   :name="`slots[{{ $index }}][resources][${resourceIndex}][url]`"
+                                                   x-model="resource.url"
+                                                   class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">
+                                            <p class="mt-2 text-xs text-secondary" x-show="resource.type === 'video' || resource.type === 'website'">
+                                                {{ __('app.himamat_resource_url_hint') }}
+                                            </p>
+                                            <p class="mt-2 text-xs text-secondary" x-show="resource.type === 'pdf' || resource.type === 'photo'">
+                                                {{ __('app.himamat_resource_url_optional_hint') }}
+                                            </p>
+                                        </div>
+                                        <div class="md:col-span-2" x-show="resource.type === 'pdf' || resource.type === 'photo'">
+                                            <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_resource_upload') }}</label>
+                                            <input type="file"
+                                                   :name="`slots[{{ $index }}][resources][${resourceIndex}][upload]`"
+                                                   :accept="resource.type === 'photo' ? '.jpg,.jpeg,.png,.webp' : '.pdf'"
+                                                   class="mt-2 block w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary file:mr-4 file:rounded-lg file:border-0 file:bg-accent file:px-3 file:py-2 file:text-sm file:font-semibold file:text-on-accent">
+
+                                            <div class="mt-3 rounded-xl border border-border/70 bg-muted/30 p-3" x-show="resource.file_path || resource.file_url">
+                                                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_resource_current_file') }}</p>
+                                                <template x-if="resource.type === 'photo' && (resource.file_url || resource.url)">
+                                                    <img :src="resource.file_url || resource.url"
+                                                         alt=""
+                                                         class="mt-3 h-40 w-full rounded-xl object-cover">
+                                                </template>
+                                                <template x-if="resource.type !== 'photo'">
+                                                    <a :href="resource.file_url || resource.url"
+                                                       target="_blank" rel="noopener"
+                                                       class="mt-3 inline-flex items-center justify-center rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold text-secondary transition hover:bg-muted">
+                                                        {{ __('app.himamat_resource_open') }}
+                                                    </a>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -457,6 +543,45 @@ function himamatFaqEditor(initialFaqs) {
             if (this.faqs.length === 0) {
                 this.addFaq();
             }
+        },
+    };
+}
+
+function himamatSlotResourceEditor(initialResources) {
+    return {
+        resources: (() => {
+            if (!Array.isArray(initialResources) || initialResources.length === 0) {
+                return [];
+            }
+
+            return initialResources.map((resource, index) => ({
+                uid: `resource-${Date.now()}-${index}-${Math.random().toString(36).slice(2, 8)}`,
+                id: resource.id ?? '',
+                type: resource.type ?? 'website',
+                title_en: resource.title_en ?? '',
+                title_am: resource.title_am ?? '',
+                url: resource.url ?? '',
+                file_path: resource.file_path ?? '',
+                file_url: resource.file_url ?? '',
+            }));
+        })(),
+        addResource() {
+            this.resources.push({
+                uid: `resource-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+                id: '',
+                type: 'website',
+                title_en: '',
+                title_am: '',
+                url: '',
+                file_path: '',
+                file_url: '',
+            });
+        },
+        removeResource(index) {
+            this.resources.splice(index, 1);
+        },
+        resourceHeading(resource, index) {
+            return resource.title_en || resource.title_am || `{{ __('app.himamat_resource_fallback') }}`.replace(':number', index + 1);
         },
     };
 }

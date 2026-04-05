@@ -7,6 +7,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\HimamatDay;
 use App\Models\HimamatDayFaq;
+use App\Models\HimamatSlot;
+use App\Models\HimamatSlotResource;
 use App\Models\LentSeason;
 use App\Services\HimamatScaffoldService;
 use App\Services\HimamatSynaxariumService;
@@ -14,6 +16,7 @@ use App\Services\HimamatTimelineService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -75,7 +78,9 @@ class HimamatDayController extends Controller
         $himamatDay = $this->resolveDay($day);
         $timelineData = $timeline->buildTimeline(
             $himamatDay->load([
-                'slots' => fn ($query) => $query->orderBy('slot_order'),
+                'slots' => fn ($query) => $query
+                    ->with(['resources' => fn ($resourceQuery) => $resourceQuery->orderBy('sort_order')])
+                    ->orderBy('slot_order'),
                 'faqs' => fn ($query) => $query->orderBy('sort_order'),
             ]),
             (string) ($himamatDay->slots->first()?->slot_key ?? 'intro')
@@ -126,19 +131,20 @@ class HimamatDayController extends Controller
             'slots.*.id' => ['required', 'integer'],
             'slots.*.slot_header_en' => ['required', 'string', 'max:255'],
             'slots.*.slot_header_am' => ['nullable', 'string', 'max:255'],
-            'slots.*.reminder_header_en' => ['required', 'string', 'max:255'],
+            'slots.*.reminder_header_en' => ['nullable', 'string', 'max:255'],
             'slots.*.reminder_header_am' => ['nullable', 'string', 'max:255'],
-            'slots.*.spiritual_significance_en' => ['nullable', 'string'],
-            'slots.*.spiritual_significance_am' => ['nullable', 'string'],
             'slots.*.reading_reference_en' => ['nullable', 'string', 'max:255'],
             'slots.*.reading_reference_am' => ['nullable', 'string', 'max:255'],
             'slots.*.reading_text_en' => ['nullable', 'string'],
             'slots.*.reading_text_am' => ['nullable', 'string'],
-            'slots.*.prostration_count' => ['nullable', 'integer', 'min:0', 'max:500'],
-            'slots.*.prostration_guidance_en' => ['nullable', 'string'],
-            'slots.*.prostration_guidance_am' => ['nullable', 'string'],
-            'slots.*.short_prayer_en' => ['nullable', 'string'],
-            'slots.*.short_prayer_am' => ['nullable', 'string'],
+            'slots.*.resources' => ['nullable', 'array'],
+            'slots.*.resources.*.id' => ['nullable', 'integer'],
+            'slots.*.resources.*.type' => ['nullable', 'string', Rule::in(HimamatSlotResource::allowedTypes())],
+            'slots.*.resources.*.title_en' => ['nullable', 'string', 'max:255'],
+            'slots.*.resources.*.title_am' => ['nullable', 'string', 'max:255'],
+            'slots.*.resources.*.url' => ['nullable', 'url', 'max:1000'],
+            'slots.*.resources.*.file_path' => ['nullable', 'string', 'max:500'],
+            'slots.*.resources.*.upload' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:20480'],
             'slots.*.is_published' => ['nullable', 'boolean'],
         ]);
 
@@ -184,8 +190,8 @@ class HimamatDayController extends Controller
                 'updated_by_id' => auth()->id(),
             ]);
 
-            $slots = $himamatDay->slots()->get()->keyBy('id');
-            foreach ($validated['slots'] as $slotInput) {
+            $slots = $himamatDay->slots->keyBy('id');
+            foreach ($validated['slots'] as $slotIndex => $slotInput) {
                 $slotId = (string) $slotInput['id'];
                 if (! in_array($slotId, $slotIds, true)) {
                     continue;
@@ -199,19 +205,18 @@ class HimamatDayController extends Controller
                 $slotAttributes = [
                     'slot_header_en' => $slotInput['slot_header_en'],
                     'slot_header_am' => $slotInput['slot_header_am'] ?: null,
-                    'reminder_header_en' => $slotInput['reminder_header_en'],
-                    'reminder_header_am' => $slotInput['reminder_header_am'] ?: null,
-                    'spiritual_significance_en' => $slotInput['spiritual_significance_en'] ?: null,
-                    'spiritual_significance_am' => $slotInput['spiritual_significance_am'] ?: null,
+                    'reminder_header_en' => $this->resolveReminderTitle(
+                        $slotInput['reminder_header_en'] ?? null,
+                        $slotInput['slot_header_en']
+                    ),
+                    'reminder_header_am' => $this->resolveReminderTitle(
+                        $slotInput['reminder_header_am'] ?? null,
+                        $slotInput['slot_header_am'] ?? null
+                    ),
                     'reading_reference_en' => $slotInput['reading_reference_en'] ?: null,
                     'reading_reference_am' => $slotInput['reading_reference_am'] ?: null,
                     'reading_text_en' => $slotInput['reading_text_en'] ?: null,
                     'reading_text_am' => $slotInput['reading_text_am'] ?: null,
-                    'prostration_count' => $slotInput['prostration_count'] ?? 0,
-                    'prostration_guidance_en' => $slotInput['prostration_guidance_en'] ?: null,
-                    'prostration_guidance_am' => $slotInput['prostration_guidance_am'] ?: null,
-                    'short_prayer_en' => $slotInput['short_prayer_en'] ?: null,
-                    'short_prayer_am' => $slotInput['short_prayer_am'] ?: null,
                     'is_published' => (bool) ($slotInput['is_published'] ?? false),
                     'updated_by_id' => auth()->id(),
                 ];
@@ -223,6 +228,14 @@ class HimamatDayController extends Controller
                 }
 
                 $slot->update($slotAttributes);
+
+                $resourcePayloads = $this->normalizeResourcePayloads(
+                    $request,
+                    $slot,
+                    $slotIndex,
+                    $slotInput['resources'] ?? []
+                );
+                $this->syncResources($slot, $resourcePayloads);
             }
 
             $this->syncFaqs($himamatDay, $faqPayloads);
@@ -320,6 +333,182 @@ class HimamatDayController extends Controller
     }
 
     /**
+     * @param  array<int, array<string, mixed>>  $rawResources
+     * @return list<array<string, mixed>>
+     */
+    private function normalizeResourcePayloads(
+        Request $request,
+        HimamatSlot $slot,
+        int $slotIndex,
+        array $rawResources
+    ): array {
+        $resourceIds = $slot->resources->pluck('id')->map(fn ($id): string => (string) $id)->all();
+        $normalized = [];
+
+        foreach ($rawResources as $resourceIndex => $resourceInput) {
+            $type = trim((string) ($resourceInput['type'] ?? HimamatSlotResource::TYPE_WEBSITE));
+            if (! in_array($type, HimamatSlotResource::allowedTypes(), true)) {
+                $type = HimamatSlotResource::TYPE_WEBSITE;
+            }
+
+            $resourceId = isset($resourceInput['id']) && $resourceInput['id'] !== ''
+                ? (string) (int) $resourceInput['id']
+                : null;
+            $titleEn = trim((string) ($resourceInput['title_en'] ?? ''));
+            $titleAm = trim((string) ($resourceInput['title_am'] ?? ''));
+            $url = trim((string) ($resourceInput['url'] ?? ''));
+            $filePath = trim((string) ($resourceInput['file_path'] ?? ''));
+            $upload = $request->file("slots.$slotIndex.resources.$resourceIndex.upload");
+
+            $hasAnyContent = $titleEn !== ''
+                || $titleAm !== ''
+                || $url !== ''
+                || $filePath !== ''
+                || $upload !== null;
+
+            if (! $hasAnyContent) {
+                continue;
+            }
+
+            if ($resourceId !== null && ! in_array($resourceId, $resourceIds, true)) {
+                throw ValidationException::withMessages([
+                    "slots.$slotIndex.resources.$resourceIndex.id" => __('app.himamat_resource_invalid'),
+                ]);
+            }
+
+            if ($url === '' && $filePath === '' && $upload === null) {
+                throw ValidationException::withMessages([
+                    "slots.$slotIndex.resources.$resourceIndex.url" => __('app.himamat_resource_requires_media'),
+                ]);
+            }
+
+            if (in_array($type, [HimamatSlotResource::TYPE_VIDEO, HimamatSlotResource::TYPE_WEBSITE], true) && $url === '') {
+                throw ValidationException::withMessages([
+                    "slots.$slotIndex.resources.$resourceIndex.url" => __('app.himamat_resource_requires_url'),
+                ]);
+            }
+
+            if ($upload !== null) {
+                $this->validateUploadedResource($type, $upload->getClientOriginalExtension(), $slotIndex, $resourceIndex);
+            }
+
+            $normalized[] = [
+                'id' => $resourceId !== null ? (int) $resourceId : null,
+                'type' => $type,
+                'title_en' => $titleEn !== '' ? $titleEn : null,
+                'title_am' => $titleAm !== '' ? $titleAm : null,
+                'url' => $url !== '' ? $url : null,
+                'file_path' => $filePath !== '' ? $filePath : null,
+                'upload' => $upload,
+            ];
+        }
+
+        return $normalized;
+    }
+
+    private function validateUploadedResource(
+        string $type,
+        string $extension,
+        int $slotIndex,
+        int $resourceIndex
+    ): void {
+        $normalizedExtension = strtolower(trim($extension));
+        $allowedPhotoExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+
+        if (in_array($type, [HimamatSlotResource::TYPE_VIDEO, HimamatSlotResource::TYPE_WEBSITE], true)) {
+            throw ValidationException::withMessages([
+                "slots.$slotIndex.resources.$resourceIndex.upload" => __('app.himamat_resource_upload_not_supported'),
+            ]);
+        }
+
+        if ($type === HimamatSlotResource::TYPE_PHOTO && ! in_array($normalizedExtension, $allowedPhotoExtensions, true)) {
+            throw ValidationException::withMessages([
+                "slots.$slotIndex.resources.$resourceIndex.upload" => __('app.himamat_photo_upload_invalid'),
+            ]);
+        }
+
+        if ($type === HimamatSlotResource::TYPE_PDF && $normalizedExtension !== 'pdf') {
+            throw ValidationException::withMessages([
+                "slots.$slotIndex.resources.$resourceIndex.upload" => __('app.himamat_pdf_upload_invalid'),
+            ]);
+        }
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $resourcePayloads
+     */
+    private function syncResources(HimamatSlot $slot, array $resourcePayloads): void
+    {
+        $existingResources = $slot->resources()->get()->keyBy('id');
+        $keepIds = [];
+
+        foreach ($resourcePayloads as $index => $resourcePayload) {
+            $resourceId = $resourcePayload['id'];
+            /** @var HimamatSlotResource|null $existingResource */
+            $existingResource = $resourceId !== null ? $existingResources->get($resourceId) : null;
+            $filePath = $resourcePayload['file_path'];
+
+            if ($resourcePayload['upload'] !== null) {
+                $filePath = $this->storeResourceUpload($resourcePayload['upload'], (string) $resourcePayload['type']);
+                if ($existingResource?->file_path && $existingResource->file_path !== $filePath) {
+                    Storage::disk('public')->delete($existingResource->file_path);
+                }
+            }
+
+            if (in_array($resourcePayload['type'], [HimamatSlotResource::TYPE_VIDEO, HimamatSlotResource::TYPE_WEBSITE], true)) {
+                if ($existingResource?->file_path && $resourcePayload['upload'] === null) {
+                    Storage::disk('public')->delete($existingResource->file_path);
+                }
+
+                $filePath = null;
+            }
+
+            $attributes = [
+                'type' => $resourcePayload['type'],
+                'sort_order' => $index + 1,
+                'title_en' => $resourcePayload['title_en'],
+                'title_am' => $resourcePayload['title_am'],
+                'url' => $resourcePayload['url'],
+                'file_path' => $filePath,
+                'updated_by_id' => auth()->id(),
+            ];
+
+            if ($existingResource) {
+                $existingResource->update($attributes);
+                $keepIds[] = $existingResource->id;
+
+                continue;
+            }
+
+            $resource = $slot->resources()->create($attributes + [
+                'created_by_id' => auth()->id(),
+            ]);
+            $keepIds[] = $resource->id;
+        }
+
+        foreach ($existingResources as $resource) {
+            if (in_array($resource->id, $keepIds, true)) {
+                continue;
+            }
+
+            if ($resource->file_path) {
+                Storage::disk('public')->delete($resource->file_path);
+            }
+
+            $resource->delete();
+        }
+    }
+
+    private function storeResourceUpload(\Illuminate\Http\UploadedFile $upload, string $type): string
+    {
+        $directory = $type === HimamatSlotResource::TYPE_PHOTO
+            ? 'himamat-resources/photos'
+            : 'himamat-resources/files';
+
+        return $upload->store($directory, 'public');
+    }
+
+    /**
      * @param  list<array<string, mixed>>  $faqPayloads
      */
     private function syncFaqs(HimamatDay $day, array $faqPayloads): void
@@ -366,7 +555,7 @@ class HimamatDayController extends Controller
         return HimamatDay::query()
             ->with([
                 'lentSeason',
-                'slots' => fn ($query) => $query->orderBy('slot_order'),
+                'slots' => fn ($query) => $query->with(['resources' => fn ($resourceQuery) => $resourceQuery->orderBy('sort_order')])->orderBy('slot_order'),
                 'faqs' => fn ($query) => $query->orderBy('sort_order'),
             ])
             ->findOrFail((int) $day);
