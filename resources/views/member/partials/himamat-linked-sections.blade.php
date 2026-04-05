@@ -13,68 +13,64 @@
 @endphp
 
 {{-- ══════════════════════════════════════════════════════════════════════
-     HIMAMAT BANNER — Hero card with title, meaning & ritual intro
+     HIMAMAT BANNER — Compact hero header
      ══════════════════════════════════════════════════════════════════════ --}}
-<section class="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-    {{-- Gradient header area --}}
-    <div class="relative overflow-hidden bg-[radial-gradient(ellipse_at_top_right,rgba(226,202,24,0.12),transparent_50%),linear-gradient(165deg,rgba(10,98,134,0.10),rgba(10,98,134,0.02)_50%,transparent_100%)] px-5 py-6 sm:px-6 sm:py-7">
-        {{-- Decorative glow --}}
-        <div class="pointer-events-none absolute -right-10 -top-6 h-32 w-32 rounded-full bg-accent/8 blur-3xl"></div>
-        <div class="pointer-events-none absolute -bottom-8 -left-6 h-28 w-28 rounded-full bg-accent-secondary/8 blur-3xl"></div>
-
-        <div class="relative">
-            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                <div class="min-w-0 flex-1">
-                    <span class="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-accent">
-                        <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        {{ __('app.himamat_eyebrow') }}
-                    </span>
-                    <h2 class="mt-3 text-2xl font-black tracking-tight text-primary sm:text-[1.75rem] leading-tight">
-                        {{ $localizedHimamatTitle }}
-                    </h2>
-                    <p class="mt-2 max-w-2xl text-sm leading-relaxed text-secondary">
-                        {{ __('app.himamat_timeline_hint') }}
-                    </p>
-                </div>
-
-                {{-- Status badge --}}
-                <div class="inline-flex items-center gap-2 self-start rounded-full border border-border bg-card px-3.5 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-text shadow-sm">
-                    <span class="h-2.5 w-2.5 rounded-full {{ ($himamatTimeline['is_today'] ?? false) ? 'bg-accent animate-pulse' : 'bg-accent-secondary' }}"></span>
-                    <span>{{ ($himamatTimeline['is_today'] ?? false) ? __('app.today') : $himamatDay->date?->format('D') }}</span>
-                </div>
+<div class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+    <div class="flex items-center gap-3.5 px-4 py-4 sm:px-5">
+        <div class="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-[10px] font-bold uppercase tracking-[0.16em] text-accent">{{ __('app.himamat_eyebrow') }}</span>
+                <span class="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted px-2.5 py-1 text-[10px] font-semibold text-muted-text">
+                    <span class="h-1.5 w-1.5 rounded-full {{ ($himamatTimeline['is_today'] ?? false) ? 'bg-accent animate-pulse' : 'bg-accent-secondary' }}"></span>
+                    {{ ($himamatTimeline['is_today'] ?? false) ? __('app.today') : $himamatDay->date?->format('D') }}
+                </span>
             </div>
-
-            {{-- Spiritual meaning & Ritual intro cards --}}
-            @if($localizedDayMeaning !== '' || $localizedRitualIntro !== '')
-                <div class="mt-5 grid gap-3 sm:grid-cols-2">
-                    @if($localizedDayMeaning !== '')
-                        <article class="rounded-xl border border-border bg-card px-4 py-4 shadow-sm">
-                            <div class="flex items-center gap-2 mb-2.5">
-                                <div class="w-7 h-7 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
-                                    <svg class="w-3.5 h-3.5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
-                                </div>
-                                <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-text">{{ __('app.himamat_day_meaning_title') }}</p>
-                            </div>
-                            <p class="text-sm leading-7 text-primary whitespace-pre-line">{{ $localizedDayMeaning }}</p>
-                        </article>
-                    @endif
-
-                    @if($localizedRitualIntro !== '')
-                        <article class="rounded-xl border border-accent/15 bg-accent/[0.03] px-4 py-4 shadow-sm">
-                            <div class="flex items-center gap-2 mb-2.5">
-                                <div class="w-7 h-7 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
-                                    <svg class="w-3.5 h-3.5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-                                </div>
-                                <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-text">{{ __('app.himamat_ritual_intro_title') }}</p>
-                            </div>
-                            <p class="text-sm leading-7 text-primary whitespace-pre-line">{{ $localizedRitualIntro }}</p>
-                        </article>
-                    @endif
-                </div>
-            @endif
+            <h2 class="mt-1 text-lg font-bold text-primary leading-snug">{{ $localizedHimamatTitle }}</h2>
         </div>
     </div>
-</section>
+    @if(!empty(__('app.himamat_timeline_hint')))
+    <div class="border-t border-border/60 px-4 py-3 sm:px-5 bg-muted/30">
+        <p class="text-xs leading-relaxed text-muted-text">{{ __('app.himamat_timeline_hint') }}</p>
+    </div>
+    @endif
+</div>
+
+{{-- ══════════════════════════════════════════════════════════════════════
+     Day Theme & Meaning — Full-width standalone card
+     ══════════════════════════════════════════════════════════════════════ --}}
+@if($localizedDayMeaning !== '')
+<div class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+    <div class="flex items-center gap-2.5 px-4 py-3 border-b border-border/60 bg-muted/30">
+        <div class="w-7 h-7 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
+            <svg class="w-3.5 h-3.5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+        </div>
+        <h3 class="text-xs font-semibold uppercase tracking-[0.14em] text-muted-text">{{ __('app.himamat_day_meaning_title') }}</h3>
+    </div>
+    <div class="px-4 py-4 sm:px-5">
+        <p class="text-sm leading-7 text-primary whitespace-pre-line">{{ $localizedDayMeaning }}</p>
+    </div>
+</div>
+@endif
+
+{{-- ══════════════════════════════════════════════════════════════════════
+     Ritual Guide / Introduction — Full-width standalone card
+     ══════════════════════════════════════════════════════════════════════ --}}
+@if($localizedRitualIntro !== '')
+<div class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+    <div class="flex items-center gap-2.5 px-4 py-3 border-b border-border/60 bg-muted/30">
+        <div class="w-7 h-7 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
+            <svg class="w-3.5 h-3.5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+        </div>
+        <h3 class="text-xs font-semibold uppercase tracking-[0.14em] text-muted-text">{{ __('app.himamat_ritual_intro_title') }}</h3>
+    </div>
+    <div class="px-4 py-4 sm:px-5">
+        <p class="text-sm leading-7 text-primary whitespace-pre-line">{{ $localizedRitualIntro }}</p>
+    </div>
+</div>
+@endif
 
 {{-- ══════════════════════════════════════════════════════════════════════
      HIMAMAT TIMELINE — Prayer hours with expandable slots & resources
