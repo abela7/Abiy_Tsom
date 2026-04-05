@@ -244,23 +244,25 @@
             </div>
 
             @if($isHimamatLinkedDaily && $currentStep >= 3)
-                <div class="bg-card sm:rounded-2xl shadow-sm sm:border border-border px-4 py-4 sm:p-5">
-                    <div class="rounded-2xl border border-accent/20 bg-accent/5 px-4 py-4">
-                        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                            <div>
-                                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-accent">{{ __('app.himamat_title') }}</p>
-                                <h2 class="mt-1 text-base font-bold text-primary">{{ __('app.himamat_daily_linked_title') }}</h2>
-                                <p class="mt-2 text-sm leading-relaxed text-secondary">
-                                    {{ __('app.himamat_daily_linked_body', ['day' => $daily->day_number]) }}
-                                </p>
-                            </div>
-                            <a href="{{ route('admin.himamat.edit', ['day' => $linkedHimamatDay->getKey(), 'daily' => $daily->getKey(), 'return_step' => 3]) }}"
-                               class="inline-flex items-center justify-center rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold text-secondary transition hover:bg-muted">
-                                {{ __('app.himamat_daily_open_himamat') }}
-                            </a>
-                        </div>
-                    </div>
-                </div>
+                @include('admin.partials.himamat-handoff-card', [
+                    'dayNumber' => $daily->day_number,
+                    'ctaHref' => route('admin.himamat.edit', ['day' => $linkedHimamatDay->getKey(), 'daily' => $daily->getKey(), 'return_step' => 3]),
+                    'ctaLabel' => __('app.himamat_daily_open_himamat'),
+                    'currentLabel' => __('app.daily_content'),
+                    'currentItems' => [
+                        __('app.step_mezmur'),
+                        __('app.step_sinksar'),
+                        __('app.daily_message'),
+                    ],
+                    'linkedLabel' => __('app.himamat_title'),
+                    'linkedTitle' => localized($linkedHimamatDay, 'title') ?? $linkedHimamatDay->title_en,
+                    'linkedDate' => $linkedHimamatDay->date?->format('D, d M Y'),
+                    'linkedItems' => [
+                        __('app.step_day_info'),
+                        __('app.himamat_timeline_editor_title'),
+                        __('app.step_bible_reading'),
+                    ],
+                ])
             @endif
 
             {{-- Step content --}}
