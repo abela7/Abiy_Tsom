@@ -237,6 +237,33 @@
                     <p class="mt-3 text-sm text-secondary">{{ __('app.himamat_synaxarium_empty') }}</p>
                 @endif
             </div>
+            <div class="md:col-span-2 rounded-2xl border border-border/80 bg-muted/40 p-4">
+                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_synaxarium_entry_title') }}</p>
+                <p class="mt-2 text-sm text-secondary">{{ __('app.himamat_synaxarium_entry_hint') }}</p>
+
+                <div class="mt-4 grid gap-4 md:grid-cols-2">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_synaxarium_entry_heading') }} (EN)</label>
+                        <input type="text" name="synaxarium_title_en" value="{{ old('synaxarium_title_en', $day->synaxarium_title_en) }}"
+                               class="mt-2 w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_synaxarium_entry_heading') }} (AM)</label>
+                        <input type="text" name="synaxarium_title_am" value="{{ old('synaxarium_title_am', $day->synaxarium_title_am) }}"
+                               class="mt-2 w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_synaxarium_entry_body') }} (EN)</label>
+                        <textarea name="synaxarium_text_en" rows="6"
+                                  class="mt-2 w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">{{ old('synaxarium_text_en', $day->synaxarium_text_en) }}</textarea>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_synaxarium_entry_body') }} (AM)</label>
+                        <textarea name="synaxarium_text_am" rows="6"
+                                  class="mt-2 w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">{{ old('synaxarium_text_am', $day->synaxarium_text_am) }}</textarea>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 

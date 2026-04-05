@@ -124,6 +124,8 @@ class HimamatMemberFlowTest extends TestCase
             ->assertSee('Good Friday')
             ->assertSee('The fig tree shows the call to repentance.')
             ->assertSee('Wear black in mourning and keep reverent silence.')
+            ->assertSee('Synaxarium of Good Friday')
+            ->assertSee('The church keeps the appointed Synaxarium in mourning and remembrance.')
             ->assertSee('Why do we say Kiryalaisson 12 times?')
             ->assertSee('To keep watch with repentance and mercy.')
             ->assertSee('Sacred Timeline')
@@ -196,6 +198,8 @@ class HimamatMemberFlowTest extends TestCase
             'title_en' => $title,
             'spiritual_meaning_en' => 'The fig tree shows the call to repentance.',
             'ritual_guide_intro_en' => 'Wear black in mourning and keep reverent silence.',
+            'synaxarium_title_en' => 'Synaxarium of '.$title,
+            'synaxarium_text_en' => 'The church keeps the appointed Synaxarium in mourning and remembrance.',
             'is_published' => true,
         ]);
 

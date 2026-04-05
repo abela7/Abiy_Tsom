@@ -9,6 +9,8 @@
     $backUrl = $backUrl ?? route('member.himamat.preferences');
     $localizedDayMeaning = localized($day, 'spiritual_meaning') ?? '';
     $localizedRitualIntro = localized($day, 'ritual_guide_intro') ?? '';
+    $localizedSynaxariumTitle = localized($day, 'synaxarium_title') ?? '';
+    $localizedSynaxariumText = localized($day, 'synaxarium_text') ?? '';
     $annualCelebrations = collect($ethDateInfo['annual_celebrations'] ?? [])
         ->map(fn ($celebration) => localized($celebration, 'celebration') ?? $celebration->celebration_en ?? null)
         ->filter()
@@ -21,6 +23,8 @@
         ->values();
     $hasDayLayer = $localizedDayMeaning !== ''
         || $localizedRitualIntro !== ''
+        || $localizedSynaxariumTitle !== ''
+        || $localizedSynaxariumText !== ''
         || $annualCelebrations->isNotEmpty()
         || $monthlyCelebrations->isNotEmpty();
 @endphp
@@ -91,12 +95,23 @@
                 </div>
             @endif
 
-            @if($annualCelebrations->isNotEmpty() || $monthlyCelebrations->isNotEmpty())
+            @if($annualCelebrations->isNotEmpty() || $monthlyCelebrations->isNotEmpty() || $localizedSynaxariumTitle !== '' || $localizedSynaxariumText !== '')
                 <div class="rounded-2xl border border-border/80 bg-muted/40 p-4">
                     <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_synaxarium_title') }}</p>
 
-                    @if($annualCelebrations->isNotEmpty())
+                    @if($localizedSynaxariumTitle !== '' || $localizedSynaxariumText !== '')
                         <div class="mt-3">
+                            @if($localizedSynaxariumTitle !== '')
+                                <p class="text-sm font-semibold text-primary">{{ $localizedSynaxariumTitle }}</p>
+                            @endif
+                            @if($localizedSynaxariumText !== '')
+                                <p class="mt-2 text-sm leading-relaxed text-secondary whitespace-pre-line">{{ $localizedSynaxariumText }}</p>
+                            @endif
+                        </div>
+                    @endif
+
+                    @if($annualCelebrations->isNotEmpty())
+                        <div class="{{ $localizedSynaxariumTitle !== '' || $localizedSynaxariumText !== '' ? 'mt-4 border-t border-border/70 pt-4' : 'mt-3' }}">
                             <p class="text-sm font-semibold text-primary">{{ __('app.himamat_synaxarium_annual') }}</p>
                             <div class="mt-2 space-y-2">
                                 @foreach($annualCelebrations as $celebration)
@@ -107,7 +122,7 @@
                     @endif
 
                     @if($monthlyCelebrations->isNotEmpty())
-                        <div class="{{ $annualCelebrations->isNotEmpty() ? 'mt-4 border-t border-border/70 pt-4' : 'mt-3' }}">
+                        <div class="{{ $annualCelebrations->isNotEmpty() || $localizedSynaxariumTitle !== '' || $localizedSynaxariumText !== '' ? 'mt-4 border-t border-border/70 pt-4' : 'mt-3' }}">
                             <p class="text-sm font-semibold text-primary">{{ __('app.himamat_synaxarium_monthly') }}</p>
                             <div class="mt-2 space-y-2">
                                 @foreach($monthlyCelebrations as $celebration)

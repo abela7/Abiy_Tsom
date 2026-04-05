@@ -117,6 +117,10 @@ class HimamatDayController extends Controller
             'spiritual_meaning_am' => ['nullable', 'string'],
             'ritual_guide_intro_en' => ['nullable', 'string'],
             'ritual_guide_intro_am' => ['nullable', 'string'],
+            'synaxarium_title_en' => ['nullable', 'string', 'max:255'],
+            'synaxarium_title_am' => ['nullable', 'string', 'max:255'],
+            'synaxarium_text_en' => ['nullable', 'string'],
+            'synaxarium_text_am' => ['nullable', 'string'],
             'synaxarium_source' => ['required', 'string', Rule::in(['automatic', 'manual'])],
             'synaxarium_month' => ['nullable', 'integer', 'min:1', 'max:13', 'required_if:synaxarium_source,manual'],
             'synaxarium_day' => ['nullable', 'integer', 'min:1', 'max:30', 'required_if:synaxarium_source,manual'],
@@ -179,6 +183,10 @@ class HimamatDayController extends Controller
                 'spiritual_meaning_am' => $validated['spiritual_meaning_am'] ?: null,
                 'ritual_guide_intro_en' => $validated['ritual_guide_intro_en'] ?: null,
                 'ritual_guide_intro_am' => $validated['ritual_guide_intro_am'] ?: null,
+                'synaxarium_title_en' => $validated['synaxarium_title_en'] ?: null,
+                'synaxarium_title_am' => $validated['synaxarium_title_am'] ?: null,
+                'synaxarium_text_en' => $validated['synaxarium_text_en'] ?: null,
+                'synaxarium_text_am' => $validated['synaxarium_text_am'] ?: null,
                 'synaxarium_source' => $validated['synaxarium_source'],
                 'synaxarium_month' => $validated['synaxarium_source'] === 'manual'
                     ? (int) $validated['synaxarium_month']
