@@ -36,7 +36,10 @@
      Ritual Guide / Introduction — Full-width standalone card
      ══════════════════════════════════════════════════════════════════════ --}}
 @if($localizedRitualIntro !== '')
-<div class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+@php
+    $hasLongRitualIntro = \Illuminate\Support\Str::length($localizedRitualIntro) > 280;
+@endphp
+<div class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden" x-data="{ expanded: false }">
     <div class="flex items-center gap-2.5 px-4 py-3 border-b border-border/60 bg-muted/30">
         <div class="w-7 h-7 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
             <svg class="w-3.5 h-3.5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
@@ -44,7 +47,20 @@
         <h3 class="text-xs font-semibold uppercase tracking-[0.14em] text-muted-text">{{ __('app.himamat_ritual_intro_title') }}</h3>
     </div>
     <div class="px-4 py-4 sm:px-5">
-        <p class="text-sm leading-7 text-primary whitespace-pre-line">{{ $localizedRitualIntro }}</p>
+        <div class="relative text-left" :class="!expanded && 'max-h-24 overflow-hidden'">
+            <p class="text-sm leading-7 text-primary whitespace-pre-line">{{ $localizedRitualIntro }}</p>
+            @if($hasLongRitualIntro)
+                <div x-show="!expanded" class="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-card to-transparent pointer-events-none"></div>
+            @endif
+        </div>
+
+        @if($hasLongRitualIntro)
+            <button @click="expanded = !expanded"
+                    class="mt-3 inline-flex items-center gap-1 px-4 py-1.5 text-[11px] font-semibold text-accent bg-accent/10 rounded-full transition-colors hover:bg-accent/20">
+                <span x-text="expanded ? '{{ __('app.show_less') }}' : '{{ __('app.read_more') }}'"></span>
+                <svg class="w-3 h-3 transition-transform" :class="expanded && 'rotate-180'" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+        @endif
     </div>
 </div>
 @endif
