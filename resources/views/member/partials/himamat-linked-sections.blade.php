@@ -22,7 +22,6 @@
         </div>
         <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2 flex-wrap">
-                <span class="text-[10px] font-bold uppercase tracking-[0.16em] text-accent">{{ __('app.himamat_eyebrow') }}</span>
                 <span class="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted px-2.5 py-1 text-[10px] font-semibold text-muted-text">
                     <span class="h-1.5 w-1.5 rounded-full {{ ($himamatTimeline['is_today'] ?? false) ? 'bg-accent animate-pulse' : 'bg-accent-secondary' }}"></span>
                     {{ ($himamatTimeline['is_today'] ?? false) ? __('app.today') : $himamatDay->date?->format('D') }}
@@ -31,11 +30,6 @@
             <h2 class="mt-1 text-lg font-bold text-primary leading-snug">{{ $localizedHimamatTitle }}</h2>
         </div>
     </div>
-    @if(!empty(__('app.himamat_timeline_hint')))
-    <div class="border-t border-border/60 px-4 py-3 sm:px-5 bg-muted/30">
-        <p class="text-xs leading-relaxed text-muted-text">{{ __('app.himamat_timeline_hint') }}</p>
-    </div>
-    @endif
 </div>
 
 {{-- ══════════════════════════════════════════════════════════════════════
