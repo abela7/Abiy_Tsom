@@ -3,6 +3,9 @@
 @section('title', __('app.himamat_edit_title'))
 
 @php
+    $synaxariumSource = old('synaxarium_source', $day->synaxarium_source ?? 'automatic');
+    $synaxariumMonth = old('synaxarium_month', $day->synaxarium_month);
+    $synaxariumDay = old('synaxarium_day', $day->synaxarium_day);
     $faqItems = old('faqs');
     if ($faqItems === null) {
         $faqItems = $day->faqs
@@ -60,7 +63,8 @@
     </div>
 @endif
 
-<form action="{{ route('admin.himamat.update', ['day' => $day->getKey()]) }}" method="POST" class="space-y-5">
+<form action="{{ route('admin.himamat.update', ['day' => $day->getKey()]) }}" method="POST" class="space-y-5"
+      x-data="{ synaxariumSource: @js($synaxariumSource) }">
     @csrf
     @method('PUT')
 
@@ -127,7 +131,8 @@
             <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_synaxarium_title') }}</p>
                 <h2 class="mt-1 text-lg font-bold text-primary">{{ __('app.himamat_synaxarium_title') }}</h2>
-                <p class="mt-1 text-sm text-secondary">{{ __('app.himamat_synaxarium_auto_note') }}</p>
+                <p class="mt-1 text-sm text-secondary" x-show="synaxariumSource === 'automatic'">{{ __('app.himamat_synaxarium_auto_note') }}</p>
+                <p class="mt-1 text-sm text-secondary" x-show="synaxariumSource === 'manual'">{{ __('app.himamat_synaxarium_manual_note') }}</p>
             </div>
             @if(($ethDateInfo['ethiopian_date_formatted'] ?? null))
                 <span class="rounded-xl border border-border bg-muted px-3 py-2 text-xs font-semibold text-secondary">
@@ -137,6 +142,51 @@
         </div>
 
         <div class="mt-5 grid gap-4 md:grid-cols-2">
+            <div class="md:col-span-2">
+                <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_synaxarium_source_title') }}</label>
+                <div class="mt-2 grid gap-3 md:grid-cols-2">
+                    <label class="inline-flex items-start gap-3 rounded-2xl border border-border bg-muted px-4 py-4 text-sm text-primary">
+                        <input type="radio" name="synaxarium_source" value="automatic" x-model="synaxariumSource"
+                               class="mt-0.5 h-4 w-4 border-border text-accent focus:ring-accent">
+                        <span>
+                            <span class="block font-semibold">{{ __('app.himamat_synaxarium_source_automatic') }}</span>
+                            <span class="mt-1 block text-secondary">{{ __('app.himamat_synaxarium_source_automatic_help') }}</span>
+                        </span>
+                    </label>
+                    <label class="inline-flex items-start gap-3 rounded-2xl border border-border bg-muted px-4 py-4 text-sm text-primary">
+                        <input type="radio" name="synaxarium_source" value="manual" x-model="synaxariumSource"
+                               class="mt-0.5 h-4 w-4 border-border text-accent focus:ring-accent">
+                        <span>
+                            <span class="block font-semibold">{{ __('app.himamat_synaxarium_source_manual') }}</span>
+                            <span class="mt-1 block text-secondary">{{ __('app.himamat_synaxarium_source_manual_help') }}</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+            <div x-show="synaxariumSource === 'manual'" x-cloak>
+                <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.ethiopian_month') }}</label>
+                <select name="synaxarium_month"
+                        class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">
+                    <option value="">{{ __('app.select') }}</option>
+                    @foreach($ethiopianMonthOptions as $monthNumber => $monthLabel)
+                        <option value="{{ $monthNumber }}" {{ (string) $synaxariumMonth === (string) $monthNumber ? 'selected' : '' }}>
+                            {{ $monthLabel }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            <div x-show="synaxariumSource === 'manual'" x-cloak>
+                <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.day') }}</label>
+                <select name="synaxarium_day"
+                        class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">
+                    <option value="">{{ __('app.select') }}</option>
+                    @for($d = 1; $d <= 30; $d++)
+                        <option value="{{ $d }}" {{ (string) $synaxariumDay === (string) $d ? 'selected' : '' }}>
+                            {{ $d }}
+                        </option>
+                    @endfor
+                </select>
+            </div>
             <div class="rounded-2xl border border-border/80 bg-muted/40 p-4">
                 <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_synaxarium_annual') }}</p>
                 @if($annualCelebrations->isNotEmpty())

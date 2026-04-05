@@ -30,6 +30,7 @@ return [
     'send' => 'Send',
     'confirm' => 'ያረጋግጡ',
     'filter' => 'Filter',
+    'select' => 'Select',
     'clear_filters' => 'Clear Filters',
 
     // Onboarding
@@ -2020,6 +2021,12 @@ return [
     'himamat_ritual_intro_title' => 'Ritual Guide / Introduction',
     'himamat_synaxarium_title' => 'Synaxarium Celebrations',
     'himamat_synaxarium_auto_note' => 'This section is fetched automatically from the existing Synaxarium module using the selected date.',
+    'himamat_synaxarium_manual_note' => 'This section is fetched from the existing Synaxarium module using the Ethiopian month/day you choose below. Save the form to refresh the preview.',
+    'himamat_synaxarium_source_title' => 'Synaxarium Source',
+    'himamat_synaxarium_source_automatic' => 'Automatic from date',
+    'himamat_synaxarium_source_automatic_help' => 'Use the Himamat day date and fetch the matching Synaxarium celebrations automatically.',
+    'himamat_synaxarium_source_manual' => 'Manual linked day',
+    'himamat_synaxarium_source_manual_help' => 'Choose a different Ethiopian month/day when Holy Week needs to point to another Synaxarium entry.',
     'himamat_synaxarium_annual' => 'Annual commemorations',
     'himamat_synaxarium_monthly' => 'Monthly commemorations',
     'himamat_synaxarium_empty' => 'No celebrations are currently attached to this date.',

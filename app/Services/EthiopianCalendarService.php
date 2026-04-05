@@ -69,6 +69,14 @@ class EthiopianCalendarService
     }
 
     /**
+     * @return array<int, string>
+     */
+    public function monthOptions(string $locale = 'en'): array
+    {
+        return $locale === 'am' ? self::MONTH_NAMES_AM : self::MONTH_NAMES_EN;
+    }
+
+    /**
      * Format Ethiopian date as a readable string.
      */
     public function formatEthiopianDate(Carbon $date, string $locale = 'en'): string
@@ -76,10 +84,23 @@ class EthiopianCalendarService
         $eth = $this->gregorianToEthiopian($date);
 
         if ($locale === 'am') {
-            return $eth['month_name_am'] . ' ' . $eth['day'] . '፣ ' . $eth['year'] . ' ዓ.ም.';
+            return $eth['month_name_am'].' '.$eth['day'].'፣ '.$eth['year'].' ዓ.ም.';
         }
 
-        return $eth['month_name_en'] . ' ' . $eth['day'] . ', ' . $eth['year'] . ' E.C.';
+        return $eth['month_name_en'].' '.$eth['day'].', '.$eth['year'].' E.C.';
+    }
+
+    public function formatEthiopianMonthDay(int $month, int $day, string $locale = 'en', ?int $year = null): string
+    {
+        $monthNames = $this->monthOptions($locale);
+        $monthName = $monthNames[$month] ?? 'Unknown';
+        $resolvedYear = $year ?? $this->gregorianToEthiopian(Carbon::today())['year'];
+
+        if ($locale === 'am') {
+            return $monthName.' '.$day.'፣ '.$resolvedYear.' ዓ.ም.';
+        }
+
+        return $monthName.' '.$day.', '.$resolvedYear.' E.C.';
     }
 
     /**
@@ -134,6 +155,46 @@ class EthiopianCalendarService
         return [
             'ethiopian_date' => $eth,
             'ethiopian_date_formatted' => $this->formatEthiopianDate($date, $locale),
+            'celebrations' => $celebrations,
+            'main_celebration' => $mainCelebration,
+            'celebration' => $mainCelebration,
+            'is_annual_feast' => $mainCelebration instanceof EthiopianSynaxariumAnnual,
+            'annual_celebrations' => $annuals,
+            'monthly_celebrations' => $monthlies,
+        ];
+    }
+
+    /**
+     * Get Ethiopian date info directly from an Ethiopian month/day selection.
+     */
+    public function getDateInfoForEthiopianDay(int $month, int $day, string $locale = 'en'): array
+    {
+        $todayEth = $this->gregorianToEthiopian(Carbon::today());
+        $eth = [
+            'year' => $todayEth['year'],
+            'month' => $month,
+            'day' => $day,
+            'month_name_en' => self::MONTH_NAMES_EN[$month] ?? 'Unknown',
+            'month_name_am' => self::MONTH_NAMES_AM[$month] ?? '',
+        ];
+
+        $annuals = EthiopianSynaxariumAnnual::where('month', $month)
+            ->where('day', $day)
+            ->orderByDesc('is_main')
+            ->orderBy('sort_order')
+            ->get();
+
+        $monthlies = EthiopianSynaxariumMonthly::where('day', $day)
+            ->orderByDesc('is_main')
+            ->orderBy('sort_order')
+            ->get();
+
+        $celebrations = $annuals->isNotEmpty() ? $annuals : $monthlies;
+        $mainCelebration = $celebrations->firstWhere('is_main', true) ?? $celebrations->first();
+
+        return [
+            'ethiopian_date' => $eth,
+            'ethiopian_date_formatted' => $this->formatEthiopianMonthDay($month, $day, $locale, $todayEth['year']),
             'celebrations' => $celebrations,
             'main_celebration' => $mainCelebration,
             'celebration' => $mainCelebration,

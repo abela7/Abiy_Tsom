@@ -8,7 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\HimamatDay;
 use App\Models\LentSeason;
 use App\Models\MemberHimamatPreference;
-use App\Services\EthiopianCalendarService;
+use App\Services\HimamatSynaxariumService;
 use App\Services\HimamatTimelineService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -100,7 +100,7 @@ class HimamatController extends Controller
         string $day,
         string $slot,
         HimamatTimelineService $timeline,
-        EthiopianCalendarService $ethCalendar
+        HimamatSynaxariumService $synaxarium
     ): View|RedirectResponse {
         $member = $request->attributes->get('member');
         $season = LentSeason::active();
@@ -126,9 +126,7 @@ class HimamatController extends Controller
         $dayIndex = $publishedDays->search(fn (HimamatDay $item): bool => $item->id === $himamatDay->id);
         $previousDay = $dayIndex !== false && $dayIndex > 0 ? $publishedDays->get($dayIndex - 1) : null;
         $nextDay = $dayIndex !== false ? $publishedDays->get($dayIndex + 1) : null;
-        $ethDateInfo = $himamatDay->date
-            ? $ethCalendar->getDateInfo($himamatDay->date->copy(), app()->getLocale())
-            : null;
+        $ethDateInfo = $synaxarium->resolveDateInfo($himamatDay, app()->getLocale());
 
         return view('member.himamat.day', [
             'member' => $member,

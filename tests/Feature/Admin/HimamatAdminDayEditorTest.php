@@ -68,6 +68,9 @@ class HimamatAdminDayEditorTest extends TestCase
             'spiritual_meaning_am' => '',
             'ritual_guide_intro_en' => 'A ritual introduction for the whole day.',
             'ritual_guide_intro_am' => '',
+            'synaxarium_source' => 'manual',
+            'synaxarium_month' => 8,
+            'synaxarium_day' => 27,
             'is_published' => '1',
             'faqs' => [
                 [
@@ -115,6 +118,9 @@ class HimamatAdminDayEditorTest extends TestCase
             'title_en' => 'Holy Monday - Fig Tree',
             'spiritual_meaning_en' => 'A full day meaning for Holy Monday.',
             'ritual_guide_intro_en' => 'A ritual introduction for the whole day.',
+            'synaxarium_source' => 'manual',
+            'synaxarium_month' => 8,
+            'synaxarium_day' => 27,
             'is_published' => 1,
         ]);
 

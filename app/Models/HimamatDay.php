@@ -22,6 +22,9 @@ class HimamatDay extends Model
         'spiritual_meaning_am',
         'ritual_guide_intro_en',
         'ritual_guide_intro_am',
+        'synaxarium_source',
+        'synaxarium_month',
+        'synaxarium_day',
         'is_published',
         'created_by_id',
         'updated_by_id',
@@ -32,6 +35,8 @@ class HimamatDay extends Model
     {
         return [
             'date' => 'date',
+            'synaxarium_month' => 'integer',
+            'synaxarium_day' => 'integer',
             'is_published' => 'boolean',
         ];
     }

@@ -8,12 +8,13 @@ use App\Http\Controllers\Controller;
 use App\Models\HimamatDay;
 use App\Models\HimamatDayFaq;
 use App\Models\LentSeason;
-use App\Services\EthiopianCalendarService;
 use App\Services\HimamatScaffoldService;
+use App\Services\HimamatSynaxariumService;
 use App\Services\HimamatTimelineService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -53,24 +54,23 @@ class HimamatDayController extends Controller
             ]));
     }
 
-    public function edit(string $day, EthiopianCalendarService $ethCalendar): View
+    public function edit(string $day, HimamatSynaxariumService $synaxarium): View
     {
         $himamatDay = $this->resolveDay($day);
-        $ethDateInfo = $himamatDay->date
-            ? $ethCalendar->getDateInfo($himamatDay->date->copy(), app()->getLocale())
-            : null;
+        $ethDateInfo = $synaxarium->resolveDateInfo($himamatDay, app()->getLocale());
 
         return view('admin.himamat.edit', [
             'day' => $himamatDay,
             'season' => $himamatDay->lentSeason,
             'ethDateInfo' => $ethDateInfo,
+            'ethiopianMonthOptions' => $synaxarium->monthOptions(app()->getLocale()),
         ]);
     }
 
     public function preview(
         string $day,
         HimamatTimelineService $timeline,
-        EthiopianCalendarService $ethCalendar
+        HimamatSynaxariumService $synaxarium
     ): View {
         $himamatDay = $this->resolveDay($day);
         $timelineData = $timeline->buildTimeline(
@@ -80,9 +80,7 @@ class HimamatDayController extends Controller
             ]),
             (string) ($himamatDay->slots->first()?->slot_key ?? 'intro')
         );
-        $ethDateInfo = $himamatDay->date
-            ? $ethCalendar->getDateInfo($himamatDay->date->copy(), app()->getLocale())
-            : null;
+        $ethDateInfo = $synaxarium->resolveDateInfo($himamatDay, app()->getLocale());
 
         return view('member.himamat.day', [
             'member' => null,
@@ -111,6 +109,9 @@ class HimamatDayController extends Controller
             'spiritual_meaning_am' => ['nullable', 'string'],
             'ritual_guide_intro_en' => ['nullable', 'string'],
             'ritual_guide_intro_am' => ['nullable', 'string'],
+            'synaxarium_source' => ['required', 'string', Rule::in(['automatic', 'manual'])],
+            'synaxarium_month' => ['nullable', 'integer', 'min:1', 'max:13', 'required_if:synaxarium_source,manual'],
+            'synaxarium_day' => ['nullable', 'integer', 'min:1', 'max:30', 'required_if:synaxarium_source,manual'],
             'is_published' => ['nullable', 'boolean'],
             'faqs' => ['nullable', 'array'],
             'faqs.*.id' => ['nullable', 'integer'],
@@ -149,6 +150,13 @@ class HimamatDayController extends Controller
                 'spiritual_meaning_am' => $validated['spiritual_meaning_am'] ?: null,
                 'ritual_guide_intro_en' => $validated['ritual_guide_intro_en'] ?: null,
                 'ritual_guide_intro_am' => $validated['ritual_guide_intro_am'] ?: null,
+                'synaxarium_source' => $validated['synaxarium_source'],
+                'synaxarium_month' => $validated['synaxarium_source'] === 'manual'
+                    ? (int) $validated['synaxarium_month']
+                    : null,
+                'synaxarium_day' => $validated['synaxarium_source'] === 'manual'
+                    ? (int) $validated['synaxarium_day']
+                    : null,
                 'is_published' => $request->boolean('is_published'),
                 'updated_by_id' => auth()->id(),
             ]);

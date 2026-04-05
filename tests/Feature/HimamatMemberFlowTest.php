@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Http\Middleware\RequireMemberIdentityConfirmation;
+use App\Models\EthiopianSynaxariumAnnual;
 use App\Models\HimamatDay;
 use App\Models\HimamatDayFaq;
 use App\Models\HimamatSlot;
@@ -127,6 +128,34 @@ class HimamatMemberFlowTest extends TestCase
             ->assertSee('Sacred Timeline')
             ->assertSee('Current')
             ->assertSee('Ninth Hour');
+    }
+
+    public function test_member_day_uses_manual_synaxarium_link_when_configured(): void
+    {
+        CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-04-06 09:00:00', 'Europe/London'));
+
+        $this->createSeason();
+        $member = $this->createMember('m');
+        EthiopianSynaxariumAnnual::create([
+            'month' => 8,
+            'day' => 27,
+            'is_main' => true,
+            'sort_order' => 1,
+            'celebration_en' => 'Manual Linked Saint',
+            'description_en' => 'Fetched from the chosen Ethiopian day.',
+        ]);
+
+        $day = $this->createPublishedDayWithSlots('holy-monday', '2026-04-06', 'Holy Monday');
+        $day->update([
+            'synaxarium_source' => 'manual',
+            'synaxarium_month' => 8,
+            'synaxarium_day' => 27,
+        ]);
+
+        $this->actingAsRememberedMember($member)
+            ->get('/member/himamat/'.$day->slug.'/third')
+            ->assertOk()
+            ->assertSee('Manual Linked Saint');
     }
 
     private function createSeason(array $overrides = []): LentSeason
