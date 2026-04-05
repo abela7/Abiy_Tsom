@@ -31,6 +31,7 @@ class SyncHimamatPreferenceTranslations extends Command
         'himamat_day_view_title',
         'himamat_open_today',
         'himamat_slots_label',
+        'himamat_ritual_intro_title',
     ];
 
     protected $signature = 'himamat:sync-preferences-translations

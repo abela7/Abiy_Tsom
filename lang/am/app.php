@@ -2088,7 +2088,7 @@ return [
     'himamat_day_reminder_title_hint' => 'If left blank, the system will fall back to the Himamat day title.',
     'himamat_day_reminder_managed_note' => 'The intro reminder title is managed above in Global Day Information so the reminder engine has one source of truth.',
     'himamat_day_meaning_title' => 'Day Theme & Meaning',
-    'himamat_ritual_intro_title' => 'Ritual Guide / Introduction',
+    'himamat_ritual_intro_title' => 'ማብራሪያ',
     'himamat_synaxarium_title' => 'Synaxarium Celebrations',
     'himamat_synaxarium_auto_note' => 'This section is fetched automatically from the existing Synaxarium module using the selected date.',
     'himamat_synaxarium_manual_note' => 'This section is fetched from the existing Synaxarium module using the Ethiopian month/day you choose below. Save the form to refresh the preview.',
