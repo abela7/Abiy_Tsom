@@ -42,9 +42,17 @@ class SendHimamatWhatsAppReminders extends Command
             $nowLondon = CarbonImmutable::now($timezone);
             $dryRun = (bool) $this->option('dry-run');
             $shouldQueue = (bool) $this->option('queue');
+            $testModeMemberId = $dispatches->testModeMemberId();
 
             if ($shouldQueue && config('queue.default') === 'sync') {
                 $this->warn('Queue mode is enabled, but QUEUE_CONNECTION is sync. Himamat reminders will still run inline until a queue worker is configured.');
+            }
+
+            if ($testModeMemberId !== null) {
+                $this->warn(sprintf(
+                    'Himamat reminder test mode is active. Only member ID %d is eligible for dispatch.',
+                    $testModeMemberId
+                ));
             }
 
             $season = LentSeason::active();

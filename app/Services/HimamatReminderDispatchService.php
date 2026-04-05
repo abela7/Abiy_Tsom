@@ -33,6 +33,13 @@ class HimamatReminderDispatchService
         return (string) config('himamat.reminders.queues.reminders', SendHimamatReminderJob::QUEUE_NAME);
     }
 
+    public function testModeMemberId(): ?int
+    {
+        $memberId = (int) config('himamat.reminders.test_mode_member_id');
+
+        return $memberId > 0 ? $memberId : null;
+    }
+
     /**
      * @return Collection<int, HimamatSlot>
      */
@@ -262,6 +269,7 @@ class HimamatReminderDispatchService
     private function recipientQuery(HimamatSlot $slot): \Illuminate\Database\Query\Builder
     {
         $preferenceColumn = $slot->slot_key.'_enabled';
+        $testModeMemberId = $this->testModeMemberId();
 
         return DB::table('member_himamat_preferences')
             ->join('members', 'members.id', '=', 'member_himamat_preferences.member_id')
@@ -274,6 +282,7 @@ class HimamatReminderDispatchService
             ->where('member_himamat_preferences.lent_season_id', $slot->himamatDay->lent_season_id)
             ->where('member_himamat_preferences.enabled', true)
             ->where("member_himamat_preferences.$preferenceColumn", true)
+            ->when($testModeMemberId !== null, fn ($query) => $query->where('member_himamat_preferences.member_id', $testModeMemberId))
             ->where('members.whatsapp_confirmation_status', 'confirmed')
             ->whereNotNull('members.whatsapp_phone')
             ->where('members.whatsapp_phone', '!=', '')

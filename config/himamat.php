@@ -7,6 +7,7 @@ return [
 
     'reminders' => [
         'dispatch_grace_minutes' => (int) env('HIMAMAT_REMINDER_DISPATCH_GRACE_MINUTES', 20),
+        'test_mode_member_id' => env('HIMAMAT_REMINDER_TEST_MEMBER_ID'),
         'queues' => [
             'reminders' => env('HIMAMAT_REMINDER_QUEUE', 'whatsapp-himamat-reminders'),
             'invitations' => env('HIMAMAT_INVITATION_QUEUE', 'whatsapp-himamat-invitations'),
