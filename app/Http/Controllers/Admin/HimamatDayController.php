@@ -234,6 +234,8 @@ class HimamatDayController extends Controller
             'slots.*.resources.*.type' => ['nullable', 'string', Rule::in(HimamatSlotResource::allowedTypes())],
             'slots.*.resources.*.title_en' => ['nullable', 'string', 'max:255'],
             'slots.*.resources.*.title_am' => ['nullable', 'string', 'max:255'],
+            'slots.*.resources.*.text_en' => ['nullable', 'string'],
+            'slots.*.resources.*.text_am' => ['nullable', 'string'],
             'slots.*.resources.*.url' => ['nullable', 'url', 'max:1000'],
             'slots.*.resources.*.file_path' => ['nullable', 'string', 'max:500'],
             'slots.*.resources.*.upload' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:20480'],
@@ -452,12 +454,16 @@ class HimamatDayController extends Controller
                 : null;
             $titleEn = trim((string) ($resourceInput['title_en'] ?? ''));
             $titleAm = trim((string) ($resourceInput['title_am'] ?? ''));
+            $textEn = trim((string) ($resourceInput['text_en'] ?? ''));
+            $textAm = trim((string) ($resourceInput['text_am'] ?? ''));
             $url = trim((string) ($resourceInput['url'] ?? ''));
             $filePath = trim((string) ($resourceInput['file_path'] ?? ''));
             $upload = $request->file("slots.$slotIndex.resources.$resourceIndex.upload");
 
             $hasAnyContent = $titleEn !== ''
                 || $titleAm !== ''
+                || $textEn !== ''
+                || $textAm !== ''
                 || $url !== ''
                 || $filePath !== ''
                 || $upload !== null;
@@ -472,7 +478,13 @@ class HimamatDayController extends Controller
                 ]);
             }
 
-            if ($url === '' && $filePath === '' && $upload === null) {
+            if ($type === HimamatSlotResource::TYPE_TEXT && $textEn === '' && $textAm === '') {
+                throw ValidationException::withMessages([
+                    "slots.$slotIndex.resources.$resourceIndex.text_en" => __('app.himamat_resource_requires_text'),
+                ]);
+            }
+
+            if ($type !== HimamatSlotResource::TYPE_TEXT && $url === '' && $filePath === '' && $upload === null) {
                 throw ValidationException::withMessages([
                     "slots.$slotIndex.resources.$resourceIndex.url" => __('app.himamat_resource_requires_media'),
                 ]);
@@ -493,6 +505,8 @@ class HimamatDayController extends Controller
                 'type' => $type,
                 'title_en' => $titleEn !== '' ? $titleEn : null,
                 'title_am' => $titleAm !== '' ? $titleAm : null,
+                'text_en' => $type === HimamatSlotResource::TYPE_TEXT && $textEn !== '' ? $textEn : null,
+                'text_am' => $type === HimamatSlotResource::TYPE_TEXT && $textAm !== '' ? $textAm : null,
                 'url' => $url !== '' ? $url : null,
                 'file_path' => $filePath !== '' ? $filePath : null,
                 'upload' => $upload,
@@ -511,7 +525,7 @@ class HimamatDayController extends Controller
         $normalizedExtension = strtolower(trim($extension));
         $allowedPhotoExtensions = ['jpg', 'jpeg', 'png', 'webp'];
 
-        if (in_array($type, [HimamatSlotResource::TYPE_VIDEO, HimamatSlotResource::TYPE_WEBSITE], true)) {
+        if (in_array($type, [HimamatSlotResource::TYPE_VIDEO, HimamatSlotResource::TYPE_WEBSITE, HimamatSlotResource::TYPE_TEXT], true)) {
             throw ValidationException::withMessages([
                 "slots.$slotIndex.resources.$resourceIndex.upload" => __('app.himamat_resource_upload_not_supported'),
             ]);
@@ -551,7 +565,7 @@ class HimamatDayController extends Controller
                 }
             }
 
-            if (in_array($resourcePayload['type'], [HimamatSlotResource::TYPE_VIDEO, HimamatSlotResource::TYPE_WEBSITE], true)) {
+            if (in_array($resourcePayload['type'], [HimamatSlotResource::TYPE_VIDEO, HimamatSlotResource::TYPE_WEBSITE, HimamatSlotResource::TYPE_TEXT], true)) {
                 if ($existingResource?->file_path && $resourcePayload['upload'] === null) {
                     Storage::disk('public')->delete($existingResource->file_path);
                 }
@@ -559,11 +573,17 @@ class HimamatDayController extends Controller
                 $filePath = null;
             }
 
+            if ($resourcePayload['type'] === HimamatSlotResource::TYPE_TEXT) {
+                $resourcePayload['url'] = null;
+            }
+
             $attributes = [
                 'type' => $resourcePayload['type'],
                 'sort_order' => $index + 1,
                 'title_en' => $resourcePayload['title_en'],
                 'title_am' => $resourcePayload['title_am'],
+                'text_en' => $resourcePayload['text_en'],
+                'text_am' => $resourcePayload['text_am'],
                 'url' => $resourcePayload['url'],
                 'file_path' => $filePath,
                 'updated_by_id' => auth()->id(),

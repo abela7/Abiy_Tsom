@@ -349,6 +349,8 @@
                         'type' => $resource->type,
                         'title_en' => $resource->title_en,
                         'title_am' => $resource->title_am,
+                        'text_en' => $resource->text_en,
+                        'text_am' => $resource->text_am,
                         'url' => $resource->url,
                         'file_path' => $resource->file_path,
                         'file_url' => $resource->resolvedUrl(),
@@ -469,6 +471,7 @@
                                                 <option value="website">{{ __('app.himamat_resource_type_website') }}</option>
                                                 <option value="pdf">{{ __('app.himamat_resource_type_pdf') }}</option>
                                                 <option value="photo">{{ __('app.himamat_resource_type_photo') }}</option>
+                                                <option value="text">{{ __('app.himamat_resource_type_text') }}</option>
                                             </select>
                                         </div>
                                         <div>
@@ -485,7 +488,7 @@
                                                    x-model="resource.title_am"
                                                    class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">
                                         </div>
-                                        <div>
+                                        <div x-show="resource.type !== 'text'">
                                             <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_resource_url') }}</label>
                                             <input type="url"
                                                    :name="`slots[{{ $index }}][resources][${resourceIndex}][url]`"
@@ -497,6 +500,22 @@
                                             <p class="mt-2 text-xs text-secondary" x-show="resource.type === 'pdf' || resource.type === 'photo'">
                                                 {{ __('app.himamat_resource_url_optional_hint') }}
                                             </p>
+                                        </div>
+                                        <div class="md:col-span-2" x-show="resource.type === 'text'">
+                                            <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_resource_text') }} (EN)</label>
+                                            <textarea :name="`slots[{{ $index }}][resources][${resourceIndex}][text_en]`"
+                                                      x-model="resource.text_en"
+                                                      rows="10"
+                                                      class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent"></textarea>
+                                            <p class="mt-2 text-xs text-secondary">{{ __('app.himamat_resource_text_hint') }}</p>
+                                        </div>
+                                        <div class="md:col-span-2" x-show="resource.type === 'text'">
+                                            <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_resource_text') }} (AM)</label>
+                                            <textarea :name="`slots[{{ $index }}][resources][${resourceIndex}][text_am]`"
+                                                      x-model="resource.text_am"
+                                                      rows="10"
+                                                      class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent"></textarea>
+                                            <p class="mt-2 text-xs text-secondary">{{ __('app.himamat_resource_text_hint') }}</p>
                                         </div>
                                         <div class="md:col-span-2" x-show="resource.type === 'pdf' || resource.type === 'photo'">
                                             <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_resource_upload') }}</label>
@@ -587,6 +606,8 @@ function himamatSlotResourceEditor(initialResources) {
                 type: resource.type ?? 'website',
                 title_en: resource.title_en ?? '',
                 title_am: resource.title_am ?? '',
+                text_en: resource.text_en ?? '',
+                text_am: resource.text_am ?? '',
                 url: resource.url ?? '',
                 file_path: resource.file_path ?? '',
                 file_url: resource.file_url ?? '',
@@ -599,6 +620,8 @@ function himamatSlotResourceEditor(initialResources) {
                 type: 'website',
                 title_en: '',
                 title_am: '',
+                text_en: '',
+                text_am: '',
                 url: '',
                 file_path: '',
                 file_url: '',

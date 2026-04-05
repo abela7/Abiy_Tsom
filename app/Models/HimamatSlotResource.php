@@ -18,6 +18,8 @@ class HimamatSlotResource extends Model
 
     public const TYPE_PHOTO = 'photo';
 
+    public const TYPE_TEXT = 'text';
+
     /** @var list<string> */
     protected $fillable = [
         'himamat_slot_id',
@@ -25,6 +27,8 @@ class HimamatSlotResource extends Model
         'sort_order',
         'title_en',
         'title_am',
+        'text_en',
+        'text_am',
         'url',
         'file_path',
         'created_by_id',
@@ -41,6 +45,7 @@ class HimamatSlotResource extends Model
             self::TYPE_WEBSITE,
             self::TYPE_PDF,
             self::TYPE_PHOTO,
+            self::TYPE_TEXT,
         ];
     }
 
@@ -71,5 +76,10 @@ class HimamatSlotResource extends Model
     public function isPhoto(): bool
     {
         return $this->type === self::TYPE_PHOTO;
+    }
+
+    public function isText(): bool
+    {
+        return $this->type === self::TYPE_TEXT;
     }
 }

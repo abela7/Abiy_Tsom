@@ -110,6 +110,16 @@ class HimamatAdminDayEditorTest extends TestCase
                             'file_path' => '',
                             'upload' => UploadedFile::fake()->create('temple-photo.png', 200, 'image/png'),
                         ],
+                        [
+                            'id' => '',
+                            'type' => HimamatSlotResource::TYPE_TEXT,
+                            'title_en' => 'Bowing prayer',
+                            'title_am' => '',
+                            'text_en' => 'Offer the prayer text for this hour with reverence.',
+                            'text_am' => '',
+                            'url' => '',
+                            'file_path' => '',
+                        ],
                     ]
                     : [],
                 'is_published' => '1',
@@ -161,6 +171,13 @@ class HimamatAdminDayEditorTest extends TestCase
             'type' => HimamatSlotResource::TYPE_VIDEO,
             'title_en' => 'Temple teaching video',
             'url' => 'https://www.youtube.com/watch?v=holy-third-hour',
+        ]);
+
+        $this->assertDatabaseHas('himamat_slot_resources', [
+            'himamat_slot_id' => $slots[1]->id,
+            'type' => HimamatSlotResource::TYPE_TEXT,
+            'title_en' => 'Bowing prayer',
+            'text_en' => 'Offer the prayer text for this hour with reverence.',
         ]);
 
         $photoResource = HimamatSlotResource::query()

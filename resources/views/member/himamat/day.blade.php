@@ -237,6 +237,7 @@
                                         @foreach($slot->resources as $resource)
                                             @php
                                                 $resourceTitle = localized($resource, 'title') ?? $resource->title_en ?? __('app.himamat_resource_type_'.$resource->type);
+                                                $resourceText = localized($resource, 'text') ?? $resource->text_en ?? '';
                                                 $resourceUrl = $resource->resolvedUrl();
                                             @endphp
                                             <article class="rounded-2xl border border-border bg-card p-3">
@@ -251,6 +252,10 @@
                                                         {{ __('app.himamat_resource_type_'.$resource->type) }}
                                                     </p>
                                                     <p class="mt-2 text-sm font-semibold text-primary">{{ $resourceTitle }}</p>
+
+                                                    @if($resource->isText() && $resourceText !== '')
+                                                        <p class="mt-3 text-sm leading-relaxed text-secondary whitespace-pre-line">{{ $resourceText }}</p>
+                                                    @endif
 
                                                     @if($resourceUrl)
                                                         <a href="{{ $resourceUrl }}"

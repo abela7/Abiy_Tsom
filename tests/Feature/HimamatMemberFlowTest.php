@@ -172,7 +172,9 @@ class HimamatMemberFlowTest extends TestCase
             ->assertSee('Current')
             ->assertSee('Ninth Hour')
             ->assertSee('Bible Section')
-            ->assertSee('Cross icon');
+            ->assertSee('Cross icon')
+            ->assertSee('Bowing prayer')
+            ->assertSee('Offer the bows with the appointed prayer text.');
     }
 
     public function test_member_day_uses_manual_synaxarium_link_when_configured(): void
@@ -283,6 +285,14 @@ class HimamatMemberFlowTest extends TestCase
             'sort_order' => 1,
             'title_en' => 'Cross icon',
             'url' => 'https://example.com/cross-icon',
+        ]);
+
+        HimamatSlotResource::create([
+            'himamat_slot_id' => $ninthSlot->id,
+            'type' => HimamatSlotResource::TYPE_TEXT,
+            'sort_order' => 2,
+            'title_en' => 'Bowing prayer',
+            'text_en' => 'Offer the bows with the appointed prayer text.',
         ]);
 
         return $day;
