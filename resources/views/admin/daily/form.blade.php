@@ -4,6 +4,8 @@
     $locale = app()->getLocale();
 
     $isEdit = isset($daily) && $daily->exists;
+    $linkedHimamatDay = $linkedHimamatDay ?? null;
+    $isHimamatLinkedDaily = $linkedHimamatDay !== null;
     $totalSteps = 7;
     $currentStep = max(1, min($totalSteps, (int) ($initialStep ?? 1)));
 
@@ -240,6 +242,26 @@
 
                 <p class="text-sm font-medium text-accent" x-text="stepLabel(step)"></p>
             </div>
+
+            @if($isHimamatLinkedDaily && $currentStep >= 3)
+                <div class="bg-card sm:rounded-2xl shadow-sm sm:border border-border px-4 py-4 sm:p-5">
+                    <div class="rounded-2xl border border-accent/20 bg-accent/5 px-4 py-4">
+                        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-accent">{{ __('app.himamat_title') }}</p>
+                                <h2 class="mt-1 text-base font-bold text-primary">{{ __('app.himamat_daily_linked_title') }}</h2>
+                                <p class="mt-2 text-sm leading-relaxed text-secondary">
+                                    {{ __('app.himamat_daily_linked_body', ['day' => $daily->day_number]) }}
+                                </p>
+                            </div>
+                            <a href="{{ route('admin.himamat.edit', ['day' => $linkedHimamatDay->getKey(), 'daily' => $daily->getKey(), 'return_step' => 3]) }}"
+                               class="inline-flex items-center justify-center rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold text-secondary transition hover:bg-muted">
+                                {{ __('app.himamat_daily_open_himamat') }}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            @endif
 
             {{-- Step content --}}
             <div class="bg-card sm:rounded-2xl shadow-sm sm:border border-border px-4 py-5 sm:p-6 space-y-5">

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\DailyContent;
 use App\Models\HimamatDay;
 use App\Models\HimamatDayFaq;
 use App\Models\HimamatReminderDispatch;
@@ -185,12 +186,16 @@ class HimamatDayController extends Controller
     {
         $himamatDay = $this->resolveDay($day);
         $ethDateInfo = $synaxarium->resolveDateInfo($himamatDay, app()->getLocale());
+        $linkedDaily = $this->resolveLinkedDaily(request(), $himamatDay);
+        $linkedDailyReturnStep = max(3, (int) request()->integer('return_step', 3));
 
         return view('admin.himamat.edit', [
             'day' => $himamatDay,
             'season' => $himamatDay->lentSeason,
             'ethDateInfo' => $ethDateInfo,
             'ethiopianMonthOptions' => $synaxarium->monthOptions(app()->getLocale()),
+            'linkedDaily' => $linkedDaily,
+            'linkedDailyReturnStep' => $linkedDailyReturnStep,
         ]);
     }
 
@@ -807,5 +812,21 @@ class HimamatDayController extends Controller
                 'faqs' => fn ($query) => $query->orderBy('sort_order'),
             ])
             ->findOrFail((int) $day);
+    }
+
+    private function resolveLinkedDaily(Request $request, HimamatDay $himamatDay): ?DailyContent
+    {
+        $dailyId = $request->integer('daily');
+
+        if (! $dailyId) {
+            return null;
+        }
+
+        return DailyContent::query()
+            ->whereKey($dailyId)
+            ->where('lent_season_id', $himamatDay->lent_season_id)
+            ->whereBetween('day_number', [50, 55])
+            ->whereDate('date', $himamatDay->date)
+            ->first();
     }
 }

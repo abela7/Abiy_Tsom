@@ -9,6 +9,7 @@ use App\Models\Activity;
 use App\Models\DailyContent;
 use App\Models\DailyContentBook;
 use App\Models\DailyContentMezmur;
+use App\Models\HimamatDay;
 use App\Models\LentSeason;
 use App\Services\AbiyTsomStructure;
 use App\Services\EthiopianCalendarService;
@@ -289,20 +290,41 @@ class DailyContentController extends Controller
         ]);
     }
 
-    public function edit(DailyContent $daily): View
+    public function edit(DailyContent $daily): View|RedirectResponse
     {
         $daily->load(['books', 'sinksarImages']);
         $season = LentSeason::active();
         $themes = $season ? $season->weeklyThemes()->orderBy('week_number')->get() : collect();
         $dayRangesByWeek = $this->getDayRangesByWeek();
         $initialStep = max(1, min(7, $this->normalizeStep(request())));
+        $linkedHimamatDay = $this->resolveLinkedHimamatDay($daily);
+
+        if ($linkedHimamatDay && $initialStep <= 2) {
+            return redirect()->route('admin.himamat.edit', [
+                'day' => $linkedHimamatDay->getKey(),
+                'daily' => $daily->getKey(),
+                'return_step' => 3,
+            ]);
+        }
+
         $recentBooks = $this->getRecentBooks($daily->id);
         $recentMezmurs = $this->getRecentMezmurs($daily->id);
         $daysWithContent = $this->getDaysWithContent($daily->id);
         $canEdit = in_array(auth()->user()?->role ?? '', ['admin', 'editor', 'writer'], true)
             || auth()->user()?->isSuperAdmin();
 
-        return view('admin.daily.form', compact('season', 'themes', 'daily', 'dayRangesByWeek', 'initialStep', 'recentBooks', 'recentMezmurs', 'daysWithContent', 'canEdit'));
+        return view('admin.daily.form', compact(
+            'season',
+            'themes',
+            'daily',
+            'dayRangesByWeek',
+            'initialStep',
+            'recentBooks',
+            'recentMezmurs',
+            'daysWithContent',
+            'canEdit',
+            'linkedHimamatDay',
+        ));
     }
 
     public function update(Request $request, DailyContent $daily): RedirectResponse
@@ -586,6 +608,19 @@ class DailyContentController extends Controller
             'day_number' => (int) $d->day_number,
             'label' => sprintf('Day %d (%s)', $d->day_number, $d->date->format('M j')),
         ])->values()->toArray();
+    }
+
+    private function resolveLinkedHimamatDay(DailyContent $daily): ?HimamatDay
+    {
+        if ($daily->day_number < 50 || $daily->day_number > 55) {
+            return null;
+        }
+
+        return HimamatDay::query()
+            ->where('lent_season_id', $daily->lent_season_id)
+            ->whereDate('date', $daily->date)
+            ->orderBy('sort_order')
+            ->first();
     }
 
     /**

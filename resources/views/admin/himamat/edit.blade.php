@@ -42,6 +42,8 @@
         ->filter()
         ->unique()
         ->values();
+    $linkedDaily = $linkedDaily ?? null;
+    $linkedDailyReturnStep = $linkedDailyReturnStep ?? 3;
     $unpublishedSlots = $day->slots
         ->filter(fn ($slot) => ! $slot->is_published)
         ->map(fn ($slot) => $slotStatusLabels[$slot->slot_key] ?? (localized($slot, 'slot_header') ?? $slot->slot_header_en))
@@ -55,6 +57,12 @@
         <p class="mt-1 text-sm text-secondary">{{ localized($day, 'title') ?? $day->title_en }}</p>
     </div>
     <div class="flex gap-2">
+        @if($linkedDaily)
+            <a href="{{ route('admin.daily.edit', ['daily' => $linkedDaily->getKey(), 'step' => $linkedDailyReturnStep]) }}"
+               class="inline-flex items-center justify-center rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold text-secondary transition hover:bg-muted">
+                {{ __('app.himamat_daily_continue_content') }}
+            </a>
+        @endif
         <a href="{{ route('admin.himamat.preview', ['day' => $day->getKey()]) }}"
            target="_blank" rel="noopener"
            class="inline-flex items-center justify-center rounded-xl border border-border bg-muted px-4 py-2.5 text-sm font-semibold text-secondary transition hover:bg-border">
@@ -66,6 +74,24 @@
         </a>
     </div>
 </div>
+
+@if($linkedDaily)
+    <section class="mb-5 rounded-2xl border border-accent/20 bg-accent/5 px-4 py-4 shadow-sm">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-accent">{{ __('app.himamat_title') }}</p>
+                <h2 class="mt-1 text-base font-bold text-primary">{{ __('app.himamat_daily_linked_title') }}</h2>
+                <p class="mt-2 text-sm leading-relaxed text-secondary">
+                    {{ __('app.himamat_daily_linked_body', ['day' => $linkedDaily->day_number]) }}
+                </p>
+            </div>
+            <a href="{{ route('admin.daily.edit', ['daily' => $linkedDaily->getKey(), 'step' => $linkedDailyReturnStep]) }}"
+               class="inline-flex items-center justify-center rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold text-secondary transition hover:bg-muted">
+                {{ __('app.himamat_daily_continue_content') }}
+            </a>
+        </div>
+    </section>
+@endif
 
 @if($errors->any())
     <div class="mb-5 rounded-2xl border border-danger/20 bg-danger/5 px-4 py-3 text-sm text-danger">
