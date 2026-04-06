@@ -93,7 +93,7 @@ class SendWhatsAppReminders extends Command
 
             $himamatDay = $this->resolvePublishedHimamatDay($dailyContent);
             $dueHimamatSlot = $himamatDay
-                ? $this->resolveDueHimamatSlot($himamatDay, $currentTime)
+                ? $this->resolveDueHimamatSlot($himamatDay, $nowLondon, $timezone)
                 : null;
             $isHimamatIntroWindow = $dueHimamatSlot?->slot_key === 'intro';
             $isHimamatSlotWindow = $dueHimamatSlot !== null && ! $isHimamatIntroWindow;
@@ -109,6 +109,15 @@ class SendWhatsAppReminders extends Command
             }
 
             if ($himamatDay !== null && $dueHimamatSlot !== null) {
+                if ((string) $dueHimamatSlot->scheduled_time_london !== $currentTime) {
+                    $this->line(sprintf(
+                        'Using Himamat catch-up window for %s scheduled at %s (current London time %s).',
+                        (string) $dueHimamatSlot->slot_key,
+                        (string) $dueHimamatSlot->scheduled_time_london,
+                        $nowLondon->format('H:i')
+                    ));
+                }
+
                 if ($dueHimamatSlot->slot_key === 'intro'
                     && ! $whatsAppTemplateService->himamatIntroIsReady($himamatDay)
                 ) {
@@ -398,11 +407,27 @@ class SendWhatsAppReminders extends Command
             ->first();
     }
 
-    private function resolveDueHimamatSlot(HimamatDay $himamatDay, string $currentTime): ?HimamatSlot
+    private function resolveDueHimamatSlot(
+        HimamatDay $himamatDay,
+        CarbonImmutable $nowLondon,
+        string $timezone
+    ): ?HimamatSlot
     {
-        return $himamatDay->slots->first(
-            fn (HimamatSlot $slot): bool => (string) $slot->scheduled_time_london === $currentTime
-        );
+        $graceMinutes = max(0, (int) config('himamat.reminders.dispatch_grace_minutes', 20));
+        $dayDate = CarbonImmutable::parse($himamatDay->date->toDateString(), $timezone);
+
+        return $himamatDay->slots
+            ->filter(function (HimamatSlot $slot) use ($dayDate, $graceMinutes, $nowLondon): bool {
+                $slotTime = $dayDate->setTimeFromTimeString((string) $slot->scheduled_time_london);
+
+                if ($slotTime->greaterThan($nowLondon)) {
+                    return false;
+                }
+
+                return $slotTime->diffInMinutes($nowLondon) <= $graceMinutes;
+            })
+            ->sortByDesc(fn (HimamatSlot $slot): string => (string) $slot->scheduled_time_london)
+            ->first();
     }
 
     private function buildHimamatSlotRecipientsQuery(int $seasonId, HimamatSlot $slot)

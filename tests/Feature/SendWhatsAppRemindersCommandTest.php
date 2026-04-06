@@ -469,6 +469,108 @@ class SendWhatsAppRemindersCommandTest extends TestCase
         ]);
     }
 
+    public function test_command_catches_up_himamat_intro_within_grace_window(): void
+    {
+        config()->set('services.ultramsg.instance_id', 'instance999');
+        config()->set('services.ultramsg.token', 'token-123');
+        config()->set('app.url', 'https://abiytsom.abuneteklehaymanot.org');
+        config()->set('himamat.reminders.dispatch_grace_minutes', 5);
+
+        CarbonImmutable::setTestNow(
+            CarbonImmutable::parse('2026-04-06 07:01:00', 'Europe/London')
+        );
+
+        $season = LentSeason::create([
+            'year' => 2026,
+            'start_date' => '2026-02-16',
+            'end_date' => '2026-04-12',
+            'total_days' => 55,
+            'is_active' => true,
+        ]);
+
+        $theme = WeeklyTheme::create([
+            'lent_season_id' => $season->id,
+            'week_number' => 8,
+            'name_en' => 'Hosanna',
+            'meaning' => 'Passion Week',
+            'week_start_date' => '2026-04-06',
+            'week_end_date' => '2026-04-12',
+        ]);
+
+        $daily = DailyContent::create([
+            'lent_season_id' => $season->id,
+            'weekly_theme_id' => $theme->id,
+            'day_number' => 50,
+            'date' => '2026-04-06',
+            'is_published' => true,
+        ]);
+
+        $himamatDay = HimamatDay::create([
+            'lent_season_id' => $season->id,
+            'slug' => 'holy-monday',
+            'sort_order' => 2,
+            'date' => '2026-04-06',
+            'title_en' => 'Holy Monday',
+            'title_am' => 'ሰኞ',
+            'spiritual_meaning_en' => 'Meaning',
+            'spiritual_meaning_am' => 'ማብራሪያ',
+            'is_published' => true,
+        ]);
+
+        $introSlot = HimamatSlot::create([
+            'himamat_day_id' => $himamatDay->id,
+            'slot_key' => 'intro',
+            'slot_order' => 1,
+            'scheduled_time_london' => '07:00:00',
+            'slot_header_en' => 'Daily Introduction',
+            'slot_header_am' => 'የዕለቱ መክፈቻ',
+            'reminder_header_en' => 'Holy Monday Intro',
+            'reminder_header_am' => 'ሰኞ መክፈቻ',
+            'reminder_content_en' => 'Intro reminder content.',
+            'reminder_content_am' => 'የመክፈቻ ማስታወሻ ይዘት።',
+            'is_published' => true,
+        ]);
+
+        $member = Member::create([
+            'baptism_name' => 'Abel',
+            'token' => str_repeat('j', 64),
+            'locale' => 'am',
+            'whatsapp_language' => 'am',
+            'theme' => 'light',
+            'whatsapp_reminder_enabled' => true,
+            'whatsapp_confirmation_status' => 'confirmed',
+            'whatsapp_phone' => '+447700900117',
+            'whatsapp_reminder_time' => null,
+        ]);
+
+        Http::fake([
+            'https://api.ultramsg.com/instance999/messages/chat' => Http::response([
+                'sent' => 'true',
+                'message' => 'ok',
+                'id' => 12345,
+            ]),
+        ]);
+
+        $this->artisan('reminders:send-whatsapp')
+            ->expectsOutputToContain('Using Himamat catch-up window for intro scheduled at 07:00:00 (current London time 07:01).')
+            ->assertExitCode(0);
+
+        Http::assertSentCount(1);
+        $expectedUrl = '/m/'.$member->token.'/day/'.$daily->day_number.'-'.$daily->id;
+        Http::assertSent(function (\Illuminate\Http\Client\Request $request) use ($expectedUrl): bool {
+            return $request['to'] === '+447700900117'
+                && str_contains((string) $request['body'], 'የመክፈቻ ማስታወሻ ይዘት።')
+                && str_contains((string) $request['body'], $expectedUrl);
+        });
+
+        $this->assertDatabaseHas('member_himamat_reminder_deliveries', [
+            'member_id' => $member->id,
+            'himamat_slot_id' => $introSlot->id,
+            'channel' => 'whatsapp',
+            'status' => 'sent',
+        ]);
+    }
+
     public function test_command_skips_himamat_slot_when_required_reminder_content_is_blank(): void
     {
         config()->set('services.ultramsg.instance_id', 'instance999');
