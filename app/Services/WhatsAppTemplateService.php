@@ -332,6 +332,10 @@ final class WhatsAppTemplateService
             $content = trim($content."\n\n".$cta);
         }
 
+        if ($variables['day_reminder_content'] !== '') {
+            $content = $this->collapseRepeatedSection($content, $variables['day_reminder_content']);
+        }
+
         return [
             'locale' => $resolvedLocale,
             'variables' => $variables,
@@ -683,5 +687,17 @@ final class WhatsAppTemplateService
         $normalized = preg_replace("/\n{3,}/", "\n\n", $normalized) ?? $normalized;
 
         return trim($normalized);
+    }
+
+    private function collapseRepeatedSection(string $message, string $section): string
+    {
+        if ($section === '' || substr_count($message, $section) < 2) {
+            return $message;
+        }
+
+        $pattern = '/(?:'.preg_quote($section, '/').'\s*){2,}/u';
+        $collapsed = preg_replace($pattern, $section."\n\n", $message, 1);
+
+        return $this->normalizeRenderedText($collapsed ?? $message);
     }
 }
