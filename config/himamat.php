@@ -6,6 +6,7 @@ return [
     'timezone' => 'Europe/London',
 
     'reminders' => [
+        'legacy_scheduler_enabled' => (bool) env('HIMAMAT_LEGACY_SCHEDULER_ENABLED', false),
         'dispatch_grace_minutes' => (int) env('HIMAMAT_REMINDER_DISPATCH_GRACE_MINUTES', 20),
         'test_mode_member_id' => env('HIMAMAT_REMINDER_TEST_MEMBER_ID'),
         'queues' => [

@@ -16,10 +16,12 @@ Schedule::command('reminders:send-writer')
     ->timezone('Europe/London')
     ->withoutOverlapping();
 
-Schedule::command('himamat:send-whatsapp-reminders --queue')
-    ->everyMinute()
-    ->timezone('Europe/London')
-    ->withoutOverlapping();
+if (config('himamat.reminders.legacy_scheduler_enabled', false)) {
+    Schedule::command('himamat:send-whatsapp-reminders --queue')
+        ->everyMinute()
+        ->timezone('Europe/London')
+        ->withoutOverlapping();
+}
 
 // Email reminders: 04:00 London = 07:00 Ethiopia (fixed time, no per-member choice).
 Schedule::command('reminders:send-email')
