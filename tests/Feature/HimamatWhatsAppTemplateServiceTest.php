@@ -15,7 +15,7 @@ class HimamatWhatsAppTemplateServiceTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_slot_reminder_prefers_whatsapp_language_over_member_locale(): void
+    public function test_slot_reminder_prefers_reminder_header_over_hour_title_and_prefers_whatsapp_language(): void
     {
         $member = Member::create([
             'baptism_name' => 'Abel',
@@ -31,7 +31,7 @@ class HimamatWhatsAppTemplateServiceTest extends TestCase
             'sort_order' => 1,
             'date' => '2026-04-06',
             'title_en' => 'Holy Monday',
-            'title_am' => 'ሰኞ',
+            'title_am' => 'AM Holy Monday',
             'is_published' => true,
         ]);
 
@@ -40,12 +40,12 @@ class HimamatWhatsAppTemplateServiceTest extends TestCase
             'slot_key' => 'third',
             'slot_order' => 2,
             'scheduled_time_london' => '09:00:00',
-            'slot_header_en' => 'Monday morning 3 oclock Gospel reading',
-            'slot_header_am' => 'ሰኞ ጠዋት 3 የሚነበበው የዕለቱ ወንጌል',
-            'reminder_header_en' => 'Third Hour Header',
-            'reminder_header_am' => 'የ3 ሰዓት ርዕስ',
+            'slot_header_en' => 'EN Hour Title',
+            'slot_header_am' => 'AM Hour Title',
+            'reminder_header_en' => 'EN Reminder Header',
+            'reminder_header_am' => 'AM Reminder Header',
             'reminder_content_en' => 'English reminder content.',
-            'reminder_content_am' => 'አማርኛ የማሳሰቢያ ይዘት።',
+            'reminder_content_am' => 'Amharic reminder content.',
             'is_published' => true,
         ]);
 
@@ -57,8 +57,9 @@ class HimamatWhatsAppTemplateServiceTest extends TestCase
         );
 
         $this->assertSame('am', $rendered['locale']);
-        $this->assertStringContainsString('ሰኞ ጠዋት 3 የሚነበበው የዕለቱ ወንጌል', $rendered['message']);
-        $this->assertStringContainsString('አማርኛ የማሳሰቢያ ይዘት።', $rendered['message']);
+        $this->assertStringContainsString('AM Reminder Header', $rendered['message']);
+        $this->assertStringContainsString('Amharic reminder content.', $rendered['message']);
+        $this->assertStringNotContainsString('EN Hour Title', $rendered['message']);
         $this->assertStringNotContainsString('English reminder content.', $rendered['message']);
     }
 
@@ -78,7 +79,7 @@ class HimamatWhatsAppTemplateServiceTest extends TestCase
             'sort_order' => 1,
             'date' => '2026-04-06',
             'title_en' => 'Holy Monday',
-            'title_am' => 'ሰኞ',
+            'title_am' => 'AM Holy Monday',
             'is_published' => true,
         ]);
 
@@ -87,12 +88,12 @@ class HimamatWhatsAppTemplateServiceTest extends TestCase
             'slot_key' => 'sixth',
             'slot_order' => 3,
             'scheduled_time_london' => '12:00:00',
-            'slot_header_en' => 'Monday 6 oclock Gospel reading',
-            'slot_header_am' => 'ሰኞ ቀትር 6 ሰዓት የሚነበበው የዕለቱ ወንጌል',
-            'reminder_header_en' => 'Sixth Hour Header',
-            'reminder_header_am' => 'የ6 ሰዓት ርዕስ',
+            'slot_header_en' => 'EN Noon Hour Title',
+            'slot_header_am' => 'AM Noon Hour Title',
+            'reminder_header_en' => 'EN Noon Reminder Header',
+            'reminder_header_am' => 'AM Noon Reminder Header',
             'reminder_content_en' => 'English noon reminder content.',
-            'reminder_content_am' => 'አማርኛ የቀትር ማሳሰቢያ ይዘት።',
+            'reminder_content_am' => 'Amharic noon reminder content.',
             'is_published' => true,
         ]);
 
@@ -104,8 +105,53 @@ class HimamatWhatsAppTemplateServiceTest extends TestCase
         );
 
         $this->assertSame('am', $rendered['locale']);
-        $this->assertStringContainsString('ሰኞ ቀትር 6 ሰዓት የሚነበበው የዕለቱ ወንጌል', $rendered['message']);
-        $this->assertStringContainsString('አማርኛ የቀትር ማሳሰቢያ ይዘት።', $rendered['message']);
+        $this->assertStringContainsString('AM Noon Reminder Header', $rendered['message']);
+        $this->assertStringContainsString('Amharic noon reminder content.', $rendered['message']);
         $this->assertStringNotContainsString('English noon reminder content.', $rendered['message']);
+    }
+
+    public function test_slot_reminder_falls_back_to_hour_title_when_reminder_header_is_blank(): void
+    {
+        $member = Member::create([
+            'baptism_name' => 'Abel',
+            'token' => str_repeat('c', 64),
+            'locale' => 'am',
+            'whatsapp_language' => 'am',
+            'theme' => 'light',
+        ]);
+
+        $day = HimamatDay::create([
+            'lent_season_id' => 1,
+            'slug' => 'holy-tuesday',
+            'sort_order' => 2,
+            'date' => '2026-04-07',
+            'title_en' => 'Holy Tuesday',
+            'title_am' => 'AM Holy Tuesday',
+            'is_published' => true,
+        ]);
+
+        $slot = HimamatSlot::create([
+            'himamat_day_id' => $day->id,
+            'slot_key' => 'third',
+            'slot_order' => 2,
+            'scheduled_time_london' => '09:00:00',
+            'slot_header_en' => 'EN Tuesday Hour Title',
+            'slot_header_am' => 'AM Tuesday Hour Title',
+            'reminder_header_en' => '',
+            'reminder_header_am' => '',
+            'reminder_content_en' => 'English reminder content.',
+            'reminder_content_am' => 'Amharic reminder content.',
+            'is_published' => true,
+        ]);
+
+        $rendered = app(HimamatWhatsAppTemplateService::class)->renderReminder(
+            $member,
+            $day,
+            $slot,
+            'https://example.com/day#himamat-slot-third'
+        );
+
+        $this->assertStringContainsString('AM Tuesday Hour Title', $rendered['message']);
+        $this->assertStringContainsString('Amharic reminder content.', $rendered['message']);
     }
 }

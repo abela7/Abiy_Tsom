@@ -41,7 +41,7 @@ class HimamatWhatsAppTemplateService
             'name' => trim((string) ($member->baptism_name ?? '')),
             'day_title' => localized($day, 'title', $locale) ?? '',
             'slot_header' => $slotHeader,
-            'reminder_header' => $slotHeader !== '' ? $slotHeader : $reminderHeader,
+            'reminder_header' => $reminderHeader !== '' ? $reminderHeader : $slotHeader,
             'reminder_content' => $reminderContent,
             'url' => $this->ensureHttpsUrl($url),
         ];

@@ -171,7 +171,9 @@ class AuditHimamatReminders extends Command
                 $ready ? 'yes' : 'no',
                 (string) $eligibleCount,
                 (string) $existingDeliveryCount,
-                $this->summarize($slotKey === 'intro' ? $localizedReminderHeader : $localizedSlotTitle),
+                $this->summarize($slotKey === 'intro'
+                    ? $localizedReminderHeader
+                    : ($localizedReminderHeader !== '' ? $localizedReminderHeader : $localizedSlotTitle)),
                 $this->summarize($slotKey === 'intro' ? $dayMeaning : $localizedReminderContent),
             ];
         }
