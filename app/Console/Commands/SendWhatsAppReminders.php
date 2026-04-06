@@ -108,6 +108,33 @@ class SendWhatsAppReminders extends Command
                 return self::SUCCESS;
             }
 
+            if ($himamatDay !== null && $dueHimamatSlot !== null) {
+                if ($dueHimamatSlot->slot_key === 'intro'
+                    && ! $whatsAppTemplateService->himamatIntroIsReady($himamatDay)
+                ) {
+                    $this->warn(sprintf(
+                        'Skipping Himamat intro reminder at %s (%s). The day reminder title or Day Theme & Meaning is incomplete.',
+                        $nowLondon->format('H:i'),
+                        $timezone
+                    ));
+
+                    return self::SUCCESS;
+                }
+
+                if ($dueHimamatSlot->slot_key !== 'intro'
+                    && ! $himamatWhatsAppTemplateService->reminderIsReady($dueHimamatSlot)
+                ) {
+                    $this->warn(sprintf(
+                        'Skipping Himamat %s reminder at %s (%s). The hour title or reminder content is incomplete.',
+                        (string) $dueHimamatSlot->slot_key,
+                        $nowLondon->format('H:i'),
+                        $timezone
+                    ));
+
+                    return self::SUCCESS;
+                }
+            }
+
             $dueMembersQuery = $dueHimamatSlot
                 ? $this->buildHimamatSlotRecipientsQuery($season->id, $dueHimamatSlot)
                 : Member::query()

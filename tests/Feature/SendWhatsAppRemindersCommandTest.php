@@ -466,4 +466,101 @@ class SendWhatsAppRemindersCommandTest extends TestCase
             'channel' => 'whatsapp',
         ]);
     }
+
+    public function test_command_skips_himamat_slot_when_required_reminder_content_is_blank(): void
+    {
+        config()->set('services.ultramsg.instance_id', 'instance999');
+        config()->set('services.ultramsg.token', 'token-123');
+
+        CarbonImmutable::setTestNow(
+            CarbonImmutable::parse('2026-04-06 12:00:00', 'Europe/London')
+        );
+
+        $season = LentSeason::create([
+            'year' => 2026,
+            'start_date' => '2026-02-16',
+            'end_date' => '2026-04-12',
+            'total_days' => 55,
+            'is_active' => true,
+        ]);
+
+        $theme = WeeklyTheme::create([
+            'lent_season_id' => $season->id,
+            'week_number' => 8,
+            'name_en' => 'Hosanna',
+            'meaning' => 'Passion Week',
+            'week_start_date' => '2026-04-06',
+            'week_end_date' => '2026-04-12',
+        ]);
+
+        DailyContent::create([
+            'lent_season_id' => $season->id,
+            'weekly_theme_id' => $theme->id,
+            'day_number' => 50,
+            'date' => '2026-04-06',
+            'is_published' => true,
+        ]);
+
+        $himamatDay = HimamatDay::create([
+            'lent_season_id' => $season->id,
+            'slug' => 'holy-monday',
+            'sort_order' => 2,
+            'date' => '2026-04-06',
+            'title_en' => 'Holy Monday',
+            'title_am' => 'ሰኞ',
+            'spiritual_meaning_en' => 'Holy Monday meaning.',
+            'spiritual_meaning_am' => 'ሰኞ ማብራሪያ',
+            'is_published' => true,
+        ]);
+
+        HimamatSlot::create([
+            'himamat_day_id' => $himamatDay->id,
+            'slot_key' => 'intro',
+            'slot_order' => 1,
+            'scheduled_time_london' => '07:00:00',
+            'slot_header_en' => 'Daily Introduction',
+            'slot_header_am' => 'የዕለቱ መክፈቻ',
+            'reminder_header_en' => 'Holy Monday Intro',
+            'reminder_header_am' => 'ሰኞ መክፈቻ',
+            'is_published' => true,
+        ]);
+
+        $sixthSlot = HimamatSlot::create([
+            'himamat_day_id' => $himamatDay->id,
+            'slot_key' => 'sixth',
+            'slot_order' => 3,
+            'scheduled_time_london' => '12:00:00',
+            'slot_header_en' => 'Monday 6 oclock Gospel reading',
+            'slot_header_am' => 'ሰኞ ቀትር 6 ሰዓት የሚነበበው የዕለቱ ወንጌል',
+            'reminder_header_en' => 'Sixth Hour Reminder Header',
+            'reminder_header_am' => 'የ6 ሰዓት ማሳሰቢያ ርዕስ',
+            'reminder_content_en' => '',
+            'reminder_content_am' => '',
+            'is_published' => true,
+        ]);
+
+        Member::create([
+            'baptism_name' => 'Abel',
+            'token' => str_repeat('i', 64),
+            'locale' => 'am',
+            'whatsapp_language' => 'am',
+            'theme' => 'light',
+            'whatsapp_reminder_enabled' => true,
+            'whatsapp_confirmation_status' => 'confirmed',
+            'whatsapp_phone' => '+447700900116',
+            'whatsapp_reminder_time' => null,
+        ]);
+
+        Http::fake();
+
+        $this->artisan('reminders:send-whatsapp')
+            ->assertExitCode(0);
+
+        Http::assertNothingSent();
+
+        $this->assertDatabaseMissing('member_himamat_reminder_deliveries', [
+            'himamat_slot_id' => $sixthSlot->id,
+            'channel' => 'whatsapp',
+        ]);
+    }
 }

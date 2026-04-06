@@ -94,6 +94,18 @@ class HimamatWhatsAppTemplateService
         ];
     }
 
+    public function reminderIsReady(HimamatSlot $slot, ?string $locale = null): bool
+    {
+        $locale = in_array($locale ?? app()->getLocale(), ['en', 'am'], true)
+            ? ($locale ?? app()->getLocale())
+            : 'en';
+
+        $slotHeader = trim((string) (localized($slot, 'slot_header', $locale) ?? ''));
+        $reminderContent = trim((string) (localized($slot, 'reminder_content', $locale) ?? ''));
+
+        return $slotHeader !== '' && $reminderContent !== '';
+    }
+
     private function preferredLocale(Member $member, ?string $locale = null): string
     {
         $locale = trim((string) ($locale ?? ''));

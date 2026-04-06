@@ -180,6 +180,12 @@ final class SendWhatsAppReminderJob implements ShouldQueue
             return null;
         }
 
+        if (! $whatsAppTemplateService->himamatIntroIsReady($himamatDay)) {
+            $this->markHimamatDeliverySkipped('The Himamat intro reminder is incomplete.');
+
+            return null;
+        }
+
         return $whatsAppTemplateService
             ->renderHimamatIntroReminder($member, $dailyContent, $himamatDay, $dayUrl)['message'];
     }
@@ -208,13 +214,13 @@ final class SendWhatsAppReminderJob implements ShouldQueue
             ->first();
 
         if ($preferences && ! $preferences->slotEnabled((string) $slot->slot_key)) {
-            if ($delivery) {
-                $delivery->forceFill([
-                    'status' => 'skipped',
-                    'failure_reason' => 'The member disabled this Himamat slot before delivery.',
-                    'last_attempt_at' => now(),
-                ])->save();
-            }
+            $this->markHimamatDeliverySkipped('The member disabled this Himamat slot before delivery.');
+
+            return null;
+        }
+
+        if (! $templateService->reminderIsReady($slot)) {
+            $this->markHimamatDeliverySkipped('The Himamat slot reminder content is incomplete.');
 
             return null;
         }
@@ -283,5 +289,20 @@ final class SendWhatsAppReminderJob implements ShouldQueue
             self::VARIANT_HIMAMAT_INTRO,
             self::VARIANT_HIMAMAT_SLOT,
         ], true);
+    }
+
+    private function markHimamatDeliverySkipped(string $reason): void
+    {
+        if (! $this->isHimamatDeliveryVariant() || ! $this->himamatDeliveryId) {
+            return;
+        }
+
+        MemberHimamatReminderDelivery::query()
+            ->whereKey($this->himamatDeliveryId)
+            ->update([
+                'status' => 'skipped',
+                'failure_reason' => $reason,
+                'last_attempt_at' => now(),
+            ]);
     }
 }

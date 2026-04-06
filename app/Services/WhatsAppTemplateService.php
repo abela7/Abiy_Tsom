@@ -310,6 +310,21 @@ final class WhatsAppTemplateService
         ];
     }
 
+    public function himamatIntroIsReady(HimamatDay $himamatDay, ?string $locale = null): bool
+    {
+        $locale = $this->normalizeLocale($locale ?? app()->getLocale());
+        $introSlot = $himamatDay->slots->firstWhere('slot_key', 'intro');
+
+        if (! $introSlot) {
+            return false;
+        }
+
+        $reminderHeader = trim((string) (localized($introSlot, 'reminder_header', $locale) ?? ''));
+        $dayMeaning = trim((string) (localized($himamatDay, 'spiritual_meaning', $locale) ?? ''));
+
+        return $reminderHeader !== '' && $dayMeaning !== '';
+    }
+
     /**
      * @return array<string, string>
      */

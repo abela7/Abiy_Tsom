@@ -183,7 +183,7 @@ class AuditHimamatReminders extends Command
         );
 
         if ($memberId !== null && $memberId !== '') {
-            $this->renderMemberPreview((int) $memberId, $dailyContent, $himamatDay, $season->id, $slotsByKey);
+            $this->renderMemberPreview((int) $memberId, $dailyContent, $himamatDay, $season->id, $locale, $dayMeaning, $slotsByKey);
         }
 
         $this->line('');
@@ -272,6 +272,8 @@ class AuditHimamatReminders extends Command
         DailyContent $dailyContent,
         HimamatDay $himamatDay,
         int $seasonId,
+        string $locale,
+        string $dayMeaning,
         Collection $slotsByKey
     ): void {
         $member = Member::query()->find($memberId);
@@ -318,13 +320,25 @@ class AuditHimamatReminders extends Command
                 ->where('channel', 'whatsapp')
                 ->exists();
 
+            $localizedSlotTitle = trim((string) (localized($slot, 'slot_header', $locale) ?? $slot->slot_header_en ?? ''));
+            $localizedReminderHeader = trim((string) (localized($slot, 'reminder_header', $locale) ?? ''));
+            $localizedReminderContent = trim((string) (localized($slot, 'reminder_content', $locale) ?? ''));
+            $contentReady = $this->slotHasRequiredContent(
+                $slotKey,
+                $localizedSlotTitle,
+                $localizedReminderHeader,
+                $localizedReminderContent,
+                $dayMeaning
+            );
+
             $eligible = $member->whatsapp_reminder_enabled
                 && $member->whatsapp_confirmation_status === 'confirmed'
                 && filled($member->whatsapp_phone)
                 && $enabled
                 && ! $alreadySent
                 && $himamatDay->is_published
-                && $slot->is_published;
+                && $slot->is_published
+                && $contentReady;
 
             $rows[] = [
                 $slotKey,
