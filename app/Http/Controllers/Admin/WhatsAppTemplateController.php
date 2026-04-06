@@ -18,6 +18,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Throwable;
 
@@ -30,6 +31,23 @@ use Throwable;
 class WhatsAppTemplateController extends Controller
 {
     private const BULK_MESSAGE_KEY = 'whatsapp_bulk_message_custom_body';
+
+    /**
+     * @return array<int, array{key: string, title: string}>
+     */
+    private function testableTemplateConfig(): array
+    {
+        return [
+            [
+                'key' => 'whatsapp_daily_reminder_content',
+                'title' => __('app.whatsapp_template_daily_content'),
+            ],
+            [
+                'key' => 'whatsapp_himamat_intro_content',
+                'title' => __('app.whatsapp_template_himamat_intro'),
+            ],
+        ];
+    }
 
     /**
      * @return array<int, array{key: string, group: string, title: string, placeholder_keys: list<string>}>
@@ -112,6 +130,7 @@ class WhatsAppTemplateController extends Controller
     public function index(UltraMsgService $ultraMsg): View
     {
         $config = $this->templateConfig();
+        $testableTemplates = $this->testableTemplateConfig();
         $keys = array_map(static fn (array $item): string => $item['key'], $config);
         $testMembers = Member::query()
             ->whereNotNull('whatsapp_phone')
@@ -192,6 +211,7 @@ class WhatsAppTemplateController extends Controller
 
         return view('admin.whatsapp.template', compact(
             'templates',
+            'testableTemplates',
             'testMembers',
             'activeMembers',
             'bulkMessages',
@@ -266,13 +286,20 @@ class WhatsAppTemplateController extends Controller
         $validated = $request->validate([
             'member_id' => ['required', 'integer', 'exists:members,id'],
             'test_locale' => ['nullable', 'string', 'in:member,en,am'],
-            'template_key' => ['nullable', 'string'],
+            'template_key' => [
+                'required',
+                'string',
+                Rule::in(array_map(
+                    static fn (array $item): string => $item['key'],
+                    $this->testableTemplateConfig()
+                )),
+            ],
         ]);
 
         $member = Member::query()->findOrFail((int) $validated['member_id']);
         $testLocale = (string) ($validated['test_locale'] ?? 'member');
         $localeOverride = $testLocale === 'member' ? null : $testLocale;
-        $templateKey = (string) ($validated['template_key'] ?? 'whatsapp_daily_reminder_content');
+        $templateKey = (string) $validated['template_key'];
 
         if (! $member->whatsapp_phone) {
             return redirect()
@@ -280,6 +307,7 @@ class WhatsAppTemplateController extends Controller
                 ->withInput([
                     'template_test_member_id' => $member->id,
                     'template_test_locale' => $testLocale,
+                    'template_test_key' => $templateKey,
                 ])
                 ->with('error', __('app.whatsapp_template_test_missing_phone'));
         }
@@ -290,6 +318,7 @@ class WhatsAppTemplateController extends Controller
                 ->withInput([
                     'template_test_member_id' => $member->id,
                     'template_test_locale' => $testLocale,
+                    'template_test_key' => $templateKey,
                 ])
                 ->with('error', __('app.whatsapp_not_configured'));
         }
@@ -301,6 +330,7 @@ class WhatsAppTemplateController extends Controller
                 ->withInput([
                     'template_test_member_id' => $member->id,
                     'template_test_locale' => $testLocale,
+                    'template_test_key' => $templateKey,
                 ])
                 ->with('error', __('app.no_active_season'));
         }
@@ -318,6 +348,7 @@ class WhatsAppTemplateController extends Controller
                 ->withInput([
                     'template_test_member_id' => $member->id,
                     'template_test_locale' => $testLocale,
+                    'template_test_key' => $templateKey,
                 ])
                 ->with('error', __('app.timetable_no_content_today'));
         }
@@ -338,6 +369,7 @@ class WhatsAppTemplateController extends Controller
                 ->withInput([
                     'template_test_member_id' => $member->id,
                     'template_test_locale' => $testLocale,
+                    'template_test_key' => $templateKey,
                 ])
                 ->with('error', __('app.whatsapp_template_himamat_test_missing_day'));
         }
@@ -348,6 +380,7 @@ class WhatsAppTemplateController extends Controller
                 ->withInput([
                     'template_test_member_id' => $member->id,
                     'template_test_locale' => $testLocale,
+                    'template_test_key' => $templateKey,
                 ])
                 ->with('error', __('app.whatsapp_test_invalid_recipient', [
                     'phone' => (string) $member->whatsapp_phone,
@@ -360,6 +393,7 @@ class WhatsAppTemplateController extends Controller
                 ->withInput([
                     'template_test_member_id' => $member->id,
                     'template_test_locale' => $testLocale,
+                    'template_test_key' => $templateKey,
                 ])
                 ->with('error', __('app.whatsapp_test_failed'));
         }
@@ -369,6 +403,7 @@ class WhatsAppTemplateController extends Controller
             ->withInput([
                 'template_test_member_id' => $member->id,
                 'template_test_locale' => $testLocale,
+                'template_test_key' => $templateKey,
             ])
             ->with('success', __('app.whatsapp_template_test_sent', [
                 'name' => (string) ($member->baptism_name ?: $member->whatsapp_phone),

@@ -193,8 +193,18 @@
             </div>
             <form method="POST" action="{{ route('admin.whatsapp.template.test') }}" class="space-y-3">
                 @csrf
-                <input type="hidden" name="template_key" :value="activeTemplate || '{{ $firstTemplateKey }}'">
                 <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+                    <div>
+                        <label for="template-test-key" class="mb-1 block text-xs font-medium text-secondary">{{ __('app.whatsapp_template_test_template_label') }}</label>
+                        <select id="template-test-key" name="template_key" required
+                            class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-primary outline-none transition focus:ring-2 focus:ring-accent">
+                            @foreach($testableTemplates as $templateOption)
+                                <option value="{{ $templateOption['key'] }}" @selected((string) old('template_test_key', old('template_key', 'whatsapp_daily_reminder_content')) === (string) $templateOption['key'])>
+                                    {{ $templateOption['title'] }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
                     <div>
                         <label for="template-test-member" class="mb-1 block text-xs font-medium text-secondary">{{ __('app.whatsapp_template_test_member_label') }}</label>
                         <select id="template-test-member" name="member_id" required
@@ -214,7 +224,7 @@
                                         $memberLabel .= ' - '.strtoupper((string) $member->whatsapp_language);
                                     }
                                 @endphp
-                                <option value="{{ $member->id }}" @selected((string) old('template_test_member_id') === (string) $member->id)>
+                                <option value="{{ $member->id }}" @selected((string) old('template_test_member_id', old('member_id')) === (string) $member->id)>
                                     {{ $memberLabel }}
                                 </option>
                             @endforeach
@@ -224,9 +234,9 @@
                         <label for="template-test-language" class="mb-1 block text-xs font-medium text-secondary">{{ __('app.whatsapp_template_test_language_label') }}</label>
                         <select id="template-test-language" name="test_locale"
                             class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-primary outline-none transition focus:ring-2 focus:ring-accent">
-                            <option value="member" @selected((string) old('template_test_locale', 'member') === 'member')>{{ __('app.whatsapp_template_test_language_member') }}</option>
-                            <option value="en" @selected((string) old('template_test_locale') === 'en')>{{ __('app.whatsapp_template_test_language_en') }}</option>
-                            <option value="am" @selected((string) old('template_test_locale') === 'am')>{{ __('app.whatsapp_template_test_language_am') }}</option>
+                            <option value="member" @selected((string) old('template_test_locale', old('test_locale', 'member')) === 'member')>{{ __('app.whatsapp_template_test_language_member') }}</option>
+                            <option value="en" @selected((string) old('template_test_locale', old('test_locale')) === 'en')>{{ __('app.whatsapp_template_test_language_en') }}</option>
+                            <option value="am" @selected((string) old('template_test_locale', old('test_locale')) === 'am')>{{ __('app.whatsapp_template_test_language_am') }}</option>
                         </select>
                     </div>
                 </div>
