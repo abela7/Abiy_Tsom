@@ -191,6 +191,7 @@ class SendWhatsAppReminders extends Command
                     $dailyContent,
                     $himamatDay,
                     $dueHimamatSlot,
+                    $today,
                     $isHimamatIntroWindow,
                     $isHimamatSlotWindow,
                     $nowLondon,
