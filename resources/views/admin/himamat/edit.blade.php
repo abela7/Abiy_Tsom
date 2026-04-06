@@ -529,6 +529,8 @@
                             @if($slot->slot_key === 'intro')
                                 <input type="hidden" name="slots[{{ $index }}][reminder_header_en]" :value="dayReminderTitleEn">
                                 <input type="hidden" name="slots[{{ $index }}][reminder_header_am]" :value="dayReminderTitleAm">
+                                <input type="hidden" name="slots[{{ $index }}][reminder_content_en]" :value="dayReminderContentEn">
+                                <input type="hidden" name="slots[{{ $index }}][reminder_content_am]" :value="dayReminderContentAm">
                                 <div class="sm:col-span-2 rounded-xl border border-border/60 bg-muted/30 px-3 py-2.5">
                                     <p class="text-[11px] font-semibold text-muted-text">{{ __('app.himamat_day_reminder_title') }}</p>
                                     <p class="mt-1 text-xs text-secondary">{{ __('app.himamat_day_reminder_managed_note') }}</p>
