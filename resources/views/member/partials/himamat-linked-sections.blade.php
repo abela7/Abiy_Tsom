@@ -23,12 +23,13 @@
         'ninth' => 'PM',
         'eleventh' => 'PM',
     ];
+    $clockIcon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z"/>';
     $slotIcons = [
-        'intro' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>',
-        'third' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z"/>',
-        'sixth' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 3v18m0-18a9 9 0 110 18 9 9 0 010-18zm0 0c-2 2-3 5-3 9s1 7 3 9m0-18c2 2 3 5 3 9s-1 7-3 9"/>',
-        'ninth' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>',
-        'eleventh' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>',
+        'intro'    => $clockIcon,
+        'third'    => $clockIcon,
+        'sixth'    => $clockIcon,
+        'ninth'    => $clockIcon,
+        'eleventh' => $clockIcon,
     ];
     $resourceTypeOrder = ['text', 'video', 'photo', 'pdf', 'website'];
 @endphp
