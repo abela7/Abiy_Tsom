@@ -84,7 +84,10 @@ class AuditDuplicateWhatsAppPhones extends Command
         }
 
         $this->line('');
-        $this->line('Use the merge command to consolidate a number onto one keeper account:');
+        $this->line('Safest option: clear WhatsApp only from the duplicate member you do not want to send to:');
+        $this->line('php artisan members:clear-whatsapp 123 --apply');
+        $this->line('');
+        $this->line('If the duplicate accounts are truly the same person, you can instead consolidate onto one keeper account:');
         $this->line('php artisan members:merge-whatsapp-phone "+447..." --keep-id=123 --apply');
 
         return self::SUCCESS;

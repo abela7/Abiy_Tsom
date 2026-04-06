@@ -204,4 +204,47 @@ class MergeWhatsAppPhoneCommandTest extends TestCase
             'status' => 'sent',
         ]);
     }
+
+    public function test_clear_whatsapp_command_only_clears_one_member_identity(): void
+    {
+        $member = Member::create([
+            'baptism_name' => 'Duplicate',
+            'token' => str_repeat('g', 64),
+            'locale' => 'am',
+            'theme' => 'light',
+            'whatsapp_reminder_enabled' => true,
+            'whatsapp_phone' => '+447700900444',
+            'whatsapp_reminder_time' => '09:00:00',
+            'whatsapp_last_sent_date' => '2026-04-05',
+            'whatsapp_language' => 'am',
+            'whatsapp_confirmation_status' => 'confirmed',
+            'whatsapp_confirmation_requested_at' => '2026-04-01 08:00:00',
+            'whatsapp_confirmation_responded_at' => '2026-04-01 08:03:00',
+            'phone_verified_at' => '2026-04-01 08:03:00',
+        ]);
+
+        $this->artisan('members:clear-whatsapp', [
+            'member_id' => (string) $member->id,
+        ])
+            ->assertExitCode(0);
+
+        $member->refresh();
+        $this->assertSame('+447700900444', $member->whatsapp_phone);
+        $this->assertTrue($member->whatsapp_reminder_enabled);
+
+        $this->artisan('members:clear-whatsapp', [
+            'member_id' => (string) $member->id,
+            '--apply' => true,
+        ])
+            ->assertExitCode(0);
+
+        $member->refresh();
+        $this->assertNull($member->whatsapp_phone);
+        $this->assertFalse($member->whatsapp_reminder_enabled);
+        $this->assertNull($member->whatsapp_reminder_time);
+        $this->assertNull($member->whatsapp_last_sent_date);
+        $this->assertNull($member->whatsapp_language);
+        $this->assertSame('none', $member->whatsapp_confirmation_status);
+        $this->assertNull($member->phone_verified_at);
+    }
 }
