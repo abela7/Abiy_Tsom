@@ -85,45 +85,27 @@
              x-init="$nextTick(() => { const target = $root.querySelector(`[data-slot-key='${openSlot}']`); if (target) { target.scrollIntoView({ behavior: 'auto', block: 'nearest' }); } })">
 
         {{-- Timeline header --}}
-        <div class="border-b border-border px-5 py-5 sm:px-6">
-            <div class="flex items-start justify-between gap-4">
-                <div class="min-w-0">
-                    <div class="flex items-center gap-2 mb-1.5">
-                        <div class="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
-                            <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        </div>
-                        <h2 class="text-lg font-bold text-primary">{{ __('app.himamat_day_view_title') }}</h2>
-                    </div>
-                    <p class="mt-1 text-sm leading-relaxed text-secondary">{{ __('app.himamat_preferences_timeline_hint') }}</p>
+        <div class="border-b border-border/80 px-4 py-5 sm:px-6 sm:py-6">
+            <div class="flex items-start gap-3 sm:gap-4">
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-accent/10 shadow-inner shadow-accent/10">
+                    <svg class="h-5 w-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
                 </div>
-                <div class="hidden rounded-full bg-muted px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-text sm:inline-flex">
-                    {{ __('app.himamat_timeline_today_state') }}
+                <div class="min-w-0 flex-1">
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-text">
+                        {{ __('app.himamat_day_view_title') }}
+                    </p>
+                    <p class="mt-2 max-w-2xl text-sm leading-7 text-secondary sm:text-[15px]">
+                        {{ __('app.himamat_preferences_timeline_hint') }}
+                    </p>
                 </div>
-            </div>
-
-            {{-- Slot pills — horizontal scroll --}}
-            <div class="mt-4 -mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                @foreach($himamatTimeline['items'] as $item)
-                    @php
-                        $slot = $item['slot'];
-                        $state = $item['temporal_state'];
-                        $slotHourLabel = __($slotLabelKeys[$slot->slot_key] ?? 'app.himamat_day_view_title');
-                    @endphp
-                    <button type="button"
-                            @click="setOpenSlot('{{ $slot->slot_key }}')"
-                            class="shrink-0 rounded-full border px-4 py-2.5 text-xs font-semibold transition-all duration-200 touch-manipulation active:scale-95"
-                            :class="openSlot === '{{ $slot->slot_key }}'
-                                ? 'border-accent bg-accent text-on-accent shadow-sm'
-                                : '{{ $state === 'current' ? 'border-accent/30 bg-accent/10 text-accent' : ($state === 'past' ? 'border-border bg-muted text-secondary' : 'border-border bg-card text-muted-text hover:bg-muted') }}'">
-                        {{ $slotHourLabel }}
-                    </button>
-                @endforeach
             </div>
         </div>
 
         {{-- Slot cards --}}
-        <div class="space-y-3 px-4 py-4 sm:px-5 sm:py-5">
-            @foreach($himamatTimeline['items'] as $index => $item)
+        <div class="space-y-4 px-4 py-4 sm:px-5 sm:py-5">
+            @foreach($himamatTimeline['items'] as $item)
                 @php
                     $slot = $item['slot'];
                     $state = $item['temporal_state'];
@@ -140,8 +122,8 @@
                         ->map(fn (string $type): string => __('app.himamat_resource_type_'.$type).' '.$resourcesByType->get($type, collect())->count())
                         ->implode(' · ');
                     $stateClasses = match ($state) {
-                        'current' => 'border-accent/25 bg-accent/[0.04] shadow-sm',
-                        'past' => 'border-border bg-muted/30',
+                        'current' => 'border-accent/25 bg-accent/[0.04] shadow-sm shadow-accent/10',
+                        'past' => 'border-border bg-muted/25',
                         default => 'border-border bg-card',
                     };
                     $stateBadgeClasses = match ($state) {
@@ -149,58 +131,49 @@
                         'past' => 'bg-accent-secondary/15 text-accent-secondary',
                         default => 'bg-muted text-muted-text',
                     };
-                    $dotClasses = match ($state) {
-                        'current' => 'bg-accent ring-4 ring-accent/20',
-                        'past' => 'bg-accent-secondary ring-4 ring-accent-secondary/15',
-                        default => 'bg-border',
+                    $hourChipClasses = match ($state) {
+                        'current' => 'bg-accent text-on-accent shadow-sm shadow-accent/20',
+                        'past' => 'bg-muted text-secondary',
+                        default => 'bg-card text-primary border border-border',
                     };
                 @endphp
 
                 <article data-slot-key="{{ $slot->slot_key }}"
                          x-data="{ resourceTab: @js($defaultResourceType) }"
                          class="relative overflow-hidden rounded-2xl border transition-all duration-200 {{ $stateClasses }}"
-                         :class="openSlot === '{{ $slot->slot_key }}' ? 'ring-1 ring-accent/20 shadow-md' : ''">
-
-                    {{-- Left accent stripe --}}
-                    <div class="absolute left-0 top-0 h-full w-1 rounded-l-2xl {{ $state === 'current' ? 'bg-accent' : ($state === 'past' ? 'bg-accent-secondary/40' : 'bg-transparent') }}"></div>
+                         :class="openSlot === '{{ $slot->slot_key }}' ? 'ring-1 ring-accent/25 shadow-md' : ''">
 
                     {{-- Slot header (clickable) --}}
                     <button type="button"
                             @click="setOpenSlot('{{ $slot->slot_key }}')"
-                            class="w-full px-5 py-4 text-left sm:px-6 sm:py-5 transition-colors hover:bg-muted/20 touch-manipulation active:bg-muted/30">
-                        <div class="flex items-start gap-3.5">
-                            {{-- Timeline dot --}}
-                            <div class="mt-1 flex flex-col items-center shrink-0">
-                                <span class="h-3 w-3 rounded-full {{ $dotClasses }} transition-all duration-200"></span>
-                                @if($index !== count($himamatTimeline['items']) - 1)
-                                    <span class="mt-2 h-8 w-px bg-border"></span>
-                                @endif
+                            class="w-full px-4 py-4 text-left sm:px-5 sm:py-5 transition-colors hover:bg-muted/15 touch-manipulation active:bg-muted/20">
+                        <div class="flex items-start gap-3 sm:gap-4">
+                            <div class="shrink-0">
+                                <div class="inline-flex min-h-11 items-center rounded-2xl px-3.5 py-2.5 text-sm font-bold leading-tight {{ $hourChipClasses }}">
+                                    {{ $slotHourLabel }}
+                                </div>
                             </div>
 
                             <div class="min-w-0 flex-1">
-                                {{-- Badges --}}
-                                <div class="flex flex-wrap items-center gap-2">
-                                    <span class="inline-flex items-center rounded-full bg-muted px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">
-                                        {{ $slotHourLabel }}
-                                    </span>
-                                    <span class="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold {{ $stateBadgeClasses }}">
-                                        {{ __('app.himamat_state_'.$state) }}
-                                    </span>
-                                </div>
-
-                                {{-- Slot title & reference --}}
-                                <div class="mt-3 flex items-start justify-between gap-3">
+                                <div class="flex items-start justify-between gap-3">
                                     <div class="min-w-0">
-                                        <h3 class="text-base font-bold leading-snug text-primary sm:text-lg">{{ $localizedHeader }}</h3>
+                                        <div class="flex flex-wrap items-center gap-2">
+                                            <span class="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold {{ $stateBadgeClasses }}">
+                                                {{ __('app.himamat_state_'.$state) }}
+                                            </span>
+                                            @if($resourceSummary !== '')
+                                                <span class="text-[11px] font-medium text-muted-text">{{ $resourceSummary }}</span>
+                                            @endif
+                                        </div>
+
+                                        <h3 class="mt-2 text-base font-bold leading-snug text-primary sm:text-lg">{{ $localizedHeader }}</h3>
+
                                         @if($localizedReadingRef !== '')
-                                            <p class="mt-1.5 text-sm font-medium text-secondary">{{ $localizedReadingRef }}</p>
-                                        @endif
-                                        @if($resourceSummary !== '')
-                                            <p class="mt-1.5 text-xs text-muted-text">{{ $resourceSummary }}</p>
+                                            <p class="mt-2 text-sm leading-6 text-secondary">{{ $localizedReadingRef }}</p>
                                         @endif
                                     </div>
 
-                                    <svg class="mt-0.5 h-5 w-5 shrink-0 text-muted-text transition-transform duration-200"
+                                    <svg class="mt-1 h-5 w-5 shrink-0 text-muted-text transition-transform duration-200"
                                          :class="openSlot === '{{ $slot->slot_key }}' ? 'rotate-180 text-accent' : ''"
                                          fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
