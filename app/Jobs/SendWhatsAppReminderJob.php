@@ -6,7 +6,11 @@ namespace App\Jobs;
 
 use App\Models\DailyContent;
 use App\Models\HimamatDay;
+use App\Models\HimamatSlot;
 use App\Models\Member;
+use App\Models\MemberHimamatPreference;
+use App\Models\MemberHimamatReminderDelivery;
+use App\Services\HimamatWhatsAppTemplateService;
 use App\Services\UltraMsgService;
 use App\Services\WhatsAppTemplateService;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -25,6 +29,8 @@ final class SendWhatsAppReminderJob implements ShouldQueue
 
     public const VARIANT_HIMAMAT_INTRO = 'himamat_intro';
 
+    public const VARIANT_HIMAMAT_SLOT = 'himamat_slot';
+
     public int $tries = 3;
 
     public int $timeout = 45;
@@ -39,13 +45,16 @@ final class SendWhatsAppReminderJob implements ShouldQueue
         public readonly int $dailyContentId,
         public readonly string $today,
         public readonly string $variant = self::VARIANT_DAILY,
+        public readonly ?int $himamatSlotId = null,
+        public readonly ?int $himamatDeliveryId = null,
     ) {
         $this->onQueue(self::QUEUE_NAME);
     }
 
     public function handle(
         UltraMsgService $ultraMsgService,
-        WhatsAppTemplateService $whatsAppTemplateService
+        WhatsAppTemplateService $whatsAppTemplateService,
+        HimamatWhatsAppTemplateService $himamatWhatsAppTemplateService
     ): void {
         $member = Member::query()->find($this->memberId);
 
@@ -58,7 +67,8 @@ final class SendWhatsAppReminderJob implements ShouldQueue
             return;
         }
 
-        if (config('services.ultramsg.reminder_once_only', true)
+        if ($this->variant !== self::VARIANT_HIMAMAT_SLOT
+            && config('services.ultramsg.reminder_once_only', true)
             && $member->whatsapp_last_sent_date?->toDateString() === $this->today
         ) {
             return;
@@ -74,34 +84,79 @@ final class SendWhatsAppReminderJob implements ShouldQueue
         }
 
         $dayUrl = $this->ensureHttpsUrl($dailyContent->memberDayUrl($member->token));
-        $message = $this->variant === self::VARIANT_HIMAMAT_INTRO
-            ? $this->resolveHimamatIntroMessage($member, $dailyContent, $dayUrl, $whatsAppTemplateService)
-            : $whatsAppTemplateService->renderDailyReminder($member, $dailyContent, $dayUrl)['message'];
+        $message = match ($this->variant) {
+            self::VARIANT_HIMAMAT_INTRO => $this->resolveHimamatIntroMessage(
+                $member,
+                $dailyContent,
+                $dayUrl,
+                $whatsAppTemplateService
+            ),
+            self::VARIANT_HIMAMAT_SLOT => $this->resolveHimamatSlotMessage(
+                $member,
+                $dailyContent,
+                $himamatWhatsAppTemplateService
+            ),
+            default => $whatsAppTemplateService->renderDailyReminder($member, $dailyContent, $dayUrl)['message'],
+        };
 
         if ($message === null) {
             return;
         }
 
         if (! $ultraMsgService->sendTextMessage((string) $member->whatsapp_phone, $message)) {
+            if ($this->isHimamatDeliveryVariant() && $this->himamatDeliveryId) {
+                MemberHimamatReminderDelivery::query()
+                    ->whereKey($this->himamatDeliveryId)
+                    ->update([
+                        'status' => 'failed',
+                        'failure_reason' => 'UltraMsg did not confirm delivery.',
+                        'last_attempt_at' => now(),
+                    ]);
+            }
+
             throw new RuntimeException(sprintf(
                 'UltraMsg did not confirm reminder delivery for member %d.',
                 $member->id
             ));
         }
 
-        $member->forceFill([
-            'whatsapp_last_sent_date' => $this->today,
-        ])->save();
+        if ($this->isHimamatDeliveryVariant() && $this->himamatDeliveryId) {
+            MemberHimamatReminderDelivery::query()
+                ->whereKey($this->himamatDeliveryId)
+                ->update([
+                    'status' => 'sent',
+                    'delivered_at' => now(),
+                    'failure_reason' => null,
+                ]);
+        }
+
+        if ($this->variant === self::VARIANT_DAILY || $this->variant === self::VARIANT_HIMAMAT_INTRO) {
+            $member->forceFill([
+                'whatsapp_last_sent_date' => $this->today,
+            ])->save();
+        }
     }
 
     public function failed(Throwable $exception): void
     {
+        if ($this->isHimamatDeliveryVariant() && $this->himamatDeliveryId) {
+            MemberHimamatReminderDelivery::query()
+                ->whereKey($this->himamatDeliveryId)
+                ->update([
+                    'status' => 'failed',
+                    'failure_reason' => $exception->getMessage(),
+                    'last_attempt_at' => now(),
+                ]);
+        }
+
         Log::warning('Queued WhatsApp reminder failed.', [
             'member_id' => $this->memberId,
             'daily_content_id' => $this->dailyContentId,
             'today' => $this->today,
             'variant' => $this->variant,
             'error' => $exception->getMessage(),
+            'himamat_slot_id' => $this->himamatSlotId,
+            'himamat_delivery_id' => $this->himamatDeliveryId,
         ]);
     }
 
@@ -129,6 +184,60 @@ final class SendWhatsAppReminderJob implements ShouldQueue
             ->renderHimamatIntroReminder($member, $dailyContent, $himamatDay, $dayUrl)['message'];
     }
 
+    private function resolveHimamatSlotMessage(
+        Member $member,
+        DailyContent $dailyContent,
+        HimamatWhatsAppTemplateService $templateService
+    ): ?string {
+        $slot = $this->resolvePublishedHimamatSlot($dailyContent);
+        if (! $slot || ! $slot->himamatDay) {
+            return null;
+        }
+
+        $delivery = $this->himamatDeliveryId
+            ? MemberHimamatReminderDelivery::query()->find($this->himamatDeliveryId)
+            : null;
+
+        if ($delivery && in_array($delivery->status, ['sent', 'skipped'], true)) {
+            return null;
+        }
+
+        $preferences = MemberHimamatPreference::query()
+            ->where('member_id', $member->id)
+            ->where('lent_season_id', $slot->himamatDay->lent_season_id)
+            ->first();
+
+        if ($preferences && ! $preferences->slotEnabled((string) $slot->slot_key)) {
+            if ($delivery) {
+                $delivery->forceFill([
+                    'status' => 'skipped',
+                    'failure_reason' => 'The member disabled this Himamat slot before delivery.',
+                    'last_attempt_at' => now(),
+                ])->save();
+            }
+
+            return null;
+        }
+
+        if ($delivery) {
+            $delivery->forceFill([
+                'status' => 'sending',
+                'attempt_count' => (int) $delivery->attempt_count + 1,
+                'last_attempt_at' => now(),
+                'failure_reason' => null,
+            ])->save();
+        }
+
+        $message = $templateService->renderReminder(
+            $member,
+            $slot->himamatDay,
+            $slot,
+            $this->himamatSlotDayUrl($dailyContent, $member, $slot->slot_key)
+        )['message'];
+
+        return $message;
+    }
+
     private function resolvePublishedHimamatDay(DailyContent $dailyContent): ?HimamatDay
     {
         if ($dailyContent->day_number < 50 || $dailyContent->day_number > 55) {
@@ -146,5 +255,33 @@ final class SendWhatsAppReminderJob implements ShouldQueue
                     ->orderBy('slot_order'),
             ])
             ->first();
+    }
+
+    private function resolvePublishedHimamatSlot(DailyContent $dailyContent): ?HimamatSlot
+    {
+        if ($this->himamatSlotId === null) {
+            return null;
+        }
+
+        return HimamatSlot::query()
+            ->whereKey($this->himamatSlotId)
+            ->where('is_published', true)
+            ->with(['himamatDay' => fn ($query) => $query->where('is_published', true)])
+            ->first();
+    }
+
+    private function himamatSlotDayUrl(DailyContent $dailyContent, Member $member, string $slotKey): string
+    {
+        return $this->ensureHttpsUrl(
+            $dailyContent->memberDayUrl($member->token).'#himamat-slot-'.$slotKey
+        );
+    }
+
+    private function isHimamatDeliveryVariant(): bool
+    {
+        return in_array($this->variant, [
+            self::VARIANT_HIMAMAT_INTRO,
+            self::VARIANT_HIMAMAT_SLOT,
+        ], true);
     }
 }

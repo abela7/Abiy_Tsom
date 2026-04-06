@@ -2109,7 +2109,7 @@ return [
     'himamat_synaxarium_entry_hint' => 'Add the actual Synaxarium text for this Passion Week day. This sits alongside the fetched celebration lists above.',
     'himamat_synaxarium_entry_heading' => 'Synaxarium Heading',
     'himamat_synaxarium_entry_body' => 'Synaxarium Text',
-    'himamat_faq_title' => 'Ritual Questions & Answers',
+    'himamat_faq_title' => 'ተደጋጋሚ ጥያቄዎችና መልሶቻቸው',
     'himamat_faq_subtitle' => ':count የተለመዱ ጥያቄዎች',
     'himamat_faq_intro' => 'Add the short explanations members will need during the day. English is required for each FAQ row in v1.',
     'himamat_faq_question' => 'Question',
@@ -2158,4 +2158,5 @@ return [
     'himamat_reminder_prayer_line' => 'Prayer: :short_prayer',
     'himamat_reminder_bows_line' => 'Offer :count bows at this hour.',
     'himamat_reminder_open_line' => 'Open: :url',
-];
+    'himamat_slot_reminder_open_line' => "በዚህ ሰዓት የሚነበበውን የወንጌል ክፍል ለማግኘት የሚከተለውን ሊንክ ይንኩ\n:url",
+  ];

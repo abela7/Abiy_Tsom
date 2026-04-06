@@ -178,7 +178,7 @@
 
                     {{-- Card --}}
                     <div class="flex-1 pb-4 min-w-0">
-                        <article data-slot-key="{{ $slotKey }}"
+                        <article id="himamat-slot-{{ $slotKey }}" data-slot-key="{{ $slotKey }}"
                                  class="relative rounded-2xl border transition-all duration-300 overflow-hidden {{ $cardBorder }} {{ $cardBg }}"
                                  :class="openSlot === '{{ $slotKey }}' ? 'ring-1 ring-accent/20 border-accent/30' : ''">
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Models\DailyContent;
 use App\Models\HimamatDay;
 use App\Models\LentSeason;
 use App\Models\Member;
@@ -102,7 +103,7 @@ class SendHimamatSampleReminder extends Command
             $member,
             $day,
             $slot,
-            $day->accessUrl($member, $slot->slot_key)
+            $this->resolveMemberDaySlotUrl($member, $day, $slot->slot_key)
         );
 
         if ($dryRun) {
@@ -158,5 +159,20 @@ class SendHimamatSampleReminder extends Command
         ));
 
         return self::SUCCESS;
+    }
+
+    private function resolveMemberDaySlotUrl(Member $member, HimamatDay $day, string $slotKey): string
+    {
+        $dailyContent = DailyContent::query()
+            ->where('lent_season_id', $day->lent_season_id)
+            ->whereDate('date', $day->date)
+            ->where('is_published', true)
+            ->first();
+
+        if (! $dailyContent) {
+            return $day->accessUrl($member, $slotKey);
+        }
+
+        return url($dailyContent->memberDayUrl($member->token, false).'#himamat-slot-'.$slotKey);
     }
 }

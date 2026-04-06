@@ -27,16 +27,16 @@ class HimamatWhatsAppTemplateService
             'day_title' => localized($day, 'title', $locale) ?? '',
             'slot_header' => localized($slot, 'slot_header', $locale) ?? '',
             'reminder_header' => localized($slot, 'reminder_header', $locale) ?? '',
-            'reading_reference' => localized($slot, 'reading_reference', $locale) ?? '',
+            'reminder_content' => trim((string) (localized($slot, 'reminder_content', $locale) ?? '')),
             'url' => $this->ensureHttpsUrl($url),
         ];
 
         $lines = array_values(array_filter([
             $variables['reminder_header'],
-            $variables['reading_reference'] !== ''
-                ? Lang::get('app.himamat_reminder_reading_line', ['reading_reference' => $variables['reading_reference']], $locale)
+            $variables['reminder_content'] !== ''
+                ? $variables['reminder_content']
                 : '',
-            Lang::get('app.himamat_reminder_open_line', ['url' => $variables['url']], $locale),
+            Lang::get('app.himamat_slot_reminder_open_line', ['url' => $variables['url']], $locale),
         ], static fn (?string $line): bool => is_string($line) && trim($line) !== ''));
 
         return [

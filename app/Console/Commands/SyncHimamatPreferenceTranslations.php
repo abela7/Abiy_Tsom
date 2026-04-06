@@ -32,6 +32,7 @@ class SyncHimamatPreferenceTranslations extends Command
         ['group' => 'himamat', 'key' => 'himamat_open_today'],
         ['group' => 'himamat', 'key' => 'himamat_slots_label'],
         ['group' => 'himamat', 'key' => 'himamat_ritual_intro_title'],
+        ['group' => 'himamat', 'key' => 'himamat_slot_reminder_open_line'],
         ['group' => 'whatsapp_member', 'key' => 'whatsapp_himamat_intro_content'],
     ];
 
