@@ -69,35 +69,31 @@
      HIMAMAT TIMELINE — Prayer hours with expandable slots & resources
      ══════════════════════════════════════════════════════════════════════ --}}
 @if($himamatTimeline && $himamatDay->slots->isNotEmpty())
-    <section class="overflow-hidden rounded-2xl border border-border bg-card shadow-sm"
+    <section class="rounded-2xl bg-card shadow-sm border border-border overflow-hidden"
              x-data="{
                 openSlot: @js($himamatTimeline['target_slot_key']),
                 setOpenSlot(slotKey) {
                     this.openSlot = this.openSlot === slotKey ? null : slotKey;
                     this.$nextTick(() => {
-                        const target = this.$root.querySelector(`[data-slot-key='${slotKey}']`);
-                        if (target) {
-                            target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        if (this.openSlot) {
+                            const target = this.$root.querySelector(`[data-slot-key='${slotKey}']`);
+                            if (target) {
+                                target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                            }
                         }
                     });
                 }
              }"
              x-init="$nextTick(() => { const target = $root.querySelector(`[data-slot-key='${openSlot}']`); if (target) { target.scrollIntoView({ behavior: 'auto', block: 'nearest' }); } })">
 
-        {{-- Timeline header --}}
-        <div class="border-b border-border/70 px-4 py-4 sm:px-5 sm:py-5">
-            <div class="flex items-center gap-3">
-                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-accent/10">
-                    <svg class="h-5 w-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                </div>
-                <h2 class="text-base font-bold leading-tight text-primary sm:text-lg">{{ __('app.himamat_day_view_title') }}</h2>
-            </div>
+        {{-- Elegant Timeline Header --}}
+        <div class="px-4 pt-6 pb-4 text-center">
+            <h2 class="text-sm font-bold uppercase tracking-[0.2em] text-accent/80">{{ __('app.himamat_day_view_title') }}</h2>
+            <div class="h-px w-12 bg-accent/30 mx-auto mt-3"></div>
         </div>
 
-        {{-- Slot cards --}}
-        <div class="space-y-4 px-4 py-4 sm:px-5 sm:py-5">
+        {{-- Slot list --}}
+        <div class="flex flex-col">
             @foreach($himamatTimeline['items'] as $item)
                 @php
                     $slot = $item['slot'];
@@ -111,72 +107,46 @@
                         ->filter(fn (string $type): bool => $resourcesByType->has($type))
                         ->values();
                     $defaultResourceType = $availableResourceTypes->first();
-                    $resourceSummary = $availableResourceTypes
-                        ->map(fn (string $type): string => __('app.himamat_resource_type_'.$type).' '.$resourcesByType->get($type, collect())->count())
-                        ->implode(' · ');
+
                     $stateClasses = match ($state) {
-                        'current' => 'border-accent/25 bg-accent/[0.04] shadow-sm shadow-accent/10',
-                        'past' => 'border-border bg-muted/25',
-                        default => 'border-border bg-card',
-                    };
-                    $stateBadgeClasses = match ($state) {
-                        'current' => 'bg-accent text-on-accent',
-                        'past' => 'bg-accent-secondary/15 text-accent-secondary',
-                        default => 'bg-muted text-muted-text',
-                    };
-                    $timePanelClasses = match ($state) {
-                        'current' => 'border-accent/20 bg-accent/10',
-                        'past' => 'border-border/80 bg-muted/40',
-                        default => 'border-border/80 bg-muted/20',
-                    };
-                    $timeLabelClasses = match ($state) {
-                        'current' => 'text-accent',
-                        'past' => 'text-secondary',
-                        default => 'text-primary',
+                        'current' => 'bg-accent/[0.03]',
+                        'past' => 'opacity-80',
+                        default => '',
                     };
                 @endphp
 
                 <article data-slot-key="{{ $slot->slot_key }}"
-                         x-data="{ resourceTab: @js($defaultResourceType) }"
-                         class="relative overflow-hidden rounded-2xl border transition-all duration-200 {{ $stateClasses }}"
-                         :class="openSlot === '{{ $slot->slot_key }}' ? 'ring-1 ring-accent/25 shadow-md' : ''">
+                         class="relative border-t border-border/40 first:border-t-0 transition-colors duration-300 {{ $stateClasses }}">
 
-                    {{-- Slot header (clickable) --}}
+                    {{-- Slot Header (Button) --}}
                     <button type="button"
                             @click="setOpenSlot('{{ $slot->slot_key }}')"
-                            class="w-full px-4 py-4 text-left sm:px-5 sm:py-5 transition-colors hover:bg-muted/10 touch-manipulation active:bg-muted/15">
-                        <div class="flex items-start gap-3.5 sm:gap-4">
-                            <div class="w-28 shrink-0 sm:w-36">
-                                <div class="rounded-2xl border px-3 py-3 {{ $timePanelClasses }}">
-                                    <p class="text-sm font-bold leading-6 {{ $timeLabelClasses }}">
-                                        {{ $slotHourLabel }}
-                                    </p>
-                                </div>
+                            class="w-full px-4 py-5 text-left flex items-start gap-4 group touch-manipulation">
+
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2.5 mb-1.5">
+                                <span class="text-[11px] font-bold uppercase tracking-widest text-accent">{{ $slotHourLabel }}</span>
+                                @if($state === 'current')
+                                    <span class="flex w-1.5 h-1.5 relative">
+                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                                        <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-accent"></span>
+                                    </span>
+                                @endif
                             </div>
 
-                            <div class="min-w-0 flex-1">
-                                <div class="flex items-start justify-between gap-3">
-                                    <div class="min-w-0">
-                                        <div class="flex flex-wrap items-center gap-2">
-                                            <span class="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold {{ $stateBadgeClasses }}">
-                                                {{ __('app.himamat_state_'.$state) }}
-                                            </span>
-                                        </div>
+                            <h3 class="text-base sm:text-lg font-bold text-primary leading-snug group-hover:text-accent transition-colors">{{ $localizedHeader }}</h3>
 
-                                        <h3 class="mt-2 text-[15px] font-semibold leading-7 text-primary sm:text-base">{{ $localizedHeader }}</h3>
+                            @if($localizedReadingRef !== '')
+                                <p class="mt-1 text-sm font-medium text-secondary">{{ $localizedReadingRef }}</p>
+                            @endif
+                        </div>
 
-                                        @if($localizedReadingRef !== '')
-                                            <p class="mt-1.5 text-sm leading-6 text-secondary">{{ $localizedReadingRef }}</p>
-                                        @endif
-                                    </div>
-
-                                    <svg class="mt-1 h-5 w-5 shrink-0 text-muted-text transition-transform duration-200"
-                                         :class="openSlot === '{{ $slot->slot_key }}' ? 'rotate-180 text-accent' : ''"
-                                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                                    </svg>
-                                </div>
-                            </div>
+                        <div class="shrink-0 pt-1 text-muted-text transition-colors group-hover:text-accent">
+                            <svg class="w-5 h-5 transition-transform duration-300"
+                                 :class="openSlot === '{{ $slot->slot_key }}' ? 'rotate-180 text-accent' : ''"
+                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
                         </div>
                     </button>
 
@@ -184,161 +154,109 @@
                     <div x-show="openSlot === '{{ $slot->slot_key }}'"
                          x-cloak
                          x-transition:enter="transition ease-out duration-200"
-                         x-transition:enter-start="opacity-0 -translate-y-1"
+                         x-transition:enter-start="opacity-0 -translate-y-2"
                          x-transition:enter-end="opacity-100 translate-y-0"
-                         class="border-t border-border/60 bg-muted/[0.08] px-4 pb-5 pt-4 sm:px-5 sm:pb-6">
+                         class="px-4 pb-6">
 
-                        {{-- Bible reading card --}}
-                        <div class="rounded-xl border border-border bg-card px-4 py-4 shadow-sm">
-                            <div class="flex items-start justify-between gap-3">
-                                <div class="min-w-0">
-                                    <div class="flex items-center gap-2 mb-2">
-                                        <div class="w-6 h-6 rounded-md bg-accent/10 flex items-center justify-center shrink-0">
-                                            <svg class="w-3 h-3 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-                                        </div>
-                                        <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-text">{{ __('app.himamat_bible_section_title') }}</p>
-                                    </div>
-                                    @if($localizedReadingRef !== '')
-                                        <p class="text-sm font-semibold text-primary">{{ $localizedReadingRef }}</p>
-                                    @endif
-                                </div>
-                                <span class="inline-flex items-center rounded-full bg-accent/10 px-2.5 py-1 text-[10px] font-semibold text-accent shrink-0">
-                                    {{ $slotHourLabel }}
-                                </span>
-                            </div>
-
-                            {{-- Reading text --}}
-                            <div class="mt-3 rounded-xl bg-muted/50 px-4 py-4">
-                                @if($localizedReading !== '')
-                                    <p class="text-sm leading-7 text-primary whitespace-pre-line">{{ $localizedReading }}</p>
-                                @else
-                                    <div class="flex items-center gap-2 py-2">
-                                        <svg class="w-4 h-4 text-muted-text shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                        <p class="text-sm text-muted-text italic">{{ __('app.himamat_slot_content_pending') }}</p>
-                                    </div>
-                                @endif
-                            </div>
+                        {{-- Bible Text --}}
+                        <div class="pt-1 pb-2">
+                            @if($localizedReading !== '')
+                                <p class="text-[15px] sm:text-base leading-loose text-primary/95 whitespace-pre-line break-words">{{ $localizedReading }}</p>
+                            @else
+                                <p class="text-sm text-muted-text italic">{{ __('app.himamat_slot_content_pending') }}</p>
+                            @endif
                         </div>
 
-                        {{-- Resources section --}}
+                        {{-- Optional Resources --}}
                         @if($availableResourceTypes->isNotEmpty())
-                            <div class="mt-4 rounded-xl border border-border bg-muted/30 px-4 py-4">
-                                <div class="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between">
-                                    <div>
-                                        <div class="flex items-center gap-2">
-                                            <div class="w-6 h-6 rounded-md bg-accent-secondary/10 flex items-center justify-center shrink-0">
-                                                <svg class="w-3 h-3 text-accent-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-                                            </div>
-                                            <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-text">{{ __('app.himamat_hour_resources_title') }}</p>
-                                        </div>
-                                        <p class="mt-1.5 text-xs text-muted-text ml-8">{{ __('app.himamat_hour_resources_hint') }}</p>
-                                    </div>
-                                </div>
+                            <div class="mt-6 pt-5 border-t border-border/30" x-data="{ resourceTab: '{{ $defaultResourceType }}' }">
 
-                                {{-- Resource type tabs --}}
-                                <div class="mt-4 flex flex-wrap gap-2">
+                                {{-- Elegant Tabs --}}
+                                <div class="flex gap-5 overflow-x-auto no-scrollbar pb-px mb-4 border-b border-border/30">
                                     @foreach($availableResourceTypes as $type)
-                                        <button type="button"
-                                                @click="resourceTab = '{{ $type }}'"
-                                                :class="resourceTab === '{{ $type }}'
-                                                    ? 'border-accent bg-accent text-on-accent shadow-sm'
-                                                    : 'border-border bg-card text-secondary hover:bg-muted hover:border-border'"
-                                                class="inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-semibold transition-all duration-150 touch-manipulation active:scale-95">
-                                            <span>{{ __('app.himamat_resource_type_'.$type) }}</span>
-                                            <span class="rounded-full px-1.5 py-0.5 text-[10px] font-bold transition-colors"
-                                                  :class="resourceTab === '{{ $type }}' ? 'bg-on-accent/15 text-on-accent' : 'bg-muted text-muted-text'">
-                                                {{ $resourcesByType->get($type, collect())->count() }}
-                                            </span>
+                                        <button @click="resourceTab = '{{ $type }}'"
+                                                class="text-[10px] font-bold uppercase tracking-wider pb-2 border-b-2 transition-colors whitespace-nowrap touch-manipulation"
+                                                :class="resourceTab === '{{ $type }}' ? 'border-accent text-accent' : 'border-transparent text-muted-text hover:text-secondary'">
+                                            {{ __('app.himamat_resource_type_'.$type) }}
+                                            <span class="opacity-60 ml-0.5">({{ $resourcesByType->get($type)->count() }})</span>
                                         </button>
                                     @endforeach
                                 </div>
 
-                                {{-- Resource content by type --}}
-                                @foreach($availableResourceTypes as $type)
-                                    @php
-                                        $typeResources = $resourcesByType->get($type, collect());
-                                    @endphp
+                                {{-- Tab Content --}}
+                                <div>
+                                    @foreach($availableResourceTypes as $type)
+                                        @php
+                                            $typeResources = $resourcesByType->get($type, collect());
+                                        @endphp
 
-                                    <div x-show="resourceTab === '{{ $type }}'"
-                                         x-cloak
-                                         x-transition:enter="transition ease-out duration-150"
-                                         x-transition:enter-start="opacity-0"
-                                         x-transition:enter-end="opacity-100"
-                                         class="mt-4">
-                                        @if($type === 'text')
-                                            <div class="space-y-3">
-                                                @foreach($typeResources as $resource)
-                                                    @php
-                                                        $resourceTitle = localized($resource, 'title') ?? $resource->title_en ?? __('app.himamat_resource_type_'.$resource->type);
-                                                        $resourceText = trim((string) (localized($resource, 'text') ?? $resource->text_en ?? ''));
-                                                    @endphp
-                                                    <article class="overflow-hidden rounded-xl border border-accent/10 bg-card px-4 py-4 shadow-sm">
-                                                        <p class="text-sm font-semibold text-primary">{{ $resourceTitle }}</p>
-                                                        @if($resourceText !== '')
-                                                            <p class="mt-3 text-sm leading-7 text-secondary whitespace-pre-line">{{ $resourceText }}</p>
-                                                        @endif
-                                                    </article>
-                                                @endforeach
-                                            </div>
-                                        @elseif($type === 'photo')
-                                            <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                                                @foreach($typeResources as $resource)
-                                                    @php
-                                                        $resourceTitle = localized($resource, 'title') ?? $resource->title_en ?? __('app.himamat_resource_type_'.$resource->type);
-                                                        $resourceUrl = $resource->resolvedUrl();
-                                                    @endphp
-                                                    @if($resourceUrl)
-                                                        <a href="{{ $resourceUrl }}"
-                                                           target="_blank"
-                                                           rel="noopener"
-                                                           class="group overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98]">
-                                                            <div class="overflow-hidden">
-                                                                <img src="{{ $resourceUrl }}"
-                                                                     alt="{{ $resourceTitle }}"
-                                                                     loading="lazy"
-                                                                     decoding="async"
-                                                                     class="h-32 w-full object-cover transition duration-300 group-hover:scale-105 sm:h-36">
-                                                            </div>
-                                                            <div class="px-3 py-2.5">
-                                                                <p class="text-xs font-semibold leading-snug text-primary line-clamp-2">{{ $resourceTitle }}</p>
-                                                            </div>
-                                                        </a>
-                                                    @endif
-                                                @endforeach
-                                            </div>
-                                        @else
-                                            {{-- video, pdf, website --}}
-                                            <div class="space-y-3">
-                                                @foreach($typeResources as $resource)
-                                                    @php
-                                                        $resourceTitle = localized($resource, 'title') ?? $resource->title_en ?? __('app.himamat_resource_type_'.$resource->type);
-                                                        $resourceText = trim((string) (localized($resource, 'text') ?? $resource->text_en ?? ''));
-                                                        $resourceUrl = $resource->resolvedUrl();
-                                                    @endphp
-                                                    <article class="rounded-xl border border-border bg-card px-4 py-4 shadow-sm transition-all duration-150 hover:shadow-md">
-                                                        <div class="flex items-start justify-between gap-3">
-                                                            <div class="min-w-0 flex-1">
-                                                                <p class="text-sm font-semibold text-primary">{{ $resourceTitle }}</p>
-                                                                @if($resourceText !== '')
-                                                                    <p class="mt-1.5 text-sm leading-relaxed text-secondary">{{ $resourceText }}</p>
-                                                                @endif
-                                                            </div>
-                                                            @if($resourceUrl)
-                                                                <a href="{{ $resourceUrl }}"
-                                                                   target="_blank"
-                                                                   rel="noopener"
-                                                                   class="shrink-0 inline-flex items-center gap-1.5 rounded-xl bg-accent/10 px-3.5 py-2 text-xs font-semibold text-accent transition-colors hover:bg-accent/15 active:scale-95 touch-manipulation">
-                                                                    {{ __('app.himamat_resource_open') }}
-                                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                                                                </a>
+                                        <div x-show="resourceTab === '{{ $type }}'"
+                                             x-cloak
+                                             x-transition:enter="transition ease-out duration-200"
+                                             x-transition:enter-start="opacity-0"
+                                             x-transition:enter-end="opacity-100">
+
+                                            @if($type === 'text')
+                                                <div class="space-y-4">
+                                                    @foreach($typeResources as $resource)
+                                                        @php
+                                                            $resourceTitle = localized($resource, 'title') ?? $resource->title_en ?? __('app.himamat_resource_type_'.$resource->type);
+                                                            $resourceText = trim((string) (localized($resource, 'text') ?? $resource->text_en ?? ''));
+                                                        @endphp
+                                                        <div class="border-l-2 border-accent/30 pl-4 py-1">
+                                                            <h4 class="text-sm font-bold text-primary">{{ $resourceTitle }}</h4>
+                                                            @if($resourceText !== '')
+                                                                <p class="mt-1.5 text-sm leading-relaxed text-secondary whitespace-pre-line">{{ $resourceText }}</p>
                                                             @endif
                                                         </div>
-                                                    </article>
-                                                @endforeach
-                                            </div>
-                                        @endif
-                                    </div>
-                                @endforeach
+                                                    @endforeach
+                                                </div>
+                                            @elseif($type === 'photo')
+                                                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                                    @foreach($typeResources as $resource)
+                                                        @php
+                                                            $resourceTitle = localized($resource, 'title') ?? $resource->title_en ?? __('app.himamat_resource_type_'.$resource->type);
+                                                            $resourceUrl = $resource->resolvedUrl();
+                                                        @endphp
+                                                        @if($resourceUrl)
+                                                            <a href="{{ $resourceUrl }}" target="_blank" rel="noopener"
+                                                               class="group block overflow-hidden rounded-xl bg-muted/30 border border-border/50 transition-all hover:border-accent/30 active:scale-[0.98]">
+                                                                <img src="{{ $resourceUrl }}" alt="{{ $resourceTitle }}" loading="lazy" class="w-full h-28 object-cover group-hover:scale-105 transition-transform duration-500">
+                                                                <div class="px-2.5 py-2">
+                                                                    <p class="text-[11px] font-semibold text-primary truncate">{{ $resourceTitle }}</p>
+                                                                </div>
+                                                            </a>
+                                                        @endif
+                                                    @endforeach
+                                                </div>
+                                            @else
+                                                {{-- video, pdf, website --}}
+                                                <div class="space-y-2">
+                                                    @foreach($typeResources as $resource)
+                                                        @php
+                                                            $resourceTitle = localized($resource, 'title') ?? $resource->title_en ?? __('app.himamat_resource_type_'.$resource->type);
+                                                            $resourceText = trim((string) (localized($resource, 'text') ?? $resource->text_en ?? ''));
+                                                            $resourceUrl = $resource->resolvedUrl();
+                                                        @endphp
+                                                        @if($resourceUrl)
+                                                            <a href="{{ $resourceUrl }}" target="_blank" rel="noopener"
+                                                               class="flex items-center justify-between gap-3 p-3 rounded-xl bg-muted/40 hover:bg-muted/70 transition-colors group active:scale-[0.99] touch-manipulation">
+                                                                <div class="min-w-0">
+                                                                    <p class="text-sm font-semibold text-primary truncate">{{ $resourceTitle }}</p>
+                                                                    @if($resourceText !== '')
+                                                                        <p class="text-xs text-secondary mt-0.5 truncate">{{ $resourceText }}</p>
+                                                                    @endif
+                                                                </div>
+                                                                <svg class="w-4 h-4 text-accent/70 group-hover:text-accent shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                                            </a>
+                                                        @endif
+                                                    @endforeach
+                                                </div>
+                                            @endif
+
+                                        </div>
+                                    @endforeach
+                                </div>
                             </div>
                         @endif
                     </div>
