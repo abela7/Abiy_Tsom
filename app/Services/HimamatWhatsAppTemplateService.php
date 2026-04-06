@@ -33,19 +33,29 @@ class HimamatWhatsAppTemplateService
         ?string $locale = null
     ): array {
         $locale = $this->preferredLocale($member, $locale);
+        $slotHeader = trim((string) (localized($slot, 'slot_header', $locale) ?? ''));
+        $reminderHeader = trim((string) (localized($slot, 'reminder_header', $locale) ?? ''));
+        $reminderContent = trim((string) (localized($slot, 'reminder_content', $locale) ?? ''));
+
         $variables = [
             'name' => trim((string) ($member->baptism_name ?? '')),
             'day_title' => localized($day, 'title', $locale) ?? '',
-            'slot_header' => localized($slot, 'slot_header', $locale) ?? '',
-            'reminder_header' => localized($slot, 'reminder_header', $locale) ?? '',
-            'reminder_content' => trim((string) (localized($slot, 'reminder_content', $locale) ?? '')),
+            'slot_header' => $slotHeader,
+            'reminder_header' => $slotHeader !== '' ? $slotHeader : $reminderHeader,
+            'reminder_content' => $reminderContent,
             'url' => $this->ensureHttpsUrl($url),
         ];
 
         $templateKey = $this->templateKeyForSlot((string) $slot->slot_key);
-        $message = $templateKey !== null
-            ? trim((string) Lang::get($templateKey, $variables, $locale))
-            : '';
+        $message = '';
+
+        if ($templateKey !== null) {
+            $template = trim((string) Lang::get($templateKey, [], $locale));
+
+            if ($this->templateLooksDynamic($template)) {
+                $message = trim((string) Lang::get($templateKey, $variables, $locale));
+            }
+        }
 
         if ($message === '' || $message === $templateKey) {
             $lines = array_values(array_filter([
@@ -91,5 +101,19 @@ class HimamatWhatsAppTemplateService
     private function templateKeyForSlot(string $slotKey): ?string
     {
         return self::TEMPLATE_KEYS[$slotKey] ?? null;
+    }
+
+    private function templateLooksDynamic(string $template): bool
+    {
+        if ($template === '') {
+            return false;
+        }
+
+        if (! str_contains($template, ':url')) {
+            return false;
+        }
+
+        return str_contains($template, ':reminder_header')
+            || str_contains($template, ':reminder_content');
     }
 }

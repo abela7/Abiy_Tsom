@@ -386,12 +386,12 @@ class SendWhatsAppRemindersCommandTest extends TestCase
             'slot_key' => 'third',
             'slot_order' => 2,
             'scheduled_time_london' => '09:00:00',
-            'slot_header_en' => 'Third Hour',
-            'slot_header_am' => '3 ሰዓት',
+            'slot_header_en' => 'Monday morning 3 oclock Gospel reading',
+            'slot_header_am' => 'ሰኞ ጠዋት 3 የሚነበበው የዕለቱ ወንጌል',
             'reminder_header_en' => 'Third Hour Reminder Header',
             'reminder_header_am' => 'የ3 ሰዓት ማሳሰቢያ ርዕስ',
             'reminder_content_en' => 'Third Hour Reminder Content',
-            'reminder_content_am' => 'የ3 ሰዓት ማሳሰቢያ ይዘት',
+            'reminder_content_am' => "በዚህ ሰዓት ጌታችን ወደ በለስ ሄደ።\n\nየበረታ ስግደት፣ እንዲሁም ጸሎት ያድርግ።",
             'is_published' => true,
         ]);
 
@@ -448,8 +448,8 @@ class SendWhatsAppRemindersCommandTest extends TestCase
         $expectedUrl = '/m/'.$includedMember->token.'/day/'.$daily->day_number.'-'.$daily->id.'#himamat-slot-third';
 
         $this->assertSame('+447700900114', $request['to']);
-        $this->assertStringContainsString('የ3 ሰዓት ማሳሰቢያ ርዕስ', $body);
-        $this->assertStringContainsString('የ3 ሰዓት ማሳሰቢያ ይዘት', $body);
+        $this->assertStringContainsString('ሰኞ ጠዋት 3 የሚነበበው የዕለቱ ወንጌል', $body);
+        $this->assertStringContainsString('በዚህ ሰዓት ጌታችን ወደ በለስ ሄደ።', $body);
         $this->assertStringContainsString('በዚህ ሰዓት የሚነበበውን የወንጌል ክፍል ለማግኘት', $body);
         $this->assertStringContainsString($expectedUrl, $body);
 
