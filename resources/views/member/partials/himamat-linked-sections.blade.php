@@ -85,21 +85,14 @@
              x-init="$nextTick(() => { const target = $root.querySelector(`[data-slot-key='${openSlot}']`); if (target) { target.scrollIntoView({ behavior: 'auto', block: 'nearest' }); } })">
 
         {{-- Timeline header --}}
-        <div class="border-b border-border/80 px-4 py-5 sm:px-6 sm:py-6">
-            <div class="flex items-start gap-3 sm:gap-4">
-                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-accent/10 shadow-inner shadow-accent/10">
+        <div class="border-b border-border/70 px-4 py-4 sm:px-5 sm:py-5">
+            <div class="flex items-center gap-3">
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-accent/10">
                     <svg class="h-5 w-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                 </div>
-                <div class="min-w-0 flex-1">
-                    <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-text">
-                        {{ __('app.himamat_day_view_title') }}
-                    </p>
-                    <p class="mt-2 max-w-2xl text-sm leading-7 text-secondary sm:text-[15px]">
-                        {{ __('app.himamat_preferences_timeline_hint') }}
-                    </p>
-                </div>
+                <h2 class="text-base font-bold leading-tight text-primary sm:text-lg">{{ __('app.himamat_day_view_title') }}</h2>
             </div>
         </div>
 
@@ -131,10 +124,15 @@
                         'past' => 'bg-accent-secondary/15 text-accent-secondary',
                         default => 'bg-muted text-muted-text',
                     };
-                    $hourChipClasses = match ($state) {
-                        'current' => 'bg-accent text-on-accent shadow-sm shadow-accent/20',
-                        'past' => 'bg-muted text-secondary',
-                        default => 'bg-card text-primary border border-border',
+                    $timePanelClasses = match ($state) {
+                        'current' => 'border-accent/20 bg-accent/10',
+                        'past' => 'border-border/80 bg-muted/40',
+                        default => 'border-border/80 bg-muted/20',
+                    };
+                    $timeLabelClasses = match ($state) {
+                        'current' => 'text-accent',
+                        'past' => 'text-secondary',
+                        default => 'text-primary',
                     };
                 @endphp
 
@@ -146,11 +144,13 @@
                     {{-- Slot header (clickable) --}}
                     <button type="button"
                             @click="setOpenSlot('{{ $slot->slot_key }}')"
-                            class="w-full px-4 py-4 text-left sm:px-5 sm:py-5 transition-colors hover:bg-muted/15 touch-manipulation active:bg-muted/20">
-                        <div class="flex items-start gap-3 sm:gap-4">
-                            <div class="shrink-0">
-                                <div class="inline-flex min-h-11 items-center rounded-2xl px-3.5 py-2.5 text-sm font-bold leading-tight {{ $hourChipClasses }}">
-                                    {{ $slotHourLabel }}
+                            class="w-full px-4 py-4 text-left sm:px-5 sm:py-5 transition-colors hover:bg-muted/10 touch-manipulation active:bg-muted/15">
+                        <div class="flex items-start gap-3.5 sm:gap-4">
+                            <div class="w-28 shrink-0 sm:w-36">
+                                <div class="rounded-2xl border px-3 py-3 {{ $timePanelClasses }}">
+                                    <p class="text-sm font-bold leading-6 {{ $timeLabelClasses }}">
+                                        {{ $slotHourLabel }}
+                                    </p>
                                 </div>
                             </div>
 
@@ -161,15 +161,12 @@
                                             <span class="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold {{ $stateBadgeClasses }}">
                                                 {{ __('app.himamat_state_'.$state) }}
                                             </span>
-                                            @if($resourceSummary !== '')
-                                                <span class="text-[11px] font-medium text-muted-text">{{ $resourceSummary }}</span>
-                                            @endif
                                         </div>
 
-                                        <h3 class="mt-2 text-base font-bold leading-snug text-primary sm:text-lg">{{ $localizedHeader }}</h3>
+                                        <h3 class="mt-2 text-[15px] font-semibold leading-7 text-primary sm:text-base">{{ $localizedHeader }}</h3>
 
                                         @if($localizedReadingRef !== '')
-                                            <p class="mt-2 text-sm leading-6 text-secondary">{{ $localizedReadingRef }}</p>
+                                            <p class="mt-1.5 text-sm leading-6 text-secondary">{{ $localizedReadingRef }}</p>
                                         @endif
                                     </div>
 
@@ -189,7 +186,7 @@
                          x-transition:enter="transition ease-out duration-200"
                          x-transition:enter-start="opacity-0 -translate-y-1"
                          x-transition:enter-end="opacity-100 translate-y-0"
-                         class="border-t border-border/60 px-5 pb-5 pt-4 sm:px-6 sm:pb-6">
+                         class="border-t border-border/60 bg-muted/[0.08] px-4 pb-5 pt-4 sm:px-5 sm:pb-6">
 
                         {{-- Bible reading card --}}
                         <div class="rounded-xl border border-border bg-card px-4 py-4 shadow-sm">
