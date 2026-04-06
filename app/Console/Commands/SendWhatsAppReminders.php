@@ -437,7 +437,7 @@ class SendWhatsAppReminders extends Command
             ->where('whatsapp_confirmation_status', 'confirmed')
             ->whereNotNull('whatsapp_phone')
             ->where('whatsapp_phone', '!=', '')
-            ->where(function ($query) use ($seasonId): void {
+            ->where(function ($query) use ($seasonId, $slot): void {
                 $query
                     ->whereDoesntHave('himamatPreferences', function ($preferenceQuery) use ($seasonId): void {
                         $preferenceQuery->where('lent_season_id', $seasonId);
