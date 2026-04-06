@@ -382,6 +382,7 @@ final class WhatsAppTemplateService
         string $locale
     ): array {
         $name = trim((string) ($member->baptism_name ?? ''));
+        $dayNumber = (int) $dailyContent->day_number;
         $introSlot = $himamatDay->slots->firstWhere('slot_key', 'intro');
         $dayTitle = trim((string) (
             ($introSlot ? localized($introSlot, 'reminder_header', $locale) : null)
@@ -398,9 +399,9 @@ final class WhatsAppTemplateService
         return [
             'name' => $name,
             'baptism_name' => $name,
-            'day' => trim((string) $dailyContent->day_number),
-            'himamat_weekday' => $this->himamatWeekdayLabel($dailyContent->day_number, $locale),
-            'himamat_ordinal' => $this->himamatOrdinalLabel($dailyContent->day_number, $locale),
+            'day' => trim((string) $dayNumber),
+            'himamat_weekday' => $this->himamatWeekdayLabel($dayNumber, $locale),
+            'himamat_ordinal' => $this->himamatOrdinalLabel($dayNumber, $locale),
             'day_reminder_title' => $dayTitle,
             'day_theme_meaning' => $dayMeaning,
             'himamat_day_title' => $dayTitle,
