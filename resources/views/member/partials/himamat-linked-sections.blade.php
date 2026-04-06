@@ -106,16 +106,66 @@
 
     <section x-data="{
                 openSlot: null,
-                setOpenSlot(slotKey) {
-                    this.openSlot = this.openSlot === slotKey ? null : slotKey;
+                hashHandler: null,
+                slotKeyFromHash(hashValue = null) {
+                    const normalizedHash = (hashValue ?? window.location.hash ?? '').replace(/^#/, '').trim();
+
+                    if (!normalizedHash.startsWith('himamat-slot-')) {
+                        return null;
+                    }
+
+                    return normalizedHash.replace(/^himamat-slot-/, '') || null;
+                },
+                scrollToSlot(slotKey, behavior = 'smooth') {
+                    const target = this.$root.querySelector(`[data-slot-key='${slotKey}']`);
+
+                    if (!target) {
+                        return;
+                    }
+
+                    target.scrollIntoView({ behavior, block: 'start' });
+                },
+                openFromHash(hashValue = null, behavior = 'auto') {
+                    const slotKey = this.slotKeyFromHash(hashValue);
+
+                    if (!slotKey) {
+                        return;
+                    }
+
+                    this.openSlot = slotKey;
                     this.$nextTick(() => {
-                        if (this.openSlot) {
-                            const target = this.$root.querySelector(`[data-slot-key='${slotKey}']`);
-                            if (target) {
-                                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            }
-                        }
+                        window.setTimeout(() => this.scrollToSlot(slotKey, behavior), 80);
                     });
+                },
+                setOpenSlot(slotKey) {
+                    const nextSlot = this.openSlot === slotKey ? null : slotKey;
+                    this.openSlot = nextSlot;
+
+                    if (nextSlot) {
+                        if (window.location.hash !== `#himamat-slot-${nextSlot}`) {
+                            history.replaceState(null, '', `#himamat-slot-${nextSlot}`);
+                        }
+
+                        this.$nextTick(() => {
+                            window.setTimeout(() => this.scrollToSlot(nextSlot, 'smooth'), 80);
+                        });
+                        return;
+                    }
+
+                    if (window.location.hash === `#himamat-slot-${slotKey}`) {
+                        history.replaceState(null, '', window.location.pathname + window.location.search);
+                    }
+                },
+                init() {
+                    this.openFromHash(window.location.hash, 'auto');
+
+                    this.hashHandler = () => this.openFromHash(window.location.hash, 'smooth');
+                    window.addEventListener('hashchange', this.hashHandler);
+                },
+                destroy() {
+                    if (this.hashHandler) {
+                        window.removeEventListener('hashchange', this.hashHandler);
+                    }
                 }
              }">
 
