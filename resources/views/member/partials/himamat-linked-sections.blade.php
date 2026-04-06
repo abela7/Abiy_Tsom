@@ -90,8 +90,7 @@
                     });
                 }
              }"
-             x-init="$nextTick(() => { const target = $root.querySelector(`[data-slot-key='${openSlot}']`); if (target) { target.scrollIntoView({ behavior: 'auto', block: 'center' }); } })"
-             class="px-1 sm:px-2">
+             x-init="$nextTick(() => { const target = $root.querySelector(`[data-slot-key='${openSlot}']`); if (target) { target.scrollIntoView({ behavior: 'auto', block: 'center' }); } })">
 
         {{-- Slot list as a vertical timeline --}}
         <div class="flex flex-col">
@@ -116,20 +115,8 @@
                     };
                 @endphp
 
-                <div class="relative flex gap-3 sm:gap-4 pb-6 last:pb-0 group">
-                    {{-- Timeline Dot & Vertical Line --}}
-                    <div class="flex flex-col items-center mt-7 w-4 shrink-0 relative">
-                        <div class="w-2.5 h-2.5 rounded-full z-10 transition-all duration-300"
-                             :class="openSlot === '{{ $slot->slot_key }}' || '{{ $state }}' === 'current' ? 'bg-accent shadow-[0_0_8px_rgba(10,98,134,0.6)] scale-110' : 'bg-border'"></div>
-                        
-                        @if(!$loop->last)
-                            <div class="absolute top-4 bottom-[-24px] w-[2px] bg-border/40 rounded-full transition-colors group-hover:bg-border/70"></div>
-                        @endif
-                    </div>
-
-                    {{-- Separate Content Card per Hour --}}
-                    <div class="flex-1 min-w-0">
-                        <article data-slot-key="{{ $slot->slot_key }}"
+                <div class="group relative">
+                    <article data-slot-key="{{ $slot->slot_key }}"
                                  class="relative rounded-2xl border transition-all duration-300 overflow-hidden {{ $stateClasses }}"
                                  :class="openSlot === '{{ $slot->slot_key }}' ? 'ring-1 ring-accent/20 border-accent/20' : ''">
 
@@ -276,8 +263,16 @@
                                 @endif
                             </div>
                         </article>
-                    </div>
                 </div>
+
+                @if(!$loop->last)
+                    {{-- Central Timeline Connector --}}
+                    <div class="flex flex-col items-center justify-center py-2 opacity-60">
+                        <div class="w-[2px] h-3.5 bg-border rounded-t-full"></div>
+                        <div class="w-1.5 h-1.5 rounded-full bg-accent/70 my-1"></div>
+                        <div class="w-[2px] h-3.5 bg-border rounded-b-full"></div>
+                    </div>
+                @endif
             @endforeach
         </div>
     </section>

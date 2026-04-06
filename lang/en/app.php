@@ -501,6 +501,7 @@ return [
     'whatsapp_daily_reminder_yearly_block' => "Today, on :gregorian_date or :ethiopian_date, the following yearly feasts are:\n\n:yearly_commemorations_bullets",
     'whatsapp_daily_reminder_monthly_block' => "Also, the following monthly feasts are:\n\n:monthly_commemorations_bullets",
     'whatsapp_daily_reminder_content' => ":header_en\n\n:commemorations_block_en\n\n:footer_en",
+    'whatsapp_himamat_intro_content' => "Peace be with you :baptism_name. Today is day :day of the Great Lent.\n\nToday is :himamat_weekday, the :himamat_ordinal day of Holy Week. :himamat_day_title\n\n:himamat_day_meaning\n\nTap the link below to learn more about Holy Week and today’s journey:\n:url",
     'whatsapp_bulk_message_header' => ':header',
     'whatsapp_bulk_message_content' => ':content',
     'whatsapp_bulk_message_final' => "Hello :name,\n\n:header\n\n:content\n\n:url_1",

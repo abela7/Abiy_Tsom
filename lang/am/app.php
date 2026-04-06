@@ -504,6 +504,7 @@ return [
     'whatsapp_daily_reminder_yearly_block' => "ዛሬ :gregorian_date ወይንም :ethiopian_date ቀን የሚከበሩ ዓመታዊ በዓላት፦\n\n:yearly_commemorations_bullets",
     'whatsapp_daily_reminder_monthly_block' => "እንዲሁም ወርኀዊ በዓላት፦\n\n:monthly_commemorations_bullets",
     'whatsapp_daily_reminder_content' => ":header_am\n\n:commemorations_block_am\n\n:footer_am",
+    'whatsapp_himamat_intro_content' => "ሰላም ሰላም :baptism_name ዛሬ :dayኛው የዐብይ ጾም ቀን ነው።\n\nዛሬ :himamat_weekday :himamat_ordinal የሕማማት ቀን ሲሆን፣ :himamat_day_title\n\n:himamat_day_meaning\n\nስለ ሕማማት እንዲሁም ስለ ዕለቱ ተጨማሪ መረጃ ለማግኘት የሚከተለውን ሊንክ ይንኩ\n:url",
     'whatsapp_bulk_message_header' => ':header',
     'whatsapp_bulk_message_content' => ':content',
     'whatsapp_bulk_message_final' => "Hello :name,\n\n:header\n\n:content\n\n:url_1",

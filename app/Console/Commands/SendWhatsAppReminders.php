@@ -6,6 +6,7 @@ namespace App\Console\Commands;
 
 use App\Jobs\SendWhatsAppReminderJob;
 use App\Models\DailyContent;
+use App\Models\HimamatDay;
 use App\Models\LentSeason;
 use App\Models\Member;
 use App\Services\TelegramAuthService;
@@ -86,13 +87,30 @@ class SendWhatsAppReminders extends Command
                 return self::SUCCESS;
             }
 
-            $dueMembersQuery = Member::query()
-                ->where('whatsapp_reminder_enabled', true)
-                ->where('whatsapp_confirmation_status', 'confirmed')
-                ->whereNotNull('whatsapp_phone')
-                ->where('whatsapp_phone', '!=', '')
-                ->whereNotNull('whatsapp_reminder_time')
-                ->where('whatsapp_reminder_time', $currentTime);
+            $himamatDay = $this->resolvePublishedHimamatDay($dailyContent);
+            $isHimamatIntroWindow = $himamatDay !== null
+                && $currentTime === $this->himamatIntroTime();
+
+            if ($himamatDay !== null && ! $isHimamatIntroWindow) {
+                $this->line(sprintf(
+                    'No reminders due at %s (%s). Himamat intro reminders run at %s only.',
+                    $nowLondon->format('H:i'),
+                    $timezone,
+                    substr($this->himamatIntroTime(), 0, 5)
+                ));
+
+                return self::SUCCESS;
+            }
+
+            $dueMembersQuery = $isHimamatIntroWindow
+                ? $this->buildHimamatIntroRecipientsQuery($season->id)
+                : Member::query()
+                    ->where('whatsapp_reminder_enabled', true)
+                    ->where('whatsapp_confirmation_status', 'confirmed')
+                    ->whereNotNull('whatsapp_phone')
+                    ->where('whatsapp_phone', '!=', '')
+                    ->whereNotNull('whatsapp_reminder_time')
+                    ->where('whatsapp_reminder_time', $currentTime);
 
             if (config('services.ultramsg.reminder_once_only', true)) {
                 $dueMembersQuery->where(function ($query) use ($today): void {
@@ -113,12 +131,13 @@ class SendWhatsAppReminders extends Command
             }
 
             $this->line(sprintf(
-                '%s %d reminder(s) for day %d at %s (%s).',
+                '%s %d reminder(s) for day %d at %s (%s)%s.',
                 $shouldQueue ? 'Dispatching' : 'Processing',
                 $dueCount,
                 $dailyContent->day_number,
                 $nowLondon->format('H:i'),
-                $timezone
+                $timezone,
+                $isHimamatIntroWindow ? ' [Himamat intro]' : ''
             ));
 
             $processedCount = 0;
@@ -128,11 +147,12 @@ class SendWhatsAppReminders extends Command
                 ->orderBy('id')
                 ->chunkById(200, function ($members) use (
                     $dailyContent,
+                    $himamatDay,
+                    $isHimamatIntroWindow,
                     $today,
                     $dryRun,
                     $shouldQueue,
                     $ultraMsgService,
-                    $telegramAuthService,
                     $whatsAppTemplateService,
                     &$processedCount,
                     &$failedCount
@@ -145,7 +165,12 @@ class SendWhatsAppReminders extends Command
                         }
 
                         if ($shouldQueue) {
-                            SendWhatsAppReminderJob::dispatch($member->id, $dailyContent->id, $today)
+                            SendWhatsAppReminderJob::dispatch(
+                                $member->id,
+                                $dailyContent->id,
+                                $today,
+                                $isHimamatIntroWindow ? SendWhatsAppReminderJob::VARIANT_HIMAMAT_INTRO : SendWhatsAppReminderJob::VARIANT_DAILY
+                            )
                                 ->onQueue(SendWhatsAppReminderJob::QUEUE_NAME);
 
                             $processedCount++;
@@ -154,8 +179,9 @@ class SendWhatsAppReminders extends Command
                         }
 
                         $dayUrl = $this->ensureHttpsUrl($dailyContent->memberDayUrl($member->token));
-                        $message = $whatsAppTemplateService
-                            ->renderDailyReminder($member, $dailyContent, $dayUrl)['message'];
+                        $message = $isHimamatIntroWindow
+                            ? $whatsAppTemplateService->renderHimamatIntroReminder($member, $dailyContent, $himamatDay, $dayUrl)['message']
+                            : $whatsAppTemplateService->renderDailyReminder($member, $dailyContent, $dayUrl)['message'];
 
                         $sent = $ultraMsgService->sendTextMessage((string) $member->whatsapp_phone, $message);
                         if (! $sent) {
@@ -170,7 +196,7 @@ class SendWhatsAppReminders extends Command
 
                         $processedCount++;
                     }
-                });
+                }, 'members.id', 'id');
 
             if ($dryRun) {
                 $this->line(sprintf(
@@ -214,5 +240,56 @@ class SendWhatsAppReminders extends Command
         }
 
         return preg_replace('/^http:\/\//i', 'https://', $url) ?? $url;
+    }
+
+    private function himamatIntroTime(): string
+    {
+        foreach (config('himamat.slots', []) as $slotConfig) {
+            if (($slotConfig['key'] ?? null) === 'intro') {
+                return (string) ($slotConfig['time'] ?? '07:00:00');
+            }
+        }
+
+        return '07:00:00';
+    }
+
+    private function resolvePublishedHimamatDay(DailyContent $dailyContent): ?HimamatDay
+    {
+        if ($dailyContent->day_number < 50 || $dailyContent->day_number > 55) {
+            return null;
+        }
+
+        return HimamatDay::query()
+            ->where('lent_season_id', $dailyContent->lent_season_id)
+            ->whereDate('date', $dailyContent->date)
+            ->where('is_published', true)
+            ->with([
+                'slots' => fn ($query) => $query
+                    ->where('slot_key', 'intro')
+                    ->where('is_published', true)
+                    ->orderBy('slot_order'),
+            ])
+            ->first();
+    }
+
+    private function buildHimamatIntroRecipientsQuery(int $seasonId)
+    {
+        return Member::query()
+            ->where('whatsapp_reminder_enabled', true)
+            ->where('whatsapp_confirmation_status', 'confirmed')
+            ->whereNotNull('whatsapp_phone')
+            ->where('whatsapp_phone', '!=', '')
+            ->where(function ($query) use ($seasonId): void {
+                $query
+                    ->whereDoesntHave('himamatPreferences', function ($preferenceQuery) use ($seasonId): void {
+                        $preferenceQuery->where('lent_season_id', $seasonId);
+                    })
+                    ->orWhereHas('himamatPreferences', function ($preferenceQuery) use ($seasonId): void {
+                        $preferenceQuery
+                            ->where('lent_season_id', $seasonId)
+                            ->where('enabled', true)
+                            ->where('intro_enabled', true);
+                    });
+            });
     }
 }

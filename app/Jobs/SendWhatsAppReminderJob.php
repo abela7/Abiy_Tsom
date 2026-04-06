@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Jobs;
 
 use App\Models\DailyContent;
+use App\Models\HimamatDay;
 use App\Models\Member;
 use App\Services\UltraMsgService;
 use App\Services\WhatsAppTemplateService;
@@ -20,6 +21,10 @@ final class SendWhatsAppReminderJob implements ShouldQueue
 
     public const QUEUE_NAME = 'whatsapp-reminders';
 
+    public const VARIANT_DAILY = 'daily';
+
+    public const VARIANT_HIMAMAT_INTRO = 'himamat_intro';
+
     public int $tries = 3;
 
     public int $timeout = 45;
@@ -33,6 +38,7 @@ final class SendWhatsAppReminderJob implements ShouldQueue
         public readonly int $memberId,
         public readonly int $dailyContentId,
         public readonly string $today,
+        public readonly string $variant = self::VARIANT_DAILY,
     ) {
         $this->onQueue(self::QUEUE_NAME);
     }
@@ -67,10 +73,14 @@ final class SendWhatsAppReminderJob implements ShouldQueue
             return;
         }
 
-        $dayUrl = $dailyContent->memberDayUrl($member->token);
+        $dayUrl = $this->ensureHttpsUrl($dailyContent->memberDayUrl($member->token));
+        $message = $this->variant === self::VARIANT_HIMAMAT_INTRO
+            ? $this->resolveHimamatIntroMessage($member, $dailyContent, $dayUrl, $whatsAppTemplateService)
+            : $whatsAppTemplateService->renderDailyReminder($member, $dailyContent, $dayUrl)['message'];
 
-        $message = $whatsAppTemplateService
-            ->renderDailyReminder($member, $dailyContent, $this->ensureHttpsUrl($dayUrl))['message'];
+        if ($message === null) {
+            return;
+        }
 
         if (! $ultraMsgService->sendTextMessage((string) $member->whatsapp_phone, $message)) {
             throw new RuntimeException(sprintf(
@@ -90,6 +100,7 @@ final class SendWhatsAppReminderJob implements ShouldQueue
             'member_id' => $this->memberId,
             'daily_content_id' => $this->dailyContentId,
             'today' => $this->today,
+            'variant' => $this->variant,
             'error' => $exception->getMessage(),
         ]);
     }
@@ -101,5 +112,39 @@ final class SendWhatsAppReminderJob implements ShouldQueue
         }
 
         return preg_replace('/^http:\/\//i', 'https://', $url) ?? $url;
+    }
+
+    private function resolveHimamatIntroMessage(
+        Member $member,
+        DailyContent $dailyContent,
+        string $dayUrl,
+        WhatsAppTemplateService $whatsAppTemplateService
+    ): ?string {
+        $himamatDay = $this->resolvePublishedHimamatDay($dailyContent);
+        if (! $himamatDay) {
+            return null;
+        }
+
+        return $whatsAppTemplateService
+            ->renderHimamatIntroReminder($member, $dailyContent, $himamatDay, $dayUrl)['message'];
+    }
+
+    private function resolvePublishedHimamatDay(DailyContent $dailyContent): ?HimamatDay
+    {
+        if ($dailyContent->day_number < 50 || $dailyContent->day_number > 55) {
+            return null;
+        }
+
+        return HimamatDay::query()
+            ->where('lent_season_id', $dailyContent->lent_season_id)
+            ->whereDate('date', $dailyContent->date)
+            ->where('is_published', true)
+            ->with([
+                'slots' => fn ($query) => $query
+                    ->where('slot_key', 'intro')
+                    ->where('is_published', true)
+                    ->orderBy('slot_order'),
+            ])
+            ->first();
     }
 }

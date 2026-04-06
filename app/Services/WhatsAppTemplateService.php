@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\DailyContent;
+use App\Models\HimamatDay;
 use App\Models\Member;
 use App\Models\Translation;
 use Carbon\Carbon;
@@ -130,6 +131,46 @@ final class WhatsAppTemplateService
         'name',
     ];
 
+    /** @var list<string> */
+    private const HIMAMAT_WEEKDAY_EN = [
+        50 => 'Monday',
+        51 => 'Tuesday',
+        52 => 'Wednesday',
+        53 => 'Thursday',
+        54 => 'Friday',
+        55 => 'Saturday',
+    ];
+
+    /** @var list<string> */
+    private const HIMAMAT_WEEKDAY_AM = [
+        50 => 'ሰኞ',
+        51 => 'ማክሰኞ',
+        52 => 'ረቡዕ',
+        53 => 'ሐሙስ',
+        54 => 'ዓርብ',
+        55 => 'ቅዳሜ',
+    ];
+
+    /** @var list<string> */
+    private const HIMAMAT_ORDINAL_EN = [
+        50 => 'first',
+        51 => 'second',
+        52 => 'third',
+        53 => 'fourth',
+        54 => 'fifth',
+        55 => 'sixth',
+    ];
+
+    /** @var list<string> */
+    private const HIMAMAT_ORDINAL_AM = [
+        50 => 'የመጀመሪያው',
+        51 => 'ሁለተኛው',
+        52 => 'ሦስተኛው',
+        53 => 'አራተኛው',
+        54 => 'አምስተኛው',
+        55 => 'ስድስተኛው',
+    ];
+
     /**
      * @return array{locale: string, variables: array<string, string>, header: string, content: string, message: string}
      */
@@ -224,6 +265,31 @@ final class WhatsAppTemplateService
     }
 
     /**
+     * @return array{locale: string, variables: array<string, string>, content: string, message: string}
+     */
+    public function renderHimamatIntroReminder(
+        Member $member,
+        DailyContent $dailyContent,
+        HimamatDay $himamatDay,
+        string $url,
+        ?string $locale = null
+    ): array {
+        $resolvedLocale = $this->preferredLocale($member, $locale);
+        $variables = $this->himamatIntroVariables($member, $dailyContent, $himamatDay, $url, $resolvedLocale);
+
+        $content = $this->normalizeRenderedText(
+            $this->translate('app.whatsapp_himamat_intro_content', $variables, $resolvedLocale)
+        );
+
+        return [
+            'locale' => $resolvedLocale,
+            'variables' => $variables,
+            'content' => $content,
+            'message' => $content,
+        ];
+    }
+
+    /**
      * @return array<string, string>
      */
     private function dailyReminderVariables(
@@ -291,6 +357,42 @@ final class WhatsAppTemplateService
         ];
     }
 
+    /**
+     * @return array<string, string>
+     */
+    private function himamatIntroVariables(
+        Member $member,
+        DailyContent $dailyContent,
+        HimamatDay $himamatDay,
+        string $url,
+        string $locale
+    ): array {
+        $name = trim((string) ($member->baptism_name ?? ''));
+        $introSlot = $himamatDay->slots->firstWhere('slot_key', 'intro');
+        $dayTitle = trim((string) (
+            ($introSlot ? localized($introSlot, 'reminder_header', $locale) : null)
+            ?? localized($himamatDay, 'title', $locale)
+            ?? $himamatDay->title_en
+            ?? ''
+        ));
+        $dayMeaning = trim((string) (
+            localized($himamatDay, 'spiritual_meaning', $locale)
+            ?? $himamatDay->spiritual_meaning_en
+            ?? ''
+        ));
+
+        return [
+            'name' => $name,
+            'baptism_name' => $name,
+            'day' => trim((string) $dailyContent->day_number),
+            'himamat_weekday' => $this->himamatWeekdayLabel($dailyContent->day_number, $locale),
+            'himamat_ordinal' => $this->himamatOrdinalLabel($dailyContent->day_number, $locale),
+            'himamat_day_title' => $dayTitle,
+            'himamat_day_meaning' => $dayMeaning,
+            'url' => $url,
+        ];
+    }
+
     private function translate(string $translationKey, array $variables, string $locale): string
     {
         Translation::loadFromDb($locale);
@@ -348,6 +450,20 @@ final class WhatsAppTemplateService
     private function fallbackLocale(string $locale): string
     {
         return $locale === 'am' ? 'en' : 'am';
+    }
+
+    private function himamatWeekdayLabel(int $dayNumber, string $locale): string
+    {
+        $map = $locale === 'am' ? self::HIMAMAT_WEEKDAY_AM : self::HIMAMAT_WEEKDAY_EN;
+
+        return $map[$dayNumber] ?? '';
+    }
+
+    private function himamatOrdinalLabel(int $dayNumber, string $locale): string
+    {
+        $map = $locale === 'am' ? self::HIMAMAT_ORDINAL_AM : self::HIMAMAT_ORDINAL_EN;
+
+        return $map[$dayNumber] ?? '';
     }
 
     /**
