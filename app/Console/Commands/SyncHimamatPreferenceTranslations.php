@@ -10,28 +10,29 @@ use Illuminate\Console\Command;
 class SyncHimamatPreferenceTranslations extends Command
 {
     /**
-     * @var list<string>
+     * @var list<array{group: string, key: string}>
      */
     private const KEYS = [
-        'himamat_eyebrow',
-        'himamat_preferences_title',
-        'himamat_preferences_intro',
-        'himamat_preferences_master_title',
-        'himamat_preferences_master_body',
-        'himamat_preferences_saved',
-        'himamat_save_button',
-        'himamat_slot_7am',
-        'himamat_slot_9am',
-        'himamat_slot_12pm',
-        'himamat_slot_3pm',
-        'himamat_slot_5pm',
-        'himamat_preferences_timeline_hint',
-        'himamat_timezone_label',
-        'himamat_timezone_value',
-        'himamat_day_view_title',
-        'himamat_open_today',
-        'himamat_slots_label',
-        'himamat_ritual_intro_title',
+        ['group' => 'himamat', 'key' => 'himamat_eyebrow'],
+        ['group' => 'himamat', 'key' => 'himamat_preferences_title'],
+        ['group' => 'himamat', 'key' => 'himamat_preferences_intro'],
+        ['group' => 'himamat', 'key' => 'himamat_preferences_master_title'],
+        ['group' => 'himamat', 'key' => 'himamat_preferences_master_body'],
+        ['group' => 'himamat', 'key' => 'himamat_preferences_saved'],
+        ['group' => 'himamat', 'key' => 'himamat_save_button'],
+        ['group' => 'himamat', 'key' => 'himamat_slot_7am'],
+        ['group' => 'himamat', 'key' => 'himamat_slot_9am'],
+        ['group' => 'himamat', 'key' => 'himamat_slot_12pm'],
+        ['group' => 'himamat', 'key' => 'himamat_slot_3pm'],
+        ['group' => 'himamat', 'key' => 'himamat_slot_5pm'],
+        ['group' => 'himamat', 'key' => 'himamat_preferences_timeline_hint'],
+        ['group' => 'himamat', 'key' => 'himamat_timezone_label'],
+        ['group' => 'himamat', 'key' => 'himamat_timezone_value'],
+        ['group' => 'himamat', 'key' => 'himamat_day_view_title'],
+        ['group' => 'himamat', 'key' => 'himamat_open_today'],
+        ['group' => 'himamat', 'key' => 'himamat_slots_label'],
+        ['group' => 'himamat', 'key' => 'himamat_ritual_intro_title'],
+        ['group' => 'whatsapp_member', 'key' => 'whatsapp_himamat_intro_content'],
     ];
 
     protected $signature = 'himamat:sync-preferences-translations
@@ -47,7 +48,9 @@ class SyncHimamatPreferenceTranslations extends Command
         foreach (['en', 'am'] as $locale) {
             $strings = $this->loadLocaleStrings($locale);
 
-            foreach (self::KEYS as $key) {
+            foreach (self::KEYS as $item) {
+                $key = $item['key'];
+                $group = $item['group'];
                 $value = trim((string) ($strings[$key] ?? ''));
 
                 if ($value === '') {
@@ -65,7 +68,7 @@ class SyncHimamatPreferenceTranslations extends Command
 
                 Translation::updateOrCreate(
                     [
-                        'group' => 'himamat',
+                        'group' => $group,
                         'key' => $key,
                         'locale' => $locale,
                     ],

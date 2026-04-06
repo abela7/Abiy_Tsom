@@ -79,7 +79,7 @@
         'whatsapp_daily_reminder_monthly_block' => [':commemorations_block_en', ':commemorations_block_am'],
         'whatsapp_daily_reminder_footer' => [':footer_en', ':footer_am'],
         'whatsapp_daily_reminder_content' => [':header_en', ':commemorations_block_en', ':footer_en', ':header_am', ':commemorations_block_am', ':footer_am'],
-        'whatsapp_himamat_intro_content' => [':baptism_name', ':day', ':himamat_weekday', ':himamat_ordinal', ':himamat_day_title', ':himamat_day_meaning', ':url'],
+        'whatsapp_himamat_intro_content' => [':baptism_name', ':day', ':himamat_weekday', ':himamat_ordinal', ':day_reminder_title', ':day_theme_meaning', ':url'],
         'whatsapp_bulk_message_final' => [':name', ':header_en', ':content_en', ':header_am', ':content_am', ':header', ':content', ':url', ':url_1', ':url_2', ':url_3'],
     ];
 
@@ -1163,6 +1163,8 @@ function whatsappTemplateEditor(initialTemplate, activeMemberCount, initialRecip
             day_title: 'Day 17',
             himamat_weekday: 'Monday',
             himamat_ordinal: 'first',
+            day_reminder_title: 'Holy Monday - Cleansing of the Temple & The Cursing of the Fig Tree',
+            day_theme_meaning: 'This is the day on which the cleansing of the temple and the cursing of the fig tree were remembered.',
             himamat_day_title: 'Holy Monday - Cleansing of the Temple & The Cursing of the Fig Tree',
             himamat_day_meaning: 'This is the day on which the cleansing of the temple and the cursing of the fig tree were remembered.',
             date: '2026-03-05',
@@ -1193,6 +1195,8 @@ function whatsappTemplateEditor(initialTemplate, activeMemberCount, initialRecip
             day_title: 'Qen 17',
             himamat_weekday: 'ሰኞ',
             himamat_ordinal: 'የመጀመሪያው',
+            day_reminder_title: 'ሰኞ - አንጽሖተ ቤተመቅደስ እና መርገመ በለስ',
+            day_theme_meaning: 'ይህ ዕለት አንጽሆተ ቤተመቅደስና መርገመ በለስ የተፈጸመበት ዕለት ነው፡፡',
             himamat_day_title: 'ሰኞ - አንጽሖተ ቤተመቅደስ እና መርገመ በለስ',
             himamat_day_meaning: 'ይህ ዕለት አንጽሆተ ቤተመቅደስና መርገመ በለስ የተፈጸመበት ዕለት ነው፡፡',
             date: '2026-03-05',
