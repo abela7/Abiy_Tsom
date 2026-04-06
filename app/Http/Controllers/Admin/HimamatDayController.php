@@ -258,6 +258,8 @@ class HimamatDayController extends Controller
             'day_reminder_time' => ['required', 'date_format:H:i'],
             'day_reminder_title_en' => ['nullable', 'string', 'max:255'],
             'day_reminder_title_am' => ['nullable', 'string', 'max:255'],
+            'day_reminder_content_en' => ['nullable', 'string'],
+            'day_reminder_content_am' => ['nullable', 'string'],
             'spiritual_meaning_en' => ['nullable', 'string'],
             'spiritual_meaning_am' => ['nullable', 'string'],
             'ritual_guide_intro_en' => ['nullable', 'string'],
@@ -311,6 +313,8 @@ class HimamatDayController extends Controller
             $validated['day_reminder_title_am'] ?? null,
             $validated['title_am'] ?? null
         );
+        $resolvedReminderContentEn = trim((string) ($validated['day_reminder_content_en'] ?? '')) ?: null;
+        $resolvedReminderContentAm = trim((string) ($validated['day_reminder_content_am'] ?? '')) ?: null;
 
         $this->validateTimelineOrdering($himamatDay, $resolvedReminderTime);
 
@@ -319,6 +323,8 @@ class HimamatDayController extends Controller
             $himamatDay,
             $request,
             $resolvedReminderTime,
+            $resolvedReminderContentAm,
+            $resolvedReminderContentEn,
             $resolvedReminderTitleAm,
             $resolvedReminderTitleEn,
             $slotIds,
@@ -384,6 +390,8 @@ class HimamatDayController extends Controller
                     $slotAttributes['scheduled_time_london'] = $resolvedReminderTime;
                     $slotAttributes['reminder_header_en'] = $resolvedReminderTitleEn;
                     $slotAttributes['reminder_header_am'] = $resolvedReminderTitleAm;
+                    $slotAttributes['reminder_content_en'] = $resolvedReminderContentEn;
+                    $slotAttributes['reminder_content_am'] = $resolvedReminderContentAm;
                 }
 
                 $slot->update($slotAttributes);

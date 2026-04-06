@@ -69,9 +69,28 @@ class HimamatWhatsAppTemplateService
             $message = trim(implode("\n\n", $lines));
         }
 
+        if ($variables['reminder_header'] !== '' && ! str_contains($message, $variables['reminder_header'])) {
+            $message = trim($variables['reminder_header']."\n\n".$message);
+        }
+
+        if ($variables['reminder_content'] !== '' && ! str_contains($message, $variables['reminder_content'])) {
+            $cta = Lang::get('app.himamat_slot_reminder_open_line', ['url' => $variables['url']], $locale);
+
+            if ($cta !== '' && str_contains($message, $cta)) {
+                $message = str_replace($cta, trim($variables['reminder_content'])."\n\n".$cta, $message);
+            } else {
+                $message = trim($message."\n\n".$variables['reminder_content']);
+            }
+        }
+
+        $cta = Lang::get('app.himamat_slot_reminder_open_line', ['url' => $variables['url']], $locale);
+        if ($cta !== '' && ! str_contains($message, $variables['url'])) {
+            $message = trim($message."\n\n".$cta);
+        }
+
         return [
             'locale' => $locale,
-            'message' => $message,
+            'message' => trim($message),
         ];
     }
 
