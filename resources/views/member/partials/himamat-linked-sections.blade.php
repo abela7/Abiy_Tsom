@@ -282,3 +282,30 @@
         </div>
     </section>
 @endif
+
+@if($himamatDay->faqs->isNotEmpty())
+    <section class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+        <div class="flex items-center gap-2.5 border-b border-border/60 bg-muted/30 px-4 py-3">
+            <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-accent/10">
+                <svg class="h-3.5 w-3.5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 1.918-2 3.522-2 2.209 0 4 1.567 4 3.5 0 1.418-.964 2.638-2.347 3.188-.74.294-1.153.838-1.153 1.412V16m.01 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <h3 class="text-sm font-semibold leading-snug text-primary sm:text-base">{{ __('app.himamat_faq_title') }}</h3>
+        </div>
+
+        <div class="space-y-3 px-4 py-4 sm:px-5">
+            @foreach($himamatDay->faqs as $faq)
+                @php
+                    $localizedQuestion = localized($faq, 'question') ?? $faq->question_en;
+                    $localizedAnswer = localized($faq, 'answer') ?? $faq->answer_en;
+                @endphp
+
+                <article class="rounded-2xl border border-border/80 bg-muted/30 px-4 py-4">
+                    <p class="text-sm font-semibold leading-7 text-primary">{{ $localizedQuestion }}</p>
+                    <p class="mt-2 text-sm leading-7 text-secondary whitespace-pre-line">{{ $localizedAnswer }}</p>
+                </article>
+            @endforeach
+        </div>
+    </section>
+@endif
