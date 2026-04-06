@@ -284,7 +284,7 @@
 @endif
 
 @if($himamatDay->faqs->isNotEmpty())
-    <section class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+    <section class="mt-4 rounded-2xl border border-border bg-card shadow-sm overflow-hidden" x-data="{ activeFaq: null }">
         <div class="flex items-center gap-2.5 border-b border-border/60 bg-muted/30 px-4 py-3">
             <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-accent/10">
                 <svg class="h-3.5 w-3.5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -294,16 +294,41 @@
             <h3 class="text-sm font-semibold leading-snug text-primary sm:text-base">{{ __('app.himamat_faq_title') }}</h3>
         </div>
 
-        <div class="space-y-3 px-4 py-4 sm:px-5">
-            @foreach($himamatDay->faqs as $faq)
+        <div class="divide-y divide-border/40 flex flex-col">
+            @foreach($himamatDay->faqs as $index => $faq)
                 @php
                     $localizedQuestion = localized($faq, 'question') ?? $faq->question_en;
                     $localizedAnswer = localized($faq, 'answer') ?? $faq->answer_en;
                 @endphp
 
-                <article class="rounded-2xl border border-border/80 bg-muted/30 px-4 py-4">
-                    <p class="text-sm font-semibold leading-7 text-primary">{{ $localizedQuestion }}</p>
-                    <p class="mt-2 text-sm leading-7 text-secondary whitespace-pre-line">{{ $localizedAnswer }}</p>
+                <article class="transition-colors duration-300" :class="activeFaq === {{ $index }} ? 'bg-accent/[0.02]' : ''">
+                    <button type="button"
+                            @click="activeFaq = activeFaq === {{ $index }} ? null : {{ $index }}"
+                            class="w-full flex items-start justify-between gap-4 px-4 py-4 sm:px-5 text-left group touch-manipulation">
+                        <h4 class="text-[15px] font-bold leading-relaxed transition-colors flex-1"
+                            :class="activeFaq === {{ $index }} ? 'text-accent' : 'text-primary group-hover:text-accent/80'">
+                            {{ $localizedQuestion }}
+                        </h4>
+                        <div class="shrink-0 pt-0.5 text-muted-text transition-colors group-hover:text-accent"
+                             :class="activeFaq === {{ $index }} ? 'text-accent' : ''">
+                            <svg class="w-5 h-5 transition-transform duration-300"
+                                 :class="activeFaq === {{ $index }} ? 'rotate-180' : ''"
+                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </div>
+                    </button>
+                    
+                    <div x-show="activeFaq === {{ $index }}"
+                         x-cloak
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 -translate-y-2"
+                         x-transition:enter-end="opacity-100 translate-y-0"
+                         class="px-4 pb-5 sm:px-5 pt-1">
+                        <div class="border-l-2 border-accent/30 pl-4 py-1">
+                            <p class="text-[14px] sm:text-[15px] leading-loose text-secondary whitespace-pre-line">{{ $localizedAnswer }}</p>
+                        </div>
+                    </div>
                 </article>
             @endforeach
         </div>
