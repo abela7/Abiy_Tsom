@@ -34,6 +34,10 @@ class SyncHimamatPreferenceTranslations extends Command
         ['group' => 'himamat', 'key' => 'himamat_ritual_intro_title'],
         ['group' => 'himamat', 'key' => 'himamat_slot_reminder_open_line'],
         ['group' => 'whatsapp_member', 'key' => 'whatsapp_himamat_intro_content'],
+        ['group' => 'whatsapp_member', 'key' => 'whatsapp_himamat_third_content'],
+        ['group' => 'whatsapp_member', 'key' => 'whatsapp_himamat_sixth_content'],
+        ['group' => 'whatsapp_member', 'key' => 'whatsapp_himamat_ninth_content'],
+        ['group' => 'whatsapp_member', 'key' => 'whatsapp_himamat_eleventh_content'],
     ];
 
     protected $signature = 'himamat:sync-preferences-translations
