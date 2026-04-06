@@ -9,6 +9,27 @@
         'ninth' => 'app.himamat_slot_3pm',
         'eleventh' => 'app.himamat_slot_5pm',
     ];
+    $slotTimeShort = [
+        'intro' => '7:00',
+        'third' => '9:00',
+        'sixth' => '12:00',
+        'ninth' => '3:00',
+        'eleventh' => '5:00',
+    ];
+    $slotTimePeriod = [
+        'intro' => 'AM',
+        'third' => 'AM',
+        'sixth' => 'PM',
+        'ninth' => 'PM',
+        'eleventh' => 'PM',
+    ];
+    $slotIcons = [
+        'intro' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>',
+        'third' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z"/>',
+        'sixth' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 3v18m0-18a9 9 0 110 18 9 9 0 010-18zm0 0c-2 2-3 5-3 9s1 7 3 9m0-18c2 2 3 5 3 9s-1 7-3 9"/>',
+        'ninth' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>',
+        'eleventh' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>',
+    ];
     $resourceTypeOrder = ['text', 'video', 'photo', 'pdf', 'website'];
 @endphp
 
@@ -70,10 +91,17 @@
      ══════════════════════════════════════════════════════════════════════ --}}
 @if($himamatTimeline && $himamatDay->slots->isNotEmpty())
 
-    {{-- Elegant Timeline Header --}}
-    <div class="px-4 pt-4 pb-6 text-center">
-        <h2 class="text-sm font-bold uppercase tracking-[0.2em] text-accent/80">{{ __('app.himamat_day_view_title') }}</h2>
-        <div class="h-px w-12 bg-accent/30 mx-auto mt-3"></div>
+    {{-- Timeline Section Header --}}
+    <div class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+        <div class="px-5 py-4 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center shrink-0">
+                <svg class="w-4.5 h-4.5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <div>
+                <h2 class="text-[15px] font-bold text-primary">{{ __('app.himamat_day_view_title') }}</h2>
+                <p class="text-[11px] text-muted-text mt-0.5">{{ $localizedHimamatTitle }}</p>
+            </div>
+        </div>
     </div>
 
     <section x-data="{
@@ -92,13 +120,14 @@
              }"
              x-init="$nextTick(() => { const target = $root.querySelector(`[data-slot-key='${openSlot}']`); if (target) { target.scrollIntoView({ behavior: 'auto', block: 'center' }); } })">
 
-        {{-- Slot list as a vertical timeline --}}
-        <div class="flex flex-col">
+        {{-- Timeline with left rail --}}
+        <div class="relative">
             @foreach($himamatTimeline['items'] as $item)
                 @php
                     $slot = $item['slot'];
                     $state = $item['temporal_state'];
-                    $slotHourLabel = __($slotLabelKeys[$slot->slot_key] ?? 'app.himamat_day_view_title');
+                    $slotKey = $slot->slot_key;
+                    $slotHourLabel = __($slotLabelKeys[$slotKey] ?? 'app.himamat_day_view_title');
                     $localizedHeader = localized($slot, 'slot_header') ?? $slot->slot_header_en ?? $slotHourLabel;
                     $localizedReadingRef = trim((string) (localized($slot, 'reading_reference') ?? ''));
                     $localizedReading = trim((string) (localized($slot, 'reading_text') ?? ''));
@@ -107,80 +136,136 @@
                         ->filter(fn (string $type): bool => $resourcesByType->has($type))
                         ->values();
                     $defaultResourceType = $availableResourceTypes->first();
+                    $timeShort = $slotTimeShort[$slotKey] ?? '';
+                    $timePeriod = $slotTimePeriod[$slotKey] ?? '';
+                    $iconPath = $slotIcons[$slotKey] ?? $slotIcons['intro'];
 
-                    $stateClasses = match ($state) {
-                        'current' => 'bg-accent/[0.03] border-accent/30 shadow-md ring-1 ring-accent/10',
-                        'past' => 'opacity-85 border-border bg-card shadow-sm',
-                        default => 'border-border bg-card shadow-sm',
+                    $cardBorder = match ($state) {
+                        'current' => 'border-accent/40 shadow-md shadow-accent/5',
+                        'past' => 'border-border/60',
+                        default => 'border-border',
+                    };
+                    $cardBg = match ($state) {
+                        'current' => 'bg-gradient-to-br from-accent/[0.04] to-transparent',
+                        'past' => 'bg-card/80',
+                        default => 'bg-card',
+                    };
+                    $nodeColor = match ($state) {
+                        'current' => 'bg-accent shadow-sm shadow-accent/30',
+                        'past' => 'bg-accent/40',
+                        default => 'bg-border',
+                    };
+                    $lineColor = match ($state) {
+                        'current' => 'bg-accent/30',
+                        'past' => 'bg-accent/20',
+                        default => 'bg-border/60',
                     };
                 @endphp
 
-                <div class="group relative">
-                    <article data-slot-key="{{ $slot->slot_key }}"
-                                 class="relative rounded-2xl border transition-all duration-300 overflow-hidden {{ $stateClasses }}"
-                                 :class="openSlot === '{{ $slot->slot_key }}' ? 'ring-1 ring-accent/20 border-accent/20' : ''">
+                <div class="group relative flex gap-4">
+                    {{-- Left timeline rail --}}
+                    <div class="flex flex-col items-center w-6 shrink-0 pt-1">
+                        {{-- Node dot --}}
+                        <div class="relative z-10 w-3 h-3 rounded-full {{ $nodeColor }} mt-5 transition-all duration-300">
+                            @if($state === 'current')
+                                <span class="absolute inset-0 rounded-full bg-accent animate-ping opacity-40"></span>
+                            @endif
+                        </div>
+                        {{-- Vertical line --}}
+                        @if(!$loop->last)
+                            <div class="flex-1 w-[2px] {{ $lineColor }} mt-1 rounded-full"></div>
+                        @endif
+                    </div>
+
+                    {{-- Card --}}
+                    <div class="flex-1 pb-4 min-w-0">
+                        <article data-slot-key="{{ $slotKey }}"
+                                 class="relative rounded-2xl border transition-all duration-300 overflow-hidden {{ $cardBorder }} {{ $cardBg }}"
+                                 :class="openSlot === '{{ $slotKey }}' ? 'ring-1 ring-accent/20 border-accent/30' : ''">
 
                             {{-- Slot Header (Button) --}}
                             <button type="button"
-                                    @click="setOpenSlot('{{ $slot->slot_key }}')"
-                                    class="w-full px-4 py-4 text-left flex items-start gap-3 sm:gap-4 group/btn touch-manipulation">
+                                    @click="setOpenSlot('{{ $slotKey }}')"
+                                    class="w-full text-left group/btn touch-manipulation">
 
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex items-center gap-2.5 mb-1.5">
-                                        <span class="text-[10px] font-bold uppercase tracking-widest text-accent">{{ $slotHourLabel }}</span>
-                                        @if($state === 'current')
-                                            <span class="flex w-1.5 h-1.5 relative">
-                                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
-                                                <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-accent"></span>
-                                            </span>
-                                        @endif
+                                {{-- Top bar: time badge + icon + chevron --}}
+                                <div class="flex items-center gap-3 px-4 pt-3.5 pb-2">
+                                    {{-- Time badge --}}
+                                    <div class="flex items-baseline gap-0.5 tabular-nums">
+                                        <span class="text-lg font-black text-accent leading-none">{{ $timeShort }}</span>
+                                        <span class="text-[9px] font-bold text-accent/60 uppercase">{{ $timePeriod }}</span>
                                     </div>
 
+                                    {{-- Slot icon --}}
+                                    <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0
+                                                {{ $state === 'current' ? 'bg-accent/15' : 'bg-muted/60' }}">
+                                        <svg class="w-3.5 h-3.5 {{ $state === 'current' ? 'text-accent' : 'text-muted-text' }}"
+                                             fill="none" stroke="currentColor" viewBox="0 0 24 24">{!! $iconPath !!}</svg>
+                                    </div>
+
+                                    {{-- Hour label pill --}}
+                                    <span class="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full
+                                                 {{ $state === 'current' ? 'bg-accent/10 text-accent' : 'text-muted-text' }}">{{ $slotHourLabel }}</span>
+
+                                    <div class="ml-auto shrink-0 text-muted-text transition-colors group-hover/btn:text-accent">
+                                        <svg class="w-4.5 h-4.5 transition-transform duration-300"
+                                             :class="openSlot === '{{ $slotKey }}' ? 'rotate-180 text-accent' : ''"
+                                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                        </svg>
+                                    </div>
+                                </div>
+
+                                {{-- Title & reading ref --}}
+                                <div class="px-4 pb-3.5">
                                     <h3 class="text-[15px] sm:text-base font-bold text-primary leading-snug group-hover/btn:text-accent transition-colors">{{ $localizedHeader }}</h3>
 
                                     @if($localizedReadingRef !== '')
-                                        <p class="mt-1.5 text-[13px] font-medium text-secondary">{{ $localizedReadingRef }}</p>
+                                        <p class="mt-1 text-[13px] text-secondary/80 flex items-center gap-1.5">
+                                            <svg class="w-3 h-3 text-accent/50 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                                            <span>{{ $localizedReadingRef }}</span>
+                                        </p>
                                     @endif
-                                </div>
-
-                                <div class="shrink-0 pt-1 text-muted-text transition-colors group-hover/btn:text-accent">
-                                    <svg class="w-5 h-5 transition-transform duration-300"
-                                         :class="openSlot === '{{ $slot->slot_key }}' ? 'rotate-180 text-accent' : ''"
-                                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                                    </svg>
                                 </div>
                             </button>
 
                             {{-- Expanded content --}}
-                            <div x-show="openSlot === '{{ $slot->slot_key }}'"
+                            <div x-show="openSlot === '{{ $slotKey }}'"
                                  x-cloak
                                  x-transition:enter="transition ease-out duration-200"
                                  x-transition:enter-start="opacity-0 -translate-y-2"
                                  x-transition:enter-end="opacity-100 translate-y-0"
-                                 class="px-4 pb-5 pt-2 border-t border-border/30">
+                                 class="border-t border-border/30">
 
-                                {{-- Bible Text --}}
-                                <div class="pt-1 pb-2">
+                                {{-- Reading Text --}}
+                                <div class="px-4 pt-4 pb-3">
                                     @if($localizedReading !== '')
-                                        <p class="text-[15px] sm:text-base leading-loose text-primary/95 whitespace-pre-line break-words">{{ $localizedReading }}</p>
+                                        <div class="relative rounded-xl bg-muted/30 px-4 py-4 border border-border/30">
+                                            <div class="absolute top-3 left-3 text-accent/15">
+                                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
+                                            </div>
+                                            <p class="text-[15px] sm:text-base leading-[2] text-primary/90 whitespace-pre-line break-words pl-4">{{ $localizedReading }}</p>
+                                        </div>
                                     @else
-                                        <p class="text-sm text-muted-text italic">{{ __('app.himamat_slot_content_pending') }}</p>
+                                        <div class="flex items-center gap-2 px-3 py-3 rounded-xl bg-muted/30 border border-dashed border-border/50">
+                                            <svg class="w-4 h-4 text-muted-text/60 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                            <p class="text-sm text-muted-text italic">{{ __('app.himamat_slot_content_pending') }}</p>
+                                        </div>
                                     @endif
                                 </div>
 
                                 {{-- Optional Resources --}}
                                 @if($availableResourceTypes->isNotEmpty())
-                                    <div class="mt-4 pt-4 border-t border-border/30" x-data="{ resourceTab: '{{ $defaultResourceType }}' }">
+                                    <div class="mx-4 mb-4 pt-3 border-t border-border/30" x-data="{ resourceTab: '{{ $defaultResourceType }}' }">
 
-                                        {{-- Elegant Tabs --}}
-                                        <div class="flex gap-5 overflow-x-auto no-scrollbar pb-px mb-4 border-b border-border/30">
+                                        {{-- Resource Tabs --}}
+                                        <div class="flex gap-1.5 overflow-x-auto no-scrollbar mb-4">
                                             @foreach($availableResourceTypes as $type)
                                                 <button @click="resourceTab = '{{ $type }}'"
-                                                        class="text-[10px] font-bold uppercase tracking-wider pb-2 border-b-2 transition-colors whitespace-nowrap touch-manipulation"
-                                                        :class="resourceTab === '{{ $type }}' ? 'border-accent text-accent' : 'border-transparent text-muted-text hover:text-secondary'">
+                                                        class="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full transition-all whitespace-nowrap touch-manipulation"
+                                                        :class="resourceTab === '{{ $type }}' ? 'bg-accent text-white shadow-sm' : 'bg-muted/50 text-muted-text hover:bg-muted'">
                                                     {{ __('app.himamat_resource_type_'.$type) }}
-                                                    <span class="opacity-60 ml-0.5">({{ $resourcesByType->get($type)->count() }})</span>
+                                                    <span class="opacity-70 ml-0.5">{{ $resourcesByType->get($type)->count() }}</span>
                                                 </button>
                                             @endforeach
                                         </div>
@@ -199,16 +284,16 @@
                                                      x-transition:enter-end="opacity-100">
 
                                                     @if($type === 'text')
-                                                        <div class="space-y-4">
+                                                        <div class="space-y-3">
                                                             @foreach($typeResources as $resource)
                                                                 @php
                                                                     $resourceTitle = localized($resource, 'title') ?? $resource->title_en ?? __('app.himamat_resource_type_'.$resource->type);
                                                                     $resourceText = trim((string) (localized($resource, 'text') ?? $resource->text_en ?? ''));
                                                                 @endphp
-                                                                <div class="border-l-2 border-accent/30 pl-4 py-1">
+                                                                <div class="rounded-xl bg-muted/30 border border-border/30 p-3.5">
                                                                     <h4 class="text-sm font-bold text-primary">{{ $resourceTitle }}</h4>
                                                                     @if($resourceText !== '')
-                                                                        <p class="mt-1.5 text-sm leading-relaxed text-secondary whitespace-pre-line">{{ $resourceText }}</p>
+                                                                        <p class="mt-2 text-sm leading-relaxed text-secondary whitespace-pre-line">{{ $resourceText }}</p>
                                                                     @endif
                                                                 </div>
                                                             @endforeach
@@ -263,16 +348,8 @@
                                 @endif
                             </div>
                         </article>
-                </div>
-
-                @if(!$loop->last)
-                    {{-- Central Timeline Connector --}}
-                    <div class="flex flex-col items-center justify-center py-2 opacity-60">
-                        <div class="w-[2px] h-3.5 bg-border rounded-t-full"></div>
-                        <div class="w-1.5 h-1.5 rounded-full bg-accent/70 my-1"></div>
-                        <div class="w-[2px] h-3.5 bg-border rounded-b-full"></div>
                     </div>
-                @endif
+                </div>
             @endforeach
         </div>
     </section>
