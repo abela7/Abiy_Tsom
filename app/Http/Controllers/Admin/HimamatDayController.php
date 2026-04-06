@@ -282,6 +282,8 @@ class HimamatDayController extends Controller
             'slots.*.slot_header_am' => ['nullable', 'string', 'max:255'],
             'slots.*.reminder_header_en' => ['nullable', 'string', 'max:255'],
             'slots.*.reminder_header_am' => ['nullable', 'string', 'max:255'],
+            'slots.*.reminder_content_en' => ['nullable', 'string'],
+            'slots.*.reminder_content_am' => ['nullable', 'string'],
             'slots.*.reading_reference_en' => ['nullable', 'string', 'max:255'],
             'slots.*.reading_reference_am' => ['nullable', 'string', 'max:255'],
             'slots.*.reading_text_en' => ['nullable', 'string'],
@@ -368,6 +370,8 @@ class HimamatDayController extends Controller
                         $slotInput['reminder_header_am'] ?? null,
                         $slotInput['slot_header_am'] ?? null
                     ),
+                    'reminder_content_en' => $slotInput['reminder_content_en'] ?: null,
+                    'reminder_content_am' => $slotInput['reminder_content_am'] ?: null,
                     'reading_reference_en' => $slotInput['reading_reference_en'] ?: null,
                     'reading_reference_am' => $slotInput['reading_reference_am'] ?: null,
                     'reading_text_en' => $slotInput['reading_text_en'] ?: null,

@@ -20,6 +20,8 @@ class HimamatSlot extends Model
         'slot_header_am',
         'reminder_header_en',
         'reminder_header_am',
+        'reminder_content_en',
+        'reminder_content_am',
         'spiritual_significance_en',
         'spiritual_significance_am',
         'reading_reference_en',

@@ -515,6 +515,16 @@
                         <input type="text" name="slots[{{ $index }}][reminder_header_am]" value="{{ old("slots.$index.reminder_header_am", $slot->reminder_header_am) }}"
                                class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">
                     </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_slot_reminder_content') }} (EN)</label>
+                        <textarea name="slots[{{ $index }}][reminder_content_en]" rows="5"
+                                  class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">{{ old("slots.$index.reminder_content_en", $slot->reminder_content_en) }}</textarea>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_slot_reminder_content') }} (AM)</label>
+                        <textarea name="slots[{{ $index }}][reminder_content_am]" rows="5"
+                                  class="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">{{ old("slots.$index.reminder_content_am", $slot->reminder_content_am) }}</textarea>
+                    </div>
                 @endif
                 <div>
                     <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-text">{{ __('app.himamat_bible_reference') }} (EN)</label>

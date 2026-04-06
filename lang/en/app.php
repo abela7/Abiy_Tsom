@@ -2142,6 +2142,7 @@ return [
     'himamat_timeline_editor_hint' => 'Prepare the five fixed Holy Week slots below with the hour title, Bible section, and any optional references for that hour.',
     'himamat_hour_title' => 'Hour Title',
     'himamat_slot_reminder_title' => 'Reminder Header',
+    'himamat_slot_reminder_content' => 'Reminder Content',
     'himamat_bible_reference' => 'Bible Reference',
     'himamat_bible_passage' => 'Bible Passage',
     'himamat_bible_section_title' => 'Bible Section',
