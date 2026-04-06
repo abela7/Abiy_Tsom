@@ -35,6 +35,10 @@
             'group' => 'daily',
             'description' => __('app.whatsapp_template_desc_daily_monthly_block'),
         ],
+        'whatsapp_himamat_intro_content' => [
+            'group' => 'daily',
+            'description' => __('app.whatsapp_template_desc_himamat_intro'),
+        ],
         'whatsapp_bulk_message_header' => [
             'group' => 'bulk',
             'description' => __('app.whatsapp_template_desc_bulk_header'),
@@ -75,6 +79,7 @@
         'whatsapp_daily_reminder_monthly_block' => [':commemorations_block_en', ':commemorations_block_am'],
         'whatsapp_daily_reminder_footer' => [':footer_en', ':footer_am'],
         'whatsapp_daily_reminder_content' => [':header_en', ':commemorations_block_en', ':footer_en', ':header_am', ':commemorations_block_am', ':footer_am'],
+        'whatsapp_himamat_intro_content' => [':baptism_name', ':day', ':himamat_weekday', ':himamat_ordinal', ':himamat_day_title', ':himamat_day_meaning', ':url'],
         'whatsapp_bulk_message_final' => [':name', ':header_en', ':content_en', ':header_am', ':content_am', ':header', ':content', ':url', ':url_1', ':url_2', ':url_3'],
     ];
 
@@ -188,6 +193,7 @@
             </div>
             <form method="POST" action="{{ route('admin.whatsapp.template.test') }}" class="space-y-3">
                 @csrf
+                <input type="hidden" name="template_key" :value="activeTemplate || '{{ $firstTemplateKey }}'">
                 <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
                     <div>
                         <label for="template-test-member" class="mb-1 block text-xs font-medium text-secondary">{{ __('app.whatsapp_template_test_member_label') }}</label>
@@ -1155,6 +1161,10 @@ function whatsappTemplateEditor(initialTemplate, activeMemberCount, initialRecip
             baptism_name: 'Abel',
             day: '17',
             day_title: 'Day 17',
+            himamat_weekday: 'Monday',
+            himamat_ordinal: 'first',
+            himamat_day_title: 'Holy Monday - Cleansing of the Temple & The Cursing of the Fig Tree',
+            himamat_day_meaning: 'This is the day on which the cleansing of the temple and the cursing of the fig tree were remembered.',
             date: '2026-03-05',
             gregorian_date: 'March 5',
             ethiopian_date: 'Yekatit 26',
@@ -1181,6 +1191,10 @@ function whatsappTemplateEditor(initialTemplate, activeMemberCount, initialRecip
             baptism_name: 'Abel',
             day: '17',
             day_title: 'Qen 17',
+            himamat_weekday: 'ሰኞ',
+            himamat_ordinal: 'የመጀመሪያው',
+            himamat_day_title: 'ሰኞ - አንጽሖተ ቤተመቅደስ እና መርገመ በለስ',
+            himamat_day_meaning: 'ይህ ዕለት አንጽሆተ ቤተመቅደስና መርገመ በለስ የተፈጸመበት ዕለት ነው፡፡',
             date: '2026-03-05',
             gregorian_date: 'ማርች 5',
             ethiopian_date: 'Yekatit 26',

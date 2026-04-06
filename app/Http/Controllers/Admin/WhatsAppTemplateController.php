@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendBulkWhatsAppMessageJob;
 use App\Models\DailyContent;
+use App\Models\HimamatDay;
 use App\Models\LentSeason;
 use App\Models\Member;
 use App\Models\Translation;
@@ -65,6 +66,12 @@ class WhatsAppTemplateController extends Controller
                 'group' => 'whatsapp_member',
                 'title' => __('app.whatsapp_template_daily_content'),
                 'placeholder_keys' => WhatsAppTemplateService::DAILY_REMINDER_FINAL_PLACEHOLDERS,
+            ],
+            [
+                'key' => 'whatsapp_himamat_intro_content',
+                'group' => 'whatsapp_member',
+                'title' => __('app.whatsapp_template_himamat_intro'),
+                'placeholder_keys' => WhatsAppTemplateService::HIMAMAT_INTRO_PLACEHOLDERS,
             ],
             [
                 'key' => 'whatsapp_confirmation_prompt_message',
@@ -259,11 +266,13 @@ class WhatsAppTemplateController extends Controller
         $validated = $request->validate([
             'member_id' => ['required', 'integer', 'exists:members,id'],
             'test_locale' => ['nullable', 'string', 'in:member,en,am'],
+            'template_key' => ['nullable', 'string'],
         ]);
 
         $member = Member::query()->findOrFail((int) $validated['member_id']);
         $testLocale = (string) ($validated['test_locale'] ?? 'member');
         $localeOverride = $testLocale === 'member' ? null : $testLocale;
+        $templateKey = (string) ($validated['template_key'] ?? 'whatsapp_daily_reminder_content');
 
         if (! $member->whatsapp_phone) {
             return redirect()
@@ -314,9 +323,24 @@ class WhatsAppTemplateController extends Controller
         }
 
         $dayUrl = $this->ensureHttpsUrl($dailyContent->memberDayUrl($member->token));
+        $message = $this->resolveTemplatePreviewMessage(
+            $templateKey,
+            $member,
+            $dailyContent,
+            $dayUrl,
+            $localeOverride,
+            $whatsAppTemplateService
+        );
 
-        $message = $whatsAppTemplateService
-            ->renderDailyReminder($member, $dailyContent, $dayUrl, $localeOverride)['message'];
+        if ($message === null) {
+            return redirect()
+                ->route('admin.whatsapp.template')
+                ->withInput([
+                    'template_test_member_id' => $member->id,
+                    'template_test_locale' => $testLocale,
+                ])
+                ->with('error', __('app.whatsapp_template_himamat_test_missing_day'));
+        }
 
         if ($this->contactIsInvalid($ultraMsg, (string) $member->whatsapp_phone)) {
             return redirect()
@@ -575,5 +599,46 @@ class WhatsAppTemplateController extends Controller
     private function contactIsInvalid(UltraMsgService $ultraMsg, string $phone): bool
     {
         return ($ultraMsg->checkContact($phone)['status'] ?? 'unknown') === 'invalid';
+    }
+
+    private function resolveTemplatePreviewMessage(
+        string $templateKey,
+        Member $member,
+        DailyContent $dailyContent,
+        string $dayUrl,
+        ?string $localeOverride,
+        WhatsAppTemplateService $whatsAppTemplateService
+    ): ?string {
+        if ($templateKey !== 'whatsapp_himamat_intro_content') {
+            return $whatsAppTemplateService
+                ->renderDailyReminder($member, $dailyContent, $dayUrl, $localeOverride)['message'];
+        }
+
+        $himamatDay = $this->resolvePublishedHimamatDay($dailyContent);
+        if (! $himamatDay) {
+            return null;
+        }
+
+        return $whatsAppTemplateService
+            ->renderHimamatIntroReminder($member, $dailyContent, $himamatDay, $dayUrl, $localeOverride)['message'];
+    }
+
+    private function resolvePublishedHimamatDay(DailyContent $dailyContent): ?HimamatDay
+    {
+        if ($dailyContent->day_number < 50 || $dailyContent->day_number > 55) {
+            return null;
+        }
+
+        return HimamatDay::query()
+            ->where('lent_season_id', $dailyContent->lent_season_id)
+            ->whereDate('date', $dailyContent->date)
+            ->where('is_published', true)
+            ->with([
+                'slots' => fn ($query) => $query
+                    ->where('slot_key', 'intro')
+                    ->where('is_published', true)
+                    ->orderBy('slot_order'),
+            ])
+            ->first();
     }
 }

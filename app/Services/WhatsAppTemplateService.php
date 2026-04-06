@@ -127,6 +127,18 @@ final class WhatsAppTemplateService
     ];
 
     /** @var list<string> */
+    public const HIMAMAT_INTRO_PLACEHOLDERS = [
+        'name',
+        'baptism_name',
+        'day',
+        'himamat_weekday',
+        'himamat_ordinal',
+        'himamat_day_title',
+        'himamat_day_meaning',
+        'url',
+    ];
+
+    /** @var list<string> */
     public const BULK_MESSAGE_PLACEHOLDERS = [
         'name',
     ];
