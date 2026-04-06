@@ -96,9 +96,7 @@ class HimamatWhatsAppTemplateService
 
     public function reminderIsReady(HimamatSlot $slot, ?string $locale = null): bool
     {
-        $locale = in_array($locale ?? app()->getLocale(), ['en', 'am'], true)
-            ? ($locale ?? app()->getLocale())
-            : 'en';
+        $locale = $this->normalizeLocale($locale ?? app()->getLocale());
 
         $slotHeader = trim((string) (localized($slot, 'slot_header', $locale) ?? ''));
         $reminderContent = trim((string) (localized($slot, 'reminder_content', $locale) ?? ''));
@@ -110,14 +108,19 @@ class HimamatWhatsAppTemplateService
     {
         $locale = trim((string) ($locale ?? ''));
         if ($locale === '') {
-            $locale = (string) ($member->locale ?: $member->whatsapp_language ?: 'en');
+            $locale = (string) ($member->whatsapp_language ?: $member->locale ?: 'am');
         }
 
-        $locale = in_array($locale, ['en', 'am'], true) ? $locale : 'en';
+        $locale = $this->normalizeLocale($locale);
 
         Translation::loadFromDb($locale);
 
         return $locale;
+    }
+
+    private function normalizeLocale(?string $locale): string
+    {
+        return in_array($locale, ['en', 'am'], true) ? (string) $locale : 'am';
     }
 
     private function ensureHttpsUrl(string $url): string
