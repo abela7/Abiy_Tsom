@@ -2110,6 +2110,7 @@ return [
     'himamat_synaxarium_entry_heading' => 'Synaxarium Heading',
     'himamat_synaxarium_entry_body' => 'Synaxarium Text',
     'himamat_faq_title' => 'Ritual Questions & Answers',
+    'himamat_faq_subtitle' => ':count የተለመዱ ጥያቄዎች',
     'himamat_faq_intro' => 'Add the short explanations members will need during the day. English is required for each FAQ row in v1.',
     'himamat_faq_question' => 'Question',
     'himamat_faq_answer' => 'Answer',

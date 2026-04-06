@@ -105,7 +105,7 @@
     </div>
 
     <section x-data="{
-                openSlot: @js($himamatTimeline['target_slot_key']),
+                openSlot: null,
                 setOpenSlot(slotKey) {
                     this.openSlot = this.openSlot === slotKey ? null : slotKey;
                     this.$nextTick(() => {
@@ -117,8 +117,7 @@
                         }
                     });
                 }
-             }"
-             x-init="$nextTick(() => { const target = $root.querySelector(`[data-slot-key='${openSlot}']`); if (target) { target.scrollIntoView({ behavior: 'auto', block: 'center' }); } })">
+             }">
 
         {{-- Timeline with left rail --}}
         <div class="relative">
@@ -356,49 +355,76 @@
 @endif
 
 @if($himamatDay->faqs->isNotEmpty())
-    <section class="mt-4 rounded-2xl border border-border bg-card shadow-sm overflow-hidden" x-data="{ activeFaq: null }">
-        <div class="flex items-center gap-2.5 border-b border-border/60 bg-muted/30 px-4 py-3">
-            <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-accent/10">
-                <svg class="h-3.5 w-3.5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 1.918-2 3.522-2 2.209 0 4 1.567 4 3.5 0 1.418-.964 2.638-2.347 3.188-.74.294-1.153.838-1.153 1.412V16m.01 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
+    <section class="mt-8" x-data="{ activeFaq: null }">
+        {{-- Section Header --}}
+        <div class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden mb-3">
+            <div class="px-5 py-4 flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center shrink-0">
+                    <svg class="w-4.5 h-4.5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.228 9c.549-1.165 1.918-2 3.522-2 2.209 0 4 1.567 4 3.5 0 1.418-.964 2.638-2.347 3.188-.74.294-1.153.838-1.153 1.412V16m.01 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-[15px] font-bold text-primary">{{ __('app.himamat_faq_title') }}</h2>
+                    <p class="text-[11px] text-muted-text mt-0.5">{{ __('app.himamat_faq_subtitle', ['count' => $himamatDay->faqs->count()]) }}</p>
+                </div>
             </div>
-            <h3 class="text-sm font-semibold leading-snug text-primary sm:text-base">{{ __('app.himamat_faq_title') }}</h3>
         </div>
 
-        <div class="divide-y divide-border/40 flex flex-col">
+        {{-- FAQ Items --}}
+        <div class="space-y-2.5">
             @foreach($himamatDay->faqs as $index => $faq)
                 @php
                     $localizedQuestion = localized($faq, 'question') ?? $faq->question_en;
                     $localizedAnswer = localized($faq, 'answer') ?? $faq->answer_en;
                 @endphp
 
-                <article class="transition-colors duration-300" :class="activeFaq === {{ $index }} ? 'bg-accent/[0.02]' : ''">
+                <article class="rounded-2xl border transition-all duration-300 overflow-hidden"
+                         :class="activeFaq === {{ $index }}
+                             ? 'border-accent/30 bg-gradient-to-br from-accent/[0.04] to-transparent shadow-md shadow-accent/5 ring-1 ring-accent/10'
+                             : 'border-border bg-card shadow-sm hover:border-border/80'">
+
                     <button type="button"
                             @click="activeFaq = activeFaq === {{ $index }} ? null : {{ $index }}"
-                            class="w-full flex items-start justify-between gap-4 px-4 py-4 sm:px-5 text-left group touch-manipulation">
-                        <h4 class="text-[15px] font-bold leading-relaxed transition-colors flex-1"
+                            class="w-full flex items-start gap-3.5 px-4 py-4 text-left group touch-manipulation">
+
+                        {{-- Question number badge --}}
+                        <div class="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-bold mt-0.5 transition-colors duration-300"
+                             :class="activeFaq === {{ $index }}
+                                 ? 'bg-accent text-white'
+                                 : 'bg-muted/70 text-muted-text group-hover:bg-accent/10 group-hover:text-accent'">
+                            {{ $index + 1 }}
+                        </div>
+
+                        {{-- Question text --}}
+                        <h4 class="flex-1 text-[15px] font-semibold leading-relaxed transition-colors duration-200"
                             :class="activeFaq === {{ $index }} ? 'text-accent' : 'text-primary group-hover:text-accent/80'">
                             {{ $localizedQuestion }}
                         </h4>
-                        <div class="shrink-0 pt-0.5 text-muted-text transition-colors group-hover:text-accent"
-                             :class="activeFaq === {{ $index }} ? 'text-accent' : ''">
-                            <svg class="w-5 h-5 transition-transform duration-300"
-                                 :class="activeFaq === {{ $index }} ? 'rotate-180' : ''"
-                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+
+                        {{-- Toggle icon --}}
+                        <div class="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center mt-0.5 transition-all duration-300"
+                             :class="activeFaq === {{ $index }}
+                                 ? 'bg-accent/10 text-accent rotate-180'
+                                 : 'text-muted-text group-hover:text-accent'">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
                             </svg>
                         </div>
                     </button>
-                    
+
+                    {{-- Answer --}}
                     <div x-show="activeFaq === {{ $index }}"
                          x-cloak
-                         x-transition:enter="transition ease-out duration-200"
-                         x-transition:enter-start="opacity-0 -translate-y-2"
-                         x-transition:enter-end="opacity-100 translate-y-0"
-                         class="px-4 pb-5 sm:px-5 pt-1">
-                        <div class="border-l-2 border-accent/30 pl-4 py-1">
-                            <p class="text-[14px] sm:text-[15px] leading-loose text-secondary whitespace-pre-line">{{ $localizedAnswer }}</p>
+                         x-collapse>
+                        <div class="px-4 pb-5 pt-0">
+                            <div class="ml-[2.625rem] relative rounded-xl bg-muted/30 border border-border/30 px-4 py-4">
+                                {{-- Decorative quote --}}
+                                <div class="absolute -top-2 -left-1 text-accent/15">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
+                                </div>
+                                <p class="text-[14px] sm:text-[15px] leading-[2] text-secondary whitespace-pre-line">{{ $localizedAnswer }}</p>
+                            </div>
                         </div>
                     </div>
                 </article>
