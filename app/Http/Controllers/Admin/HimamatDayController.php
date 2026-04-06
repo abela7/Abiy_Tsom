@@ -29,12 +29,14 @@ use Illuminate\View\View;
 
 class HimamatDayController extends Controller
 {
-    public function index(): View
+    public function index(HimamatScaffoldService $scaffold): View
     {
         $season = LentSeason::active();
+        $targetDates = $season ? $scaffold->targetDatesForSeason($season) : [];
         $days = $season
             ? HimamatDay::query()
                 ->where('lent_season_id', $season->id)
+                ->when($targetDates !== [], fn ($query) => $query->whereIn('date', $targetDates))
                 ->with(['slots', 'faqs'])
                 ->orderBy('date')
                 ->orderBy('sort_order')

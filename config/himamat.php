@@ -21,11 +21,6 @@ return [
 
     'days' => [
         [
-            'slug' => 'hosanna-sunday',
-            'title_en' => 'Hosanna Sunday',
-            'title_am' => null,
-        ],
-        [
             'slug' => 'holy-monday',
             'title_en' => 'Holy Monday',
             'title_am' => null,
