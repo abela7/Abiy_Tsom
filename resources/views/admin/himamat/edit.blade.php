@@ -17,6 +17,8 @@
     $dayReminderTime = old('day_reminder_time', $introSlot ? substr((string) $introSlot->scheduled_time_london, 0, 5) : '07:00');
     $dayReminderTitleEn = old('day_reminder_title_en', $introSlot?->reminder_header_en);
     $dayReminderTitleAm = old('day_reminder_title_am', $introSlot?->reminder_header_am);
+    $dayReminderContentEn = old('day_reminder_content_en', $introSlot?->reminder_content_en);
+    $dayReminderContentAm = old('day_reminder_content_am', $introSlot?->reminder_content_am);
     $faqItems = old('faqs');
     if ($faqItems === null) {
         $faqItems = $day->faqs
@@ -151,6 +153,8 @@
               synaxariumSource: @js($synaxariumSource),
               dayReminderTitleEn: @js($dayReminderTitleEn),
               dayReminderTitleAm: @js($dayReminderTitleAm),
+              dayReminderContentEn: @js($dayReminderContentEn),
+              dayReminderContentAm: @js($dayReminderContentAm),
               saveMode: 'exit',
               saveSection: '',
               openSection: null,
@@ -238,6 +242,16 @@
                             <label class="block text-xs font-semibold text-muted-text">{{ __('app.himamat_day_reminder_title') }} (AM)</label>
                             <input type="text" name="day_reminder_title_am" x-model="dayReminderTitleAm"
                                    class="mt-1.5 w-full rounded-xl border border-border bg-muted px-3 py-2.5 text-sm text-primary outline-none focus:ring-2 focus:ring-accent">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-semibold text-muted-text">{{ __('app.himamat_slot_reminder_content') }} (EN)</label>
+                            <textarea name="day_reminder_content_en" x-model="dayReminderContentEn" rows="4"
+                                      class="mt-1.5 w-full rounded-xl border border-border bg-muted px-3 py-2.5 text-sm text-primary outline-none focus:ring-2 focus:ring-accent"></textarea>
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-semibold text-muted-text">{{ __('app.himamat_slot_reminder_content') }} (AM)</label>
+                            <textarea name="day_reminder_content_am" x-model="dayReminderContentAm" rows="4"
+                                      class="mt-1.5 w-full rounded-xl border border-border bg-muted px-3 py-2.5 text-sm text-primary outline-none focus:ring-2 focus:ring-accent"></textarea>
                         </div>
                         <div class="sm:col-span-2">
                             <label class="block text-xs font-semibold text-muted-text">{{ __('app.himamat_day_meaning_title') }} (EN)</label>
