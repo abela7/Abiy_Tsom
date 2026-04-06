@@ -99,7 +99,7 @@
                 <svg class="w-4.5 h-4.5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
             <div>
-                <h2 class="text-[15px] font-bold text-primary">{{ __('app.himamat_day_view_title') }}</h2>
+                <h2 class="text-[15px] font-bold text-primary">{{ app()->getLocale() === 'am' ? 'የቀኑ ዋና ዋና ሰዓታት' : 'Key Hours of the Day' }}</h2>
                 <p class="text-[11px] text-muted-text mt-0.5">{{ $localizedHimamatTitle }}</p>
             </div>
         </div>
