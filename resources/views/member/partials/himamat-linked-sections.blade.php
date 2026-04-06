@@ -416,8 +416,7 @@
                     </svg>
                 </div>
                 <div>
-                    <h2 class="text-[15px] font-bold text-primary">{{ __('app.himamat_faq_title') }}</h2>
-                    <p class="text-[11px] text-muted-text mt-0.5">{{ __('app.himamat_faq_subtitle', ['count' => $himamatDay->faqs->count()]) }}</p>
+                    <h2 class="text-[15px] font-bold text-primary">{{ app()->getLocale() === 'am' ? 'በተደጋጋሚ የሚነሱ ጥያዎች መልስ' : 'Frequently Asked Questions' }}</h2>
                 </div>
             </div>
         </div>
