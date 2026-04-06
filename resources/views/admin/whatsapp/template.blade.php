@@ -39,6 +39,22 @@
             'group' => 'daily',
             'description' => __('app.whatsapp_template_desc_himamat_intro'),
         ],
+        'whatsapp_himamat_third_content' => [
+            'group' => 'daily',
+            'description' => __('app.whatsapp_template_desc_himamat_third'),
+        ],
+        'whatsapp_himamat_sixth_content' => [
+            'group' => 'daily',
+            'description' => __('app.whatsapp_template_desc_himamat_sixth'),
+        ],
+        'whatsapp_himamat_ninth_content' => [
+            'group' => 'daily',
+            'description' => __('app.whatsapp_template_desc_himamat_ninth'),
+        ],
+        'whatsapp_himamat_eleventh_content' => [
+            'group' => 'daily',
+            'description' => __('app.whatsapp_template_desc_himamat_eleventh'),
+        ],
         'whatsapp_bulk_message_header' => [
             'group' => 'bulk',
             'description' => __('app.whatsapp_template_desc_bulk_header'),
@@ -80,6 +96,10 @@
         'whatsapp_daily_reminder_footer' => [':footer_en', ':footer_am'],
         'whatsapp_daily_reminder_content' => [':header_en', ':commemorations_block_en', ':footer_en', ':header_am', ':commemorations_block_am', ':footer_am'],
         'whatsapp_himamat_intro_content' => [':baptism_name', ':day', ':himamat_weekday', ':himamat_ordinal', ':day_reminder_title', ':day_theme_meaning', ':url'],
+        'whatsapp_himamat_third_content' => [':reminder_header', ':reminder_content', ':url'],
+        'whatsapp_himamat_sixth_content' => [':reminder_header', ':reminder_content', ':url'],
+        'whatsapp_himamat_ninth_content' => [':reminder_header', ':reminder_content', ':url'],
+        'whatsapp_himamat_eleventh_content' => [':reminder_header', ':reminder_content', ':url'],
         'whatsapp_bulk_message_final' => [':name', ':header_en', ':content_en', ':header_am', ':content_am', ':header', ':content', ':url', ':url_1', ':url_2', ':url_3'],
     ];
 
@@ -1175,6 +1195,8 @@ function whatsappTemplateEditor(initialTemplate, activeMemberCount, initialRecip
             himamat_ordinal: 'first',
             day_reminder_title: 'Holy Monday - Cleansing of the Temple & The Cursing of the Fig Tree',
             day_theme_meaning: 'This is the day on which the cleansing of the temple and the cursing of the fig tree were remembered. On the day of Hosanna, Christ stayed in Bethany, and on the following morning he came from Bethany hungry. Seeing the leafy fig tree from afar, he approached it, but found no fruit on it and pronounced judgment upon it.',
+            reminder_header: 'Third Hour Reminder Header',
+            reminder_content: 'Third Hour reminder content goes here.',
             himamat_day_title: 'Holy Monday - Cleansing of the Temple & The Cursing of the Fig Tree',
             himamat_day_meaning: 'This is the day on which the cleansing of the temple and the cursing of the fig tree were remembered. On the day of Hosanna, Christ stayed in Bethany, and on the following morning he came from Bethany hungry. Seeing the leafy fig tree from afar, he approached it, but found no fruit on it and pronounced judgment upon it.',
             date: '2026-03-05',
@@ -1207,6 +1229,8 @@ function whatsappTemplateEditor(initialTemplate, activeMemberCount, initialRecip
             himamat_ordinal: 'የመጀመሪያው',
             day_reminder_title: 'ሰኞ - አንጽሖተ ቤተመቅደስ እና መርገመ በለስ',
             day_theme_meaning: 'ይህ ዕለት አንጽሆተ ቤተመቅደስና መርገመ በለስ የተፈጸመበት ዕለት ነው፡፡ የሆሳዕና ዕለት ቢታኒያ ያድራል በማግስቱም ከቢታኒያ ሲመጣ ተራበ (ማር 11፡11-12) ቅጠል ያላት በለስ ከሩቅ አይቶ ወደ በለሲቱ ቀረበ ነገር ግን ከቅጠል በቀር አንዳች ፍሬ አላገኘባትም ከአሁን ጀምሮ ማንም ከአንቺ ፍሬ አይብላ ብሎ ረገማት።',
+            reminder_header: 'የ3 ሰዓት ማሳሰቢያ ርዕስ',
+            reminder_content: 'የ3 ሰዓት ማሳሰቢያ ይዘት',
             himamat_day_title: 'ሰኞ - አንጽሖተ ቤተመቅደስ እና መርገመ በለስ',
             himamat_day_meaning: 'ይህ ዕለት አንጽሆተ ቤተመቅደስና መርገመ በለስ የተፈጸመበት ዕለት ነው፡፡ የሆሳዕና ዕለት ቢታኒያ ያድራል በማግስቱም ከቢታኒያ ሲመጣ ተራበ (ማር 11፡11-12) ቅጠል ያላት በለስ ከሩቅ አይቶ ወደ በለሲቱ ቀረበ ነገር ግን ከቅጠል በቀር አንዳች ፍሬ አላገኘባትም ከአሁን ጀምሮ ማንም ከአንቺ ፍሬ አይብላ ብሎ ረገማት።',
             date: '2026-03-05',

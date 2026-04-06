@@ -13,15 +13,26 @@ use Illuminate\Support\Facades\Lang;
 class HimamatWhatsAppTemplateService
 {
     /**
+     * @var array<string, string>
+     */
+    private const TEMPLATE_KEYS = [
+        'third' => 'app.whatsapp_himamat_third_content',
+        'sixth' => 'app.whatsapp_himamat_sixth_content',
+        'ninth' => 'app.whatsapp_himamat_ninth_content',
+        'eleventh' => 'app.whatsapp_himamat_eleventh_content',
+    ];
+
+    /**
      * @return array{locale: string, message: string}
      */
     public function renderReminder(
         Member $member,
         HimamatDay $day,
         HimamatSlot $slot,
-        string $url
+        string $url,
+        ?string $locale = null
     ): array {
-        $locale = $this->preferredLocale($member);
+        $locale = $this->preferredLocale($member, $locale);
         $variables = [
             'name' => trim((string) ($member->baptism_name ?? '')),
             'day_title' => localized($day, 'title', $locale) ?? '',
@@ -31,23 +42,36 @@ class HimamatWhatsAppTemplateService
             'url' => $this->ensureHttpsUrl($url),
         ];
 
-        $lines = array_values(array_filter([
-            $variables['reminder_header'],
-            $variables['reminder_content'] !== ''
-                ? $variables['reminder_content']
-                : '',
-            Lang::get('app.himamat_slot_reminder_open_line', ['url' => $variables['url']], $locale),
-        ], static fn (?string $line): bool => is_string($line) && trim($line) !== ''));
+        $templateKey = $this->templateKeyForSlot((string) $slot->slot_key);
+        $message = $templateKey !== null
+            ? trim((string) Lang::get($templateKey, $variables, $locale))
+            : '';
+
+        if ($message === '' || $message === $templateKey) {
+            $lines = array_values(array_filter([
+                $variables['reminder_header'],
+                $variables['reminder_content'] !== ''
+                    ? $variables['reminder_content']
+                    : '',
+                Lang::get('app.himamat_slot_reminder_open_line', ['url' => $variables['url']], $locale),
+            ], static fn (?string $line): bool => is_string($line) && trim($line) !== ''));
+
+            $message = trim(implode("\n\n", $lines));
+        }
 
         return [
             'locale' => $locale,
-            'message' => trim(implode("\n\n", $lines)),
+            'message' => $message,
         ];
     }
 
-    private function preferredLocale(Member $member): string
+    private function preferredLocale(Member $member, ?string $locale = null): string
     {
-        $locale = (string) ($member->locale ?: $member->whatsapp_language ?: 'en');
+        $locale = trim((string) ($locale ?? ''));
+        if ($locale === '') {
+            $locale = (string) ($member->locale ?: $member->whatsapp_language ?: 'en');
+        }
+
         $locale = in_array($locale, ['en', 'am'], true) ? $locale : 'en';
 
         Translation::loadFromDb($locale);
@@ -62,5 +86,10 @@ class HimamatWhatsAppTemplateService
         }
 
         return preg_replace('/^http:\/\//i', 'https://', $url) ?? $url;
+    }
+
+    private function templateKeyForSlot(string $slotKey): ?string
+    {
+        return self::TEMPLATE_KEYS[$slotKey] ?? null;
     }
 }

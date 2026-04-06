@@ -8,9 +8,11 @@ use App\Http\Controllers\Controller;
 use App\Jobs\SendBulkWhatsAppMessageJob;
 use App\Models\DailyContent;
 use App\Models\HimamatDay;
+use App\Models\HimamatSlot;
 use App\Models\LentSeason;
 use App\Models\Member;
 use App\Models\Translation;
+use App\Services\HimamatWhatsAppTemplateService;
 use App\Services\TelegramAuthService;
 use App\Services\UltraMsgService;
 use App\Services\WhatsAppTemplateService;
@@ -45,6 +47,22 @@ class WhatsAppTemplateController extends Controller
             [
                 'key' => 'whatsapp_himamat_intro_content',
                 'title' => __('app.whatsapp_template_himamat_intro'),
+            ],
+            [
+                'key' => 'whatsapp_himamat_third_content',
+                'title' => __('app.whatsapp_template_himamat_third'),
+            ],
+            [
+                'key' => 'whatsapp_himamat_sixth_content',
+                'title' => __('app.whatsapp_template_himamat_sixth'),
+            ],
+            [
+                'key' => 'whatsapp_himamat_ninth_content',
+                'title' => __('app.whatsapp_template_himamat_ninth'),
+            ],
+            [
+                'key' => 'whatsapp_himamat_eleventh_content',
+                'title' => __('app.whatsapp_template_himamat_eleventh'),
             ],
         ];
     }
@@ -90,6 +108,30 @@ class WhatsAppTemplateController extends Controller
                 'group' => 'whatsapp_member',
                 'title' => __('app.whatsapp_template_himamat_intro'),
                 'placeholder_keys' => WhatsAppTemplateService::HIMAMAT_INTRO_PLACEHOLDERS,
+            ],
+            [
+                'key' => 'whatsapp_himamat_third_content',
+                'group' => 'whatsapp_member',
+                'title' => __('app.whatsapp_template_himamat_third'),
+                'placeholder_keys' => WhatsAppTemplateService::HIMAMAT_SLOT_PLACEHOLDERS,
+            ],
+            [
+                'key' => 'whatsapp_himamat_sixth_content',
+                'group' => 'whatsapp_member',
+                'title' => __('app.whatsapp_template_himamat_sixth'),
+                'placeholder_keys' => WhatsAppTemplateService::HIMAMAT_SLOT_PLACEHOLDERS,
+            ],
+            [
+                'key' => 'whatsapp_himamat_ninth_content',
+                'group' => 'whatsapp_member',
+                'title' => __('app.whatsapp_template_himamat_ninth'),
+                'placeholder_keys' => WhatsAppTemplateService::HIMAMAT_SLOT_PLACEHOLDERS,
+            ],
+            [
+                'key' => 'whatsapp_himamat_eleventh_content',
+                'group' => 'whatsapp_member',
+                'title' => __('app.whatsapp_template_himamat_eleventh'),
+                'placeholder_keys' => WhatsAppTemplateService::HIMAMAT_SLOT_PLACEHOLDERS,
             ],
             [
                 'key' => 'whatsapp_confirmation_prompt_message',
@@ -281,7 +323,8 @@ class WhatsAppTemplateController extends Controller
         Request $request,
         UltraMsgService $ultraMsg,
         TelegramAuthService $telegramAuthService,
-        WhatsAppTemplateService $whatsAppTemplateService
+        WhatsAppTemplateService $whatsAppTemplateService,
+        HimamatWhatsAppTemplateService $himamatWhatsAppTemplateService
     ): RedirectResponse {
         $validated = $request->validate([
             'member_id' => ['required', 'integer', 'exists:members,id'],
@@ -360,7 +403,8 @@ class WhatsAppTemplateController extends Controller
             $dailyContent,
             $dayUrl,
             $localeOverride,
-            $whatsAppTemplateService
+            $whatsAppTemplateService,
+            $himamatWhatsAppTemplateService
         );
 
         if ($message === null) {
@@ -642,9 +686,10 @@ class WhatsAppTemplateController extends Controller
         DailyContent $dailyContent,
         string $dayUrl,
         ?string $localeOverride,
-        WhatsAppTemplateService $whatsAppTemplateService
+        WhatsAppTemplateService $whatsAppTemplateService,
+        HimamatWhatsAppTemplateService $himamatWhatsAppTemplateService
     ): ?string {
-        if ($templateKey !== 'whatsapp_himamat_intro_content') {
+        if (! str_starts_with($templateKey, 'whatsapp_himamat_')) {
             return $whatsAppTemplateService
                 ->renderDailyReminder($member, $dailyContent, $dayUrl, $localeOverride)['message'];
         }
@@ -654,8 +699,24 @@ class WhatsAppTemplateController extends Controller
             return null;
         }
 
-        return $whatsAppTemplateService
-            ->renderHimamatIntroReminder($member, $dailyContent, $himamatDay, $dayUrl, $localeOverride)['message'];
+        if ($templateKey === 'whatsapp_himamat_intro_content') {
+            return $whatsAppTemplateService
+                ->renderHimamatIntroReminder($member, $dailyContent, $himamatDay, $dayUrl, $localeOverride)['message'];
+        }
+
+        $slot = $this->resolvePublishedHimamatSlotFromTemplateKey($himamatDay, $templateKey);
+        if (! $slot) {
+            return null;
+        }
+
+        return $himamatWhatsAppTemplateService
+            ->renderReminder(
+                $member,
+                $himamatDay,
+                $slot,
+                $this->ensureHttpsUrl($dailyContent->memberDayUrl($member->token).'#himamat-slot-'.$slot->slot_key),
+                $localeOverride
+            )['message'];
     }
 
     private function resolvePublishedHimamatDay(DailyContent $dailyContent): ?HimamatDay
@@ -670,10 +731,28 @@ class WhatsAppTemplateController extends Controller
             ->where('is_published', true)
             ->with([
                 'slots' => fn ($query) => $query
-                    ->where('slot_key', 'intro')
                     ->where('is_published', true)
                     ->orderBy('slot_order'),
             ])
+            ->first();
+    }
+
+    private function resolvePublishedHimamatSlotFromTemplateKey(HimamatDay $himamatDay, string $templateKey): ?HimamatSlot
+    {
+        $slotKey = match ($templateKey) {
+            'whatsapp_himamat_third_content' => 'third',
+            'whatsapp_himamat_sixth_content' => 'sixth',
+            'whatsapp_himamat_ninth_content' => 'ninth',
+            'whatsapp_himamat_eleventh_content' => 'eleventh',
+            default => null,
+        };
+
+        if ($slotKey === null) {
+            return null;
+        }
+
+        return $himamatDay->slots
+            ->where('slot_key', $slotKey)
             ->first();
     }
 }

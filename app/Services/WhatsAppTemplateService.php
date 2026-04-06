@@ -141,6 +141,13 @@ final class WhatsAppTemplateService
     ];
 
     /** @var list<string> */
+    public const HIMAMAT_SLOT_PLACEHOLDERS = [
+        'reminder_header',
+        'reminder_content',
+        'url',
+    ];
+
+    /** @var list<string> */
     public const BULK_MESSAGE_PLACEHOLDERS = [
         'name',
     ];
