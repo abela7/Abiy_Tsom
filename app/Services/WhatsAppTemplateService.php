@@ -298,9 +298,19 @@ final class WhatsAppTemplateService
     ): array {
         $resolvedLocale = $this->preferredLocale($member, $locale);
         $variables = $this->himamatIntroVariables($member, $dailyContent, $himamatDay, $url, $resolvedLocale);
+        $template = $this->translate('app.whatsapp_himamat_intro_content', [], $resolvedLocale);
+        $renderVariables = $variables;
+
+        if (str_contains($template, ':day_reminder_content') && str_contains($template, ':day_theme_meaning')) {
+            $renderVariables['day_theme_meaning'] = '';
+        }
+
+        if (str_contains($template, ':day_reminder_content') && str_contains($template, ':himamat_day_meaning')) {
+            $renderVariables['himamat_day_meaning'] = '';
+        }
 
         $content = $this->normalizeRenderedText(
-            $this->translate('app.whatsapp_himamat_intro_content', $variables, $resolvedLocale)
+            $this->translate('app.whatsapp_himamat_intro_content', $renderVariables, $resolvedLocale)
         );
 
         $cta = $this->normalizeRenderedText(
@@ -450,6 +460,7 @@ final class WhatsAppTemplateService
             ($introSlot ? localized($introSlot, 'reminder_content', $locale) : null)
             ?? ''
         ));
+        $dayReminderContent = $this->normalizeRenderedText($dayReminderContent);
 
         return [
             'name' => $name,
