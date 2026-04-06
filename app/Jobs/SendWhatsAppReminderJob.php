@@ -181,7 +181,7 @@ final class SendWhatsAppReminderJob implements ShouldQueue
         }
 
         if (! $whatsAppTemplateService->himamatIntroIsReady($himamatDay)) {
-            $this->markHimamatDeliverySkipped('The Himamat intro reminder is incomplete.');
+            $this->markHimamatDeliverySkipped('The Himamat intro reminder is missing the reminder title or reminder content.');
 
             return null;
         }

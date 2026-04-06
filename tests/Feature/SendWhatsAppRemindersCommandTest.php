@@ -182,6 +182,8 @@ class SendWhatsAppRemindersCommandTest extends TestCase
             'slot_header_am' => 'የዕለቱ መክፈቻ',
             'reminder_header_en' => 'Holy Monday - Cleansing of the Temple & The Cursing of the Fig Tree',
             'reminder_header_am' => 'ሰኞ - አንጽሖተ ቤተመቅደስ እና መርገመ በለስ',
+            'reminder_content_en' => 'Holy Monday intro reminder content.',
+            'reminder_content_am' => 'á‹­áˆ… á‹•áˆˆá‰µ áŠ áŠ•áŒ½áˆ†á‰° á‰¤á‰°áˆ˜á‰…á‹°áˆµáŠ“ áˆ˜áˆ­áŒˆáˆ˜ á‰ áˆˆáˆµ á‹¨á‰°áˆáŒ¸áˆ˜á‰ á‰µ á‹•áˆˆá‰µ áŠá‹á¡á¡',
             'reading_reference_en' => null,
             'reading_reference_am' => null,
             'reading_text_en' => null,

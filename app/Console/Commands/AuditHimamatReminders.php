@@ -85,7 +85,9 @@ class AuditHimamatReminders extends Command
         }
 
         $localizedDayTitle = localized($himamatDay, 'title', $locale) ?? $himamatDay->title_en ?? $himamatDay->slug;
-        $dayMeaning = trim((string) (localized($himamatDay, 'spiritual_meaning', $locale) ?? ''));
+        /** @var HimamatSlot|null $introSlot */
+        $introSlot = $himamatDay->slots->firstWhere('slot_key', 'intro');
+        $introReminderContent = trim((string) (localized($introSlot, 'reminder_content', $locale) ?? ''));
 
         $this->line(sprintf(
             'Himamat day: #%d | %s | Published: %s',
@@ -93,7 +95,7 @@ class AuditHimamatReminders extends Command
             $localizedDayTitle,
             $himamatDay->is_published ? 'yes' : 'no'
         ));
-        $this->line('Day meaning present: '.($dayMeaning !== '' ? 'yes' : 'no'));
+        $this->line('Day reminder content present: '.($introReminderContent !== '' ? 'yes' : 'no'));
 
         $slotDefinitions = collect((array) config('himamat.slots', []));
         $slotsByKey = $himamatDay->slots->keyBy('slot_key');
@@ -133,7 +135,7 @@ class AuditHimamatReminders extends Command
 
             $ready = $himamatDay->is_published
                 && $slot->is_published
-                && $this->slotHasRequiredContent($slotKey, $localizedSlotTitle, $localizedReminderHeader, $localizedReminderContent, $dayMeaning);
+                && $this->slotHasRequiredContent($slotKey, $localizedSlotTitle, $localizedReminderHeader, $localizedReminderContent, $introReminderContent);
 
             if ((string) $slot->scheduled_time_london !== $expectedTime) {
                 $warnings[] = sprintf(
@@ -152,8 +154,8 @@ class AuditHimamatReminders extends Command
                 if ($localizedReminderHeader === '') {
                     $warnings[] = 'Intro reminder title is blank.';
                 }
-                if ($dayMeaning === '') {
-                    $warnings[] = 'Day Theme & Meaning is blank.';
+                if ($introReminderContent === '') {
+                    $warnings[] = 'Day reminder content is blank.';
                 }
             } else {
                 if ($localizedSlotTitle === '') {
@@ -174,7 +176,7 @@ class AuditHimamatReminders extends Command
                 $this->summarize($slotKey === 'intro'
                     ? $localizedReminderHeader
                     : ($localizedReminderHeader !== '' ? $localizedReminderHeader : $localizedSlotTitle)),
-                $this->summarize($slotKey === 'intro' ? $dayMeaning : $localizedReminderContent),
+                $this->summarize($slotKey === 'intro' ? $introReminderContent : $localizedReminderContent),
             ];
         }
 
@@ -185,7 +187,7 @@ class AuditHimamatReminders extends Command
         );
 
         if ($memberId !== null && $memberId !== '') {
-            $this->renderMemberPreview((int) $memberId, $dailyContent, $himamatDay, $season->id, $locale, $dayMeaning, $slotsByKey);
+            $this->renderMemberPreview((int) $memberId, $dailyContent, $himamatDay, $season->id, $locale, $introReminderContent, $slotsByKey);
         }
 
         $this->line('');
@@ -246,10 +248,10 @@ class AuditHimamatReminders extends Command
         string $slotTitle,
         string $reminderHeader,
         string $reminderContent,
-        string $dayMeaning
+        string $introReminderContent
     ): bool {
         if ($slotKey === 'intro') {
-            return $reminderHeader !== '' && $dayMeaning !== '';
+            return $reminderHeader !== '' && $introReminderContent !== '';
         }
 
         return $slotTitle !== '' && $reminderContent !== '';
@@ -275,7 +277,7 @@ class AuditHimamatReminders extends Command
         HimamatDay $himamatDay,
         int $seasonId,
         string $locale,
-        string $dayMeaning,
+        string $introReminderContent,
         Collection $slotsByKey
     ): void {
         $member = Member::query()->find($memberId);
@@ -330,7 +332,7 @@ class AuditHimamatReminders extends Command
                 $localizedSlotTitle,
                 $localizedReminderHeader,
                 $localizedReminderContent,
-                $dayMeaning
+                $introReminderContent
             );
 
             $eligible = $member->whatsapp_reminder_enabled

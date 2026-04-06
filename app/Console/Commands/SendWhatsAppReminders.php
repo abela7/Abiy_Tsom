@@ -113,7 +113,7 @@ class SendWhatsAppReminders extends Command
                     && ! $whatsAppTemplateService->himamatIntroIsReady($himamatDay)
                 ) {
                     $this->warn(sprintf(
-                        'Skipping Himamat intro reminder at %s (%s). The day reminder title or Day Theme & Meaning is incomplete.',
+                        'Skipping Himamat intro reminder at %s (%s). The day reminder title or reminder content is incomplete.',
                         $nowLondon->format('H:i'),
                         $timezone
                     ));

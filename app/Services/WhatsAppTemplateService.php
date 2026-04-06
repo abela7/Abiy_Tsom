@@ -134,6 +134,7 @@ final class WhatsAppTemplateService
         'himamat_weekday',
         'himamat_ordinal',
         'day_reminder_title',
+        'day_reminder_content',
         'day_theme_meaning',
         'himamat_day_title',
         'himamat_day_meaning',
@@ -302,6 +303,35 @@ final class WhatsAppTemplateService
             $this->translate('app.whatsapp_himamat_intro_content', $variables, $resolvedLocale)
         );
 
+        $cta = $this->normalizeRenderedText(
+            $this->translate('app.himamat_intro_reminder_open_line', ['url' => $variables['url']], $resolvedLocale)
+        );
+
+        $missingSections = [];
+        if ($variables['day_reminder_title'] !== '' && ! str_contains($content, $variables['day_reminder_title'])) {
+            $missingSections[] = $variables['day_reminder_title'];
+        }
+
+        if ($variables['day_reminder_content'] !== '' && ! str_contains($content, $variables['day_reminder_content'])) {
+            $missingSections[] = $variables['day_reminder_content'];
+        }
+
+        if ($missingSections !== []) {
+            $insertion = trim(implode("\n\n", $missingSections));
+
+            if ($cta !== '' && str_contains($content, $cta)) {
+                $content = str_replace($cta, $insertion."\n\n".$cta, $content);
+            } elseif ($content === '') {
+                $content = $insertion;
+            } else {
+                $content = trim($content."\n\n".$insertion);
+            }
+        }
+
+        if ($cta !== '' && ! str_contains($content, $variables['url'])) {
+            $content = trim($content."\n\n".$cta);
+        }
+
         return [
             'locale' => $resolvedLocale,
             'variables' => $variables,
@@ -320,9 +350,9 @@ final class WhatsAppTemplateService
         }
 
         $reminderHeader = trim((string) (localized($introSlot, 'reminder_header', $locale) ?? ''));
-        $dayMeaning = trim((string) (localized($himamatDay, 'spiritual_meaning', $locale) ?? ''));
+        $reminderContent = trim((string) (localized($introSlot, 'reminder_content', $locale) ?? ''));
 
-        return $reminderHeader !== '' && $dayMeaning !== '';
+        return $reminderHeader !== '' && $reminderContent !== '';
     }
 
     /**
@@ -412,9 +442,8 @@ final class WhatsAppTemplateService
             ?? $himamatDay->title_en
             ?? ''
         ));
-        $dayMeaning = trim((string) (
-            localized($himamatDay, 'spiritual_meaning', $locale)
-            ?? $himamatDay->spiritual_meaning_en
+        $dayReminderContent = trim((string) (
+            ($introSlot ? localized($introSlot, 'reminder_content', $locale) : null)
             ?? ''
         ));
 
@@ -425,9 +454,10 @@ final class WhatsAppTemplateService
             'himamat_weekday' => $this->himamatWeekdayLabel($dayNumber, $locale),
             'himamat_ordinal' => $this->himamatOrdinalLabel($dayNumber, $locale),
             'day_reminder_title' => $dayTitle,
-            'day_theme_meaning' => $dayMeaning,
+            'day_reminder_content' => $dayReminderContent,
+            'day_theme_meaning' => $dayReminderContent,
             'himamat_day_title' => $dayTitle,
-            'himamat_day_meaning' => $dayMeaning,
+            'himamat_day_meaning' => $dayReminderContent,
             'url' => $url,
         ];
     }
