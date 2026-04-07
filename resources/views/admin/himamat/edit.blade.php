@@ -20,41 +20,24 @@
     $dayReminderContentEn = old('day_reminder_content_en', $introSlot?->reminder_content_en);
     $dayReminderContentAm = old('day_reminder_content_am', $introSlot?->reminder_content_am);
     $faqItems = old('faqs');
-    $faqsAreInherited = false;
     if ($faqItems === null) {
-        // Own FAQs with their real IDs
-        $mergedFaqs = $day->faqs->map(fn ($faq) => [
+        $ownFaqQuestions = $day->faqs->pluck('question_en')->filter()->map(fn ($q) => strtolower((string) $q))->flip();
+        $faqItems = $day->faqs->map(fn ($faq) => [
             'id' => $faq->id,
             'question_en' => $faq->question_en,
             'question_am' => $faq->question_am,
             'answer_en' => $faq->answer_en,
             'answer_am' => $faq->answer_am,
         ]);
-
-        // Merge in FAQs from other days in the season, deduplicating by question_en
-        $ownQuestions = $day->faqs->pluck('question_en')
-            ->filter()
-            ->map(fn ($q) => strtolower((string) $q))
-            ->flip();
-        $inheritedCount = 0;
         foreach (($otherSeasonFaqs ?? collect()) as $faq) {
             $key = strtolower((string) ($faq->question_en ?? ''));
-            if ($key === '' || $ownQuestions->has($key)) {
+            if ($key === '' || $ownFaqQuestions->has($key)) {
                 continue;
             }
-            $mergedFaqs->push([
-                'id' => null,
-                'question_en' => $faq->question_en,
-                'question_am' => $faq->question_am,
-                'answer_en' => $faq->answer_en,
-                'answer_am' => $faq->answer_am,
-            ]);
-            $ownQuestions[$key] = true; // prevent further duplicates
-            $inheritedCount++;
+            $faqItems->push(['id' => null, 'question_en' => $faq->question_en, 'question_am' => $faq->question_am, 'answer_en' => $faq->answer_en, 'answer_am' => $faq->answer_am]);
+            $ownFaqQuestions[$key] = true;
         }
-
-        $faqsAreInherited = $inheritedCount > 0;
-        $faqItems = $mergedFaqs->values()->all();
+        $faqItems = $faqItems->values()->all();
     }
 
     $annualCelebrations = collect($ethDateInfo['annual_celebrations'] ?? [])
@@ -431,9 +414,6 @@
                     <div class="min-w-0">
                         <h2 class="text-sm font-bold text-primary">{{ __('app.himamat_faq_title') }}</h2>
                         <p class="text-[11px] text-muted-text mt-0.5" x-text="faqs.length + ' {{ strtolower(__('app.himamat_faq_title')) }}'"></p>
-                        @if($faqsAreInherited)
-                            <p class="text-[10px] text-accent mt-0.5">{{ __('app.himamat_faq_inherited_hint') }}</p>
-                        @endif
                     </div>
                 </div>
                 <svg class="w-4 h-4 text-muted-text transition-transform duration-200 shrink-0" :class="openSection === 'faq' && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
