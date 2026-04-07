@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
 use App\Models\HimamatDay;
-use App\Models\HimamatDayFaq;
+use App\Models\HimamatSeasonFaq;
 use App\Models\LentSeason;
 use App\Models\MemberHimamatPreference;
 use App\Services\HimamatSynaxariumService;
@@ -124,9 +124,8 @@ class HimamatController extends Controller
 
         $timelineData = $timeline->buildTimeline($himamatDay, $slot);
 
-        $seasonFaqs = HimamatDayFaq::query()
-            ->whereHas('himamatDay', fn ($q) => $q->where('lent_season_id', $season->id)->where('is_published', true))
-            ->orderBy('himamat_day_id')
+        $seasonFaqs = HimamatSeasonFaq::query()
+            ->where('lent_season_id', $season->id)
             ->orderBy('sort_order')
             ->get();
         $himamatDay->setRelation('faqs', $seasonFaqs);

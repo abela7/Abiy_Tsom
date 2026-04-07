@@ -9,6 +9,7 @@ use App\Models\DailyContent;
 use App\Models\HimamatDay;
 use App\Models\HimamatDayFaq;
 use App\Models\HimamatReminderDispatch;
+use App\Models\HimamatSeasonFaq;
 use App\Models\HimamatSlot;
 use App\Models\HimamatSlotResource;
 use App\Models\LentSeason;
@@ -795,6 +796,7 @@ class HimamatDayController extends Controller
     {
         $existingFaqs = $day->faqs()->get()->keyBy('id');
         $keepIds = [];
+        $seasonId = $day->lent_season_id;
 
         foreach ($faqPayloads as $index => $faqPayload) {
             $attributes = [
@@ -812,14 +814,24 @@ class HimamatDayController extends Controller
                 $faq = $existingFaqs->get($faqId);
                 $faq->update($attributes);
                 $keepIds[] = $faq->id;
-
-                continue;
+            } else {
+                $faq = $day->faqs()->create($attributes + [
+                    'created_by_id' => auth()->id(),
+                ]);
+                $keepIds[] = $faq->id;
             }
 
-            $faq = $day->faqs()->create($attributes + [
-                'created_by_id' => auth()->id(),
-            ]);
-            $keepIds[] = $faq->id;
+            // Also upsert into season-wide table
+            if ($seasonId) {
+                HimamatSeasonFaq::updateOrCreate(
+                    [
+                        'lent_season_id' => $seasonId,
+                        'question_am'    => $faqPayload['question_am'] ?: null,
+                        'question_en'    => $faqPayload['question_en'] ?: null,
+                    ],
+                    $attributes + ['lent_season_id' => $seasonId, 'created_by_id' => auth()->id()]
+                );
+            }
         }
 
         $deleteQuery = $day->faqs();
