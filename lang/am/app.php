@@ -2126,7 +2126,7 @@ return [
     'himamat_faq_intro' => 'Add the short explanations members will need during the day. English is required for each FAQ row in v1.',
     'himamat_faq_question' => 'Question',
     'himamat_faq_answer' => 'Answer',
-    'himamat_faq_inherited_hint' => 'Showing FAQs from another day as defaults — save to apply to this day.',
+    'himamat_faq_inherited_hint' => 'ከሌሎች ቀናት የተወሰዱ ተደጋጋሚ ጥያቄዎችን በነባሪ እያሳየ ነው — ለዚህ ቀን ለመተግበር ያስቀምጡ።',
     'himamat_faq_add' => 'Add FAQ',
     'himamat_faq_remove' => 'Remove FAQ',
     'himamat_faq_requires_english' => 'Each saved Himamat FAQ needs an English question and answer.',
