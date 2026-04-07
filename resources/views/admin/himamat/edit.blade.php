@@ -21,7 +21,6 @@
     $dayReminderContentAm = old('day_reminder_content_am', $introSlot?->reminder_content_am);
     $faqItems = old('faqs');
     if ($faqItems === null) {
-        $ownFaqQuestions = $day->faqs->pluck('question_en')->filter()->map(fn ($q) => strtolower((string) $q))->flip();
         $faqItems = $day->faqs->map(fn ($faq) => [
             'id' => $faq->id,
             'question_en' => $faq->question_en,
@@ -30,12 +29,7 @@
             'answer_am' => $faq->answer_am,
         ]);
         foreach (($otherSeasonFaqs ?? collect()) as $faq) {
-            $key = strtolower((string) ($faq->question_en ?? ''));
-            if ($key === '' || $ownFaqQuestions->has($key)) {
-                continue;
-            }
             $faqItems->push(['id' => null, 'question_en' => $faq->question_en, 'question_am' => $faq->question_am, 'answer_en' => $faq->answer_en, 'answer_am' => $faq->answer_am]);
-            $ownFaqQuestions[$key] = true;
         }
         $faqItems = $faqItems->values()->all();
     }

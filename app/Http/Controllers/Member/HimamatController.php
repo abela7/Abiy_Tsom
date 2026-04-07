@@ -128,9 +128,7 @@ class HimamatController extends Controller
             ->whereHas('himamatDay', fn ($q) => $q->where('lent_season_id', $season->id)->where('is_published', true))
             ->orderBy('himamat_day_id')
             ->orderBy('sort_order')
-            ->get()
-            ->unique(fn ($faq) => strtolower((string) ($faq->question_en ?? '')))
-            ->values();
+            ->get();
         $himamatDay->setRelation('faqs', $seasonFaqs);
 
         $publishedDays = HimamatDay::query()
