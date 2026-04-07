@@ -22,21 +22,39 @@
     $faqItems = old('faqs');
     $faqsAreInherited = false;
     if ($faqItems === null) {
-        $sourceFaqs = $day->faqs;
-        if ($sourceFaqs->isEmpty() && isset($fallbackFaqs) && $fallbackFaqs->isNotEmpty()) {
-            $sourceFaqs = $fallbackFaqs;
-            $faqsAreInherited = true;
-        }
-        $faqItems = $sourceFaqs
-            ->map(fn ($faq) => [
-                'id' => $faqsAreInherited ? null : $faq->id,
+        // Own FAQs with their real IDs
+        $mergedFaqs = $day->faqs->map(fn ($faq) => [
+            'id' => $faq->id,
+            'question_en' => $faq->question_en,
+            'question_am' => $faq->question_am,
+            'answer_en' => $faq->answer_en,
+            'answer_am' => $faq->answer_am,
+        ]);
+
+        // Merge in FAQs from other days in the season, deduplicating by question_en
+        $ownQuestions = $day->faqs->pluck('question_en')
+            ->filter()
+            ->map(fn ($q) => strtolower((string) $q))
+            ->flip();
+        $inheritedCount = 0;
+        foreach (($otherSeasonFaqs ?? collect()) as $faq) {
+            $key = strtolower((string) ($faq->question_en ?? ''));
+            if ($key === '' || $ownQuestions->has($key)) {
+                continue;
+            }
+            $mergedFaqs->push([
+                'id' => null,
                 'question_en' => $faq->question_en,
                 'question_am' => $faq->question_am,
                 'answer_en' => $faq->answer_en,
                 'answer_am' => $faq->answer_am,
-            ])
-            ->values()
-            ->all();
+            ]);
+            $ownQuestions[$key] = true; // prevent further duplicates
+            $inheritedCount++;
+        }
+
+        $faqsAreInherited = $inheritedCount > 0;
+        $faqItems = $mergedFaqs->values()->all();
     }
 
     $annualCelebrations = collect($ethDateInfo['annual_celebrations'] ?? [])

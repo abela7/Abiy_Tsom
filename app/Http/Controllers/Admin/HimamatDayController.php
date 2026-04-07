@@ -191,9 +191,9 @@ class HimamatDayController extends Controller
         $linkedDaily = $this->resolveLinkedDaily(request(), $himamatDay);
         $linkedDailyReturnStep = max(3, (int) request()->integer('return_step', 3));
 
-        $fallbackFaqs = collect();
-        if ($himamatDay->faqs->isEmpty() && $himamatDay->lentSeason) {
-            $fallbackFaqs = HimamatDayFaq::query()
+        $otherSeasonFaqs = collect();
+        if ($himamatDay->lentSeason) {
+            $otherSeasonFaqs = HimamatDayFaq::query()
                 ->whereHas('himamatDay', fn ($q) => $q
                     ->where('lent_season_id', $himamatDay->lentSeason->id)
                     ->where('id', '!=', $himamatDay->id)
@@ -210,7 +210,7 @@ class HimamatDayController extends Controller
             'ethiopianMonthOptions' => $synaxarium->monthOptions(app()->getLocale()),
             'linkedDaily' => $linkedDaily,
             'linkedDailyReturnStep' => $linkedDailyReturnStep,
-            'fallbackFaqs' => $fallbackFaqs,
+            'otherSeasonFaqs' => $otherSeasonFaqs,
         ]);
     }
 
