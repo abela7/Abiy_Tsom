@@ -143,7 +143,11 @@ class HimamatController extends Controller
         $nextDay = $dayIndex !== false ? $publishedDays->get($dayIndex + 1) : null;
         $ethDateInfo = $synaxarium->resolveDateInfo($himamatDay, app()->getLocale());
 
-        return view('member.himamat.day', [
+        $viewName = $himamatDay->slug === 'good-friday'
+            ? 'member.himamat.good-friday'
+            : 'member.himamat.day';
+
+        return view($viewName, [
             'member' => $member,
             'day' => $himamatDay,
             'timeline' => $timelineData,
