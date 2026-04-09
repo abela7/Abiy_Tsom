@@ -50,8 +50,8 @@
         --color-border: rgba(255, 255, 255, 0.09);
     }
     .good-friday-page > * {
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
     }
 </style>
 <div style="position:fixed;inset:0;z-index:0;
