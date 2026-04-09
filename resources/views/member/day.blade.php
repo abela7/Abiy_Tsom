@@ -41,13 +41,22 @@
 
 @section('content')
 @if($isGoodFriday ?? false)
+<style>
+    html.dark body { background: transparent !important; }
+    html.dark { background: #030303 !important; }
+</style>
+<div style="position:fixed;inset:0;z-index:0;
+     background-image:url('https://t3.ftcdn.net/jpg/14/08/30/00/360_F_1408300011_25W7ucB72UpZrQZE71FY9i4EzBQFQVhd.jpg');
+     background-size:cover;background-position:center center;background-repeat:no-repeat;">
+    <div style="position:absolute;inset:0;background:rgba(0,0,0,0.68);"></div>
+</div>
 <script>
     window.addEventListener('alpine:initialized', function () {
         window.dispatchEvent(new CustomEvent('theme-changed', { detail: { theme: 'dark' } }));
     }, { once: true });
 </script>
 @endif
-<div x-data="dayPage()" class="px-4 pt-4 space-y-4">
+<div x-data="dayPage()" class="px-4 pt-4 space-y-4" @if($isGoodFriday ?? false) style="position:relative;z-index:1" @endif>
 
     {{-- "Copied!" toast --}}
     <div x-show="linkCopied"
