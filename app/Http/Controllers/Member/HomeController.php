@@ -505,6 +505,8 @@ class HomeController extends Controller
             ? app(HimamatTimelineService::class)->buildTimeline($himamatDay)
             : null;
 
+        $isGoodFriday = $himamatDay?->slug === 'good-friday';
+
         return view('member.day', compact(
             'member',
             'daily',
@@ -518,6 +520,7 @@ class HomeController extends Controller
             'lectionary',
             'himamatDay',
             'himamatTimeline',
+            'isGoodFriday',
         ));
     }
 
