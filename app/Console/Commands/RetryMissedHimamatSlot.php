@@ -111,6 +111,14 @@ class RetryMissedHimamatSlot extends Command
             }
         }
 
+        $testModeMemberId = $dispatches->testModeMemberId();
+        if ($testModeMemberId !== null) {
+            $this->warn(sprintf(
+                'Test mode is active — only member ID %d is eligible. Clear HIMAMAT_TEST_MODE_MEMBER_ID in .env to send to everyone.',
+                $testModeMemberId
+            ));
+        }
+
         $recipientCount = $dispatches->previewRecipientCount($slot);
         $this->line(sprintf('Eligible recipients: %d', $recipientCount));
 
