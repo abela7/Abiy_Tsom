@@ -56,7 +56,7 @@
 </style>
 <div style="position:fixed;inset:0;z-index:0;
      background-image:url('https://abiytsom.abuneteklehaymanot.org/images/Jesus-.jpg');
-     background-size:cover;background-position:center center;background-repeat:no-repeat;">
+     background-size:cover;background-position:center top;background-repeat:no-repeat;">
     <div style="position:absolute;inset:0;background:rgba(0,0,0,0.42);"></div>
 </div>
 <div id="gf-blood-wrap" style="position:fixed;inset:0;z-index:3;pointer-events:none;overflow:hidden;transform:translateZ(0);"></div>
