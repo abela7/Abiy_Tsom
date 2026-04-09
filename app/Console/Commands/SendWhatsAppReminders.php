@@ -29,7 +29,8 @@ class SendWhatsAppReminders extends Command
      */
     protected $signature = 'reminders:send-whatsapp
         {--dry-run : Preview due recipients without sending WhatsApp messages}
-        {--queue : Dispatch due reminders to the queue instead of sending inline}';
+        {--queue : Dispatch due reminders to the queue instead of sending inline}
+        {--force-himamat-intro : Bypass the grace window and force-send today\'s himamat intro reminder}';
 
     /**
      * @var string
@@ -91,10 +92,23 @@ class SendWhatsAppReminders extends Command
                 return self::SUCCESS;
             }
 
+            $forceHimamatIntro = (bool) $this->option('force-himamat-intro');
             $himamatDay = $this->resolvePublishedHimamatDay($dailyContent);
-            $dueHimamatSlot = $himamatDay
-                ? $this->resolveDueHimamatSlot($himamatDay, $nowLondon, $timezone)
-                : null;
+
+            if ($forceHimamatIntro && $himamatDay) {
+                $dueHimamatSlot = $himamatDay->slots->firstWhere('slot_key', 'intro');
+                if (! $dueHimamatSlot) {
+                    $this->error('No published intro slot found for today\'s himamat day.');
+
+                    return self::FAILURE;
+                }
+                $this->warn('Force mode: bypassing grace window for himamat intro slot.');
+            } else {
+                $dueHimamatSlot = $himamatDay
+                    ? $this->resolveDueHimamatSlot($himamatDay, $nowLondon, $timezone)
+                    : null;
+            }
+
             $isHimamatIntroWindow = $dueHimamatSlot?->slot_key === 'intro';
             $isHimamatSlotWindow = $dueHimamatSlot !== null && ! $isHimamatIntroWindow;
 
