@@ -633,7 +633,7 @@
     @endif
 
     {{-- Sinksar (Synaxarium) — Read / Listen toggle with immersive reader --}}
-    @if(localized($daily, 'sinksar_title'))
+    @if(!($isGoodFriday ?? false) && localized($daily, 'sinksar_title'))
     <div data-tour="day-sinksar"
          class="bg-card rounded-2xl shadow-sm border border-border overflow-hidden"
          x-data="{
