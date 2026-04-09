@@ -119,7 +119,7 @@
         @endif
 
         {{-- Commemorations carousel row --}}
-        @if($slides->isNotEmpty() && (($commemorationsUrl ?? null) !== null || !($publicPreview ?? false)))
+        @if(!($isGoodFriday ?? false) && $slides->isNotEmpty() && (($commemorationsUrl ?? null) !== null || !($publicPreview ?? false)))
         <a href="{{ $commemorationsHref }}"
            class="flex items-center gap-3 px-4 py-3 bg-accent/5 hover:bg-accent/10 active:scale-[0.98] transition-all group"
            x-data="{ current: 0, total: {{ $slides->count() }}, images: {{ $slides->map(fn($s) => $s['image'] ?? null)->toJson() }}, fallback: '{{ asset('images/Saints.png') }}' }"
@@ -151,7 +151,7 @@
         @endif
 
         {{-- Weekly theme link --}}
-        @if($daily->weeklyTheme)
+        @if(!($isGoodFriday ?? false) && $daily->weeklyTheme)
         <a href="{{ memberUrl('/week/' . $daily->weeklyTheme->id) }}" class="flex items-center gap-3 px-4 py-3 bg-accent/5 hover:bg-accent/10 active:scale-[0.98] transition-all group">
             <div class="shrink-0 w-9 h-9 rounded-lg bg-accent/15 flex items-center justify-center">
                 <i class="bi bi-calendar-week text-accent text-sm"></i>
