@@ -46,7 +46,7 @@
     html.dark { background: #030303 !important; }
 </style>
 <div style="position:fixed;inset:0;z-index:0;
-     background-image:url('https://t3.ftcdn.net/jpg/14/08/30/00/360_F_1408300011_25W7ucB72UpZrQZE71FY9i4EzBQFQVhd.jpg');
+     background-image:url('https://abiytsom.abuneteklehaymanot.org/images/Jesus-.jpg');
      background-size:cover;background-position:center center;background-repeat:no-repeat;">
     <div style="position:absolute;inset:0;background:rgba(0,0,0,0.68);"></div>
 </div>
