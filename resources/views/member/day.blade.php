@@ -59,10 +59,117 @@
      background-size:cover;background-position:center center;background-repeat:no-repeat;">
     <div style="position:absolute;inset:0;background:rgba(0,0,0,0.42);"></div>
 </div>
+<canvas id="gf-blood-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:3;"></canvas>
 <script>
     window.addEventListener('alpine:initialized', function () {
         window.dispatchEvent(new CustomEvent('theme-changed', { detail: { theme: 'dark' } }));
     }, { once: true });
+
+    (function () {
+        var canvas = document.getElementById('gf-blood-canvas');
+        if (!canvas) return;
+        var ctx = canvas.getContext('2d', { alpha: true });
+        if (!ctx) return;
+
+        var dpr = window.devicePixelRatio || 1;
+        var W, H;
+
+        function resize() {
+            W = window.innerWidth;
+            H = window.innerHeight;
+            canvas.width  = Math.round(W * dpr);
+            canvas.height = Math.round(H * dpr);
+            ctx.scale(dpr, dpr);
+        }
+        resize();
+        window.addEventListener('resize', function () { resize(); });
+
+        function mkDrop() {
+            var size = 4 + Math.random() * 5;
+            return {
+                x:     Math.random() * W,
+                y:     -size * 4,
+                vy:    1.2 + Math.random() * 1.8,
+                vx:    (Math.random() - 0.5) * 0.4,
+                size:  size,
+                alpha: 0.75 + Math.random() * 0.2,
+                trail: []
+            };
+        }
+
+        var drops = [];
+        var MAX   = 7;
+        var lastSpawn = 0;
+        var INTERVAL  = 900; // ms between new drops
+
+        function drawDrop(d) {
+            var x = d.x, y = d.y, r = d.size;
+            ctx.save();
+            ctx.globalAlpha = d.alpha;
+
+            // Trail
+            if (d.trail.length > 1) {
+                ctx.beginPath();
+                ctx.moveTo(d.trail[0].x, d.trail[0].y);
+                for (var i = 1; i < d.trail.length; i++) {
+                    ctx.lineTo(d.trail[i].x, d.trail[i].y);
+                }
+                ctx.strokeStyle = 'rgba(120,0,0,0.35)';
+                ctx.lineWidth   = r * 0.45;
+                ctx.lineCap     = 'round';
+                ctx.stroke();
+            }
+
+            // Teardrop body: round bottom, pointed top (direction of fall)
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, Math.PI * 2);
+            ctx.fillStyle = '#8b0000';
+            ctx.fill();
+
+            // Pointed tail above
+            ctx.beginPath();
+            ctx.moveTo(x - r * 0.55, y - r * 0.4);
+            ctx.quadraticCurveTo(x, y - r * 3.2, x + r * 0.55, y - r * 0.4);
+            ctx.closePath();
+            ctx.fillStyle = '#7a0000';
+            ctx.fill();
+
+            // Highlight for depth
+            ctx.beginPath();
+            ctx.arc(x - r * 0.25, y - r * 0.25, r * 0.28, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255,80,80,0.18)';
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        var last = 0;
+        function loop(ts) {
+            var dt = ts - last;
+            last = ts;
+
+            ctx.clearRect(0, 0, W, H);
+
+            // Spawn
+            if (drops.length < MAX && ts - lastSpawn > INTERVAL) {
+                drops.push(mkDrop());
+                lastSpawn = ts;
+            }
+
+            // Update + draw
+            drops = drops.filter(function (d) {
+                d.y  += d.vy;
+                d.x  += d.vx;
+                d.trail.push({ x: d.x, y: d.y });
+                if (d.trail.length > 18) d.trail.shift();
+                drawDrop(d);
+                return d.y < H + d.size * 5;
+            });
+
+            requestAnimationFrame(loop);
+        }
+        requestAnimationFrame(loop);
+    })();
 </script>
 @endif
 <div x-data="dayPage()" class="px-4 pt-4 space-y-4 @if($isGoodFriday ?? false) good-friday-page @endif" @if($isGoodFriday ?? false) style="position:relative;z-index:1" @endif>
