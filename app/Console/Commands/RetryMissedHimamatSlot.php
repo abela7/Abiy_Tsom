@@ -94,16 +94,25 @@ class RetryMissedHimamatSlot extends Command
         $existingDispatch = $slot->reminderDispatches->firstWhere('channel', self::CHANNEL);
 
         if ($existingDispatch) {
-            if ($existingDispatch->status !== HimamatReminderDispatch::STATUS_MISSED) {
+            $allowedStatuses = [
+                HimamatReminderDispatch::STATUS_MISSED,
+                HimamatReminderDispatch::STATUS_COMPLETED,
+                HimamatReminderDispatch::STATUS_COMPLETED_WITH_FAILURES,
+            ];
+
+            if (! in_array($existingDispatch->status, $allowedStatuses, true)) {
                 $this->error(sprintf(
-                    'Slot already has a dispatch with status "%s". Cannot retry a non-missed dispatch.',
+                    'Slot already has an active dispatch with status "%s". Wait for it to finish first.',
                     $existingDispatch->status
                 ));
 
                 return self::FAILURE;
             }
 
-            $this->warn('Found existing MISSED dispatch — will delete it to allow retry.');
+            $this->warn(sprintf(
+                'Found existing dispatch (status: %s) — will delete it to allow retry. Members already delivered to will be skipped automatically.',
+                $existingDispatch->status
+            ));
 
             if (! (bool) $this->option('dry-run')) {
                 $existingDispatch->delete();
