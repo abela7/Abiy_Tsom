@@ -31,7 +31,10 @@
 @endphp
 <div class="px-4 pt-4 pb-12 space-y-4"
      x-data="{ openSlot: @js($targetSlotKey) }"
-     x-init="$nextTick(() => { const target = document.getElementById('himamat-slot-' + openSlot); if (target) { target.scrollIntoView({ behavior: 'smooth', block: 'start' }); } })">
+     x-init="
+         window.dispatchEvent(new CustomEvent('theme-changed', { detail: { theme: 'dark' } }));
+         $nextTick(() => { const target = document.getElementById('himamat-slot-' + openSlot); if (target) { target.scrollIntoView({ behavior: 'smooth', block: 'start' }); } })
+     ">
     @if($publicPreview ?? false)
     <div class="rounded-2xl border border-accent/25 bg-accent/10 px-4 py-3 text-sm text-secondary">
         <div class="flex items-center justify-between gap-3">
@@ -66,28 +69,6 @@
             </div>
         </div>
 
-        <div class="mt-5 flex flex-wrap gap-3">
-            @if(!($publicPreview ?? false))
-            <a href="{{ route('member.himamat.preferences') }}"
-               class="inline-flex items-center justify-center rounded-xl border border-border bg-card/90 px-4 py-2.5 text-sm font-semibold text-secondary transition hover:bg-muted">
-                {{ __('app.himamat_preferences_title') }}
-            </a>
-            @endif
-
-            @if($previousDay)
-            <a href="{{ route('member.himamat.day', ['day' => $previousDay->slug]) }}"
-               class="inline-flex items-center justify-center rounded-xl border border-border bg-card/90 px-4 py-2.5 text-sm font-semibold text-secondary transition hover:bg-muted">
-                {{ __('app.himamat_previous_day') }}
-            </a>
-            @endif
-
-            @if($nextDay)
-            <a href="{{ route('member.himamat.day', ['day' => $nextDay->slug]) }}"
-               class="inline-flex items-center justify-center rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-on-accent transition hover:bg-accent-hover">
-                {{ __('app.himamat_next_day') }}
-            </a>
-            @endif
-        </div>
     </section>
 
     @if($hasDayLayer)
