@@ -59,171 +59,131 @@
      background-size:cover;background-position:center center;background-repeat:no-repeat;">
     <div style="position:absolute;inset:0;background:rgba(0,0,0,0.42);"></div>
 </div>
-<canvas id="gf-blood-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:3;"></canvas>
+<div id="gf-blood-wrap" style="position:fixed;inset:0;z-index:3;pointer-events:none;overflow:hidden;"></div>
+<style>
+@-webkit-keyframes gf-fall{
+  0%  {-webkit-transform:translate3d(0,-90px,0);opacity:0}
+  6%  {opacity:1}
+  88% {opacity:.9}
+  97% {-webkit-transform:translate3d(0,108vh,0);opacity:.15}
+  100%{-webkit-transform:translate3d(0,112vh,0);opacity:0}
+}
+@keyframes gf-fall{
+  0%  {transform:translate3d(0,-90px,0);opacity:0}
+  6%  {opacity:1}
+  88% {opacity:.9}
+  97% {transform:translate3d(0,108vh,0);opacity:.15}
+  100%{transform:translate3d(0,112vh,0);opacity:0}
+}
+</style>
 <script>
     window.addEventListener('alpine:initialized', function () {
         window.dispatchEvent(new CustomEvent('theme-changed', { detail: { theme: 'dark' } }));
     }, { once: true });
 
-    (function () {
-        var canvas = document.getElementById('gf-blood-canvas');
-        if (!canvas) return;
-        var ctx = canvas.getContext('2d', { alpha: true });
-        if (!ctx) return;
+    (function(){
+        var wrap = document.getElementById('gf-blood-wrap');
+        if (!wrap) return;
+        var NS = 'http://www.w3.org/2000/svg';
+        var active = 0, MAX = 6;
 
-        var dpr = window.devicePixelRatio || 1;
-        var W, H;
-        var splashes = [];
+        function uid(){ return 'gf'+Math.random().toString(36).slice(2); }
 
-        function resize() {
-            W = window.innerWidth;
-            H = window.innerHeight;
-            canvas.width  = Math.round(W * dpr);
-            canvas.height = Math.round(H * dpr);
-            ctx.setTransform(1,0,0,1,0,0);
-            ctx.scale(dpr, dpr);
-        }
-        resize();
-        window.addEventListener('resize', resize);
+        function spawn(){
+            if (active >= MAX) return;
+            active++;
 
-        function mkDrop() {
-            var r = 5 + Math.random() * 6;
-            return {
-                x:    20 + Math.random() * (W - 40),
-                y:    -r * 6,
-                vy:   1.4 + Math.random() * 1.6,
-                vx:   (Math.random() - 0.5) * 0.5,
-                r:    r,
-                age:  0,
-                trail: []
-            };
-        }
+            var gradId = uid();
+            var size   = 11 + Math.random() * 13;   /* drop radius in px */
+            var dur    = (1.1 + Math.random() * 1.0).toFixed(2);
+            var x      = 18 + Math.random() * (window.innerWidth - 36);
+            var trailH = size * 4.5;
+            var trailW = size * 0.38;
 
-        /* Realistic teardrop — bezier curves, pointed top, round bottom */
-        function drawTeardrop(x, y, r, alpha) {
-            var w  = r;          // half-width at widest
-            var th = r * 3.0;   // tail height above centre
-
-            ctx.save();
-            ctx.globalAlpha = alpha;
+            /* --- wrapper div: only this moves --- */
+            var el = document.createElement('div');
+            el.style.cssText = 'position:absolute;top:0;left:'+x+'px;'
+                + 'will-change:transform,opacity;'
+                + '-webkit-backface-visibility:hidden;backface-visibility:hidden;'
+                + '-webkit-animation:gf-fall '+dur+'s linear forwards;'
+                + 'animation:gf-fall '+dur+'s linear forwards;';
 
             /* --- gradient trail above the drop --- */
-            var trailTop = y - th - r;
-            var trailGrad = ctx.createLinearGradient(x, trailTop, x, y - r * 0.6);
-            trailGrad.addColorStop(0,   'rgba(120,0,0,0)');
-            trailGrad.addColorStop(0.5, 'rgba(140,0,0,0.18)');
-            trailGrad.addColorStop(1,   'rgba(160,0,0,0.38)');
+            var trail = document.createElement('div');
+            trail.style.cssText = 'position:absolute;bottom:'+(size*1.7)+'px;left:50%;'
+                + '-webkit-transform:translateX(-50%);transform:translateX(-50%);'
+                + 'width:'+trailW+'px;height:'+trailH+'px;'
+                + 'background:linear-gradient(180deg,'
+                +   'rgba(100,0,0,0) 0%,'
+                +   'rgba(135,0,0,.12) 45%,'
+                +   'rgba(160,0,0,.42) 100%);'
+                + 'border-radius:'+(trailW/2)+'px;';
+            el.appendChild(trail);
 
-            var tw = r * 0.28;
-            ctx.beginPath();
-            ctx.moveTo(x - tw, trailTop);
-            ctx.lineTo(x + tw, trailTop);
-            ctx.lineTo(x + r * 0.55, y - r * 0.5);
-            ctx.lineTo(x - r * 0.55, y - r * 0.5);
-            ctx.closePath();
-            ctx.fillStyle = trailGrad;
-            ctx.fill();
+            /* --- SVG teardrop --- */
+            var svg = document.createElementNS(NS,'svg');
+            svg.setAttribute('width',  size*2);
+            svg.setAttribute('height', size*3.2);
+            svg.setAttribute('viewBox','-30 -52 60 90');
+            svg.style.cssText = 'display:block;overflow:visible;';
 
-            /* --- teardrop body via bezier --- */
-            ctx.beginPath();
-            ctx.moveTo(x, y - th); // top tip
-            // right side: tip → shoulder → bottom
-            ctx.bezierCurveTo(
-                x + w * 0.25, y - th * 0.6,
-                x + w,        y - r * 0.3,
-                x,            y
-            );
-            // left side: bottom → shoulder → tip (mirror)
-            ctx.bezierCurveTo(
-                x - w,        y - r * 0.3,
-                x - w * 0.25, y - th * 0.6,
-                x,            y - th
-            );
-            ctx.closePath();
-
-            /* radial gradient for 3-D depth */
-            var grad = ctx.createRadialGradient(
-                x - w * 0.25, y - r * 0.5, r * 0.05,
-                x,            y - r * 0.3, r * 1.8
-            );
-            grad.addColorStop(0,   'rgba(210, 30, 30, 0.97)');
-            grad.addColorStop(0.4, 'rgba(160,  0,  0, 0.96)');
-            grad.addColorStop(1,   'rgba( 80,  0,  0, 0.94)');
-            ctx.fillStyle = grad;
-            ctx.fill();
-
-            /* specular highlight — small bright ellipse upper-left */
-            ctx.beginPath();
-            ctx.ellipse(
-                x - w * 0.32, y - r * 0.55,
-                r * 0.22, r * 0.13,
-                -Math.PI / 4, 0, Math.PI * 2
-            );
-            ctx.fillStyle = 'rgba(255,160,160,0.30)';
-            ctx.fill();
-
-            ctx.restore();
-        }
-
-        /* Splash rings when drop exits bottom */
-        function addSplash(x) {
-            splashes.push({ x: x, y: H - 2, r: 2, alpha: 0.7, vr: 2.5 });
-        }
-
-        function drawSplashes() {
-            splashes = splashes.filter(function (s) {
-                s.r    += s.vr;
-                s.alpha -= 0.045;
-                if (s.alpha <= 0) return false;
-                ctx.save();
-                ctx.globalAlpha = s.alpha;
-                ctx.strokeStyle = 'rgba(160,0,0,0.8)';
-                ctx.lineWidth   = 1.2;
-                ctx.beginPath();
-                ctx.ellipse(s.x, s.y, s.r, s.r * 0.35, 0, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.restore();
-                return true;
+            /* radial gradient */
+            var defs = document.createElementNS(NS,'defs');
+            var rg   = document.createElementNS(NS,'radialGradient');
+            rg.setAttribute('id', gradId);
+            rg.setAttribute('cx','36%'); rg.setAttribute('cy','30%');
+            rg.setAttribute('r','66%');
+            [
+                [0,   'rgba(225,55,55,1)'],
+                [0.3, 'rgba(178,10,10,1)'],
+                [0.65,'rgba(108, 0, 0,1)'],
+                [1,   'rgba( 48, 0, 0,1)'],
+            ].forEach(function(s){
+                var stop = document.createElementNS(NS,'stop');
+                stop.setAttribute('offset',     s[0]);
+                stop.setAttribute('stop-color', s[1]);
+                rg.appendChild(stop);
             });
+            defs.appendChild(rg);
+            svg.appendChild(defs);
+
+            /* main teardrop path — bezier, pointed top, round bottom */
+            var path = document.createElementNS(NS,'path');
+            path.setAttribute('d',
+                'M0,-50 C-7,-43 -22,-20 -22,8 C-22,28 -11,35 0,35'
+               +' C11,35 22,28 22,8 C22,-20 7,-43 0,-50 Z');
+            path.setAttribute('fill','url(#'+gradId+')');
+            svg.appendChild(path);
+
+            /* soft primary highlight */
+            var h1 = document.createElementNS(NS,'ellipse');
+            h1.setAttribute('cx','-8'); h1.setAttribute('cy','-16');
+            h1.setAttribute('rx','7');  h1.setAttribute('ry','12');
+            h1.setAttribute('fill','rgba(255,195,195,0.24)');
+            h1.setAttribute('transform','rotate(-22,-8,-16)');
+            svg.appendChild(h1);
+
+            /* sharp secondary specular */
+            var h2 = document.createElementNS(NS,'ellipse');
+            h2.setAttribute('cx','-5'); h2.setAttribute('cy','-26');
+            h2.setAttribute('rx','2.5');h2.setAttribute('ry','4');
+            h2.setAttribute('fill','rgba(255,230,230,0.42)');
+            h2.setAttribute('transform','rotate(-18,-5,-26)');
+            svg.appendChild(h2);
+
+            el.appendChild(svg);
+            wrap.appendChild(el);
+
+            function done(){ try{wrap.removeChild(el);}catch(e){} active--; }
+            el.addEventListener('animationend',       done);
+            el.addEventListener('webkitAnimationEnd', done);
         }
 
-        var drops    = [];
-        var MAX      = 7;
-        var lastSpawn = 0;
-        var INTERVAL  = 950;
-
-        function loop(ts) {
-            ctx.clearRect(0, 0, W, H);
-
-            if (drops.length < MAX && ts - lastSpawn > INTERVAL) {
-                drops.push(mkDrop());
-                lastSpawn = ts;
-            }
-
-            drawSplashes();
-
-            drops = drops.filter(function (d) {
-                d.y  += d.vy;
-                d.x  += d.vx;
-                d.age++;
-
-                /* fade in first 20 frames, fade out last 20 before exit */
-                var fadeIn  = Math.min(1, d.age / 20);
-                var fadeOut = d.y > H - 80 ? Math.max(0, (H - d.y) / 80) : 1;
-                var alpha   = fadeIn * fadeOut * 0.92;
-
-                drawTeardrop(d.x, d.y, d.r, alpha);
-
-                if (d.y > H + d.r * 2) {
-                    addSplash(d.x);
-                    return false;
-                }
-                return true;
-            });
-
-            requestAnimationFrame(loop);
+        /* stagger start so drops don't all appear at once */
+        for (var i=0; i<3; i++) {
+            (function(delay){ setTimeout(spawn, delay); })(i * 600);
         }
-        requestAnimationFrame(loop);
+        (function tick(){ spawn(); setTimeout(tick, 900 + Math.random()*700); })();
     })();
 </script>
 @endif
