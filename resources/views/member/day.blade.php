@@ -95,7 +95,7 @@
         var wrap = document.getElementById('gf-blood-wrap');
         if (!wrap) return;
         var NS = 'http://www.w3.org/2000/svg';
-        var active = 0, MAX = 7;
+        var active = 0, MAX = 3;
         var fallEnd = Math.max(window.innerHeight + 100, 1100);
 
         function uid(){ return 'gf'+Math.random().toString(36).slice(2); }
@@ -210,10 +210,8 @@
             el.addEventListener('webkitAnimationEnd', done);
         }
 
-        for (var i=0; i<3; i++) {
-            (function(delay){ setTimeout(spawn, delay); })(i * 600);
-        }
-        (function tick(){ spawn(); setTimeout(tick, 900 + Math.random()*700); })();
+        setTimeout(spawn, 400);
+        (function tick(){ spawn(); setTimeout(tick, 2200 + Math.random()*1400); })();
     })();
 </script>
 @endif
