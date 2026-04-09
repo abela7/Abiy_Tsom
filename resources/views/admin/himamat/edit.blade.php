@@ -27,11 +27,7 @@
             'question_am' => $faq->question_am,
             'answer_en' => $faq->answer_en,
             'answer_am' => $faq->answer_am,
-        ]);
-        foreach (($otherSeasonFaqs ?? collect()) as $faq) {
-            $faqItems->push(['id' => null, 'question_en' => $faq->question_en, 'question_am' => $faq->question_am, 'answer_en' => $faq->answer_en, 'answer_am' => $faq->answer_am]);
-        }
-        $faqItems = $faqItems->values()->all();
+        ])->values()->all();
     }
 
     $annualCelebrations = collect($ethDateInfo['annual_celebrations'] ?? [])
