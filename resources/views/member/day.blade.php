@@ -73,97 +73,152 @@
 
         var dpr = window.devicePixelRatio || 1;
         var W, H;
+        var splashes = [];
 
         function resize() {
             W = window.innerWidth;
             H = window.innerHeight;
             canvas.width  = Math.round(W * dpr);
             canvas.height = Math.round(H * dpr);
+            ctx.setTransform(1,0,0,1,0,0);
             ctx.scale(dpr, dpr);
         }
         resize();
-        window.addEventListener('resize', function () { resize(); });
+        window.addEventListener('resize', resize);
 
         function mkDrop() {
-            var size = 4 + Math.random() * 5;
+            var r = 5 + Math.random() * 6;
             return {
-                x:     Math.random() * W,
-                y:     -size * 4,
-                vy:    1.2 + Math.random() * 1.8,
-                vx:    (Math.random() - 0.5) * 0.4,
-                size:  size,
-                alpha: 0.75 + Math.random() * 0.2,
+                x:    20 + Math.random() * (W - 40),
+                y:    -r * 6,
+                vy:   1.4 + Math.random() * 1.6,
+                vx:   (Math.random() - 0.5) * 0.5,
+                r:    r,
+                age:  0,
                 trail: []
             };
         }
 
-        var drops = [];
-        var MAX   = 7;
-        var lastSpawn = 0;
-        var INTERVAL  = 900; // ms between new drops
+        /* Realistic teardrop — bezier curves, pointed top, round bottom */
+        function drawTeardrop(x, y, r, alpha) {
+            var w  = r;          // half-width at widest
+            var th = r * 3.0;   // tail height above centre
 
-        function drawDrop(d) {
-            var x = d.x, y = d.y, r = d.size;
             ctx.save();
-            ctx.globalAlpha = d.alpha;
+            ctx.globalAlpha = alpha;
 
-            // Trail
-            if (d.trail.length > 1) {
-                ctx.beginPath();
-                ctx.moveTo(d.trail[0].x, d.trail[0].y);
-                for (var i = 1; i < d.trail.length; i++) {
-                    ctx.lineTo(d.trail[i].x, d.trail[i].y);
-                }
-                ctx.strokeStyle = 'rgba(120,0,0,0.35)';
-                ctx.lineWidth   = r * 0.45;
-                ctx.lineCap     = 'round';
-                ctx.stroke();
-            }
+            /* --- gradient trail above the drop --- */
+            var trailTop = y - th - r;
+            var trailGrad = ctx.createLinearGradient(x, trailTop, x, y - r * 0.6);
+            trailGrad.addColorStop(0,   'rgba(120,0,0,0)');
+            trailGrad.addColorStop(0.5, 'rgba(140,0,0,0.18)');
+            trailGrad.addColorStop(1,   'rgba(160,0,0,0.38)');
 
-            // Teardrop body: round bottom, pointed top (direction of fall)
+            var tw = r * 0.28;
             ctx.beginPath();
-            ctx.arc(x, y, r, 0, Math.PI * 2);
-            ctx.fillStyle = '#8b0000';
-            ctx.fill();
-
-            // Pointed tail above
-            ctx.beginPath();
-            ctx.moveTo(x - r * 0.55, y - r * 0.4);
-            ctx.quadraticCurveTo(x, y - r * 3.2, x + r * 0.55, y - r * 0.4);
+            ctx.moveTo(x - tw, trailTop);
+            ctx.lineTo(x + tw, trailTop);
+            ctx.lineTo(x + r * 0.55, y - r * 0.5);
+            ctx.lineTo(x - r * 0.55, y - r * 0.5);
             ctx.closePath();
-            ctx.fillStyle = '#7a0000';
+            ctx.fillStyle = trailGrad;
             ctx.fill();
 
-            // Highlight for depth
+            /* --- teardrop body via bezier --- */
             ctx.beginPath();
-            ctx.arc(x - r * 0.25, y - r * 0.25, r * 0.28, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(255,80,80,0.18)';
+            ctx.moveTo(x, y - th); // top tip
+            // right side: tip → shoulder → bottom
+            ctx.bezierCurveTo(
+                x + w * 0.25, y - th * 0.6,
+                x + w,        y - r * 0.3,
+                x,            y
+            );
+            // left side: bottom → shoulder → tip (mirror)
+            ctx.bezierCurveTo(
+                x - w,        y - r * 0.3,
+                x - w * 0.25, y - th * 0.6,
+                x,            y - th
+            );
+            ctx.closePath();
+
+            /* radial gradient for 3-D depth */
+            var grad = ctx.createRadialGradient(
+                x - w * 0.25, y - r * 0.5, r * 0.05,
+                x,            y - r * 0.3, r * 1.8
+            );
+            grad.addColorStop(0,   'rgba(210, 30, 30, 0.97)');
+            grad.addColorStop(0.4, 'rgba(160,  0,  0, 0.96)');
+            grad.addColorStop(1,   'rgba( 80,  0,  0, 0.94)');
+            ctx.fillStyle = grad;
+            ctx.fill();
+
+            /* specular highlight — small bright ellipse upper-left */
+            ctx.beginPath();
+            ctx.ellipse(
+                x - w * 0.32, y - r * 0.55,
+                r * 0.22, r * 0.13,
+                -Math.PI / 4, 0, Math.PI * 2
+            );
+            ctx.fillStyle = 'rgba(255,160,160,0.30)';
             ctx.fill();
 
             ctx.restore();
         }
 
-        var last = 0;
-        function loop(ts) {
-            var dt = ts - last;
-            last = ts;
+        /* Splash rings when drop exits bottom */
+        function addSplash(x) {
+            splashes.push({ x: x, y: H - 2, r: 2, alpha: 0.7, vr: 2.5 });
+        }
 
+        function drawSplashes() {
+            splashes = splashes.filter(function (s) {
+                s.r    += s.vr;
+                s.alpha -= 0.045;
+                if (s.alpha <= 0) return false;
+                ctx.save();
+                ctx.globalAlpha = s.alpha;
+                ctx.strokeStyle = 'rgba(160,0,0,0.8)';
+                ctx.lineWidth   = 1.2;
+                ctx.beginPath();
+                ctx.ellipse(s.x, s.y, s.r, s.r * 0.35, 0, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+                return true;
+            });
+        }
+
+        var drops    = [];
+        var MAX      = 7;
+        var lastSpawn = 0;
+        var INTERVAL  = 950;
+
+        function loop(ts) {
             ctx.clearRect(0, 0, W, H);
 
-            // Spawn
             if (drops.length < MAX && ts - lastSpawn > INTERVAL) {
                 drops.push(mkDrop());
                 lastSpawn = ts;
             }
 
-            // Update + draw
+            drawSplashes();
+
             drops = drops.filter(function (d) {
                 d.y  += d.vy;
                 d.x  += d.vx;
-                d.trail.push({ x: d.x, y: d.y });
-                if (d.trail.length > 18) d.trail.shift();
-                drawDrop(d);
-                return d.y < H + d.size * 5;
+                d.age++;
+
+                /* fade in first 20 frames, fade out last 20 before exit */
+                var fadeIn  = Math.min(1, d.age / 20);
+                var fadeOut = d.y > H - 80 ? Math.max(0, (H - d.y) / 80) : 1;
+                var alpha   = fadeIn * fadeOut * 0.92;
+
+                drawTeardrop(d.x, d.y, d.r, alpha);
+
+                if (d.y > H + d.r * 2) {
+                    addSplash(d.x);
+                    return false;
+                }
+                return true;
             });
 
             requestAnimationFrame(loop);
