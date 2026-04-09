@@ -59,21 +59,31 @@
      background-size:cover;background-position:center center;background-repeat:no-repeat;">
     <div style="position:absolute;inset:0;background:rgba(0,0,0,0.42);"></div>
 </div>
-<div id="gf-blood-wrap" style="position:fixed;inset:0;z-index:3;pointer-events:none;overflow:hidden;"></div>
+<div id="gf-blood-wrap" style="position:fixed;inset:0;z-index:3;pointer-events:none;overflow:hidden;transform:translateZ(0);"></div>
 <style>
 @-webkit-keyframes gf-fall{
   0%  {-webkit-transform:translate3d(0,-90px,0);opacity:0}
-  6%  {opacity:1}
+  4%  {opacity:1}
   88% {opacity:.9}
-  97% {-webkit-transform:translate3d(0,108vh,0);opacity:.15}
-  100%{-webkit-transform:translate3d(0,112vh,0);opacity:0}
+  96% {-webkit-transform:translate3d(0,calc(var(--gf-end) - 40px),0);opacity:.3}
+  100%{-webkit-transform:translate3d(0,var(--gf-end),0);opacity:0}
 }
 @keyframes gf-fall{
   0%  {transform:translate3d(0,-90px,0);opacity:0}
-  6%  {opacity:1}
+  4%  {opacity:1}
   88% {opacity:.9}
-  97% {transform:translate3d(0,108vh,0);opacity:.15}
-  100%{transform:translate3d(0,112vh,0);opacity:0}
+  96% {transform:translate3d(0,calc(var(--gf-end) - 40px),0);opacity:.3}
+  100%{transform:translate3d(0,var(--gf-end),0);opacity:0}
+}
+@-webkit-keyframes gf-splash{
+  0%,90%{opacity:0;-webkit-transform:translateX(-50%) scale(.5)}
+  96%   {opacity:1;-webkit-transform:translateX(-50%) scale(1)}
+  100%  {opacity:0;-webkit-transform:translateX(-50%) scale(3)}
+}
+@keyframes gf-splash{
+  0%,90%{opacity:0;transform:translateX(-50%) scale(.5)}
+  96%   {opacity:1;transform:translateX(-50%) scale(1)}
+  100%  {opacity:0;transform:translateX(-50%) scale(3)}
 }
 </style>
 <script>
@@ -85,7 +95,8 @@
         var wrap = document.getElementById('gf-blood-wrap');
         if (!wrap) return;
         var NS = 'http://www.w3.org/2000/svg';
-        var active = 0, MAX = 6;
+        var active = 0, MAX = 7;
+        var fallEnd = Math.max(window.innerHeight + 100, 1100);
 
         function uid(){ return 'gf'+Math.random().toString(36).slice(2); }
 
@@ -93,31 +104,31 @@
             if (active >= MAX) return;
             active++;
 
-            var gradId = uid();
-            var size   = 11 + Math.random() * 13;   /* drop radius in px */
-            var dur    = (1.1 + Math.random() * 1.0).toFixed(2);
-            var x      = 18 + Math.random() * (window.innerWidth - 36);
-            var trailH = size * 4.5;
-            var trailW = size * 0.38;
+            var gradId  = uid();
+            var size    = 5 + Math.random() * 6;        /* 5–11 px radius — small realistic drop */
+            var dur     = (1.1 + Math.random() * 1.0).toFixed(2);
+            var x       = 18 + Math.random() * (window.innerWidth - 36);
+            var trailW  = Math.max(1.5, size * 0.28);
 
             /* --- wrapper div: only this moves --- */
             var el = document.createElement('div');
             el.style.cssText = 'position:absolute;top:0;left:'+x+'px;'
+                + '--gf-end:'+fallEnd+'px;'
                 + 'will-change:transform,opacity;'
                 + '-webkit-backface-visibility:hidden;backface-visibility:hidden;'
                 + '-webkit-animation:gf-fall '+dur+'s linear forwards;'
                 + 'animation:gf-fall '+dur+'s linear forwards;';
 
-            /* --- gradient trail above the drop --- */
+            /* --- gradient trail above the drop (fixed 45 px like reference) --- */
             var trail = document.createElement('div');
-            trail.style.cssText = 'position:absolute;bottom:'+(size*1.7)+'px;left:50%;'
+            trail.style.cssText = 'position:absolute;bottom:'+(size*1.6)+'px;left:50%;'
                 + '-webkit-transform:translateX(-50%);transform:translateX(-50%);'
-                + 'width:'+trailW+'px;height:'+trailH+'px;'
+                + 'width:'+trailW+'px;height:45px;'
                 + 'background:linear-gradient(180deg,'
-                +   'rgba(100,0,0,0) 0%,'
-                +   'rgba(135,0,0,.12) 45%,'
-                +   'rgba(160,0,0,.42) 100%);'
-                + 'border-radius:'+(trailW/2)+'px;';
+                +   'rgba(140,0,0,0) 0%,'
+                +   'rgba(155,0,0,.15) 50%,'
+                +   'rgba(170,0,0,.35) 100%);'
+                + 'border-radius:2px;';
             el.appendChild(trail);
 
             /* --- SVG teardrop --- */
@@ -127,7 +138,6 @@
             svg.setAttribute('viewBox','-30 -52 60 90');
             svg.style.cssText = 'display:block;overflow:visible;';
 
-            /* radial gradient */
             var defs = document.createElementNS(NS,'defs');
             var rg   = document.createElementNS(NS,'radialGradient');
             rg.setAttribute('id', gradId);
@@ -136,18 +146,17 @@
             [
                 [0,   'rgba(225,55,55,1)'],
                 [0.3, 'rgba(178,10,10,1)'],
-                [0.65,'rgba(108, 0, 0,1)'],
-                [1,   'rgba( 48, 0, 0,1)'],
+                [0.65,'rgba(108,0,0,1)'],
+                [1,   'rgba(48,0,0,1)'],
             ].forEach(function(s){
                 var stop = document.createElementNS(NS,'stop');
-                stop.setAttribute('offset',     s[0]);
+                stop.setAttribute('offset', s[0]);
                 stop.setAttribute('stop-color', s[1]);
                 rg.appendChild(stop);
             });
             defs.appendChild(rg);
             svg.appendChild(defs);
 
-            /* main teardrop path — bezier, pointed top, round bottom */
             var path = document.createElementNS(NS,'path');
             path.setAttribute('d',
                 'M0,-50 C-7,-43 -22,-20 -22,8 C-22,28 -11,35 0,35'
@@ -155,31 +164,52 @@
             path.setAttribute('fill','url(#'+gradId+')');
             svg.appendChild(path);
 
-            /* soft primary highlight */
             var h1 = document.createElementNS(NS,'ellipse');
             h1.setAttribute('cx','-8'); h1.setAttribute('cy','-16');
             h1.setAttribute('rx','7');  h1.setAttribute('ry','12');
-            h1.setAttribute('fill','rgba(255,195,195,0.24)');
+            h1.setAttribute('fill','rgba(255,195,195,0.22)');
             h1.setAttribute('transform','rotate(-22,-8,-16)');
             svg.appendChild(h1);
 
-            /* sharp secondary specular */
             var h2 = document.createElementNS(NS,'ellipse');
             h2.setAttribute('cx','-5'); h2.setAttribute('cy','-26');
             h2.setAttribute('rx','2.5');h2.setAttribute('ry','4');
-            h2.setAttribute('fill','rgba(255,230,230,0.42)');
+            h2.setAttribute('fill','rgba(255,230,230,0.4)');
             h2.setAttribute('transform','rotate(-18,-5,-26)');
             svg.appendChild(h2);
 
             el.appendChild(svg);
+
+            /* --- splash element at bottom (same x, fixed y near bottom) --- */
+            var splash = document.createElement('div');
+            splash.style.cssText = 'position:absolute;bottom:8vh;left:'+x+'px;'
+                + 'width:4px;height:4px;opacity:0;'
+                + 'will-change:opacity,transform;'
+                + '-webkit-backface-visibility:hidden;backface-visibility:hidden;'
+                + '-webkit-animation:gf-splash '+dur+'s linear forwards;'
+                + 'animation:gf-splash '+dur+'s linear forwards;';
+            /* two pseudo-like child divs since we can't use ::before/::after in JS easily */
+            var s1 = document.createElement('div');
+            s1.style.cssText = 'position:absolute;width:8px;height:8px;border-radius:50%;'
+                + 'background:rgba(160,0,0,.55);top:-4px;left:-4px;';
+            var s2 = document.createElement('div');
+            s2.style.cssText = 'position:absolute;width:2px;height:2px;border-radius:50%;'
+                + 'background:rgba(160,0,0,.5);top:-8px;left:8px;';
+            splash.appendChild(s1);
+            splash.appendChild(s2);
+            wrap.appendChild(splash);
+
             wrap.appendChild(el);
 
-            function done(){ try{wrap.removeChild(el);}catch(e){} active--; }
+            function done(){
+                try{wrap.removeChild(el);}catch(e){}
+                try{wrap.removeChild(splash);}catch(e){}
+                active--;
+            }
             el.addEventListener('animationend',       done);
             el.addEventListener('webkitAnimationEnd', done);
         }
 
-        /* stagger start so drops don't all appear at once */
         for (var i=0; i<3; i++) {
             (function(delay){ setTimeout(spawn, delay); })(i * 600);
         }
