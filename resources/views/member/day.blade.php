@@ -44,11 +44,20 @@
 <style>
     html.dark body { background: transparent !important; }
     html.dark { background: #030303 !important; }
+    .good-friday-page {
+        --color-card: rgba(10, 10, 18, 0.52);
+        --color-muted: rgba(15, 15, 25, 0.45);
+        --color-border: rgba(255, 255, 255, 0.09);
+    }
+    .good-friday-page > * {
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+    }
 </style>
 <div style="position:fixed;inset:0;z-index:0;
      background-image:url('https://abiytsom.abuneteklehaymanot.org/images/Jesus-.jpg');
      background-size:cover;background-position:center center;background-repeat:no-repeat;">
-    <div style="position:absolute;inset:0;background:rgba(0,0,0,0.68);"></div>
+    <div style="position:absolute;inset:0;background:rgba(0,0,0,0.42);"></div>
 </div>
 <script>
     window.addEventListener('alpine:initialized', function () {
@@ -56,7 +65,7 @@
     }, { once: true });
 </script>
 @endif
-<div x-data="dayPage()" class="px-4 pt-4 space-y-4" @if($isGoodFriday ?? false) style="position:relative;z-index:1" @endif>
+<div x-data="dayPage()" class="px-4 pt-4 space-y-4 @if($isGoodFriday ?? false) good-friday-page @endif" @if($isGoodFriday ?? false) style="position:relative;z-index:1" @endif>
 
     {{-- "Copied!" toast --}}
     <div x-show="linkCopied"
