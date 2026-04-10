@@ -29,8 +29,9 @@ class SurveyController extends Controller
         }
 
         return view('member.survey.show', [
-            'feedback' => $feedback,
-            'member'   => $feedback->member,
+            'feedback'      => $feedback,
+            'member'        => $feedback->member,
+            'currentMember' => $feedback->member,
         ]);
     }
 
@@ -104,8 +105,9 @@ class SurveyController extends Controller
         $feedback = MemberFeedback::where('token', $token)->firstOrFail();
 
         return view('member.survey.thankyou', [
-            'feedback' => $feedback,
-            'member'   => $feedback->member,
+            'feedback'      => $feedback,
+            'member'        => $feedback->member,
+            'currentMember' => $feedback->member,
         ]);
     }
 }
