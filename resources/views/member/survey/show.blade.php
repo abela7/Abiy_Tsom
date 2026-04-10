@@ -29,21 +29,22 @@
     ];
 @endphp
 
-<div
-    x-data="{
-        step: {{ $currentStep }},
+<script>
+function surveyWizard() {
+    return {
+        step:       {{ $currentStep }},
         totalSteps: 5,
-        saving: false,
+        saving:     false,
         submitting: false,
-        error: null,
-        answers: @json($savedAnswers),
+        error:      null,
+        answers:    @json($savedAnswers),
 
         get progress() {
             return Math.round((this.step - 1) / this.totalSteps * 100);
         },
 
         csrfToken() {
-            return document.querySelector('meta[name=csrf-token]')?.content ?? '';
+            return document.querySelector('meta[name="csrf-token"]')?.content ?? '';
         },
 
         async saveStep() {
@@ -105,9 +106,11 @@
                 this.submitting = false;
             }
         },
-    }"
-    class="max-w-lg mx-auto px-4 py-6 space-y-5"
->
+    };
+}
+</script>
+
+<div x-data="surveyWizard()" class="max-w-lg mx-auto px-4 py-6 space-y-5">
 
     {{-- Header --}}
     <div class="text-center pb-1">
