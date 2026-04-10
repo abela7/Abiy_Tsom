@@ -10,6 +10,7 @@ use App\Models\Announcement;
 use App\Models\Banner;
 use App\Models\DailyContent;
 use App\Models\HimamatDay;
+use App\Models\HimamatSeasonFaq;
 use App\Models\Lectionary;
 use App\Models\LentSeason;
 use App\Models\MemberChecklist;
@@ -493,9 +494,18 @@ class HomeController extends Controller
             ->first();
 
         $himamatDay = $this->resolveLinkedHimamatDay($daily);
+        if ($himamatDay) {
+            $seasonFaqs = HimamatSeasonFaq::query()
+                ->where('lent_season_id', $himamatDay->lent_season_id)
+                ->orderBy('sort_order')
+                ->get();
+            $himamatDay->setRelation('faqs', $seasonFaqs);
+        }
         $himamatTimeline = $himamatDay
             ? app(HimamatTimelineService::class)->buildTimeline($himamatDay)
             : null;
+
+        $isGoodFriday = $himamatDay?->slug === 'good-friday';
 
         return view('member.day', compact(
             'member',
@@ -510,6 +520,7 @@ class HomeController extends Controller
             'lectionary',
             'himamatDay',
             'himamatTimeline',
+            'isGoodFriday',
         ));
     }
 

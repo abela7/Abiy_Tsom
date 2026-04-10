@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
 use App\Models\HimamatDay;
+use App\Models\HimamatSeasonFaq;
 use App\Models\LentSeason;
 use App\Models\MemberHimamatPreference;
 use App\Services\HimamatSynaxariumService;
@@ -122,6 +123,13 @@ class HimamatController extends Controller
         }
 
         $timelineData = $timeline->buildTimeline($himamatDay, $slot);
+
+        $seasonFaqs = HimamatSeasonFaq::query()
+            ->where('lent_season_id', $season->id)
+            ->orderBy('sort_order')
+            ->get();
+        $himamatDay->setRelation('faqs', $seasonFaqs);
+
         $publishedDays = HimamatDay::query()
             ->where('lent_season_id', $season->id)
             ->where('is_published', true)
@@ -135,7 +143,11 @@ class HimamatController extends Controller
         $nextDay = $dayIndex !== false ? $publishedDays->get($dayIndex + 1) : null;
         $ethDateInfo = $synaxarium->resolveDateInfo($himamatDay, app()->getLocale());
 
-        return view('member.himamat.day', [
+        $viewName = $himamatDay->slug === 'good-friday'
+            ? 'member.himamat.good-friday'
+            : 'member.himamat.day';
+
+        return view($viewName, [
             'member' => $member,
             'day' => $himamatDay,
             'timeline' => $timelineData,
