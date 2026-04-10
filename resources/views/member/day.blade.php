@@ -225,8 +225,8 @@
                 var b=(t-0.88)/0.12; return 0.97 + b*b*0.03;                /* absorb */
             }
 
-            var FALL_MS  = 3800;   /* time to slide full rail */
-            var PAUSE_MS = 2200;   /* rest + fade at bottom, then reset */
+            var FALL_MS  = 7500;   /* time to slide full rail */
+            var PAUSE_MS = 2800;   /* rest + fade at bottom, then reset */
             var CYCLE    = FALL_MS + PAUSE_MS;
             var t0 = null;
 
