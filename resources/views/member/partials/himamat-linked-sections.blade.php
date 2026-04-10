@@ -216,14 +216,14 @@
                     {{-- Left timeline rail --}}
                     <div class="flex flex-col items-center w-6 shrink-0 pt-1">
                         {{-- Node dot --}}
-                        <div data-timeline-node data-slot-state="{{ $state }}" class="relative z-10 w-3 h-3 rounded-full {{ $nodeColor }} mt-5 transition-all duration-300">
+                        <div class="relative z-10 w-3 h-3 rounded-full {{ $nodeColor }} mt-5 transition-all duration-300">
                             @if($state === 'current')
                                 <span class="absolute inset-0 rounded-full bg-accent animate-ping opacity-40"></span>
                             @endif
                         </div>
                         {{-- Vertical line --}}
                         @if(!$loop->last)
-                            <div data-timeline-line class="flex-1 w-[2px] {{ $lineColor }} mt-1 rounded-full"></div>
+                            <div class="flex-1 w-[2px] {{ $lineColor }} mt-1 rounded-full"></div>
                         @endif
                     </div>
 
@@ -406,76 +406,25 @@
 @endif
 
 @if($himamatDay->faqs->isNotEmpty())
-@php
-    $allFaqs    = $himamatDay->faqs;
-    $previewFaq = $allFaqs->first();
-    $modalFaqs  = $allFaqs->sortByDesc('id')->values();
-    $isAmharic  = app()->getLocale() === 'am';
-@endphp
-<section x-data="{ showFaqModal: false, previewOpen: false, activeFaq: null }"
-         @keydown.escape.window="showFaqModal = false; activeFaq = null">
-
-    {{-- ── Preview Card ── --}}
-    <div class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
-
-        {{-- Header --}}
-        <div class="flex items-center gap-3 px-5 py-4 border-b border-border/40">
-            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center shrink-0">
-                <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.228 9c.549-1.165 1.918-2 3.522-2 2.209 0 4 1.567 4 3.5 0 1.418-.964 2.638-2.347 3.188-.74.294-1.153.838-1.153 1.412V16m.01 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-            </div>
-            <div class="min-w-0">
-                <h2 class="text-[15px] font-bold text-primary leading-snug">{{ $isAmharic ? 'በተደጋጋሚ የሚነሱ ጥያዎች' : 'Frequently Asked Questions' }}</h2>
-                <p class="text-[11px] text-muted-text mt-0.5">{{ $allFaqs->count() }} {{ $isAmharic ? 'ጥያቄዎች' : 'questions' }}</p>
-            </div>
-        </div>
-
-        {{-- Single preview FAQ --}}
-        <div class="px-5 py-4">
-            <button type="button" @click="previewOpen = !previewOpen"
-                    class="w-full flex items-start gap-3 text-left group touch-manipulation">
-                <div class="shrink-0 w-7 h-7 rounded-lg bg-accent/10 flex items-center justify-center text-[11px] font-bold text-accent mt-0.5">1</div>
-                <span class="flex-1 text-[14px] sm:text-[15px] font-semibold text-primary leading-snug group-hover:text-accent transition-colors">
-                    {{ localized($previewFaq, 'question') ?? $previewFaq->question_en }}
-                </span>
-                <svg class="w-4 h-4 text-muted-text mt-1 shrink-0 transition-transform duration-200 group-hover:text-accent"
-                     :class="previewOpen && 'rotate-180'"
-                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
-                </svg>
-            </button>
-            <div x-show="previewOpen" x-cloak x-collapse>
-                <div class="mt-3 ml-10 rounded-xl bg-muted/40 border border-border/30 px-4 py-3.5">
-                    <p class="text-[13px] sm:text-[14px] leading-[1.9] text-secondary whitespace-pre-line">
-                        {{ localized($previewFaq, 'answer') ?? $previewFaq->answer_en }}
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        {{-- View More button --}}
-        @if($allFaqs->count() > 1)
-        <div class="px-5 pb-5">
-            <button type="button" @click="showFaqModal = true"
-                    class="w-full flex items-center justify-between gap-3 rounded-xl border border-accent/25 bg-accent/5 px-4 py-3.5 text-left transition hover:bg-accent/10 hover:border-accent/40 active:scale-[0.99] touch-manipulation group">
-                <div>
-                    <p class="text-[13px] font-bold text-accent">
-                        {{ $isAmharic ? 'ተጨማሪ ጥያቄዎችን ይመልከቱ' : 'View more questions' }}
-                    </p>
-                    <p class="text-[11px] text-accent/60 mt-0.5">
-                        {{ $isAmharic ? 'በየቀኑ አዳዲስ ጥያቄዎች እንጨምራለን' : 'We add new questions every day' }}
-                    </p>
-                </div>
-                <div class="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
-                    <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+    <section class="mt-8" x-data="{ activeFaq: null, showFaqModal: false }">
+        {{-- Section Header — tap to open FAQ modal --}}
+        <div class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden mb-3 cursor-pointer hover:border-border/70 active:scale-[0.99] transition-all touch-manipulation"
+             @click="showFaqModal = true">
+            <div class="px-5 py-4 flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center shrink-0">
+                    <svg class="w-4.5 h-4.5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.228 9c.549-1.165 1.918-2 3.522-2 2.209 0 4 1.567 4 3.5 0 1.418-.964 2.638-2.347 3.188-.74.294-1.153.838-1.153 1.412V16m.01 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                 </div>
-            </button>
+                <div class="flex-1">
+                    <h2 class="text-[15px] font-bold text-primary">{{ app()->getLocale() === 'am' ? 'በተደጋጋሚ የሚነሱ ጥያዎች መልስ' : 'Frequently Asked Questions' }}</h2>
+                    <p class="text-xs text-muted-text mt-0.5">{{ $himamatDay->faqs->count() }} {{ app()->getLocale() === 'am' ? 'ጥያቄዎች' : 'questions' }}</p>
+                </div>
+                <svg class="w-4 h-4 text-muted-text shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </div>
         </div>
-        @endif
-    </div>
 
     {{-- ── Modal backdrop ── --}}
     <div x-show="showFaqModal"
@@ -486,7 +435,7 @@
          x-transition:leave="transition ease-in duration-150"
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
-         class="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+         class="fixed inset-0 z-40 bg-black/60"
          @click="showFaqModal = false; activeFaq = null">
     </div>
 
@@ -494,93 +443,89 @@
     <div x-show="showFaqModal"
          x-cloak
          x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0 translate-y-10"
+         x-transition:enter-start="opacity-0 translate-y-8"
          x-transition:enter-end="opacity-100 translate-y-0"
          x-transition:leave="transition ease-in duration-200"
          x-transition:leave-start="opacity-100 translate-y-0"
-         x-transition:leave-end="opacity-0 translate-y-10"
-         class="fixed inset-x-0 bottom-0 z-50 flex justify-center sm:inset-0 sm:items-center sm:px-4"
-         style="pointer-events: none;">
+         x-transition:leave-end="opacity-0 translate-y-6"
+         class="fixed inset-x-0 bottom-0 z-50 sm:inset-0 sm:flex sm:items-center sm:justify-center sm:p-6"
+         style="pointer-events:none;">
 
-        <div class="w-full sm:max-w-lg bg-card rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[90vh]"
-             style="pointer-events: auto;"
+        <div class="w-full sm:max-w-xl flex flex-col max-h-[88vh] sm:max-h-[80vh]
+                    bg-card rounded-t-[2rem] sm:rounded-[2rem] shadow-2xl overflow-hidden"
+             style="pointer-events:auto;"
              @click.stop>
 
-            {{-- Drag handle --}}
-            <div class="flex justify-center pt-3 pb-1">
-                <div class="w-10 h-1 rounded-full bg-border/60"></div>
-            </div>
-
             {{-- Header --}}
-            <div class="flex items-center justify-between gap-3 px-5 py-3.5 border-b border-border/40 shrink-0">
-                <div class="flex items-center gap-3 min-w-0">
-                    <div class="w-8 h-8 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
-                        <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.228 9c.549-1.165 1.918-2 3.522-2 2.209 0 4 1.567 4 3.5 0 1.418-.964 2.638-2.347 3.188-.74.294-1.153.838-1.153 1.412V16m.01 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="text-[15px] font-bold text-primary leading-snug">{{ $isAmharic ? 'ሁሉም ጥያቄዎች' : 'All Questions' }}</p>
-                        <p class="text-[11px] text-muted-text">{{ $allFaqs->count() }} {{ $isAmharic ? 'ጥያቄዎች' : 'questions' }}</p>
-                    </div>
+            <div class="flex items-center justify-between gap-4 px-6 pt-6 pb-5 shrink-0">
+                <div>
+                    <h2 class="text-[17px] font-bold text-primary tracking-tight">
+                        {{ app()->getLocale() === 'am' ? 'ጥያቄዎችና መልሶች' : 'Questions & Answers' }}
+                    </h2>
+                    <p class="text-xs text-muted-text mt-1">
+                        {{ $himamatDay->faqs->count() }} {{ app()->getLocale() === 'am' ? 'ጥያቄዎች' : 'questions' }}
+                    </p>
                 </div>
-                <button type="button" @click="showFaqModal = false; activeFaq = null"
-                        class="w-8 h-8 rounded-xl bg-muted flex items-center justify-center text-muted-text hover:bg-border hover:text-primary transition shrink-0 touch-manipulation">
+                <button type="button"
+                        @click="showFaqModal = false; activeFaq = null"
+                        class="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-muted-text hover:bg-border hover:text-primary transition-colors shrink-0 touch-manipulation">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                 </button>
             </div>
 
-            {{-- Scrollable list --}}
-            <div class="overflow-y-auto overscroll-contain flex-1 px-4 py-4 space-y-2">
-                @foreach($modalFaqs as $index => $faq)
+            {{-- Divider --}}
+            <div class="h-px bg-border/50 shrink-0"></div>
+
+            {{-- FAQ list --}}
+            <div class="overflow-y-auto overscroll-contain flex-1">
+                @foreach($himamatDay->faqs as $index => $faq)
                     @php
                         $mq = localized($faq, 'question') ?? $faq->question_en;
                         $ma = localized($faq, 'answer')   ?? $faq->answer_en;
                     @endphp
-                    <div class="rounded-2xl border overflow-hidden transition-colors duration-200"
-                         :class="activeFaq === {{ $index }} ? 'border-accent/30 bg-accent/[0.03]' : 'border-border bg-card'">
+                    <div class="{{ !$loop->last ? 'border-b border-border/25' : '' }}">
 
+                        {{-- Question row --}}
                         <button type="button"
                                 @click="activeFaq = (activeFaq === {{ $index }}) ? null : {{ $index }}"
-                                class="w-full flex items-start gap-3 px-4 py-3.5 text-left touch-manipulation group">
-                            <span class="shrink-0 w-6 h-6 rounded-md flex items-center justify-center text-[11px] font-bold mt-0.5 transition-colors"
+                                class="w-full flex items-start gap-4 px-6 py-4 text-left touch-manipulation">
+                            <span class="shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold mt-0.5 transition-all duration-200"
                                   :class="activeFaq === {{ $index }} ? 'bg-accent text-white' : 'bg-muted text-muted-text'">
                                 {{ $index + 1 }}
                             </span>
-                            <span class="flex-1 text-[14px] font-semibold leading-snug text-primary">{{ $mq }}</span>
+                            <span class="flex-1 text-[14px] font-semibold leading-snug transition-colors duration-200"
+                                  :class="activeFaq === {{ $index }} ? 'text-accent' : 'text-primary'">
+                                {{ $mq }}
+                            </span>
                             <svg class="w-4 h-4 shrink-0 mt-0.5 text-muted-text transition-transform duration-200"
-                                 :class="activeFaq === {{ $index }} && 'rotate-180 text-accent'"
+                                 :class="activeFaq === {{ $index }} ? 'rotate-180 text-accent' : ''"
                                  fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                             </svg>
                         </button>
 
+                        {{-- Answer --}}
                         <div x-show="activeFaq === {{ $index }}"
                              x-cloak
                              x-transition:enter="transition ease-out duration-200"
                              x-transition:enter-start="opacity-0 -translate-y-1"
-                             x-transition:enter-end="opacity-100 translate-y-0">
-                            <div class="px-4 pb-4 pt-0">
-                                <div class="ml-9 rounded-xl bg-muted/50 border border-border/30 px-4 py-3">
-                                    <p class="text-[13px] leading-relaxed text-secondary whitespace-pre-line">{{ $ma }}</p>
-                                </div>
+                             x-transition:enter-end="opacity-100 translate-y-0"
+                             x-transition:leave="transition ease-in duration-150"
+                             x-transition:leave-start="opacity-100 translate-y-0"
+                             x-transition:leave-end="opacity-0">
+                            <div class="px-6 pb-5 pl-16">
+                                <p class="text-[13px] leading-[1.85] text-secondary whitespace-pre-line">{{ $ma }}</p>
                             </div>
                         </div>
                     </div>
                 @endforeach
             </div>
 
-            {{-- Footer --}}
-            <div class="px-5 py-4 border-t border-border/40 shrink-0">
-                <button type="button" @click="showFaqModal = false; activeFaq = null"
-                        class="w-full rounded-xl bg-muted py-3 text-sm font-semibold text-secondary hover:bg-border transition touch-manipulation">
-                    {{ $isAmharic ? 'ዝጋ' : 'Close' }}
-                </button>
-            </div>
+            {{-- Bottom padding for mobile safe area --}}
+            <div class="h-5 shrink-0"></div>
         </div>
     </div>
-
-</section>
+    </section>
 @endif
