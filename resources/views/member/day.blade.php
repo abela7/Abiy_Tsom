@@ -155,11 +155,16 @@
                 container.style.position = 'relative';
 
             /* ── Trail smear: full height, scaled from 0 at top ── */
+            /* Gradient: barely visible at top (old/dry blood), builds bold toward drop tip */
             var trail = document.createElement('div');
             trail.style.cssText = 'position:absolute;pointer-events:none;z-index:4;'
                 + 'left:'+(cx-1)+'px;top:'+sy+'px;'
                 + 'width:2px;height:'+H+'px;'
-                + 'background:linear-gradient(180deg,rgba(150,0,0,0.7) 0%,rgba(80,0,0,0.25) 100%);'
+                + 'background:linear-gradient(180deg,'
+                +   'rgba(100,0,0,0.05) 0%,'
+                +   'rgba(125,0,0,0.22) 40%,'
+                +   'rgba(160,0,0,0.78) 80%,'
+                +   'rgba(145,0,0,0.55) 100%);'
                 + 'transform:scaleY(0);transform-origin:top center;'
                 + 'border-radius:1px;'
                 + 'will-change:transform;';
@@ -229,17 +234,27 @@
                 if(!t0) t0=ts;
                 var e = (ts-t0) % CYCLE;
 
+                /* ── Live recalc: keeps drop correct when cards expand ── */
+                var cr2 = container.getBoundingClientRect();
+                var fr2 = first.getBoundingClientRect();
+                var lr2 = last.getBoundingClientRect();
+                var sy2 = fr2.top + fr2.height/2 - cr2.top;
+                var H2  = (lr2.top + lr2.height/2) - (fr2.top + fr2.height/2);
+                if (H2 > 20) {
+                    trail.style.top    = sy2 + 'px';
+                    trail.style.height = H2  + 'px';
+                    drop.style.top     = (sy2 - DH * 0.7) + 'px';
+                }
+                var liveH = H2 > 20 ? H2 : H;
+
                 if (e < FALL_MS) {
                     var t = e / FALL_MS;
                     var p = ease(t);
-                    var y = p * H;
+                    var y = p * liveH;
 
                     /* Squash-stretch: elongate as it speeds up */
-                    var speed  = t > 0.22 ? Math.min(1.35, 1 + (t-0.22)*0.55) : 1;
-                    var sqz    = +(1/speed).toFixed(3);
-                    var str    = +speed.toFixed(3);
-
-                    drop.style.transform  = 'translateY('+y.toFixed(1)+'px) scaleY('+str+') scaleX('+sqz+')';
+                    var speed = t > 0.22 ? Math.min(1.35, 1 + (t-0.22)*0.55) : 1;
+                    drop.style.transform  = 'translateY('+y.toFixed(1)+'px) scaleY('+speed.toFixed(3)+') scaleX('+(1/speed).toFixed(3)+')';
                     drop.style.opacity    = '1';
                     trail.style.transform = 'scaleY('+Math.max(0,p).toFixed(4)+')';
                     trail.style.opacity   = '1';
@@ -248,23 +263,21 @@
                     var pt = (e - FALL_MS) / PAUSE_MS;
 
                     if (pt < 0.35) {
-                        /* Drop "absorbed" — squash flat then fade */
+                        /* Drop "absorbed" — squash flat */
                         var sq = 1 - pt/0.35 * 0.85;
-                        drop.style.transform = 'translateY('+H.toFixed(1)+'px) scaleY('+Math.max(0.15,sq).toFixed(3)+') scaleX('+(1+(1-sq)*0.5).toFixed(3)+')';
+                        drop.style.transform = 'translateY('+liveH.toFixed(1)+'px) scaleY('+Math.max(0.15,sq).toFixed(3)+') scaleX('+(1+(1-sq)*0.5).toFixed(3)+')';
                         drop.style.opacity   = '1';
                     } else {
-                        /* Fade out both, then silently reset */
+                        /* Fade out both */
                         var fo = Math.max(0, 1 - (pt-0.35)/0.3);
-                        drop.style.opacity   = fo.toFixed(3);
-                        trail.style.opacity  = fo.toFixed(3);
+                        drop.style.opacity  = fo.toFixed(3);
+                        trail.style.opacity = fo.toFixed(3);
                     }
 
                     if (pt > 0.72) {
-                        /* Reset position invisibly */
-                        drop.style.transition  = 'none';
-                        trail.style.transition = 'none';
-                        drop.style.transform   = 'translateY(0) scaleY(1) scaleX(1)';
-                        trail.style.transform  = 'scaleY(0)';
+                        /* Reset invisibly */
+                        drop.style.transform  = 'translateY(0) scaleY(1) scaleX(1)';
+                        trail.style.transform = 'scaleY(0)';
                     }
                 }
                 requestAnimationFrame(frame);
