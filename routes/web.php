@@ -103,6 +103,22 @@ Route::post('/feedback', [FeedbackController::class, 'store'])
     ->middleware('throttle:5,60')
     ->name('feedback.store');
 
+// Post-Fasika feedback survey (token-based, no member session required)
+Route::get('/survey/{token}', [Member\SurveyController::class, 'show'])
+    ->where('token', '[A-Za-z0-9]{48}')
+    ->name('survey.show');
+Route::post('/survey/{token}/save', [Member\SurveyController::class, 'save'])
+    ->where('token', '[A-Za-z0-9]{48}')
+    ->middleware('throttle:30,1')
+    ->name('survey.save');
+Route::post('/survey/{token}/submit', [Member\SurveyController::class, 'submit'])
+    ->where('token', '[A-Za-z0-9]{48}')
+    ->middleware('throttle:10,1')
+    ->name('survey.submit');
+Route::get('/survey/{token}/thanks', [Member\SurveyController::class, 'thanks'])
+    ->where('token', '[A-Za-z0-9]{48}')
+    ->name('survey.thanks');
+
 // Volunteer invitations
 Route::get('/invite/{slug}', [VolunteerInviteController::class, 'show'])->name('volunteer.invite.show');
 Route::post('/invite/{slug}/track', [VolunteerInviteController::class, 'track'])
@@ -436,10 +452,14 @@ Route::middleware(['auth', 'admin.audit'])->prefix('admin')->name('admin.')->gro
         Route::delete('/banners/{banner}', [Admin\BannerController::class, 'destroy'])->name('banners.destroy');
         Route::post('/banners/{banner}/toggle', [Admin\BannerController::class, 'toggleActive'])->name('banners.toggle');
 
-        // Feedback
+        // Feedback (contact form)
         Route::get('/feedback', [Admin\FeedbackController::class, 'index'])->name('feedback.index');
         Route::post('/feedback/{feedback}/toggle-read', [Admin\FeedbackController::class, 'toggleRead'])->name('feedback.toggle-read');
         Route::delete('/feedback/{feedback}', [Admin\FeedbackController::class, 'destroy'])->name('feedback.destroy');
+
+        // Post-Fasika survey results
+        Route::get('/survey', [Admin\SurveyController::class, 'index'])->name('survey.index');
+        Route::get('/survey/export', [Admin\SurveyController::class, 'export'])->name('survey.export');
 
         // Content suggestions review
         Route::get('/suggestions', [Admin\ContentSuggestionController::class, 'index'])->name('suggestions.index');
