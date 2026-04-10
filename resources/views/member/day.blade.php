@@ -248,7 +248,7 @@
 
     {{-- Day title with prev/next navigation --}}
     <div class="flex items-center justify-between">
-        @if($prevDay && !($isGoodFriday ?? false))
+        @if($prevDay)
         <a href="{{ $prevDayHref }}" class="shrink-0 w-10 h-10 rounded-xl bg-muted hover:bg-border flex items-center justify-center text-muted-text hover:text-primary transition-all active:scale-95">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
         </a>
@@ -263,7 +263,7 @@
             <p class="text-sm text-muted-text mt-0.5">{{ $daily->date->locale('en')->translatedFormat('l, F j, Y') }}</p>
         </div>
 
-        @if($nextDay && !($isGoodFriday ?? false))
+        @if($nextDay)
         <a href="{{ $nextDayHref }}" class="shrink-0 w-10 h-10 rounded-xl bg-muted hover:bg-border flex items-center justify-center text-muted-text hover:text-primary transition-all active:scale-95">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </a>
