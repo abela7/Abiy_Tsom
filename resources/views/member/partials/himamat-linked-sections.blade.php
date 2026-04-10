@@ -406,79 +406,126 @@
 @endif
 
 @if($himamatDay->faqs->isNotEmpty())
-    <section class="mt-8" x-data="{ activeFaq: null }">
-        {{-- Section Header --}}
-        <div class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden mb-3">
+    <section class="mt-8" x-data="{ activeFaq: null, showFaqModal: false }">
+        {{-- Section Header — tap to open FAQ modal --}}
+        <div class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden mb-3 cursor-pointer hover:border-border/70 active:scale-[0.99] transition-all touch-manipulation"
+             @click="showFaqModal = true">
             <div class="px-5 py-4 flex items-center gap-3">
                 <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center shrink-0">
                     <svg class="w-4.5 h-4.5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.228 9c.549-1.165 1.918-2 3.522-2 2.209 0 4 1.567 4 3.5 0 1.418-.964 2.638-2.347 3.188-.74.294-1.153.838-1.153 1.412V16m.01 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                 </div>
-                <div>
+                <div class="flex-1">
                     <h2 class="text-[15px] font-bold text-primary">{{ app()->getLocale() === 'am' ? 'በተደጋጋሚ የሚነሱ ጥያዎች መልስ' : 'Frequently Asked Questions' }}</h2>
+                    <p class="text-xs text-muted-text mt-0.5">{{ $himamatDay->faqs->count() }} {{ app()->getLocale() === 'am' ? 'ጥያቄዎች' : 'questions' }}</p>
                 </div>
+                <svg class="w-4 h-4 text-muted-text shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
             </div>
         </div>
 
-        {{-- FAQ Items --}}
-        <div class="space-y-2.5">
-            @foreach($himamatDay->faqs as $index => $faq)
-                @php
-                    $localizedQuestion = localized($faq, 'question') ?? $faq->question_en;
-                    $localizedAnswer = localized($faq, 'answer') ?? $faq->answer_en;
-                @endphp
+    {{-- ── Modal backdrop ── --}}
+    <div x-show="showFaqModal"
+         x-cloak
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-40 bg-black/60"
+         @click="showFaqModal = false; activeFaq = null">
+    </div>
 
-                <article class="rounded-2xl border transition-all duration-300 overflow-hidden"
-                         :class="activeFaq === {{ $index }}
-                             ? 'border-accent/30 bg-gradient-to-br from-accent/[0.04] to-transparent shadow-md shadow-accent/5 ring-1 ring-accent/10'
-                             : 'border-border bg-card shadow-sm hover:border-border/80'">
+    {{-- ── Modal panel ── --}}
+    <div x-show="showFaqModal"
+         x-cloak
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 translate-y-8"
+         x-transition:enter-end="opacity-100 translate-y-0"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100 translate-y-0"
+         x-transition:leave-end="opacity-0 translate-y-6"
+         class="fixed inset-x-0 bottom-0 z-50 sm:inset-0 sm:flex sm:items-center sm:justify-center sm:p-6"
+         style="pointer-events:none;">
 
-                    <button type="button"
-                            @click="activeFaq = activeFaq === {{ $index }} ? null : {{ $index }}"
-                            class="w-full flex items-start gap-3.5 px-4 py-4 text-left group touch-manipulation">
+        <div class="w-full sm:max-w-xl flex flex-col max-h-[88vh] sm:max-h-[80vh]
+                    bg-card rounded-t-[2rem] sm:rounded-[2rem] shadow-2xl overflow-hidden"
+             style="pointer-events:auto;"
+             @click.stop>
 
-                        {{-- Question number badge --}}
-                        <div class="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-bold mt-0.5 transition-colors duration-300"
-                             :class="activeFaq === {{ $index }}
-                                 ? 'bg-accent text-white'
-                                 : 'bg-muted/70 text-muted-text group-hover:bg-accent/10 group-hover:text-accent'">
-                            {{ $index + 1 }}
-                        </div>
+            {{-- Header --}}
+            <div class="flex items-center justify-between gap-4 px-6 pt-6 pb-5 shrink-0">
+                <div>
+                    <h2 class="text-[17px] font-bold text-primary tracking-tight">
+                        {{ app()->getLocale() === 'am' ? 'ጥያቄዎችና መልሶች' : 'Questions & Answers' }}
+                    </h2>
+                    <p class="text-xs text-muted-text mt-1">
+                        {{ $himamatDay->faqs->count() }} {{ app()->getLocale() === 'am' ? 'ጥያቄዎች' : 'questions' }}
+                    </p>
+                </div>
+                <button type="button"
+                        @click="showFaqModal = false; activeFaq = null"
+                        class="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-muted-text hover:bg-border hover:text-primary transition-colors shrink-0 touch-manipulation">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
 
-                        {{-- Question text --}}
-                        <h4 class="flex-1 text-[15px] font-semibold leading-relaxed transition-colors duration-200"
-                            :class="activeFaq === {{ $index }} ? 'text-accent' : 'text-primary group-hover:text-accent/80'">
-                            {{ $localizedQuestion }}
-                        </h4>
+            {{-- Divider --}}
+            <div class="h-px bg-border/50 shrink-0"></div>
 
-                        {{-- Toggle icon --}}
-                        <div class="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center mt-0.5 transition-all duration-300"
-                             :class="activeFaq === {{ $index }}
-                                 ? 'bg-accent/10 text-accent rotate-180'
-                                 : 'text-muted-text group-hover:text-accent'">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+            {{-- FAQ list --}}
+            <div class="overflow-y-auto overscroll-contain flex-1">
+                @foreach($himamatDay->faqs as $index => $faq)
+                    @php
+                        $mq = localized($faq, 'question') ?? $faq->question_en;
+                        $ma = localized($faq, 'answer')   ?? $faq->answer_en;
+                    @endphp
+                    <div class="{{ !$loop->last ? 'border-b border-border/25' : '' }}">
+
+                        {{-- Question row --}}
+                        <button type="button"
+                                @click="activeFaq = (activeFaq === {{ $index }}) ? null : {{ $index }}"
+                                class="w-full flex items-start gap-4 px-6 py-4 text-left touch-manipulation">
+                            <span class="shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold mt-0.5 transition-all duration-200"
+                                  :class="activeFaq === {{ $index }} ? 'bg-accent text-white' : 'bg-muted text-muted-text'">
+                                {{ $index + 1 }}
+                            </span>
+                            <span class="flex-1 text-[14px] font-semibold leading-snug transition-colors duration-200"
+                                  :class="activeFaq === {{ $index }} ? 'text-accent' : 'text-primary'">
+                                {{ $mq }}
+                            </span>
+                            <svg class="w-4 h-4 shrink-0 mt-0.5 text-muted-text transition-transform duration-200"
+                                 :class="activeFaq === {{ $index }} ? 'rotate-180 text-accent' : ''"
+                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                             </svg>
-                        </div>
-                    </button>
+                        </button>
 
-                    {{-- Answer --}}
-                    <div x-show="activeFaq === {{ $index }}"
-                         x-cloak
-                         x-collapse>
-                        <div class="px-4 pb-5 pt-0">
-                            <div class="ml-[2.625rem] relative rounded-xl bg-muted/30 border border-border/30 px-4 py-4">
-                                {{-- Decorative quote --}}
-                                <div class="absolute -top-2 -left-1 text-accent/15">
-                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
-                                </div>
-                                <p class="text-[14px] sm:text-[15px] leading-[2] text-secondary whitespace-pre-line">{{ $localizedAnswer }}</p>
+                        {{-- Answer --}}
+                        <div x-show="activeFaq === {{ $index }}"
+                             x-cloak
+                             x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 -translate-y-1"
+                             x-transition:enter-end="opacity-100 translate-y-0"
+                             x-transition:leave="transition ease-in duration-150"
+                             x-transition:leave-start="opacity-100 translate-y-0"
+                             x-transition:leave-end="opacity-0">
+                            <div class="px-6 pb-5 pl-16">
+                                <p class="text-[13px] leading-[1.85] text-secondary whitespace-pre-line">{{ $ma }}</p>
                             </div>
                         </div>
                     </div>
-                </article>
-            @endforeach
+                @endforeach
+            </div>
+
+            {{-- Bottom padding for mobile safe area --}}
+            <div class="h-5 shrink-0"></div>
         </div>
+    </div>
     </section>
 @endif
