@@ -61,29 +61,44 @@
 </div>
 <div id="gf-blood-wrap" style="position:fixed;inset:0;z-index:3;pointer-events:none;overflow:hidden;transform:translateZ(0);"></div>
 <style>
+/* Y-axis fall — ease-in simulates gravity acceleration */
 @-webkit-keyframes gf-fall{
   0%  {-webkit-transform:translate3d(0,-90px,0);opacity:0}
-  4%  {opacity:1}
-  88% {opacity:.9}
-  96% {-webkit-transform:translate3d(0,calc(var(--gf-end) - 40px),0);opacity:.3}
+  5%  {opacity:1}
+  82% {opacity:.92}
+  96% {-webkit-transform:translate3d(0,calc(var(--gf-end) - 30px),0);opacity:.22}
   100%{-webkit-transform:translate3d(0,var(--gf-end),0);opacity:0}
 }
 @keyframes gf-fall{
   0%  {transform:translate3d(0,-90px,0);opacity:0}
-  4%  {opacity:1}
-  88% {opacity:.9}
-  96% {transform:translate3d(0,calc(var(--gf-end) - 40px),0);opacity:.3}
+  5%  {opacity:1}
+  82% {opacity:.92}
+  96% {transform:translate3d(0,calc(var(--gf-end) - 30px),0);opacity:.22}
   100%{transform:translate3d(0,var(--gf-end),0);opacity:0}
 }
+/* Subtle X-axis drift — amplitude set per drop via --gf-sx */
+@-webkit-keyframes gf-sway{
+  0%  {-webkit-transform:translateX(0)}
+  30% {-webkit-transform:translateX(var(--gf-sx,0px))}
+  65% {-webkit-transform:translateX(calc(var(--gf-sx,0px) * -.55))}
+  100%{-webkit-transform:translateX(0)}
+}
+@keyframes gf-sway{
+  0%  {transform:translateX(0)}
+  30% {transform:translateX(var(--gf-sx,0px))}
+  65% {transform:translateX(calc(var(--gf-sx,0px) * -.55))}
+  100%{transform:translateX(0)}
+}
+/* Splash burst at impact */
 @-webkit-keyframes gf-splash{
-  0%,90%{opacity:0;-webkit-transform:translateX(-50%) scale(.5)}
-  96%   {opacity:1;-webkit-transform:translateX(-50%) scale(1)}
-  100%  {opacity:0;-webkit-transform:translateX(-50%) scale(3)}
+  0%,88%{opacity:0;-webkit-transform:translateX(-50%) scale(.4)}
+  94%   {opacity:1;-webkit-transform:translateX(-50%) scale(1)}
+  100%  {opacity:0;-webkit-transform:translateX(-50%) scale(3.5)}
 }
 @keyframes gf-splash{
-  0%,90%{opacity:0;transform:translateX(-50%) scale(.5)}
-  96%   {opacity:1;transform:translateX(-50%) scale(1)}
-  100%  {opacity:0;transform:translateX(-50%) scale(3)}
+  0%,88%{opacity:0;transform:translateX(-50%) scale(.4)}
+  94%   {opacity:1;transform:translateX(-50%) scale(1)}
+  100%  {opacity:0;transform:translateX(-50%) scale(3.5)}
 }
 </style>
 <script>
@@ -100,105 +115,147 @@
 
         function uid(){ return 'gf'+Math.random().toString(36).slice(2); }
 
+        /* Build one SVG stop */
+        function stop(rg, offset, color){
+            var s = document.createElementNS(NS,'stop');
+            s.setAttribute('offset', offset);
+            s.setAttribute('stop-color', color);
+            rg.appendChild(s);
+        }
+
+        /* Build one SVG ellipse */
+        function ellipse(g, cx,cy,rx,ry,fill,rot){
+            var e = document.createElementNS(NS,'ellipse');
+            e.setAttribute('cx',cx); e.setAttribute('cy',cy);
+            e.setAttribute('rx',rx); e.setAttribute('ry',ry);
+            e.setAttribute('fill',fill);
+            if(rot) e.setAttribute('transform','rotate('+rot+','+cx+','+cy+')');
+            g.appendChild(e);
+        }
+
         function spawn(){
             if (active >= MAX) return;
             active++;
 
-            var gradId  = uid();
-            var size    = 5 + Math.random() * 6;        /* 5–11 px radius — small realistic drop */
-            var dur     = (1.1 + Math.random() * 1.0).toFixed(2);
-            var x       = 18 + Math.random() * (window.innerWidth - 36);
-            var trailW  = Math.max(1.5, size * 0.28);
+            var gradId = uid();
+            var clipId = uid();
+            /* Small drop: 5–10 px rendered radius */
+            var size   = 5 + Math.random() * 5;
+            var dur    = (1.15 + Math.random() * 0.9).toFixed(2);
+            var x      = 18 + Math.random() * (window.innerWidth - 36);
+            var swayAmt= ((2.5 + Math.random() * 3) * (Math.random() > .5 ? 1 : -1)).toFixed(1);
+            var swayDur= (0.65 + Math.random() * 0.55).toFixed(2);
+            var trailW = Math.max(1.2, size * 0.22);
 
-            /* --- wrapper div: only this moves --- */
+            /* ── Outer wrapper: Y fall only (ease-in = gravity) ── */
             var el = document.createElement('div');
             el.style.cssText = 'position:absolute;top:0;left:'+x+'px;'
                 + '--gf-end:'+fallEnd+'px;'
                 + 'will-change:transform,opacity;'
                 + '-webkit-backface-visibility:hidden;backface-visibility:hidden;'
-                + '-webkit-animation:gf-fall '+dur+'s linear forwards;'
-                + 'animation:gf-fall '+dur+'s linear forwards;';
+                + '-webkit-animation:gf-fall '+dur+'s cubic-bezier(0.42,0,1,1) forwards;'
+                + 'animation:gf-fall '+dur+'s cubic-bezier(0.42,0,1,1) forwards;';
 
-            /* --- gradient trail above the drop (fixed 45 px like reference) --- */
+            /* ── Inner div: X sway (independent period) ── */
+            var inner = document.createElement('div');
+            inner.style.cssText = '--gf-sx:'+swayAmt+'px;'
+                + 'will-change:transform;'
+                + '-webkit-animation:gf-sway '+swayDur+'s ease-in-out infinite;'
+                + 'animation:gf-sway '+swayDur+'s ease-in-out infinite;';
+
+            /* ── Trail ── */
             var trail = document.createElement('div');
-            trail.style.cssText = 'position:absolute;bottom:'+(size*1.6)+'px;left:50%;'
+            trail.style.cssText = 'position:absolute;bottom:'+(size*1.55)+'px;left:50%;'
                 + '-webkit-transform:translateX(-50%);transform:translateX(-50%);'
-                + 'width:'+trailW+'px;height:45px;'
+                + 'width:'+trailW+'px;height:48px;'
                 + 'background:linear-gradient(180deg,'
-                +   'rgba(140,0,0,0) 0%,'
-                +   'rgba(155,0,0,.15) 50%,'
-                +   'rgba(170,0,0,.35) 100%);'
-                + 'border-radius:2px;';
-            el.appendChild(trail);
+                +   'rgba(110,0,0,0) 0%,'
+                +   'rgba(145,0,0,.14) 48%,'
+                +   'rgba(172,0,0,.42) 100%);'
+                + 'border-radius:1px 1px 0 0;';
+            inner.appendChild(trail);
 
-            /* --- SVG teardrop --- */
+            /* ── SVG teardrop ── */
+            var svgW = size * 2;
+            var svgH = size * 3.0;
             var svg = document.createElementNS(NS,'svg');
-            svg.setAttribute('width',  size*2);
-            svg.setAttribute('height', size*3.2);
-            svg.setAttribute('viewBox','-30 -52 60 90');
+            svg.setAttribute('width',  svgW);
+            svg.setAttribute('height', svgH);
+            /* Path spans -20..20 wide, -38..35 tall → viewBox center at (0,-1.5) */
+            svg.setAttribute('viewBox','-22 -40 44 78');
             svg.style.cssText = 'display:block;overflow:visible;';
 
             var defs = document.createElementNS(NS,'defs');
-            var rg   = document.createElementNS(NS,'radialGradient');
-            rg.setAttribute('id', gradId);
-            rg.setAttribute('cx','36%'); rg.setAttribute('cy','30%');
-            rg.setAttribute('r','66%');
-            [
-                [0,   'rgba(225,55,55,1)'],
-                [0.3, 'rgba(178,10,10,1)'],
-                [0.65,'rgba(108,0,0,1)'],
-                [1,   'rgba(48,0,0,1)'],
-            ].forEach(function(s){
-                var stop = document.createElementNS(NS,'stop');
-                stop.setAttribute('offset', s[0]);
-                stop.setAttribute('stop-color', s[1]);
-                rg.appendChild(stop);
-            });
+
+            /* Radial gradient with focal point (fx,fy) for realistic off-center highlight */
+            var rg = document.createElementNS(NS,'radialGradient');
+            rg.setAttribute('id',   gradId);
+            rg.setAttribute('cx',   '40%');  rg.setAttribute('cy',   '30%');
+            rg.setAttribute('fx',   '28%');  rg.setAttribute('fy',   '18%');
+            rg.setAttribute('r',    '68%');
+            stop(rg, 0,    'rgb(255,62,62)');   /* bright highlight */
+            stop(rg, 0.14, 'rgb(218,16,16)');   /* vivid red */
+            stop(rg, 0.38, 'rgb(158,4,4)');     /* mid red */
+            stop(rg, 0.68, 'rgb(72,0,0)');      /* deep shadow */
+            stop(rg, 1,    'rgb(12,0,0)');      /* near-black rim */
             defs.appendChild(rg);
+
+            /* Clip path so highlights never bleed outside the drop */
+            var cp   = document.createElementNS(NS,'clipPath');
+            cp.setAttribute('id', clipId);
+            var cpPath = document.createElementNS(NS,'path');
+            cpPath.setAttribute('d',
+                'M0,-38 C-7,-30 -20,-13 -20,5 C-20,25 -10,35 0,35'
+               +' C10,35 20,25 20,5 C20,-13 7,-30 0,-38 Z');
+            cp.appendChild(cpPath);
+            defs.appendChild(cp);
+
             svg.appendChild(defs);
 
-            var path = document.createElementNS(NS,'path');
-            path.setAttribute('d',
-                'M0,-50 C-7,-43 -22,-20 -22,8 C-22,28 -11,35 0,35'
-               +' C11,35 22,28 22,8 C22,-20 7,-43 0,-50 Z');
-            path.setAttribute('fill','url(#'+gradId+')');
-            svg.appendChild(path);
+            /* Main body */
+            var body = document.createElementNS(NS,'path');
+            body.setAttribute('d',
+                'M0,-38 C-7,-30 -20,-13 -20,5 C-20,25 -10,35 0,35'
+               +' C10,35 20,25 20,5 C20,-13 7,-30 0,-38 Z');
+            body.setAttribute('fill','url(#'+gradId+')');
+            svg.appendChild(body);
 
-            var h1 = document.createElementNS(NS,'ellipse');
-            h1.setAttribute('cx','-8'); h1.setAttribute('cy','-16');
-            h1.setAttribute('rx','7');  h1.setAttribute('ry','12');
-            h1.setAttribute('fill','rgba(255,195,195,0.22)');
-            h1.setAttribute('transform','rotate(-22,-8,-16)');
-            svg.appendChild(h1);
+            /* Highlights — all clipped inside drop shape */
+            var hGroup = document.createElementNS(NS,'g');
+            hGroup.setAttribute('clip-path','url(#'+clipId+')');
 
-            var h2 = document.createElementNS(NS,'ellipse');
-            h2.setAttribute('cx','-5'); h2.setAttribute('cy','-26');
-            h2.setAttribute('rx','2.5');h2.setAttribute('ry','4');
-            h2.setAttribute('fill','rgba(255,230,230,0.4)');
-            h2.setAttribute('transform','rotate(-18,-5,-26)');
-            svg.appendChild(h2);
+            /* 1. Diffuse glow — large soft upper-left area */
+            ellipse(hGroup, -7,-14, 10,15, 'rgba(255,155,155,0.14)', -22);
+            /* 2. Primary specular — medium bright */
+            ellipse(hGroup, -5,-21,  5, 8, 'rgba(255,225,225,0.30)', -16);
+            /* 3. Sharp specular — small intense spot */
+            ellipse(hGroup, -3,-29,  2, 3.5,'rgba(255,250,250,0.52)', -10);
+            /* 4. Bottom glint — faint inner reflection at base */
+            ellipse(hGroup,  2, 27,  4, 2.5,'rgba(255,90,90,0.09)',     0);
 
-            el.appendChild(svg);
+            svg.appendChild(hGroup);
+            inner.appendChild(svg);
+            el.appendChild(inner);
 
-            /* --- splash element at bottom (same x, fixed y near bottom) --- */
+            /* ── Splash at impact point ── */
             var splash = document.createElement('div');
             splash.style.cssText = 'position:absolute;bottom:8vh;left:'+x+'px;'
                 + 'width:4px;height:4px;opacity:0;'
                 + 'will-change:opacity,transform;'
                 + '-webkit-backface-visibility:hidden;backface-visibility:hidden;'
-                + '-webkit-animation:gf-splash '+dur+'s linear forwards;'
-                + 'animation:gf-splash '+dur+'s linear forwards;';
-            /* two pseudo-like child divs since we can't use ::before/::after in JS easily */
-            var s1 = document.createElement('div');
-            s1.style.cssText = 'position:absolute;width:8px;height:8px;border-radius:50%;'
-                + 'background:rgba(160,0,0,.55);top:-4px;left:-4px;';
-            var s2 = document.createElement('div');
-            s2.style.cssText = 'position:absolute;width:2px;height:2px;border-radius:50%;'
-                + 'background:rgba(160,0,0,.5);top:-8px;left:8px;';
-            splash.appendChild(s1);
-            splash.appendChild(s2);
+                + '-webkit-animation:gf-splash '+dur+'s cubic-bezier(0.42,0,1,1) forwards;'
+                + 'animation:gf-splash '+dur+'s cubic-bezier(0.42,0,1,1) forwards;';
+            /* 3 particles: center blob + 2 satellites */
+            [
+                'position:absolute;width:7px;height:7px;border-radius:50%;background:rgba(155,0,0,.60);top:-3px;left:-3px;',
+                'position:absolute;width:3px;height:3px;border-radius:50%;background:rgba(130,0,0,.52);top:-13px;left:-9px;',
+                'position:absolute;width:2px;height:2px;border-radius:50%;background:rgba(125,0,0,.46);top:-8px;left:10px;',
+            ].forEach(function(css){
+                var p = document.createElement('div');
+                p.style.cssText = css;
+                splash.appendChild(p);
+            });
             wrap.appendChild(splash);
-
             wrap.appendChild(el);
 
             function done(){
