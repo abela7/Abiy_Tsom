@@ -216,14 +216,14 @@
                     {{-- Left timeline rail --}}
                     <div class="flex flex-col items-center w-6 shrink-0 pt-1">
                         {{-- Node dot --}}
-                        <div class="relative z-10 w-3 h-3 rounded-full {{ $nodeColor }} mt-5 transition-all duration-300">
+                        <div data-timeline-node data-slot-state="{{ $state }}" class="relative z-10 w-3 h-3 rounded-full {{ $nodeColor }} mt-5 transition-all duration-300">
                             @if($state === 'current')
                                 <span class="absolute inset-0 rounded-full bg-accent animate-ping opacity-40"></span>
                             @endif
                         </div>
                         {{-- Vertical line --}}
                         @if(!$loop->last)
-                            <div class="flex-1 w-[2px] {{ $lineColor }} mt-1 rounded-full"></div>
+                            <div data-timeline-line class="flex-1 w-[2px] {{ $lineColor }} mt-1 rounded-full"></div>
                         @endif
                     </div>
 

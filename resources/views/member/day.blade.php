@@ -53,6 +53,68 @@
         backdrop-filter: blur(6px);
         -webkit-backdrop-filter: blur(6px);
     }
+    /* ── Timeline node dots → blood red ── */
+    .good-friday-page [data-timeline-node] {
+        background-color: rgb(140,0,0) !important;
+        box-shadow: 0 0 10px rgba(200,0,0,0.45), 0 1px 4px rgba(0,0,0,0.7) !important;
+    }
+    .good-friday-page [data-timeline-node] [class~="animate-ping"] {
+        background-color: rgba(220,30,30,0.55) !important;
+    }
+    /* Timeline connector line → dark maroon gradient */
+    .good-friday-page [data-timeline-line] {
+        background: linear-gradient(180deg,
+            rgba(160,0,0,0.65) 0%,
+            rgba(80,0,0,0.25) 100%) !important;
+    }
+    /* Blood drip that forms at the bottom of each node dot and falls */
+    @-webkit-keyframes gf-node-drip {
+        0%   { -webkit-transform: translateX(-50%) translateY(0) scaleX(1.1) scaleY(0);
+                opacity: 0; border-radius: 50% }
+        18%  { -webkit-transform: translateX(-50%) translateY(1px) scaleX(1) scaleY(0.9);
+                opacity: 1; border-radius: 50% }
+        38%  { -webkit-transform: translateX(-50%) translateY(2px) scaleX(0.85) scaleY(1.25);
+                opacity: 1; border-radius: 40% 40% 52% 52% }
+        62%  { -webkit-transform: translateX(-50%) translateY(10px) scaleX(0.7) scaleY(1.1);
+                opacity: 0.85; border-radius: 38% 38% 56% 56% }
+        85%  { -webkit-transform: translateX(-50%) translateY(20px) scaleX(0.5) scaleY(0.85);
+                opacity: 0.35; border-radius: 44% 44% 56% 56% }
+        100% { -webkit-transform: translateX(-50%) translateY(28px) scaleX(0.3) scaleY(0.5);
+                opacity: 0 }
+    }
+    @keyframes gf-node-drip {
+        0%   { transform: translateX(-50%) translateY(0) scaleX(1.1) scaleY(0);
+               opacity: 0; border-radius: 50% }
+        18%  { transform: translateX(-50%) translateY(1px) scaleX(1) scaleY(0.9);
+               opacity: 1; border-radius: 50% }
+        38%  { transform: translateX(-50%) translateY(2px) scaleX(0.85) scaleY(1.25);
+               opacity: 1; border-radius: 40% 40% 52% 52% }
+        62%  { transform: translateX(-50%) translateY(10px) scaleX(0.7) scaleY(1.1);
+               opacity: 0.85; border-radius: 38% 38% 56% 56% }
+        85%  { transform: translateX(-50%) translateY(20px) scaleX(0.5) scaleY(0.85);
+               opacity: 0.35; border-radius: 44% 44% 56% 56% }
+        100% { transform: translateX(-50%) translateY(28px) scaleX(0.3) scaleY(0.5);
+               opacity: 0 }
+    }
+    .good-friday-page [data-timeline-node]::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 50%;
+        width: 4px;
+        height: 7px;
+        background: radial-gradient(ellipse at 38% 28%, rgb(230,50,50), rgb(100,0,0));
+        transform-origin: center top;
+        -webkit-animation: gf-node-drip 3s ease-in infinite;
+        animation: gf-node-drip 3s ease-in infinite;
+    }
+    /* Stagger each slot's drip so they fall at different times */
+    .good-friday-page .group:nth-child(1) [data-timeline-node]::after { animation-delay: 0s;    -webkit-animation-delay: 0s }
+    .good-friday-page .group:nth-child(2) [data-timeline-node]::after { animation-delay: 0.7s;  -webkit-animation-delay: 0.7s }
+    .good-friday-page .group:nth-child(3) [data-timeline-node]::after { animation-delay: 1.4s;  -webkit-animation-delay: 1.4s }
+    .good-friday-page .group:nth-child(4) [data-timeline-node]::after { animation-delay: 2.1s;  -webkit-animation-delay: 2.1s }
+    .good-friday-page .group:nth-child(5) [data-timeline-node]::after { animation-delay: 2.8s;  -webkit-animation-delay: 2.8s }
+
     /* FAQ modal & other fixed overlays — fully solid so text is readable */
     .good-friday-page [class~="z-50"],
     .good-friday-page [class~="z-50"] * {
