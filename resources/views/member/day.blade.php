@@ -53,6 +53,15 @@
         backdrop-filter: blur(6px);
         -webkit-backdrop-filter: blur(6px);
     }
+    /* FAQ modal & other fixed overlays — fully solid so text is readable */
+    .good-friday-page [class~="z-50"],
+    .good-friday-page [class~="z-50"] * {
+        --color-card: rgb(13, 13, 20);
+        --color-muted: rgb(20, 20, 30);
+        --color-border: rgba(255,255,255,0.13);
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
 </style>
 <div style="position:fixed;inset:0;z-index:0;
      background-image:url('https://abiytsom.abuneteklehaymanot.org/images/Jesus-.jpg');
