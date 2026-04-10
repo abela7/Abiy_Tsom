@@ -165,25 +165,21 @@
                 + 'will-change:transform;';
             container.appendChild(trail);
 
-            /* ── Blood drop SVG ── */
-            var DW = 12, DH = 20;     /* pixel size of drop element */
-            var gradId = 'gfT'+(Math.random()*1e9|0);
-            var clipId = 'gfC'+(Math.random()*1e9|0);
+            /* ── Timeline drop: simple oval with soft inner glow — distinct from main drops ── */
+            var DW = 8, DH = 13;
+            var gId = 'gfTg'+(Math.random()*1e9|0);
             var svg = document.createElementNS(NS,'svg');
             svg.setAttribute('width', DW);
             svg.setAttribute('height', DH);
-            svg.setAttribute('viewBox','-6 -14 12 20');
+            svg.setAttribute('viewBox','-4 -9 8 13');
             svg.style.cssText = 'display:block;overflow:visible;';
 
             var defs = document.createElementNS(NS,'defs');
-            /* Radial gradient with focal point */
+            /* Simple 3-stop radial — warm centre, deep dark edge, no focal offset */
             var rg = document.createElementNS(NS,'radialGradient');
-            rg.setAttribute('id',gradId);
-            rg.setAttribute('cx','38%'); rg.setAttribute('cy','28%');
-            rg.setAttribute('fx','26%'); rg.setAttribute('fy','16%');
-            rg.setAttribute('r','68%');
-            [['0','rgb(255,65,65)'],['0.18','rgb(210,14,14)'],
-             ['0.45','rgb(145,3,3)'],['0.75','rgb(62,0,0)'],['1','rgb(8,0,0)']
+            rg.setAttribute('id', gId);
+            rg.setAttribute('cx','42%'); rg.setAttribute('cy','35%'); rg.setAttribute('r','60%');
+            [['0','rgba(230,60,60,1)'],['0.55','rgba(130,0,0,1)'],['1','rgba(30,0,0,1)']
             ].forEach(function(s){
                 var st=document.createElementNS(NS,'stop');
                 st.setAttribute('offset',s[0]);
@@ -191,35 +187,21 @@
                 rg.appendChild(st);
             });
             defs.appendChild(rg);
-            /* Clip path matching the body path */
-            var cp = document.createElementNS(NS,'clipPath');
-            cp.setAttribute('id',clipId);
-            var cpP = document.createElementNS(NS,'path');
-            cpP.setAttribute('d','M0,-13 C-2.5,-10 -5.5,-5 -5.5,0.5 C-5.5,4 -3,6 0,6 C3,6 5.5,4 5.5,0.5 C5.5,-5 2.5,-10 0,-13 Z');
-            cp.appendChild(cpP); defs.appendChild(cp);
             svg.appendChild(defs);
 
-            /* Body */
+            /* Rounded teardrop body — slightly fatter/softer than the main drops */
             var body = document.createElementNS(NS,'path');
-            body.setAttribute('d','M0,-13 C-2.5,-10 -5.5,-5 -5.5,0.5 C-5.5,4 -3,6 0,6 C3,6 5.5,4 5.5,0.5 C5.5,-5 2.5,-10 0,-13 Z');
-            body.setAttribute('fill','url(#'+gradId+')');
+            body.setAttribute('d','M0,-8 C-1.8,-5.5 -4,-2 -4,1 C-4,3.5 -2.2,4.5 0,4.5 C2.2,4.5 4,3.5 4,1 C4,-2 1.8,-5.5 0,-8 Z');
+            body.setAttribute('fill','url(#'+gId+')');
             svg.appendChild(body);
 
-            /* Highlights clipped to body */
-            var hg = document.createElementNS(NS,'g');
-            hg.setAttribute('clip-path','url(#'+clipId+')');
-            function el(cx,cy,rx,ry,fill,rot){
-                var e=document.createElementNS(NS,'ellipse');
-                e.setAttribute('cx',cx);e.setAttribute('cy',cy);
-                e.setAttribute('rx',rx);e.setAttribute('ry',ry);
-                e.setAttribute('fill',fill);
-                if(rot)e.setAttribute('transform','rotate('+rot+','+cx+','+cy+')');
-                hg.appendChild(e);
-            }
-            el('-2','-6','2.5','4','rgba(255,150,150,0.16)','-20');
-            el('-1.2','-10','1.2','2.2','rgba(255,230,230,0.33)','-14');
-            el('-0.6','-12','0.5','1','rgba(255,248,248,0.52)','-8');
-            svg.appendChild(hg);
+            /* Single soft inner highlight — keeps it readable but simple */
+            var hl = document.createElementNS(NS,'ellipse');
+            hl.setAttribute('cx','-1'); hl.setAttribute('cy','-4');
+            hl.setAttribute('rx','1.2'); hl.setAttribute('ry','2');
+            hl.setAttribute('fill','rgba(255,200,200,0.28)');
+            hl.setAttribute('transform','rotate(-18,-1,-4)');
+            svg.appendChild(hl);
 
             var drop = document.createElement('div');
             drop.style.cssText = 'position:absolute;pointer-events:none;z-index:5;'
