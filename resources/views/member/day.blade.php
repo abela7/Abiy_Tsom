@@ -61,59 +61,10 @@
     .good-friday-page [data-timeline-node] [class~="animate-ping"] {
         background-color: rgba(220,30,30,0.55) !important;
     }
-    /* Timeline connector line → dark maroon gradient */
+    /* Timeline connector line → dark maroon */
     .good-friday-page [data-timeline-line] {
-        background: linear-gradient(180deg,
-            rgba(160,0,0,0.65) 0%,
-            rgba(80,0,0,0.25) 100%) !important;
+        background: rgba(100,0,0,0.35) !important;
     }
-    /* Blood drip that forms at the bottom of each node dot and falls */
-    @-webkit-keyframes gf-node-drip {
-        0%   { -webkit-transform: translateX(-50%) translateY(0) scaleX(1.1) scaleY(0);
-                opacity: 0; border-radius: 50% }
-        18%  { -webkit-transform: translateX(-50%) translateY(1px) scaleX(1) scaleY(0.9);
-                opacity: 1; border-radius: 50% }
-        38%  { -webkit-transform: translateX(-50%) translateY(2px) scaleX(0.85) scaleY(1.25);
-                opacity: 1; border-radius: 40% 40% 52% 52% }
-        62%  { -webkit-transform: translateX(-50%) translateY(10px) scaleX(0.7) scaleY(1.1);
-                opacity: 0.85; border-radius: 38% 38% 56% 56% }
-        85%  { -webkit-transform: translateX(-50%) translateY(20px) scaleX(0.5) scaleY(0.85);
-                opacity: 0.35; border-radius: 44% 44% 56% 56% }
-        100% { -webkit-transform: translateX(-50%) translateY(28px) scaleX(0.3) scaleY(0.5);
-                opacity: 0 }
-    }
-    @keyframes gf-node-drip {
-        0%   { transform: translateX(-50%) translateY(0) scaleX(1.1) scaleY(0);
-               opacity: 0; border-radius: 50% }
-        18%  { transform: translateX(-50%) translateY(1px) scaleX(1) scaleY(0.9);
-               opacity: 1; border-radius: 50% }
-        38%  { transform: translateX(-50%) translateY(2px) scaleX(0.85) scaleY(1.25);
-               opacity: 1; border-radius: 40% 40% 52% 52% }
-        62%  { transform: translateX(-50%) translateY(10px) scaleX(0.7) scaleY(1.1);
-               opacity: 0.85; border-radius: 38% 38% 56% 56% }
-        85%  { transform: translateX(-50%) translateY(20px) scaleX(0.5) scaleY(0.85);
-               opacity: 0.35; border-radius: 44% 44% 56% 56% }
-        100% { transform: translateX(-50%) translateY(28px) scaleX(0.3) scaleY(0.5);
-               opacity: 0 }
-    }
-    .good-friday-page [data-timeline-node]::after {
-        content: '';
-        position: absolute;
-        bottom: -1px;
-        left: 50%;
-        width: 4px;
-        height: 7px;
-        background: radial-gradient(ellipse at 38% 28%, rgb(230,50,50), rgb(100,0,0));
-        transform-origin: center top;
-        -webkit-animation: gf-node-drip 3s ease-in infinite;
-        animation: gf-node-drip 3s ease-in infinite;
-    }
-    /* Stagger each slot's drip so they fall at different times */
-    .good-friday-page .group:nth-child(1) [data-timeline-node]::after { animation-delay: 0s;    -webkit-animation-delay: 0s }
-    .good-friday-page .group:nth-child(2) [data-timeline-node]::after { animation-delay: 0.7s;  -webkit-animation-delay: 0.7s }
-    .good-friday-page .group:nth-child(3) [data-timeline-node]::after { animation-delay: 1.4s;  -webkit-animation-delay: 1.4s }
-    .good-friday-page .group:nth-child(4) [data-timeline-node]::after { animation-delay: 2.1s;  -webkit-animation-delay: 2.1s }
-    .good-friday-page .group:nth-child(5) [data-timeline-node]::after { animation-delay: 2.8s;  -webkit-animation-delay: 2.8s }
 
     /* FAQ modal & other fixed overlays — fully solid so text is readable */
     .good-friday-page [class~="z-50"],
@@ -176,6 +127,175 @@
     window.addEventListener('alpine:initialized', function () {
         window.dispatchEvent(new CustomEvent('theme-changed', { detail: { theme: 'dark' } }));
     }, { once: true });
+
+    /* ── Physics blood-drop that slides from first to last timeline node ── */
+    (function gfTimelineDrop(){
+        var NS = 'http://www.w3.org/2000/svg';
+
+        function build(){
+            var nodes = document.querySelectorAll('.good-friday-page [data-timeline-node]');
+            if (nodes.length < 2) return;
+
+            var first = nodes[0];
+            var last  = nodes[nodes.length - 1];
+            var container = first.closest('.relative');
+            if (!container) return;
+
+            var cr  = container.getBoundingClientRect();
+            var fr  = first.getBoundingClientRect();
+            var lr  = last.getBoundingClientRect();
+            var cx  = fr.left + fr.width  / 2 - cr.left;   /* rail centre X */
+            var sy  = fr.top  + fr.height / 2 - cr.top;    /* start Y (first dot centre) */
+            var ey  = lr.top  + lr.height / 2 - cr.top;    /* end Y   (last  dot centre) */
+            var H   = ey - sy;
+            if (H < 20) return;
+
+            /* Ensure container is positioned */
+            if (getComputedStyle(container).position === 'static')
+                container.style.position = 'relative';
+
+            /* ── Trail smear: full height, scaled from 0 at top ── */
+            var trail = document.createElement('div');
+            trail.style.cssText = 'position:absolute;pointer-events:none;z-index:4;'
+                + 'left:'+(cx-1)+'px;top:'+sy+'px;'
+                + 'width:2px;height:'+H+'px;'
+                + 'background:linear-gradient(180deg,rgba(150,0,0,0.7) 0%,rgba(80,0,0,0.25) 100%);'
+                + 'transform:scaleY(0);transform-origin:top center;'
+                + 'border-radius:1px;'
+                + 'will-change:transform;';
+            container.appendChild(trail);
+
+            /* ── Blood drop SVG ── */
+            var DW = 12, DH = 20;     /* pixel size of drop element */
+            var gradId = 'gfT'+(Math.random()*1e9|0);
+            var clipId = 'gfC'+(Math.random()*1e9|0);
+            var svg = document.createElementNS(NS,'svg');
+            svg.setAttribute('width', DW);
+            svg.setAttribute('height', DH);
+            svg.setAttribute('viewBox','-6 -14 12 20');
+            svg.style.cssText = 'display:block;overflow:visible;';
+
+            var defs = document.createElementNS(NS,'defs');
+            /* Radial gradient with focal point */
+            var rg = document.createElementNS(NS,'radialGradient');
+            rg.setAttribute('id',gradId);
+            rg.setAttribute('cx','38%'); rg.setAttribute('cy','28%');
+            rg.setAttribute('fx','26%'); rg.setAttribute('fy','16%');
+            rg.setAttribute('r','68%');
+            [['0','rgb(255,65,65)'],['0.18','rgb(210,14,14)'],
+             ['0.45','rgb(145,3,3)'],['0.75','rgb(62,0,0)'],['1','rgb(8,0,0)']
+            ].forEach(function(s){
+                var st=document.createElementNS(NS,'stop');
+                st.setAttribute('offset',s[0]);
+                st.setAttribute('stop-color',s[1]);
+                rg.appendChild(st);
+            });
+            defs.appendChild(rg);
+            /* Clip path matching the body path */
+            var cp = document.createElementNS(NS,'clipPath');
+            cp.setAttribute('id',clipId);
+            var cpP = document.createElementNS(NS,'path');
+            cpP.setAttribute('d','M0,-13 C-2.5,-10 -5.5,-5 -5.5,0.5 C-5.5,4 -3,6 0,6 C3,6 5.5,4 5.5,0.5 C5.5,-5 2.5,-10 0,-13 Z');
+            cp.appendChild(cpP); defs.appendChild(cp);
+            svg.appendChild(defs);
+
+            /* Body */
+            var body = document.createElementNS(NS,'path');
+            body.setAttribute('d','M0,-13 C-2.5,-10 -5.5,-5 -5.5,0.5 C-5.5,4 -3,6 0,6 C3,6 5.5,4 5.5,0.5 C5.5,-5 2.5,-10 0,-13 Z');
+            body.setAttribute('fill','url(#'+gradId+')');
+            svg.appendChild(body);
+
+            /* Highlights clipped to body */
+            var hg = document.createElementNS(NS,'g');
+            hg.setAttribute('clip-path','url(#'+clipId+')');
+            function el(cx,cy,rx,ry,fill,rot){
+                var e=document.createElementNS(NS,'ellipse');
+                e.setAttribute('cx',cx);e.setAttribute('cy',cy);
+                e.setAttribute('rx',rx);e.setAttribute('ry',ry);
+                e.setAttribute('fill',fill);
+                if(rot)e.setAttribute('transform','rotate('+rot+','+cx+','+cy+')');
+                hg.appendChild(e);
+            }
+            el('-2','-6','2.5','4','rgba(255,150,150,0.16)','-20');
+            el('-1.2','-10','1.2','2.2','rgba(255,230,230,0.33)','-14');
+            el('-0.6','-12','0.5','1','rgba(255,248,248,0.52)','-8');
+            svg.appendChild(hg);
+
+            var drop = document.createElement('div');
+            drop.style.cssText = 'position:absolute;pointer-events:none;z-index:5;'
+                + 'left:'+(cx - DW/2)+'px;top:'+(sy - DH*0.7)+'px;'
+                + 'width:'+DW+'px;height:'+DH+'px;'
+                + 'will-change:transform,opacity;'
+                + '-webkit-backface-visibility:hidden;backface-visibility:hidden;';
+            drop.appendChild(svg);
+            container.appendChild(drop);
+
+            /* ── Physics easing: surface-tension hold → breakaway → slide → absorb ── */
+            function ease(t){
+                if (t < 0.10) return Math.pow(t/0.10, 3) * 0.015;          /* hold */
+                if (t < 0.22) { var a=(t-0.10)/0.12; return 0.015+a*a*0.185; } /* break */
+                if (t < 0.88) return 0.20 + (t-0.22)/0.66 * 0.77;          /* slide */
+                var b=(t-0.88)/0.12; return 0.97 + b*b*0.03;                /* absorb */
+            }
+
+            var FALL_MS  = 3800;   /* time to slide full rail */
+            var PAUSE_MS = 2200;   /* rest + fade at bottom, then reset */
+            var CYCLE    = FALL_MS + PAUSE_MS;
+            var t0 = null;
+
+            function frame(ts){
+                if(!t0) t0=ts;
+                var e = (ts-t0) % CYCLE;
+
+                if (e < FALL_MS) {
+                    var t = e / FALL_MS;
+                    var p = ease(t);
+                    var y = p * H;
+
+                    /* Squash-stretch: elongate as it speeds up */
+                    var speed  = t > 0.22 ? Math.min(1.35, 1 + (t-0.22)*0.55) : 1;
+                    var sqz    = +(1/speed).toFixed(3);
+                    var str    = +speed.toFixed(3);
+
+                    drop.style.transform  = 'translateY('+y.toFixed(1)+'px) scaleY('+str+') scaleX('+sqz+')';
+                    drop.style.opacity    = '1';
+                    trail.style.transform = 'scaleY('+Math.max(0,p).toFixed(4)+')';
+                    trail.style.opacity   = '1';
+
+                } else {
+                    var pt = (e - FALL_MS) / PAUSE_MS;
+
+                    if (pt < 0.35) {
+                        /* Drop "absorbed" — squash flat then fade */
+                        var sq = 1 - pt/0.35 * 0.85;
+                        drop.style.transform = 'translateY('+H.toFixed(1)+'px) scaleY('+Math.max(0.15,sq).toFixed(3)+') scaleX('+(1+(1-sq)*0.5).toFixed(3)+')';
+                        drop.style.opacity   = '1';
+                    } else {
+                        /* Fade out both, then silently reset */
+                        var fo = Math.max(0, 1 - (pt-0.35)/0.3);
+                        drop.style.opacity   = fo.toFixed(3);
+                        trail.style.opacity  = fo.toFixed(3);
+                    }
+
+                    if (pt > 0.72) {
+                        /* Reset position invisibly */
+                        drop.style.transition  = 'none';
+                        trail.style.transition = 'none';
+                        drop.style.transform   = 'translateY(0) scaleY(1) scaleX(1)';
+                        trail.style.transform  = 'scaleY(0)';
+                    }
+                }
+                requestAnimationFrame(frame);
+            }
+            requestAnimationFrame(frame);
+        }
+
+        /* Run after Alpine + DOM have settled */
+        window.addEventListener('alpine:initialized', function(){
+            setTimeout(build, 900);
+        });
+        setTimeout(build, 1300); /* fallback for non-Alpine contexts */
+    })();
 
     (function(){
         var wrap = document.getElementById('gf-blood-wrap');
