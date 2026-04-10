@@ -13,6 +13,7 @@ use Illuminate\Support\Str;
 final class SendFeedbackInvitations extends Command
 {
     protected $signature = 'feedback:send-invitations
+                            {--phone=  : Send only to this WhatsApp number (for testing)}
                             {--dry-run : List eligible members without sending}
                             {--queue   : Dispatch jobs to the queue instead of running inline}';
 
@@ -20,14 +21,21 @@ final class SendFeedbackInvitations extends Command
 
     public function handle(): int
     {
-        $isDryRun = (bool) $this->option('dry-run');
-        $useQueue = (bool) $this->option('queue');
+        $isDryRun   = (bool) $this->option('dry-run');
+        $useQueue   = (bool) $this->option('queue');
+        $phoneFilter = trim((string) $this->option('phone'));
 
-        $members = Member::query()
-            ->where('whatsapp_confirmation_status', 'confirmed')
-            ->where('whatsapp_reminder_enabled', true)
-            ->whereNotNull('whatsapp_phone')
-            ->get();
+        $query = Member::query()->whereNotNull('whatsapp_phone');
+
+        if ($phoneFilter !== '') {
+            $query->where('whatsapp_phone', $phoneFilter);
+        } else {
+            $query
+                ->where('whatsapp_confirmation_status', 'confirmed')
+                ->where('whatsapp_reminder_enabled', true);
+        }
+
+        $members = $query->get();
 
         $this->info("Found {$members->count()} eligible members.");
 
