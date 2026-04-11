@@ -346,6 +346,7 @@
             <div class="flex flex-wrap items-center gap-3">
                 <h3 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_bulk_message_placeholder_title') }}</h3>
                 <code class="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-mono text-primary">:name</code>
+                <code class="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-mono text-primary">:fasika_url</code>
             </div>
             <p class="mt-2 text-sm text-muted-text">{{ __('app.whatsapp_bulk_message_placeholder_help') }}</p>
         </div>
@@ -406,7 +407,7 @@
                     <div class="rounded-2xl border border-border bg-card p-4 space-y-4">
                         <div class="flex items-center justify-between gap-3">
                             <h3 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_bulk_send_message_en_label') }}</h3>
-                            <code class="rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-mono text-primary">:name</code>
+                            <code class="rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-mono text-primary">:name / :fasika_url</code>
                         </div>
                         <textarea
                             id="bulk-message-en"
@@ -425,7 +426,7 @@
                     <div class="rounded-2xl border border-border bg-card p-4 space-y-4">
                         <div class="flex items-center justify-between gap-3">
                             <h3 class="text-sm font-semibold text-primary">{{ __('app.whatsapp_bulk_send_message_am_label') }}</h3>
-                            <code class="rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-mono text-primary">:name</code>
+                            <code class="rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-mono text-primary">:name / :fasika_url</code>
                         </div>
                         <textarea
                             id="bulk-message-am"
@@ -689,7 +690,7 @@
                                             </div>
                                             <div class="text-[11px] font-semibold uppercase tracking-wide text-muted-text">{{ __('app.whatsapp_bulk_placeholders_title') }}</div>
                                             <div class="flex flex-wrap gap-2 lg:justify-end">
-                                                @foreach([':name', ':header', ':content', ':url_1', ':url_2', ':url_3'] as $placeholder)
+                                                @foreach([':name', ':header', ':content', ':fasika_url', ':url_1', ':url_2', ':url_3'] as $placeholder)
                                                     <span class="rounded-full border border-border bg-card px-3 py-1 text-xs font-mono text-primary">{{ $placeholder }}</span>
                                                 @endforeach
                                             </div>
@@ -739,7 +740,7 @@
                                         <div class="rounded-xl border border-border bg-card p-4">
                                             <div class="flex items-center justify-between gap-2">
                                                 <span class="text-xs font-semibold text-primary">{{ __('app.whatsapp_bulk_message_part_url_title') }}</span>
-                                                <code class="rounded border border-border bg-surface px-2 py-1 text-[11px] font-mono text-primary">:url_1 / :url_2 / :url_3</code>
+                                                <code class="rounded border border-border bg-surface px-2 py-1 text-[11px] font-mono text-primary">:fasika_url / :url_1 / :url_2 / :url_3</code>
                                             </div>
                                             <p class="mt-2 text-sm text-muted-text">{{ __('app.whatsapp_bulk_message_part_url_help') }}</p>
                                         </div>
@@ -774,6 +775,7 @@
                                         <div class="rounded-xl border border-border bg-card p-4">
                                             <div class="text-xs font-semibold text-primary">{{ __('app.whatsapp_bulk_message_part_url_title') }} {{ __('app.whatsapp_bulk_preview_label') }}</div>
                                             <div class="mt-3 space-y-2 text-sm text-secondary">
+                                                <p><span class="font-mono text-primary">:fasika_url</span> <span id="bulk-section-preview-url-fasika"></span></p>
                                                 <p><span class="font-mono text-primary">:url_1</span> <span id="bulk-section-preview-url-1"></span></p>
                                                 <p><span class="font-mono text-primary">:url_2</span> <span id="bulk-section-preview-url-2"></span></p>
                                                 <p><span class="font-mono text-primary">:url_3</span> <span id="bulk-section-preview-url-3"></span></p>
@@ -895,7 +897,7 @@
                                     <div>
                                         <div class="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-text">{{ __('app.whatsapp_bulk_placeholders_title') }}</div>
                                         <div class="flex flex-wrap gap-1.5">
-                                            @foreach([':name', ':url_2', ':url_3'] as $placeholder)
+                                            @foreach([':name', ':fasika_url', ':url_2', ':url_3'] as $placeholder)
                                                 <button type="button"
                                                     @click.prevent="insertPlaceholder('{{ $placeholder }}')"
                                                     class="group inline-flex items-center gap-1.5 rounded-lg border border-border bg-card pl-2 pr-2.5 py-1.5 text-xs font-mono font-medium text-secondary transition-all hover:border-accent hover:bg-accent/10 hover:text-accent hover:shadow-sm active:scale-95">
@@ -1206,6 +1208,7 @@ function whatsappTemplateEditor(initialTemplate, activeMemberCount, initialRecip
             url_1: 'https://abiytsom.abuneteklehaymanot.org/share/day/15',
             url_2: 'https://abiytsom.abuneteklehaymanot.org/member/calendar',
             url_3: 'https://abiytsom.abuneteklehaymanot.org/member/progress',
+            fasika_url: 'https://abiytsom.abuneteklehaymanot.org/m/TOKEN/day/56-56',
             telegram_url: 'https://t.me/AbiyTsomBot',
             saint_commemoration: 'Synaxarium for March 05',
             annual_commemorations: 'St. Abba A, St. Martyr B',
@@ -1240,6 +1243,7 @@ function whatsappTemplateEditor(initialTemplate, activeMemberCount, initialRecip
             url_1: 'https://abiytsom.abuneteklehaymanot.org/share/day/15',
             url_2: 'https://abiytsom.abuneteklehaymanot.org/member/calendar',
             url_3: 'https://abiytsom.abuneteklehaymanot.org/member/progress',
+            fasika_url: 'https://abiytsom.abuneteklehaymanot.org/m/TOKEN/day/56-56',
             telegram_url: 'https://t.me/AbiyTsomBot',
             saint_commemoration: 'Sinksar for Megabit 05',
             annual_commemorations: 'Kidus A, Kidus B',
@@ -1350,7 +1354,14 @@ function whatsappTemplateEditor(initialTemplate, activeMemberCount, initialRecip
         const template = String(input?.value || (samples[locale]?.bulk_message_value ?? ''));
 
         return normalizeRenderedText(
-            replacePlaceholders(template, { name: samples[locale]?.name || samples.en.name }, ['name'])
+            replacePlaceholders(template, {
+                name: samples[locale]?.name || samples.en.name,
+                fasika_url: samples[locale]?.fasika_url || samples.en.fasika_url,
+                url: samples[locale]?.url || samples.en.url,
+                url_1: samples[locale]?.url_1 || samples.en.url_1,
+                url_2: samples[locale]?.url_2 || samples.en.url_2,
+                url_3: samples[locale]?.url_3 || samples.en.url_3,
+            }, ['name', 'fasika_url', 'url', 'url_1', 'url_2', 'url_3'])
         );
     };
 

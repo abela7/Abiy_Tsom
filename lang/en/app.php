@@ -850,7 +850,7 @@ return [
     'whatsapp_bulk_send_message_en_label' => 'English Message',
     'whatsapp_bulk_send_message_am_label' => 'Amharic Message',
     'whatsapp_bulk_message_placeholder_title' => 'Available Placeholder',
-    'whatsapp_bulk_message_placeholder_help' => 'Use :name anywhere in the message to insert the member name.',
+    'whatsapp_bulk_message_placeholder_help' => 'Use :name for the member name and :fasika_url for that member\'s Easter day link.',
     'whatsapp_bulk_sample_member_label' => 'Sample Member',
     'whatsapp_bulk_sample_member_placeholder' => 'Choose a member for sample send',
     'whatsapp_bulk_sample_member_help' => 'Sample send uses the selected member language. If exactly one recipient is selected, that member is used automatically.',

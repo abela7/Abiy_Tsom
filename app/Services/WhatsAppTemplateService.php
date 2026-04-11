@@ -151,6 +151,11 @@ final class WhatsAppTemplateService
     /** @var list<string> */
     public const BULK_MESSAGE_PLACEHOLDERS = [
         'name',
+        'url',
+        'url_1',
+        'url_2',
+        'url_3',
+        'fasika_url',
     ];
 
     /** @var list<string> */
@@ -435,10 +440,63 @@ final class WhatsAppTemplateService
         Member $member
     ): array {
         $name = trim((string) ($member->baptism_name ?? ''));
+        $fasikaUrl = $this->resolveFasikaUrl($member);
+        $calendarUrl = $this->memberTokenUrl($member, '/calendar');
+        $progressUrl = $this->memberTokenUrl($member, '/progress');
 
         return [
             'name' => $name,
+            'url' => $fasikaUrl,
+            'url_1' => $fasikaUrl,
+            'url_2' => $calendarUrl,
+            'url_3' => $progressUrl,
+            'fasika_url' => $fasikaUrl,
         ];
+    }
+
+    private function resolveFasikaUrl(Member $member): string
+    {
+        $easterTimezone = config('app.easter_timezone', 'Europe/London');
+        $easterDate = Carbon::parse(
+            config('app.easter_date', '2026-04-12 03:00'),
+            $easterTimezone
+        )->toDateString();
+
+        $season = \App\Models\LentSeason::active();
+        if (! $season) {
+            return route('member.day.fasika');
+        }
+
+        $dailyContent = DailyContent::query()
+            ->where('lent_season_id', $season->id)
+            ->whereDate('date', $easterDate)
+            ->where('is_published', true)
+            ->first();
+
+        if (! $dailyContent) {
+            $dailyContent = DailyContent::query()
+                ->where('lent_season_id', $season->id)
+                ->where('day_number', 56)
+                ->where('is_published', true)
+                ->first();
+        }
+
+        if (! $dailyContent) {
+            return route('member.day.fasika');
+        }
+
+        return $dailyContent->memberDayUrl($member->token);
+    }
+
+    private function memberTokenUrl(Member $member, string $suffix): string
+    {
+        $token = trim((string) ($member->token ?? ''));
+
+        if ($token === '') {
+            return '';
+        }
+
+        return url('/m/'.$token.$suffix);
     }
 
     /**
