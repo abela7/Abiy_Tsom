@@ -164,7 +164,8 @@
                 window.visualViewport.addEventListener('scroll', resize);
             }
 
-            var count = Math.min({{ \App\Services\AbiyTsomStructure::TOTAL_DAYS }}, Math.floor((W * H) / 9000));
+            /* Denser field: area-based count, capped for performance on huge screens. */
+            var count = Math.min(260, Math.max(70, Math.floor((W * H) / 3200)));
             for (var i = 0; i < count; i++) {
                 particles.push({
                     x: Math.random() * W,
