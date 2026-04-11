@@ -89,13 +89,13 @@
         pointer-events: none;
     }
 
-    #ybb-particles.ybb-particles-full {
+    #ybb-particles.ybb-particles-full,
+    #ybb-particles-front.ybb-particles-foreground {
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
-        z-index: 2;
         pointer-events: none;
         width: 100%;
         height: 100vh;
@@ -105,8 +105,18 @@
         overflow: hidden;
     }
 
+    #ybb-particles.ybb-particles-full {
+        z-index: 2;
+    }
+
+    /* Soft dust in front of cards (still non-interactive). */
+    #ybb-particles-front.ybb-particles-foreground {
+        z-index: 11;
+    }
+
     @supports (height: 100lvh) {
-        #ybb-particles.ybb-particles-full {
+        #ybb-particles.ybb-particles-full,
+        #ybb-particles-front.ybb-particles-foreground {
             height: 100lvh;
         }
     }
@@ -134,14 +144,67 @@
 <canvas id="ybb-particles"
         class="ybb-particles-full"
         aria-hidden="true"></canvas>
+<canvas id="ybb-particles-front"
+        class="ybb-particles-foreground"
+        aria-hidden="true"></canvas>
 
 <script>
     (function initYbbParticles() {
+        function makeParticles(n, W, H, opts) {
+            opts = opts || {};
+            var rMul = opts.rMul == null ? 1 : opts.rMul;
+            var speedMul = opts.speedMul == null ? 1 : opts.speedMul;
+            var opMax = opts.opMax == null ? 0.65 : opts.opMax;
+            var list = [];
+            for (var i = 0; i < n; i++) {
+                list.push({
+                    x: Math.random() * W,
+                    y: Math.random() * H,
+                    r: (Math.random() * 2 + 0.4) * rMul,
+                    speed: (Math.random() * 0.35 + 0.12) * speedMul,
+                    dir: Math.random() < 0.5 ? -1 : 1,
+                    opacity: Math.random() * Math.min(0.45, opMax - 0.1) + 0.12,
+                    opMax: opMax,
+                    drift: (Math.random() - 0.5) * 0.28,
+                    phase: Math.random() * Math.PI * 2,
+                });
+            }
+            return list;
+        }
+
+        function wrapParticle(p, W, H) {
+            if (p.y < -12) {
+                p.y = H + 12 + Math.random() * 120;
+                p.x = Math.random() * W;
+                if (Math.random() < 0.35) {
+                    p.dir = Math.random() < 0.5 ? -1 : 1;
+                }
+            } else if (p.y > H + 12) {
+                p.y = -12 - Math.random() * 120;
+                p.x = Math.random() * W;
+                if (Math.random() < 0.35) {
+                    p.dir = Math.random() < 0.5 ? -1 : 1;
+                }
+            }
+            if (p.x < -12) {
+                p.x = W + 12;
+            } else if (p.x > W + 12) {
+                p.x = -12;
+            }
+        }
+
         function run() {
-            var canvas = document.getElementById('ybb-particles');
-            if (!canvas) return;
-            var ctx = canvas.getContext('2d');
-            var W, H, particles = [];
+            var canvasBack = document.getElementById('ybb-particles');
+            var canvasFront = document.getElementById('ybb-particles-front');
+            if (!canvasBack || !canvasFront) {
+                return;
+            }
+            var ctxBack = canvasBack.getContext('2d');
+            var ctxFront = canvasFront.getContext('2d');
+            var W = 1;
+            var H = 1;
+            var particlesBack = [];
+            var particlesFront = [];
 
             function resize() {
                 var vv = window.visualViewport;
@@ -151,8 +214,20 @@
                     document.documentElement.clientHeight || 0,
                     vv ? vv.height : 0
                 );
-                W = canvas.width = Math.max(1, Math.round(w));
-                H = canvas.height = Math.max(1, Math.round(h));
+                W = Math.max(1, Math.round(w));
+                H = Math.max(1, Math.round(h));
+                canvasBack.width = W;
+                canvasBack.height = H;
+                canvasFront.width = W;
+                canvasFront.height = H;
+                var base = Math.min(260, Math.max(70, Math.floor((W * H) / 3200)));
+                particlesBack = makeParticles(base, W, H, { opMax: 0.62 });
+                var frontCount = Math.min(110, Math.max(28, Math.floor(base * 0.38)));
+                particlesFront = makeParticles(frontCount, W, H, {
+                    rMul: 0.75,
+                    speedMul: 0.55,
+                    opMax: 0.38,
+                });
             }
             resize();
             window.addEventListener('resize', resize);
@@ -161,38 +236,26 @@
                 window.visualViewport.addEventListener('scroll', resize);
             }
 
-            /* Denser field: area-based count, capped for performance on huge screens. */
-            var count = Math.min(260, Math.max(70, Math.floor((W * H) / 3200)));
-            for (var i = 0; i < count; i++) {
-                particles.push({
-                    x: Math.random() * W,
-                    y: Math.random() * H,
-                    r: Math.random() * 2 + 0.4,
-                    speed: Math.random() * 0.35 + 0.12,
-                    opacity: Math.random() * 0.45 + 0.15,
-                    drift: (Math.random() - 0.5) * 0.28,
-                    phase: Math.random() * Math.PI * 2,
-                });
-            }
-
-            (function draw() {
+            function stepAndDraw(ctx, particles) {
                 ctx.clearRect(0, 0, W, H);
                 for (var j = 0; j < particles.length; j++) {
                     var p = particles[j];
-                    p.y -= p.speed;
+                    p.y += p.speed * p.dir;
                     p.x += Math.sin(p.phase) * p.drift;
-                    p.phase += 0.01;
-                    p.opacity += (Math.random() - 0.5) * 0.018;
-                    p.opacity = Math.max(0.08, Math.min(0.65, p.opacity));
-                    if (p.y < -10) {
-                        p.y = H + 10;
-                        p.x = Math.random() * W;
-                    }
+                    p.phase += 0.011;
+                    p.opacity += (Math.random() - 0.5) * 0.016;
+                    p.opacity = Math.max(0.06, Math.min(p.opMax, p.opacity));
+                    wrapParticle(p, W, H);
                     ctx.beginPath();
                     ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
                     ctx.fillStyle = 'rgba(245,208,96,' + p.opacity + ')';
                     ctx.fill();
                 }
+            }
+
+            (function draw() {
+                stepAndDraw(ctxBack, particlesBack);
+                stepAndDraw(ctxFront, particlesFront);
                 requestAnimationFrame(draw);
             })();
         }
