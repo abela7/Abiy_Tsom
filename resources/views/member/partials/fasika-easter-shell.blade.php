@@ -55,7 +55,7 @@
     }
 </style>
 <div style="position:fixed;inset:0;z-index:0;
-     background-image:url('https://abiytsom.abuneteklehaymanot.org/images/Jesus-.jpg');
+     background-image:url('{{ asset('images/Jesus_In_Eastern.avif') }}');
      background-size:cover;background-position:center top;background-repeat:no-repeat;">
     <div style="position:absolute;inset:0;background:rgba(0,0,0,0.42);"></div>
 </div>
