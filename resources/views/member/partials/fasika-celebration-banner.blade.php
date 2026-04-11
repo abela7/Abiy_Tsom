@@ -21,39 +21,29 @@
     }
 </style>
 <div class="relative rounded-3xl overflow-hidden px-5 py-6 text-center space-y-3">
-    {{-- Ambient glow behind cross --}}
+    {{-- Ambient glow behind artwork --}}
     <div style="position:absolute;top:50%;left:50%;width:280px;height:280px;border-radius:50%;
          background:radial-gradient(circle,rgba(245,208,96,0.22) 0%,transparent 70%);
          transform:translate(-50%,-50%);pointer-events:none;
          animation:fasika-glow 3.5s ease-in-out infinite;"></div>
 
-    {{-- Ethiopian cross with spinning rays --}}
-    <div class="relative mx-auto w-20 h-20">
-        <div style="position:absolute;inset:-28px;animation:fasika-rays 28s linear infinite;opacity:0.35;">
+    {{-- Risen artwork (portrait SVG) with light rays --}}
+    <div class="relative mx-auto flex max-h-20 w-full max-w-[3.5rem] justify-center sm:max-h-24 sm:max-w-[4.25rem]">
+        <div class="pointer-events-none absolute inset-[-14%] opacity-25"
+             style="animation: fasika-rays 28s linear infinite;">
             @for ($r = 0; $r < 12; $r++)
-            <div style="position:absolute;top:50%;left:50%;width:2px;height:72px;
+            <div style="position:absolute;top:50%;left:50%;width:2px;height:52px;
                  background:linear-gradient(to top,#F5D060,transparent);
                  transform-origin:bottom center;
                  transform:translate(-50%,-100%) rotate({{ $r * 30 }}deg);"></div>
             @endfor
         </div>
-        <svg class="relative w-full h-full drop-shadow-[0_0_24px_rgba(245,208,96,0.5)]"
-             viewBox="0 0 100 100" fill="none" aria-hidden="true">
-            <defs>
-                <linearGradient id="fg-cross" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%"   stop-color="#F5E6A3"/>
-                    <stop offset="50%"  stop-color="#D4A537"/>
-                    <stop offset="100%" stop-color="#B8860B"/>
-                </linearGradient>
-            </defs>
-            <rect x="42" y="5"  width="16" height="90" rx="3" fill="url(#fg-cross)"/>
-            <rect x="15" y="28" width="70" height="16" rx="3" fill="url(#fg-cross)"/>
-            <rect x="38" y="2"  width="24" height="8"  rx="4" fill="url(#fg-cross)"/>
-            <rect x="38" y="90" width="24" height="8"  rx="4" fill="url(#fg-cross)"/>
-            <rect x="10" y="24" width="8"  height="24" rx="4" fill="url(#fg-cross)"/>
-            <rect x="82" y="24" width="8"  height="24" rx="4" fill="url(#fg-cross)"/>
-            <rect x="44" y="30" width="12" height="12" rx="2" transform="rotate(45 50 36)" fill="#FFF8DC" opacity="0.8"/>
-        </svg>
+        <img src="{{ asset('images/Risen.svg') }}"
+             width="794"
+             height="1123"
+             alt="{{ __('app.fasika_celebration_risen_image_alt') }}"
+             class="relative z-10 h-auto max-h-20 w-full object-contain object-center drop-shadow-[0_0_18px_rgba(245,208,96,0.4)] sm:max-h-24"
+             decoding="async">
     </div>
 
     <p class="text-xs font-bold uppercase tracking-[0.25em] text-[rgba(245,208,96,0.7)]">

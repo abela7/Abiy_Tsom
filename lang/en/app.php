@@ -2198,6 +2198,7 @@ return [
     'fasika_selected_hymn_title' => 'Selected Hymn of the Day',
     'fasika_bible_reading_title' => 'Bible Reading',
     'fasika_eyebrow' => 'Fasika — Easter',
+    'fasika_celebration_risen_image_alt' => 'The risen Lord Jesus Christ.',
     'fasika_banner_main' => 'Christ is risen from the dead!',
     'fasika_banner_lines' => [
         'By His mighty authority;',

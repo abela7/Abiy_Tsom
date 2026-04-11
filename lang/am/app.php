@@ -2178,6 +2178,7 @@ return [
     'fasika_selected_hymn_title' => 'ለቀኑ የተመረጠ መዝሙር',
     'fasika_bible_reading_title' => 'የመጽሐፍ ቅዱስ ንባብ',
     'fasika_eyebrow' => 'ፋሲካ · ትንሣኤ',
+    'fasika_celebration_risen_image_alt' => 'The risen Lord Jesus Christ.',
     'fasika_banner_main' => 'ክርስቶስ ተንስአ እሙታን',
     'fasika_banner_lines' => [
         'በአብይ ኋይል ወስልጣን',
