@@ -15,7 +15,7 @@
     <title>@yield('title')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-[100dvh] min-h-[100svh] min-h-screen font-sans antialiased text-primary overscroll-y-none overflow-x-hidden bg-[#0f0a1a]">
+<body class="min-h-dvh min-h-screen font-sans antialiased text-primary overscroll-y-none overflow-x-hidden bg-[#0f0a1a]">
     @yield('content')
     @stack('scripts')
 </body>

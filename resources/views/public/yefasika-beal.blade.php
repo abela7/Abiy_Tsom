@@ -5,8 +5,7 @@
 @section('content')
     @include('member.partials.fasika-easter-shell')
 
-    <main class="max-w-lg mx-auto px-4 sm:px-5 pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-[max(1.25rem,env(safe-area-inset-top))] min-h-[100dvh] min-h-[100svh] flex flex-col justify-center gap-6 sm:min-h-0 sm:py-10 fasika-page"
-          style="position:relative;z-index:1"
+    <main class="relative z-10 max-w-lg mx-auto px-4 py-10 space-y-6 fasika-page"
           x-data="{
               copied: false,
               pageUrl: @js($shareUrl),
