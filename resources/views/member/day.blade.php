@@ -458,7 +458,131 @@
     })();
 </script>
 @endif
-<div x-data="dayPage()" class="px-4 pt-4 space-y-4 @if($isGoodFriday ?? false) good-friday-page @endif" @if($isGoodFriday ?? false) style="position:relative;z-index:1" @endif>
+
+@if($isFasika ?? false)
+<style>
+    html.dark body { background: transparent !important; }
+    html.dark { background: #0f0a1a !important; }
+    .fasika-page {
+        --color-card: rgba(45, 24, 84, 0.68);
+        --color-muted: rgba(26, 14, 46, 0.55);
+        --color-border: rgba(245, 208, 96, 0.18);
+        --color-primary: #F5D060;
+        --color-secondary: rgba(255,255,255,0.75);
+        --color-muted-text: rgba(245,208,96,0.55);
+    }
+    .fasika-page > * {
+        backdrop-filter: blur(7px);
+        -webkit-backdrop-filter: blur(7px);
+    }
+    /* Gold glow pulse behind the cross */
+    @keyframes fasika-glow {
+        0%,100% { opacity: 0.7; transform: translate(-50%,-50%) scale(1); }
+        50%      { opacity: 1;   transform: translate(-50%,-50%) scale(1.1); }
+    }
+    /* Rays spin */
+    @keyframes fasika-rays {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+    }
+    /* Shimmer gold text */
+    .fasika-shimmer-text {
+        background: linear-gradient(90deg,#B8860B 0%,#F5E6A3 30%,#D4A537 50%,#FFF8DC 70%,#B8860B 100%);
+        background-size: 200% auto;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: fasika-shimmer 3s linear infinite;
+    }
+    @keyframes fasika-shimmer {
+        to { background-position: 200% center; }
+    }
+    /* Override FAQ modal z-50 layers to be solid */
+    .fasika-page [class~="z-50"],
+    .fasika-page [class~="z-50"] * {
+        --color-card: rgb(20, 10, 40);
+        --color-muted: rgb(30, 15, 55);
+        --color-border: rgba(245,208,96,0.22);
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+</style>
+
+{{-- Fixed dark-to-gold gradient background --}}
+<div style="position:fixed;inset:0;z-index:0;
+     background:linear-gradient(to bottom,#1a0e2e,#2d1854,#0f0a1a);">
+    <div style="position:absolute;inset:0;
+         background:radial-gradient(ellipse at 50% 20%,rgba(212,165,87,0.25) 0%,transparent 62%);"></div>
+</div>
+
+{{-- Canvas for floating golden particles --}}
+<canvas id="fasika-particles"
+        style="position:fixed;inset:0;z-index:1;pointer-events:none;width:100%;height:100%;"></canvas>
+
+<script>
+    window.addEventListener('alpine:initialized', function () {
+        window.dispatchEvent(new CustomEvent('theme-changed', { detail: { theme: 'dark' } }));
+    }, { once: true });
+
+    (function initFasikaParticles() {
+        function run() {
+            var canvas = document.getElementById('fasika-particles');
+            if (!canvas) return;
+            var ctx = canvas.getContext('2d');
+            var W, H, particles = [];
+
+            function resize() {
+                W = canvas.width  = canvas.offsetWidth;
+                H = canvas.height = canvas.offsetHeight;
+            }
+            resize();
+            window.addEventListener('resize', resize);
+
+            var count = Math.min(55, Math.floor((W * H) / 9000));
+            for (var i = 0; i < count; i++) {
+                particles.push({
+                    x: Math.random() * W,
+                    y: Math.random() * H,
+                    r: Math.random() * 2 + 0.4,
+                    speed: Math.random() * 0.35 + 0.12,
+                    opacity: Math.random() * 0.45 + 0.15,
+                    drift: (Math.random() - 0.5) * 0.28,
+                    phase: Math.random() * Math.PI * 2,
+                });
+            }
+
+            (function draw() {
+                ctx.clearRect(0, 0, W, H);
+                for (var j = 0; j < particles.length; j++) {
+                    var p = particles[j];
+                    p.y -= p.speed;
+                    p.x += Math.sin(p.phase) * p.drift;
+                    p.phase += 0.01;
+                    p.opacity += (Math.random() - 0.5) * 0.018;
+                    p.opacity = Math.max(0.08, Math.min(0.65, p.opacity));
+                    if (p.y < -10) { p.y = H + 10; p.x = Math.random() * W; }
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(245,208,96,' + p.opacity + ')';
+                    ctx.fill();
+                }
+                requestAnimationFrame(draw);
+            })();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', run);
+        } else {
+            run();
+        }
+    })();
+</script>
+@endif
+
+<div x-data="dayPage()"
+     class="px-4 pt-4 space-y-4 @if($isGoodFriday ?? false) good-friday-page @endif @if($isFasika ?? false) fasika-page @endif"
+     @if($isGoodFriday ?? false) style="position:relative;z-index:1" @endif
+     @if($isFasika ?? false) style="position:relative;z-index:2" @endif>
 
     {{-- "Copied!" toast --}}
     <div x-show="linkCopied"
@@ -488,6 +612,76 @@
             $slides->push(['type' => __('app.synaxarium_monthly_commemorations'), 'name' => localized($s, 'celebration'), 'image' => $s->imageUrl()]);
         }
     @endphp
+
+    {{-- ═══════════════════════════════════════════════════════════
+         FASIKA CELEBRATION BANNER — shown only on Easter Sunday
+         ═══════════════════════════════════════════════════════════ --}}
+    @if($isFasika ?? false)
+    <div class="relative rounded-3xl overflow-hidden px-5 py-6 text-center space-y-3">
+        {{-- Ambient glow behind cross --}}
+        <div style="position:absolute;top:50%;left:50%;width:280px;height:280px;border-radius:50%;
+             background:radial-gradient(circle,rgba(245,208,96,0.22) 0%,transparent 70%);
+             transform:translate(-50%,-50%);pointer-events:none;
+             animation:fasika-glow 3.5s ease-in-out infinite;"></div>
+
+        {{-- Ethiopian cross with spinning rays --}}
+        <div class="relative mx-auto w-20 h-20">
+            {{-- Spinning rays --}}
+            <div style="position:absolute;inset:-28px;animation:fasika-rays 28s linear infinite;opacity:0.35;">
+                @for ($r = 0; $r < 12; $r++)
+                <div style="position:absolute;top:50%;left:50%;width:2px;height:72px;
+                     background:linear-gradient(to top,#F5D060,transparent);
+                     transform-origin:bottom center;
+                     transform:translate(-50%,-100%) rotate({{ $r * 30 }}deg);"></div>
+                @endfor
+            </div>
+            {{-- Cross SVG --}}
+            <svg class="relative w-full h-full drop-shadow-[0_0_24px_rgba(245,208,96,0.5)]"
+                 viewBox="0 0 100 100" fill="none">
+                <defs>
+                    <linearGradient id="fg-cross" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%"   stop-color="#F5E6A3"/>
+                        <stop offset="50%"  stop-color="#D4A537"/>
+                        <stop offset="100%" stop-color="#B8860B"/>
+                    </linearGradient>
+                </defs>
+                <rect x="42" y="5"  width="16" height="90" rx="3" fill="url(#fg-cross)"/>
+                <rect x="15" y="28" width="70" height="16" rx="3" fill="url(#fg-cross)"/>
+                <rect x="38" y="2"  width="24" height="8"  rx="4" fill="url(#fg-cross)"/>
+                <rect x="38" y="90" width="24" height="8"  rx="4" fill="url(#fg-cross)"/>
+                <rect x="10" y="24" width="8"  height="24" rx="4" fill="url(#fg-cross)"/>
+                <rect x="82" y="24" width="8"  height="24" rx="4" fill="url(#fg-cross)"/>
+                <rect x="44" y="30" width="12" height="12" rx="2" transform="rotate(45 50 36)" fill="#FFF8DC" opacity="0.8"/>
+            </svg>
+        </div>
+
+        {{-- Eyebrow --}}
+        <p class="text-xs font-bold uppercase tracking-[0.25em] text-[rgba(245,208,96,0.7)]">
+            {{ __('app.fasika_eyebrow') }}
+        </p>
+
+        {{-- "Christ is Risen!" --}}
+        <h2 class="text-3xl font-black leading-tight fasika-shimmer-text">
+            ክርስቶስ ተንሥአ ከሙታን!
+        </h2>
+        <p class="text-lg font-bold text-white/85">{{ __('app.fasika_hero_en') }}</p>
+
+        {{-- Response badge --}}
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full
+                    bg-white/10 border border-[rgba(245,208,96,0.22)]">
+            <span class="text-sm font-semibold text-[#F5D060]">{{ __('app.fasika_response_am') }}</span>
+            <span class="text-white/30">·</span>
+            <span class="text-sm font-semibold text-white/80">{{ __('app.fasika_response_en') }}</span>
+        </div>
+
+        {{-- Personalised greeting --}}
+        @if(($member ?? null)?->baptism_name)
+        <p class="text-sm text-[#F5D060] font-semibold">
+            {{ __('app.fasika_greeting', ['name' => $member->baptism_name]) }}
+        </p>
+        @endif
+    </div>
+    @endif
 
     {{-- Day title with prev/next navigation --}}
     <div class="flex items-center justify-between">

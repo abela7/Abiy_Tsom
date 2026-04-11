@@ -507,6 +507,12 @@ class HomeController extends Controller
 
         $isGoodFriday = $himamatDay?->slug === 'good-friday';
 
+        $easterDate = Carbon::parse(
+            config('app.easter_date', '2026-04-12 03:00'),
+            config('app.easter_timezone', 'Europe/London')
+        );
+        $isFasika = $daily->date !== null && $daily->date->isSameDay($easterDate);
+
         return view('member.day', compact(
             'member',
             'daily',
@@ -521,6 +527,7 @@ class HomeController extends Controller
             'himamatDay',
             'himamatTimeline',
             'isGoodFriday',
+            'isFasika',
         ));
     }
 

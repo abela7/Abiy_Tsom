@@ -2172,4 +2172,11 @@ return [
     'himamat_reminder_open_line' => 'Open: :url',
     'himamat_intro_reminder_open_line' => "ስለ ሕማማት እንዲሁም ስለ ዕለቱ ተጨማሪ መረጃ ለማግኘት የሚከተለውን ሊንክ ይንኩ\n:url",
     'himamat_slot_reminder_open_line' => "በዚህ ሰዓት የሚነበበውን የወንጌል ክፍል ለማግኘት እንዲሁም ስለ ሕማማት እና ስለ ዕለቱ ተጨማሪ መረጃ ለማግኘት የሚከተለውን ሊንክ ይንኩ\n:url",
+
+    // Fasika (Easter Sunday) celebration — shown in day.blade.php
+    'fasika_eyebrow'      => 'ፋሲካ · ትንሣኤ',
+    'fasika_hero_en'      => 'Christ is Risen!',
+    'fasika_response_am'  => 'በእውነት ተንሥአ!',
+    'fasika_response_en'  => 'Truly He is Risen!',
+    'fasika_greeting'     => 'ውድ :name፣',
   ];

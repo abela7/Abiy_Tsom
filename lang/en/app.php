@@ -2192,4 +2192,11 @@ return [
     'himamat_reminder_open_line' => 'Open: :url',
     'himamat_intro_reminder_open_line' => "Tap the link below to learn more about Holy Week and today’s journey:\n:url",
     'himamat_slot_reminder_open_line' => "Tap the link below to open the Gospel reading for this hour.\n:url",
+
+    // Fasika (Easter Sunday) celebration — shown in day.blade.php
+    'fasika_eyebrow'      => 'Fasika · Easter',
+    'fasika_hero_en'      => 'Christ is Risen!',
+    'fasika_response_am'  => 'በእውነት ተንሥአ!',
+    'fasika_response_en'  => 'Truly He is Risen!',
+    'fasika_greeting'     => 'Dear :name,',
   ];
