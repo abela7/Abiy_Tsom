@@ -7,19 +7,20 @@ namespace App\Services;
 use Carbon\Carbon;
 
 /**
- * Canonical structure of Abiy Tsom (Great Lent): 55 days across 8 weeks.
+ * Canonical structure of Abiy Tsom (Great Lent): 56 numbered days across 8 weeks
+ * (55 fasting days plus Easter Sunday as day 56 / Fasika).
  *
  * Three periods:
  * - Tsome Hirkal: Week 1 (8 days) - Emperor Eraclius recovering Holy Cross
  * - Tsome Arba: Weeks 2-7 (40 days) - Christ's 40-day wilderness fast
- * - Himamat: Week 8 (7 days) - Passion Week
+ * - Himamat: Week 8 (days 50–56) - Passion Week through Fasika
  *
  * 8 Sundays (from St. Yared's Tsome Digua):
  * Zewerede, Kidist, Mikurab, Mesague, Debre Zeit, Gebrehere, Nicodemus, Hosanna
  */
 final class AbiyTsomStructure
 {
-    public const TOTAL_DAYS = 55;
+    public const TOTAL_DAYS = 56;
 
     public const TOTAL_WEEKS = 8;
 
@@ -142,7 +143,7 @@ final class AbiyTsomStructure
         ],
         8 => [
             'day_start' => 50,
-            'day_end' => 55,
+            'day_end' => 56,
             'name_en' => 'Hosanna',
             'name_geez' => 'ሆሳእና',
             'name_am' => 'ሆሳእና',
@@ -157,7 +158,7 @@ final class AbiyTsomStructure
     ];
 
     /**
-     * Get week number (1-8) for a given day number (1-55).
+     * Get week number (1-8) for a given day number (1-56).
      */
     public static function getWeekForDay(int $dayNumber): int
     {

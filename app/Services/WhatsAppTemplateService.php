@@ -161,6 +161,7 @@ final class WhatsAppTemplateService
         53 => 'Thursday',
         54 => 'Friday',
         55 => 'Saturday',
+        56 => 'Sunday',
     ];
 
     /** @var list<string> */
@@ -171,6 +172,7 @@ final class WhatsAppTemplateService
         53 => 'ሐሙስ',
         54 => 'ዓርብ',
         55 => 'ቅዳሜ',
+        56 => 'እሑድ',
     ];
 
     /** @var list<string> */
@@ -181,6 +183,7 @@ final class WhatsAppTemplateService
         53 => 'fourth',
         54 => 'fifth',
         55 => 'sixth',
+        56 => 'seventh',
     ];
 
     /** @var list<string> */
@@ -191,6 +194,7 @@ final class WhatsAppTemplateService
         53 => 'አራተኛው',
         54 => 'አምስተኛው',
         55 => 'ስድስተኛው',
+        56 => 'ሰባተኛው',
     ];
 
     /**

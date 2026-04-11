@@ -7,11 +7,16 @@
 - Build incrementally: ship one subsection at a time and finish it fully before moving on. Stop and wait for PM review after commits.
 - Do not add new packages, UI pages, or extras unless explicitly approved.
 - On local setup: when manual steps are required (DB creation, config, etc.), ask the user to do them.
+- Special fast-day experiences (Good Friday, Fasika, etc.) belong inside `day.blade.php` as conditional blocks driven by controller flags (`$isGoodFriday`, `$isFasika`), not as new routes, standalone Blade pages, or separate member controllers.
+- Never push to `main`/production or deploy without explicit user approval; a request to view or share a link is not permission to push or ship.
 
 ## Learned Workspace Facts
 
 - Brand colors: Primary Blue `#0a6286`, Primary Gold `#e2ca18`.
 - Tech stack: Laravel, Blade, Tailwind v4, Alpine.js, MySQL. Always use Tailwind v4 syntax.
+- Member special-day UI: `HomeController::renderDayView()` sets flags such as `$isGoodFriday` and `$isFasika`; `day.blade.php` gates styling and celebration sections with `@if($isGoodFriday ?? false)` / `@if($isFasika ?? false)` while the normal daily content still renders underneath.
+- Fasting `DailyContent` is keyed by day number through the last fasting day of the season; Easter Sunday may have no `DailyContent` row. `$isFasika` is intended to be true on the season's last fasting day and when the viewed date matches `config('app.easter_date')` / `EASTER_DATE` in `.env`.
+- Production site `abuneteklehaymanot.org`: deploy over SSH with `git pull origin main` from the app directory; if the server repo has diverged from `origin/main`, `git reset --hard origin/main` then pull again.
 
 ## Cursor Cloud specific instructions
 

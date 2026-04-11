@@ -815,7 +815,7 @@ class DailyContentController extends Controller
             $end = $seasonStart->diffInDays($theme->week_end_date->copy()->startOfDay(), false) + 1;
 
             $start = max(1, $start);
-            $end = min(55, $end);
+            $end = min(56, $end);
 
             if ($end < $start) {
                 continue;

@@ -1,21 +1,181 @@
-{
-  "version": 1,
-  "transcripts": {
-    "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/a530449f-0d0a-4be6-a596-0629756067ab/a530449f-0d0a-4be6-a596-0629756067ab.jsonl": {
-      "mtimeMs": 1739980800000,
-      "lastProcessedAt": "2026-02-19T00:00:00.000Z"
-    },
-    "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/2b0f23b8-c7d9-49be-96d6-5d370659eff3/2b0f23b8-c7d9-49be-96d6-5d370659eff3.jsonl": {
-      "mtimeMs": 1739980800000,
-      "lastProcessedAt": "2026-02-19T00:00:00.000Z"
-    },
-    "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/e35b3f9b-e7b1-4423-89e3-8a9b2d2b054c/e35b3f9b-e7b1-4423-89e3-8a9b2d2b054c.jsonl": {
-      "mtimeMs": 1739980800000,
-      "lastProcessedAt": "2026-02-19T00:00:00.000Z"
-    },
-    "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/f5b6e5f4-6c12-4459-9818-52b39679a427/f5b6e5f4-6c12-4459-9818-52b39679a427.jsonl": {
-      "mtimeMs": 1739980800000,
-      "lastProcessedAt": "2026-02-19T00:00:00.000Z"
-    }
-  }
+﻿{
+    "version":  1,
+    "transcripts":  {
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/1f13e80f-8ec1-412e-a5f2-f4d0208bdaee/subagents/5a7ab58e-b111-4e80-ae2f-7faf50e97e05.jsonl":  {
+                                                                                                                                                                                                     "mtimeMs":  1772541844621,
+                                                                                                                                                                                                     "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                                 },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/1f13e80f-8ec1-412e-a5f2-f4d0208bdaee/subagents/026acfef-1171-4d1d-97b2-347ab279a704.jsonl":  {
+                                                                                                                                                                                                     "mtimeMs":  1772546137226,
+                                                                                                                                                                                                     "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                                 },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/e4b818e4-ad62-462f-8145-624cc60e582a/e4b818e4-ad62-462f-8145-624cc60e582a.jsonl":  {
+                                                                                                                                                                                           "mtimeMs":  1773293504632,
+                                                                                                                                                                                           "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                       },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/4808a7d7-107f-496a-b62f-ae4546204366/4808a7d7-107f-496a-b62f-ae4546204366.jsonl":  {
+                                                                                                                                                                                           "mtimeMs":  1772655910260,
+                                                                                                                                                                                           "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                       },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/881593dd-e30e-4e72-92e8-28ddda79e61d/subagents/b6d45d6f-acd3-406a-9d76-4ba461a9eba9.jsonl":  {
+                                                                                                                                                                                                     "mtimeMs":  1773087140484,
+                                                                                                                                                                                                     "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                                 },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/d6455e02-0bc8-4c6f-9bef-17fd2394f13d/subagents/8f8652cf-5a5a-45c9-b5d7-6543d9bfd178.jsonl":  {
+                                                                                                                                                                                                     "mtimeMs":  1773556126652,
+                                                                                                                                                                                                     "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                                 },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/8d4c59f0-560b-404e-98d2-ea36b0880f40/subagents/5d49a31d-b190-4522-b1ca-0f68dac3aed2.jsonl":  {
+                                                                                                                                                                                                     "mtimeMs":  1771868493100,
+                                                                                                                                                                                                     "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                                 },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/d6455e02-0bc8-4c6f-9bef-17fd2394f13d/subagents/354ecea2-13f8-4325-8b6f-f5b5a849bdac.jsonl":  {
+                                                                                                                                                                                                     "mtimeMs":  1773556075796,
+                                                                                                                                                                                                     "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                                 },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/6a7a6a67-aca7-436e-a506-2d08e5fea022/subagents/c2a4e4a7-3b3c-4974-b960-40b62ffd5ab0.jsonl":  {
+                                                                                                                                                                                                     "mtimeMs":  1772278834477,
+                                                                                                                                                                                                     "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                                 },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/d6455e02-0bc8-4c6f-9bef-17fd2394f13d/subagents/93a83d0e-faff-4ffd-9ac0-12f96cccfa32.jsonl":  {
+                                                                                                                                                                                                     "mtimeMs":  1773565611878,
+                                                                                                                                                                                                     "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                                 },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/fa7e2416-eda2-4ac2-a6ed-0040b1a60813/fa7e2416-eda2-4ac2-a6ed-0040b1a60813.jsonl":  {
+                                                                                                                                                                                           "mtimeMs":  1771798501283,
+                                                                                                                                                                                           "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                       },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/1f13e80f-8ec1-412e-a5f2-f4d0208bdaee/subagents/ce6b9f50-d42b-426b-a3b2-20d5fc5d4076.jsonl":  {
+                                                                                                                                                                                                     "mtimeMs":  1772541849692,
+                                                                                                                                                                                                     "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                                 },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/f4f0c8a4-258c-4b9a-97ea-d2eeb3538092/f4f0c8a4-258c-4b9a-97ea-d2eeb3538092.jsonl":  {
+                                                                                                                                                                                           "mtimeMs":  1771710075353,
+                                                                                                                                                                                           "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                       },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/c6c89e45-979c-465b-8869-7cdf10bb6cc3/c6c89e45-979c-465b-8869-7cdf10bb6cc3.jsonl":  {
+                                                                                                                                                                                           "mtimeMs":  1772940648059,
+                                                                                                                                                                                           "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                       },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/8d4c59f0-560b-404e-98d2-ea36b0880f40/subagents/3531f807-5c68-4df2-ad7d-dcd106557f25.jsonl":  {
+                                                                                                                                                                                                     "mtimeMs":  1771886183007,
+                                                                                                                                                                                                     "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                                 },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/e35b3f9b-e7b1-4423-89e3-8a9b2d2b054c/e35b3f9b-e7b1-4423-89e3-8a9b2d2b054c.jsonl":  {
+                                                                                                                                                                                           "mtimeMs":  1771415451718,
+                                                                                                                                                                                           "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                       },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/6a7a6a67-aca7-436e-a506-2d08e5fea022/subagents/91cb7a13-7db4-4152-830e-538b56c38cbb.jsonl":  {
+                                                                                                                                                                                                     "mtimeMs":  1772280160877,
+                                                                                                                                                                                                     "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                                 },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/881593dd-e30e-4e72-92e8-28ddda79e61d/subagents/a9c62e3b-f47e-496c-899d-3ee56a1a8d39.jsonl":  {
+                                                                                                                                                                                                     "mtimeMs":  1773087187828,
+                                                                                                                                                                                                     "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                                 },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/da55e596-661d-4e77-8e84-5a329c766369/da55e596-661d-4e77-8e84-5a329c766369.jsonl":  {
+                                                                                                                                                                                           "mtimeMs":  1772744419185,
+                                                                                                                                                                                           "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                       },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/99e054a2-eacd-436d-a9a4-8a89cc961780/99e054a2-eacd-436d-a9a4-8a89cc961780.jsonl":  {
+                                                                                                                                                                                           "mtimeMs":  1774362414578,
+                                                                                                                                                                                           "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                       },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/881593dd-e30e-4e72-92e8-28ddda79e61d/881593dd-e30e-4e72-92e8-28ddda79e61d.jsonl":  {
+                                                                                                                                                                                           "mtimeMs":  1773093097857,
+                                                                                                                                                                                           "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                       },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/74719308-f7e4-4f43-a03c-6dccf0a9850c/74719308-f7e4-4f43-a03c-6dccf0a9850c.jsonl":  {
+                                                                                                                                                                                           "mtimeMs":  1775730267980,
+                                                                                                                                                                                           "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                       },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/37ca800e-5f7e-45c2-a16c-28f0a0fb74cd/37ca800e-5f7e-45c2-a16c-28f0a0fb74cd.jsonl":  {
+                                                                                                                                                                                           "mtimeMs":  1774492917583,
+                                                                                                                                                                                           "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                       },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/6a7a6a67-aca7-436e-a506-2d08e5fea022/subagents/7844de95-1047-481d-b4e4-0c861a872ba7.jsonl":  {
+                                                                                                                                                                                                     "mtimeMs":  1772278836396,
+                                                                                                                                                                                                     "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                                 },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/1f13e80f-8ec1-412e-a5f2-f4d0208bdaee/1f13e80f-8ec1-412e-a5f2-f4d0208bdaee.jsonl":  {
+                                                                                                                                                                                           "mtimeMs":  1772594491916,
+                                                                                                                                                                                           "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                       },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/6c68366b-89a2-4370-93e3-531129a3c385/6c68366b-89a2-4370-93e3-531129a3c385.jsonl":  {
+                                                                                                                                                                                           "mtimeMs":  1772698732830,
+                                                                                                                                                                                           "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                       },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/f5b6e5f4-6c12-4459-9818-52b39679a427/f5b6e5f4-6c12-4459-9818-52b39679a427.jsonl":  {
+                                                                                                                                                                                           "mtimeMs":  1771398354844,
+                                                                                                                                                                                           "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                       },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/a530449f-0d0a-4be6-a596-0629756067ab/a530449f-0d0a-4be6-a596-0629756067ab.jsonl":  {
+                                                                                                                                                                                           "mtimeMs":  1771530599363,
+                                                                                                                                                                                           "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                       },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/5c2a5871-df5e-4673-a4c7-b742b67b5fee/5c2a5871-df5e-4673-a4c7-b742b67b5fee.jsonl":  {
+                                                                                                                                                                                           "mtimeMs":  1772634904660,
+                                                                                                                                                                                           "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                       },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/8d4c59f0-560b-404e-98d2-ea36b0880f40/8d4c59f0-560b-404e-98d2-ea36b0880f40.jsonl":  {
+                                                                                                                                                                                           "mtimeMs":  1771962434468,
+                                                                                                                                                                                           "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                       },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/1f13e80f-8ec1-412e-a5f2-f4d0208bdaee/subagents/232c1f9c-9613-44b3-9a31-c750737ff470.jsonl":  {
+                                                                                                                                                                                                     "mtimeMs":  1772538768047,
+                                                                                                                                                                                                     "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                                 },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/8d4c59f0-560b-404e-98d2-ea36b0880f40/subagents/9f96cb8a-4481-4323-92d6-0b30b291d703.jsonl":  {
+                                                                                                                                                                                                     "mtimeMs":  1771868505918,
+                                                                                                                                                                                                     "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                                 },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/5f3f4f35-2911-494a-b86e-33560e41ee24/5f3f4f35-2911-494a-b86e-33560e41ee24.jsonl":  {
+                                                                                                                                                                                           "mtimeMs":  1772330033955,
+                                                                                                                                                                                           "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                       },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/fa7e2416-eda2-4ac2-a6ed-0040b1a60813/subagents/c6a70a4e-5428-496f-a355-3874c7488a50.jsonl":  {
+                                                                                                                                                                                                     "mtimeMs":  1771792796312,
+                                                                                                                                                                                                     "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                                 },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/6c67c638-05ba-4986-9c88-45e4ec0415e8/subagents/1cd90828-164b-4975-bf21-c574accfa3a1.jsonl":  {
+                                                                                                                                                                                                     "mtimeMs":  1775924920751,
+                                                                                                                                                                                                     "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                                 },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/1f13e80f-8ec1-412e-a5f2-f4d0208bdaee/subagents/3fca911d-1a68-412d-a182-26d6c716a84d.jsonl":  {
+                                                                                                                                                                                                     "mtimeMs":  1772590229823,
+                                                                                                                                                                                                     "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                                 },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/1f13e80f-8ec1-412e-a5f2-f4d0208bdaee/subagents/aacdd7f6-9dc1-4ae6-9d9e-6a14458d959e.jsonl":  {
+                                                                                                                                                                                                     "mtimeMs":  1772590221558,
+                                                                                                                                                                                                     "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                                 },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/5a80f9e9-0885-4821-b402-ef6a9a7b54bb/5a80f9e9-0885-4821-b402-ef6a9a7b54bb.jsonl":  {
+                                                                                                                                                                                           "mtimeMs":  1773087254604,
+                                                                                                                                                                                           "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                       },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/d6455e02-0bc8-4c6f-9bef-17fd2394f13d/subagents/b26ede38-1b27-4be3-afe5-fe1696fa6c9c.jsonl":  {
+                                                                                                                                                                                                     "mtimeMs":  1773565585166,
+                                                                                                                                                                                                     "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                                 },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/6c67c638-05ba-4986-9c88-45e4ec0415e8/6c67c638-05ba-4986-9c88-45e4ec0415e8.jsonl":  {
+                                                                                                                                                                                           "mtimeMs":  1775924916775,
+                                                                                                                                                                                           "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                       },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/2b0f23b8-c7d9-49be-96d6-5d370659eff3/2b0f23b8-c7d9-49be-96d6-5d370659eff3.jsonl":  {
+                                                                                                                                                                                           "mtimeMs":  1771478069015,
+                                                                                                                                                                                           "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                       },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/6a7a6a67-aca7-436e-a506-2d08e5fea022/6a7a6a67-aca7-436e-a506-2d08e5fea022.jsonl":  {
+                                                                                                                                                                                           "mtimeMs":  1772282578219,
+                                                                                                                                                                                           "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                       },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/6a7a6a67-aca7-436e-a506-2d08e5fea022/subagents/28e5b0a1-e97d-44f1-8d55-56258063c4e0.jsonl":  {
+                                                                                                                                                                                                     "mtimeMs":  1772231845777,
+                                                                                                                                                                                                     "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                                 },
+                        "C:/Users/Abela/.cursor/projects/c-xampp-htdocs-Abiy-Tsom/agent-transcripts/d6455e02-0bc8-4c6f-9bef-17fd2394f13d/d6455e02-0bc8-4c6f-9bef-17fd2394f13d.jsonl":  {
+                                                                                                                                                                                           "mtimeMs":  1773975353312,
+                                                                                                                                                                                           "lastProcessedAt":  "2026-04-11T16:29:07.4149933+00:00"
+                                                                                                                                                                                       }
+                    }
 }
