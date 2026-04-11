@@ -14,7 +14,7 @@
               initialSenderName: '',
           })">
         {{-- Hero: cross + titles in a focused glass frame --}}
-        <div class="mx-auto w-full max-w-md rounded-3xl border border-[#e2ca18]/[0.14] bg-gradient-to-br from-amber-800/45 via-[#1c1018]/70 to-[#0a6286]/38 p-5 shadow-[0_20px_50px_-12px_rgba(35,18,10,0.52)] ring-1 ring-[#f5d060]/[0.08] backdrop-blur-sm backdrop-saturate-125 sm:max-w-lg sm:p-6">
+        <div class="mx-auto w-full max-w-md rounded-3xl border border-[#e2ca18]/[0.14] bg-gradient-to-br from-amber-800/45 via-[#1c1018]/70 to-[#0a6286]/38 p-5 shadow-[0_20px_50px_-12px_rgba(35,18,10,0.52)] ring-1 ring-[#f5d060]/[0.08] backdrop-blur-[3px] backdrop-saturate-125 sm:max-w-lg sm:p-6">
             <div class="mx-auto w-full max-w-[16rem] origin-top scale-[0.94] sm:max-w-none sm:scale-100">
                 @include('member.partials.fasika-celebration-banner')
             </div>
@@ -22,7 +22,7 @@
 
         {{-- Reading card: message only (modern editorial stack) --}}
         <article
-            class="relative mx-auto w-full max-w-md overflow-hidden rounded-3xl border border-[#e2ca18]/[0.12] bg-gradient-to-br from-amber-100/18 via-orange-950/40 to-[#0c0614]/88 px-6 py-9 shadow-[0_32px_64px_-16px_rgba(28,14,8,0.52)] ring-1 ring-inset ring-[#e2ca18]/[0.07] backdrop-blur-sm backdrop-saturate-125 sm:max-w-lg sm:px-9 sm:py-11"
+            class="relative mx-auto w-full max-w-md overflow-hidden rounded-3xl border border-[#e2ca18]/[0.12] bg-gradient-to-br from-amber-100/18 via-orange-950/40 to-[#0c0614]/88 px-6 py-9 shadow-[0_32px_64px_-16px_rgba(28,14,8,0.52)] ring-1 ring-inset ring-[#e2ca18]/[0.07] backdrop-blur-[3px] backdrop-saturate-125 sm:max-w-lg sm:px-9 sm:py-11"
             itemscope
             itemtype="https://schema.org/Article">
             <div class="pointer-events-none absolute -left-24 top-20 h-64 w-64 rounded-full bg-[#e2ca18]/[0.11] blur-3xl"></div>
@@ -60,7 +60,7 @@
         </article>
 
         {{-- Share / personalize: separate surface = clearer modern affordance --}}
-        <section class="relative mx-auto w-full max-w-md rounded-2xl border border-[#e2ca18]/[0.26] bg-gradient-to-br from-amber-950/55 via-[#1a1210]/78 to-[#0a2832]/72 px-4 py-5 shadow-[0_16px_36px_-12px_rgba(30,16,8,0.42)] ring-1 ring-inset ring-[#f5d060]/[0.06] backdrop-blur-sm backdrop-saturate-125 sm:max-w-lg sm:px-5 sm:py-6"
+        <section class="relative mx-auto w-full max-w-md rounded-2xl border border-[#e2ca18]/[0.26] bg-gradient-to-br from-amber-950/55 via-[#1a1210]/78 to-[#0a2832]/72 px-4 py-5 shadow-[0_16px_36px_-12px_rgba(30,16,8,0.42)] ring-1 ring-inset ring-[#f5d060]/[0.06] backdrop-blur-[3px] backdrop-saturate-125 sm:max-w-lg sm:px-5 sm:py-6"
                  aria-labelledby="ybb-share-heading">
             <div class="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#e2ca18]/40 to-transparent"></div>
 
@@ -158,7 +158,7 @@
         @endphp
 
         @if($hasPublicFasikaExtras)
-            <section class="relative mx-auto w-full max-w-md rounded-2xl border border-[#e2ca18]/[0.12] bg-gradient-to-br from-amber-900/40 via-stone-950/65 to-[#0a1824]/78 px-4 py-4 shadow-[0_18px_40px_-12px_rgba(25,12,6,0.48)] ring-1 ring-inset ring-[#e2ca18]/[0.06] backdrop-blur-sm backdrop-saturate-125 sm:max-w-lg sm:px-5"
+            <section class="relative mx-auto w-full max-w-md rounded-2xl border border-[#e2ca18]/[0.12] bg-gradient-to-br from-amber-900/40 via-stone-950/65 to-[#0a1824]/78 px-4 py-4 shadow-[0_18px_40px_-12px_rgba(25,12,6,0.48)] ring-1 ring-inset ring-[#e2ca18]/[0.06] backdrop-blur-[3px] backdrop-saturate-125 sm:max-w-lg sm:px-5"
                      aria-labelledby="ybb-extra-content-heading">
                 <div class="rounded-xl px-1 py-1">
                     <h2 id="ybb-extra-content-heading" class="text-base font-extrabold text-[#e2ca18] sm:text-lg">
