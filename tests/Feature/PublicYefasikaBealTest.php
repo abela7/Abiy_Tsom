@@ -14,7 +14,8 @@ class PublicYefasikaBealTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('ybb-page', false);
-        $response->assertSee('ybb-bg', false);
+        $response->assertSee('ybb-fullbleed', false);
+        $response->assertSee('ybb-particles', false);
         $response->assertSee(__('app.fasika_banner_main'), false);
         $response->assertSee(rtrim((string) config('app.parish_website_url'), '/').'/', false);
     }
