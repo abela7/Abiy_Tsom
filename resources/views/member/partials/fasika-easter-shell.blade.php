@@ -3,16 +3,16 @@
     html.dark body { background: transparent !important; }
     html.dark { background: #0f0a1a !important; }
     .fasika-page {
-        --color-card: rgba(45, 24, 84, 0.68);
-        --color-muted: rgba(26, 14, 46, 0.55);
+        --color-card: rgba(45, 24, 84, 0.52);
+        --color-muted: rgba(26, 14, 46, 0.45);
         --color-border: rgba(245, 208, 96, 0.18);
         --color-primary: #F5D060;
         --color-secondary: rgba(255, 255, 255, 0.75);
         --color-muted-text: rgba(245, 208, 96, 0.55);
     }
     .fasika-page > * {
-        backdrop-filter: blur(7px);
-        -webkit-backdrop-filter: blur(7px);
+        backdrop-filter: blur(3px);
+        -webkit-backdrop-filter: blur(3px);
     }
 
     /* FAQ modal & other fixed overlays — fully solid so text is readable */
@@ -52,9 +52,9 @@
          background-image:url('{{ asset('images/Jesus_In_Eastern.avif') }}');
          background-size:cover;background-position:center top;background-repeat:no-repeat;"></div>
     <div style="position:absolute;inset:0;
-         background:linear-gradient(to bottom, rgba(26, 14, 46, 0.88), rgba(45, 24, 84, 0.82), rgba(15, 10, 26, 0.92));"></div>
+         background:linear-gradient(to bottom, rgba(26, 14, 46, 0.62), rgba(45, 24, 84, 0.55), rgba(15, 10, 26, 0.72));"></div>
     <div style="position:absolute;inset:0;
-         background:radial-gradient(ellipse at 50% 18%, rgba(212, 165, 87, 0.28) 0%, transparent 58%);"></div>
+         background:radial-gradient(ellipse at 50% 18%, rgba(212, 165, 87, 0.22) 0%, transparent 58%);"></div>
 </div>
 
 <canvas id="fasika-particles"
