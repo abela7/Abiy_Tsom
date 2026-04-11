@@ -2215,10 +2215,10 @@ return [
     'yefasika_beal_generate_button' => 'ሊንክ ይፍጠሩ ያጋሩ',
     'yefasika_beal_generating' => 'ሊንኩ በመፍጠር ላይ...',
     'yefasika_beal_create_failed' => 'ሊንኩን መፍጠር አልተቻለም። እባክዎ ደግሞ ይሞክሩ።',
-    'yefasika_beal_ready_title' => 'የእርስዎ የትንሣኤ ሰላምታ ዝግጁ ነው',
+    'yefasika_beal_ready_title' => 'ሊንኩ ዝግጁ ነው ለወዳጅ ዘመድዎ ማጋራት ይችላሉ።',
     'yefasika_beal_ready_help' => 'ከታች ባሉት አዝራሮች የራስዎን ሰላምታ ያጋሩ።',
-    'yefasika_beal_share_personalized_button' => 'ሰላምታዬን አጋራ',
-    'yefasika_beal_copy_personalized_button' => 'ሊንኬን ቅዳ',
+    'yefasika_beal_share_personalized_button' => 'አጋራ',
+    'yefasika_beal_copy_personalized_button' => 'ኮፒ ሊንክ',
     'yefasika_beal_link_copied' => 'ሊንኩ ተቀድቷል!',
     'yefasika_beal_back_home' => 'ወደ መነሻ ይሂዱ',
 

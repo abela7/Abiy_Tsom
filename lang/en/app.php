@@ -2235,10 +2235,10 @@ return [
     'yefasika_beal_generate_button' => 'Create link & share',
     'yefasika_beal_generating' => 'Creating link...',
     'yefasika_beal_create_failed' => 'Could not create your share link right now.',
-    'yefasika_beal_ready_title' => 'Your Easter greeting is ready',
+    'yefasika_beal_ready_title' => 'Your link is ready—you can share it with friends and family.',
     'yefasika_beal_ready_help' => 'Use the buttons below to share your personal Easter blessing.',
-    'yefasika_beal_share_personalized_button' => 'Share my greeting',
-    'yefasika_beal_copy_personalized_button' => 'Copy my link',
+    'yefasika_beal_share_personalized_button' => 'Share',
+    'yefasika_beal_copy_personalized_button' => 'Copy link',
     'yefasika_beal_link_copied' => 'Link copied!',
     'yefasika_beal_back_home' => 'Back to home',
 
