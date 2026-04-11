@@ -460,129 +460,13 @@
 @endif
 
 @if($isFasika ?? false)
-<style>
-    html.dark body { background: transparent !important; }
-    html.dark { background: #0f0a1a !important; }
-    .fasika-page {
-        --color-card: rgba(45, 24, 84, 0.68);
-        --color-muted: rgba(26, 14, 46, 0.55);
-        --color-border: rgba(245, 208, 96, 0.18);
-        --color-primary: #F5D060;
-        --color-secondary: rgba(255,255,255,0.75);
-        --color-muted-text: rgba(245,208,96,0.55);
-    }
-    .fasika-page > * {
-        backdrop-filter: blur(7px);
-        -webkit-backdrop-filter: blur(7px);
-    }
-    /* Gold glow pulse behind the cross */
-    @keyframes fasika-glow {
-        0%,100% { opacity: 0.7; transform: translate(-50%,-50%) scale(1); }
-        50%      { opacity: 1;   transform: translate(-50%,-50%) scale(1.1); }
-    }
-    /* Rays spin */
-    @keyframes fasika-rays {
-        from { transform: rotate(0deg); }
-        to   { transform: rotate(360deg); }
-    }
-    /* Shimmer gold text */
-    .fasika-shimmer-text {
-        background: linear-gradient(90deg,#B8860B 0%,#F5E6A3 30%,#D4A537 50%,#FFF8DC 70%,#B8860B 100%);
-        background-size: 200% auto;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        animation: fasika-shimmer 3s linear infinite;
-    }
-    @keyframes fasika-shimmer {
-        to { background-position: 200% center; }
-    }
-    /* Override FAQ modal z-50 layers to be solid */
-    .fasika-page [class~="z-50"],
-    .fasika-page [class~="z-50"] * {
-        --color-card: rgb(20, 10, 40);
-        --color-muted: rgb(30, 15, 55);
-        --color-border: rgba(245,208,96,0.22);
-        backdrop-filter: none !important;
-        -webkit-backdrop-filter: none !important;
-    }
-</style>
-
-{{-- Fixed dark-to-gold gradient background --}}
-<div style="position:fixed;inset:0;z-index:0;
-     background:linear-gradient(to bottom,#1a0e2e,#2d1854,#0f0a1a);">
-    <div style="position:absolute;inset:0;
-         background:radial-gradient(ellipse at 50% 20%,rgba(212,165,87,0.25) 0%,transparent 62%);"></div>
-</div>
-
-{{-- Canvas for floating golden particles --}}
-<canvas id="fasika-particles"
-        style="position:fixed;inset:0;z-index:1;pointer-events:none;width:100%;height:100%;"></canvas>
-
-<script>
-    window.addEventListener('alpine:initialized', function () {
-        window.dispatchEvent(new CustomEvent('theme-changed', { detail: { theme: 'dark' } }));
-    }, { once: true });
-
-    (function initFasikaParticles() {
-        function run() {
-            var canvas = document.getElementById('fasika-particles');
-            if (!canvas) return;
-            var ctx = canvas.getContext('2d');
-            var W, H, particles = [];
-
-            function resize() {
-                W = canvas.width  = canvas.offsetWidth;
-                H = canvas.height = canvas.offsetHeight;
-            }
-            resize();
-            window.addEventListener('resize', resize);
-
-            var count = Math.min(55, Math.floor((W * H) / 9000));
-            for (var i = 0; i < count; i++) {
-                particles.push({
-                    x: Math.random() * W,
-                    y: Math.random() * H,
-                    r: Math.random() * 2 + 0.4,
-                    speed: Math.random() * 0.35 + 0.12,
-                    opacity: Math.random() * 0.45 + 0.15,
-                    drift: (Math.random() - 0.5) * 0.28,
-                    phase: Math.random() * Math.PI * 2,
-                });
-            }
-
-            (function draw() {
-                ctx.clearRect(0, 0, W, H);
-                for (var j = 0; j < particles.length; j++) {
-                    var p = particles[j];
-                    p.y -= p.speed;
-                    p.x += Math.sin(p.phase) * p.drift;
-                    p.phase += 0.01;
-                    p.opacity += (Math.random() - 0.5) * 0.018;
-                    p.opacity = Math.max(0.08, Math.min(0.65, p.opacity));
-                    if (p.y < -10) { p.y = H + 10; p.x = Math.random() * W; }
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-                    ctx.fillStyle = 'rgba(245,208,96,' + p.opacity + ')';
-                    ctx.fill();
-                }
-                requestAnimationFrame(draw);
-            })();
-        }
-
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', run);
-        } else {
-            run();
-        }
-    })();
-</script>
+    {{-- Same immersive shell as Good Friday (background, blood drops, timeline rail); refine for Easter later. --}}
+    @include('member.partials.fasika-easter-shell')
 @endif
 
 <div x-data="dayPage()"
      class="px-4 pt-4 space-y-4 @if($isGoodFriday ?? false) good-friday-page @endif @if($isFasika ?? false) fasika-page @endif"
-     @if($isGoodFriday ?? false) style="position:relative;z-index:1" @endif
-     @if($isFasika ?? false) style="position:relative;z-index:2" @endif>
+     @if(($isGoodFriday ?? false) || ($isFasika ?? false)) style="position:relative;z-index:1" @endif>
 
     {{-- "Copied!" toast --}}
     <div x-show="linkCopied"
@@ -698,7 +582,7 @@
                 @if($isFasika ?? false)
                     {{ __('app.fasika_day_title') }}
                 @else
-                    {{ __('app.day_of', ['day' => $daily->day_number, 'total' => 55]) }}
+                    {{ __('app.day_of', ['day' => $daily->day_number, 'total' => \App\Services\AbiyTsomStructure::TOTAL_DAYS]) }}
                 @endif
             </h1>
             <p class="text-sm text-muted-text mt-0.5">{{ $daily->date->locale('en')->translatedFormat('l, F j, Y') }}</p>
@@ -728,7 +612,7 @@
         @endif
 
         {{-- Commemorations carousel row --}}
-        @if(!($isGoodFriday ?? false) && $slides->isNotEmpty() && (($commemorationsUrl ?? null) !== null || !($publicPreview ?? false)))
+        @if(!($isGoodFriday ?? false) && !($isFasika ?? false) && $slides->isNotEmpty() && (($commemorationsUrl ?? null) !== null || !($publicPreview ?? false)))
         <a href="{{ $commemorationsHref }}"
            class="flex items-center gap-3 px-4 py-3 bg-accent/5 hover:bg-accent/10 active:scale-[0.98] transition-all group"
            x-data="{ current: 0, total: {{ $slides->count() }}, images: {{ $slides->map(fn($s) => $s['image'] ?? null)->toJson() }}, fallback: '{{ asset('images/Saints.png') }}' }"
@@ -760,7 +644,7 @@
         @endif
 
         {{-- Weekly theme link --}}
-        @if(!($isGoodFriday ?? false) && $daily->weeklyTheme)
+        @if(!($isGoodFriday ?? false) && !($isFasika ?? false) && $daily->weeklyTheme)
         <a href="{{ memberUrl('/week/' . $daily->weeklyTheme->id) }}" class="flex items-center gap-3 px-4 py-3 bg-accent/5 hover:bg-accent/10 active:scale-[0.98] transition-all group">
             <div class="shrink-0 w-9 h-9 rounded-lg bg-accent/15 flex items-center justify-center">
                 <i class="bi bi-calendar-week text-accent text-sm"></i>
@@ -1242,7 +1126,7 @@
     @endif
 
     {{-- Sinksar (Synaxarium) — Read / Listen toggle with immersive reader --}}
-    @if(!($isGoodFriday ?? false) && localized($daily, 'sinksar_title'))
+    @if(!($isGoodFriday ?? false) && !($isFasika ?? false) && localized($daily, 'sinksar_title'))
     <div data-tour="day-sinksar"
          class="bg-card rounded-2xl shadow-sm border border-border overflow-hidden"
          x-data="{
