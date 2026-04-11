@@ -73,8 +73,8 @@
                 <div x-show="!composerOpen" x-cloak class="flex justify-center">
                     <button type="button"
                             @click="openComposer()"
-                            class="touch-manipulation inline-flex h-10 w-full max-w-xs items-center justify-center gap-1.5 rounded-lg bg-[#e2ca18] px-4 text-xs font-bold tracking-wide text-zinc-950 shadow-[0_6px_18px_-6px_rgba(226,202,24,0.38)] transition hover:bg-[#edd85c] hover:shadow-[0_10px_22px_-6px_rgba(226,202,24,0.42)] active:scale-[0.98] sm:w-auto sm:min-w-[11rem] sm:text-sm">
-                        <svg class="h-4 w-4 shrink-0 opacity-80 sm:h-[1.125rem] sm:w-[1.125rem]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            class="touch-manipulation inline-flex h-12 w-full max-w-xs items-center justify-center gap-2 rounded-xl bg-[#e2ca18] px-5 text-sm font-bold tracking-wide text-zinc-950 shadow-[0_8px_24px_-6px_rgba(226,202,24,0.4)] transition hover:bg-[#edd85c] hover:shadow-[0_12px_28px_-6px_rgba(226,202,24,0.45)] active:scale-[0.98] sm:w-auto sm:min-w-[13rem]">
+                        <svg class="h-5 w-5 shrink-0 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         </svg>
                         {{ __('app.yefasika_beal_add_name_button') }}
@@ -90,17 +90,17 @@
                                type="text"
                                maxlength="120"
                                autocomplete="name"
-                               class="h-10 w-full rounded-lg border border-white/12 bg-zinc-900/80 px-3 text-center text-sm text-white shadow-inner outline-none transition placeholder:text-zinc-500 focus:border-[#e2ca18]/50 focus:bg-zinc-900 focus:ring-2 focus:ring-[#e2ca18]/25 sm:px-4"
+                               class="h-12 w-full rounded-xl border border-white/12 bg-zinc-900/80 px-4 text-center text-base text-white shadow-inner outline-none transition placeholder:text-zinc-500 focus:border-[#e2ca18]/50 focus:bg-zinc-900 focus:ring-2 focus:ring-[#e2ca18]/25"
                                placeholder="{{ __('app.yefasika_beal_name_placeholder') }}">
                         <p x-show="errorMessage" x-cloak class="mt-1.5 text-center text-xs font-medium text-rose-300 sm:text-sm" x-text="errorMessage"></p>
                     </div>
 
-                    <div class="flex flex-col gap-2 sm:flex-row sm:justify-center">
+                    <div class="flex flex-col gap-2.5 sm:flex-row sm:justify-center">
                         <button type="button"
                                 @click="createPersonalizedLink()"
                                 :disabled="isSubmitting"
-                                class="touch-manipulation inline-flex h-10 flex-1 items-center justify-center gap-1.5 rounded-lg bg-[#e2ca18] px-4 text-xs font-bold text-zinc-950 shadow-[0_6px_18px_-6px_rgba(226,202,24,0.35)] transition hover:bg-[#edd85c] disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98] sm:max-w-xs sm:flex-none sm:text-sm">
-                            <svg class="h-4 w-4 shrink-0 opacity-80 sm:h-[1.125rem] sm:w-[1.125rem]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                class="touch-manipulation inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[#e2ca18] px-5 text-sm font-bold text-zinc-950 shadow-[0_8px_22px_-6px_rgba(226,202,24,0.38)] transition hover:bg-[#edd85c] disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98] sm:max-w-xs sm:flex-none">
+                            <svg class="h-5 w-5 shrink-0 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
                             </svg>
                             <span x-text="isSubmitting ? @js(__('app.yefasika_beal_generating')) : @js(__('app.yefasika_beal_generate_button'))"></span>
@@ -108,7 +108,7 @@
 
                         <button type="button"
                                 @click="closeComposer()"
-                                class="touch-manipulation inline-flex h-10 items-center justify-center rounded-lg border border-white/15 bg-transparent px-4 text-xs font-semibold text-zinc-300 transition hover:bg-white/[0.06] active:scale-[0.98] sm:text-sm">
+                                class="touch-manipulation inline-flex h-12 items-center justify-center rounded-xl border border-white/15 bg-transparent px-5 text-sm font-semibold text-zinc-300 transition hover:bg-white/[0.06] active:scale-[0.98]">
                             {{ __('app.cancel') }}
                         </button>
                     </div>
@@ -117,17 +117,16 @@
                 <div x-show="generatedUrl" x-cloak class="space-y-2 rounded-lg border border-white/10 bg-zinc-900/50 p-3 ring-1 ring-inset ring-white/[0.04]">
                     <div class="text-center">
                         <p class="text-xs font-semibold text-[#e2ca18] sm:text-sm">{{ __('app.yefasika_beal_ready_title') }}</p>
-                        <p class="mt-1 text-[11px] leading-snug text-zinc-400 sm:text-xs sm:leading-relaxed">{{ __('app.yefasika_beal_ready_help') }}</p>
                     </div>
 
                     <div class="rounded-lg border border-white/8 bg-black/40 px-2.5 py-2 text-center font-mono text-[10px] leading-snug break-all text-zinc-300 sm:text-[11px]"
                          x-text="generatedUrl"></div>
 
-                    <div class="flex flex-col gap-2 sm:flex-row sm:justify-center">
+                    <div class="flex flex-col gap-2.5 sm:flex-row sm:justify-center">
                         <button type="button"
                                 @click="shareGenerated()"
-                                class="touch-manipulation inline-flex h-10 flex-1 items-center justify-center gap-1.5 rounded-lg bg-[#e2ca18] px-3 text-xs font-bold text-zinc-950 shadow-md transition hover:bg-[#edd85c] active:scale-[0.98] sm:flex-none sm:text-sm">
-                            <svg class="h-4 w-4 shrink-0 opacity-80 sm:h-[1.125rem] sm:w-[1.125rem]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                class="touch-manipulation inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[#e2ca18] px-5 text-sm font-bold text-zinc-950 shadow-[0_8px_22px_-6px_rgba(226,202,24,0.35)] transition hover:bg-[#edd85c] active:scale-[0.98] sm:flex-none">
+                            <svg class="h-5 w-5 shrink-0 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
                             </svg>
                             {{ __('app.yefasika_beal_share_personalized_button') }}
@@ -135,8 +134,8 @@
 
                         <button type="button"
                                 @click="copyGenerated()"
-                                class="touch-manipulation inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-white/15 px-3 text-xs font-semibold text-zinc-200 transition hover:bg-white/[0.06] active:scale-[0.98] sm:px-4 sm:text-sm">
-                            <svg class="h-4 w-4 shrink-0 sm:h-[1.125rem] sm:w-[1.125rem]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                class="touch-manipulation inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-white/15 px-5 text-sm font-semibold text-zinc-200 transition hover:bg-white/[0.06] active:scale-[0.98]">
+                            <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
                             </svg>
                             {{ __('app.yefasika_beal_copy_personalized_button') }}
