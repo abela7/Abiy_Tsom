@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="theme-color" content="#0a6286">
+    <meta name="theme-color" content="#151028">
     @include('partials.favicon')
     @php
         $ogTitle = $ogTitle ?? __('app.og_title');

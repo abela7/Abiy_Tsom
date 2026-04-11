@@ -70,7 +70,7 @@ class PublicYefasikaBealTest extends TestCase
         $response->assertOk()
             ->assertSee(__('app.yefasika_beal_short_greeting_line_one'))
             ->assertSee(__('app.yefasika_beal_from_name', ['name' => 'አቤል']))
-            ->assertSee('property="og:title" content="'.e(__('app.yefasika_beal_personalized_og_title')).'"', false)
+            ->assertSee('property="og:title" content="'.e(__('app.yefasika_beal_og_title')).'"', false)
             ->assertSee('property="og:image" content="'.e(asset('images/Jesus_In_Eastern.avif')).'"', false);
 
         $share->refresh();

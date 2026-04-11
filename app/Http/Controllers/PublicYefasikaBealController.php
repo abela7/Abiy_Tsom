@@ -25,9 +25,8 @@ class PublicYefasikaBealController extends Controller
 
         $pageTitle = __('app.yefasika_beal_page_title').' - '.__('app.app_name');
         $shareText = __('app.yefasika_beal_share_text');
-        $ogTitle = $share
-            ? __('app.yefasika_beal_personalized_og_title', ['name' => $share->sender_name])
-            : __('app.yefasika_beal_og_title');
+        /* Social preview title stays consistent for WhatsApp / Telegram (brief). */
+        $ogTitle = __('app.yefasika_beal_og_title');
         $ogDescription = $shareText;
         $ogUrl = $request->fullUrl();
         $ogImage = asset('images/Jesus_In_Eastern.avif');

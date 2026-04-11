@@ -30,25 +30,22 @@
         --color-secondary: rgba(255, 255, 255, 0.75);
         --color-muted-text: rgba(245, 208, 96, 0.55);
     }
-    .ybb-page > * {
-        backdrop-filter: blur(3px);
-        -webkit-backdrop-filter: blur(3px);
-    }
 
+    /* Top-to-bottom reading flow (letter), not vertically centered. */
     html.ybb-fullbleed body > main.ybb-page {
         flex: 1 0 auto;
         display: flex;
         flex-direction: column;
-        justify-content: center;
+        justify-content: flex-start;
         width: 100%;
-        max-width: 32rem;
+        max-width: 36rem;
         margin-left: auto;
         margin-right: auto;
         box-sizing: border-box;
         padding-left: max(1rem, env(safe-area-inset-left, 0px));
         padding-right: max(1rem, env(safe-area-inset-right, 0px));
         padding-top: max(1.25rem, env(safe-area-inset-top, 0px));
-        padding-bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
+        padding-bottom: max(2.5rem, env(safe-area-inset-bottom, 0px));
     }
 
     /* Full-viewport photo (Tailwind preflight-safe). */
@@ -128,10 +125,10 @@
      aria-hidden="true">
 
 <div class="ybb-bg-scrim"
-     style="background:linear-gradient(to bottom, rgba(26, 14, 46, 0.62), rgba(45, 24, 84, 0.55), rgba(15, 10, 26, 0.72));"
+     style="background:linear-gradient(to bottom, rgba(22, 18, 38, 0.68), rgba(40, 32, 62, 0.42), rgba(14, 12, 28, 0.76));"
      aria-hidden="true"></div>
 <div class="ybb-bg-scrim"
-     style="background:radial-gradient(ellipse at 50% 18%, rgba(212, 165, 87, 0.22) 0%, transparent 58%);"
+     style="background:radial-gradient(ellipse 120% 70% at 50% 12%, rgba(230, 200, 130, 0.2) 0%, transparent 55%);"
      aria-hidden="true"></div>
 
 <canvas id="ybb-particles"
