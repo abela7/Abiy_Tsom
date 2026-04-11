@@ -2223,7 +2223,7 @@ return [
     'yefasika_beal_short_greeting_line_one' => 'Blessed Feast of the Resurrection of our Lord and Savior Jesus Christ to you in peace.',
     'yefasika_beal_short_greeting_line_two' => 'May you have a blessed feast.',
     'yefasika_beal_long_message_paragraph_one' => 'On this day, our Lord Jesus Christ, the Only-Begotten Son of the everlasting God and Creator of all, rose by His divine power and authority without anyone rolling away the stone or opening the tomb for Him. Rejoice, for Christ is risen.',
-    'yefasika_beal_long_message_paragraph_two' => 'May the light of the Resurrection shine upon your work and your daily life, and may your hope be renewed.',
+    'yefasika_beal_long_message_paragraph_two' => 'May the light of the Resurrection shine upon you and your whole family in your daily life.',
     'yefasika_beal_long_message_closing' => 'Blessed Feast of the Resurrection!',
     'yefasika_beal_from_name' => 'From :name',
     'yefasika_beal_generator_title' => 'Create a link in your name and share your Easter message',

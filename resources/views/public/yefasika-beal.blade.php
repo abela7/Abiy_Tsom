@@ -35,11 +35,11 @@
                 </p>
             </header>
 
-            <div class="relative mx-auto my-9 flex items-center gap-3 sm:my-10"
+            <div class="relative mx-auto my-9 flex items-center justify-center gap-3 sm:my-10"
                  aria-hidden="true">
-                <span class="h-px flex-1 max-w-[4.5rem] bg-gradient-to-r from-transparent to-white/20"></span>
+                <span class="h-px w-[4.5rem] shrink-0 bg-gradient-to-r from-transparent to-white/20 sm:w-24"></span>
                 <span class="size-1.5 shrink-0 rounded-full bg-[#e2ca18]/70 shadow-[0_0_12px_rgba(226,202,24,0.45)]"></span>
-                <span class="h-px flex-1 max-w-[4.5rem] bg-gradient-to-l from-transparent to-white/20"></span>
+                <span class="h-px w-[4.5rem] shrink-0 bg-gradient-to-l from-transparent to-white/20 sm:w-24"></span>
             </div>
 
             <div class="relative mx-auto max-w-prose space-y-6 text-center text-[1.0625rem] leading-[1.92] text-zinc-100/90 sm:text-[1.075rem] sm:leading-[2.02]">
