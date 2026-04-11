@@ -63,20 +63,20 @@
         </article>
 
         {{-- Share / personalize: separate surface = clearer modern affordance --}}
-        <section class="relative mx-auto w-full max-w-md rounded-3xl border border-[#e2ca18]/[0.22] bg-zinc-950/70 px-5 py-8 shadow-[0_24px_48px_-12px_rgba(0,0,0,0.45)] ring-1 ring-inset ring-white/[0.04] backdrop-blur-xl sm:max-w-lg sm:px-8 sm:py-9"
+        <section class="relative mx-auto w-full max-w-sm rounded-2xl border border-[#e2ca18]/[0.22] bg-zinc-950/70 px-4 py-5 shadow-[0_16px_36px_-12px_rgba(0,0,0,0.4)] ring-1 ring-inset ring-white/[0.04] backdrop-blur-xl sm:max-w-md sm:px-5 sm:py-6"
                  aria-labelledby="ybb-share-heading">
             <div class="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#e2ca18]/40 to-transparent"></div>
 
             <h2 id="ybb-share-heading"
-                class="text-center text-[0.65rem] font-bold uppercase tracking-[0.28em] text-[#e2ca18]/90">
+                class="text-center text-lg font-extrabold leading-snug text-[#e2ca18] sm:text-xl">
                 {{ __('app.yefasika_beal_generator_title') }}
             </h2>
 
-            <div class="mt-7 space-y-5">
+            <div class="mt-5 space-y-4">
                 <div x-show="!composerOpen" x-cloak class="flex justify-center">
                     <button type="button"
                             @click="openComposer()"
-                            class="touch-manipulation inline-flex h-14 w-full max-w-sm items-center justify-center gap-2.5 rounded-2xl bg-[#e2ca18] px-6 text-sm font-bold tracking-wide text-zinc-950 shadow-[0_12px_32px_-8px_rgba(226,202,24,0.45)] transition hover:bg-[#edd85c] hover:shadow-[0_16px_40px_-8px_rgba(226,202,24,0.5)] active:scale-[0.98] sm:w-auto sm:min-w-[15rem]">
+                            class="touch-manipulation inline-flex h-12 w-full max-w-xs items-center justify-center gap-2 rounded-xl bg-[#e2ca18] px-5 text-sm font-bold tracking-wide text-zinc-950 shadow-[0_8px_24px_-6px_rgba(226,202,24,0.4)] transition hover:bg-[#edd85c] hover:shadow-[0_12px_28px_-6px_rgba(226,202,24,0.45)] active:scale-[0.98] sm:w-auto sm:min-w-[13rem]">
                         <svg class="h-5 w-5 shrink-0 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         </svg>
@@ -84,7 +84,7 @@
                     </button>
                 </div>
 
-                <div x-show="composerOpen" x-cloak class="mx-auto max-w-md space-y-5">
+                <div x-show="composerOpen" x-cloak class="mx-auto max-w-md space-y-4">
                     <div>
                         <label for="fasika-sender-name" class="sr-only">{{ __('app.yefasika_beal_name_label') }}</label>
                         <input id="fasika-sender-name"
@@ -93,16 +93,16 @@
                                type="text"
                                maxlength="120"
                                autocomplete="name"
-                               class="h-14 w-full rounded-2xl border border-white/12 bg-zinc-900/80 px-4 text-center text-base text-white shadow-inner outline-none transition placeholder:text-zinc-500 focus:border-[#e2ca18]/50 focus:bg-zinc-900 focus:ring-2 focus:ring-[#e2ca18]/25"
+                               class="h-12 w-full rounded-xl border border-white/12 bg-zinc-900/80 px-4 text-center text-base text-white shadow-inner outline-none transition placeholder:text-zinc-500 focus:border-[#e2ca18]/50 focus:bg-zinc-900 focus:ring-2 focus:ring-[#e2ca18]/25"
                                placeholder="{{ __('app.yefasika_beal_name_placeholder') }}">
                         <p x-show="errorMessage" x-cloak class="mt-2 text-center text-sm font-medium text-rose-300" x-text="errorMessage"></p>
                     </div>
 
-                    <div class="flex flex-col gap-3 sm:flex-row sm:justify-center">
+                    <div class="flex flex-col gap-2.5 sm:flex-row sm:justify-center">
                         <button type="button"
                                 @click="createPersonalizedLink()"
                                 :disabled="isSubmitting"
-                                class="touch-manipulation inline-flex h-14 flex-1 items-center justify-center gap-2 rounded-2xl bg-[#e2ca18] px-6 text-sm font-bold text-zinc-950 shadow-[0_10px_28px_-8px_rgba(226,202,24,0.4)] transition hover:bg-[#edd85c] disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98] sm:max-w-xs sm:flex-none">
+                                class="touch-manipulation inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[#e2ca18] px-5 text-sm font-bold text-zinc-950 shadow-[0_8px_22px_-6px_rgba(226,202,24,0.38)] transition hover:bg-[#edd85c] disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98] sm:max-w-xs sm:flex-none">
                             <svg class="h-5 w-5 shrink-0 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A2 2 0 0122 9.514v4.972a2 2 0 01-2.447 1.79L15 14m-6 4h6a2 2 0 002-2V8a2 2 0 00-2-2H9a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                             </svg>
@@ -111,13 +111,13 @@
 
                         <button type="button"
                                 @click="closeComposer()"
-                                class="touch-manipulation inline-flex h-14 items-center justify-center rounded-2xl border border-white/15 bg-transparent px-6 text-sm font-semibold text-zinc-300 transition hover:bg-white/[0.06] active:scale-[0.98]">
+                                class="touch-manipulation inline-flex h-12 items-center justify-center rounded-xl border border-white/15 bg-transparent px-5 text-sm font-semibold text-zinc-300 transition hover:bg-white/[0.06] active:scale-[0.98]">
                             {{ __('app.cancel') }}
                         </button>
                     </div>
                 </div>
 
-                <div x-show="generatedUrl" x-cloak class="space-y-4 rounded-2xl border border-white/10 bg-zinc-900/50 p-5 ring-1 ring-inset ring-white/[0.04]">
+                <div x-show="generatedUrl" x-cloak class="space-y-3 rounded-xl border border-white/10 bg-zinc-900/50 p-4 ring-1 ring-inset ring-white/[0.04]">
                     <div class="text-center">
                         <p class="text-sm font-semibold text-[#e2ca18]">{{ __('app.yefasika_beal_ready_title') }}</p>
                         <p class="mt-1.5 text-xs leading-relaxed text-zinc-400">{{ __('app.yefasika_beal_ready_help') }}</p>
