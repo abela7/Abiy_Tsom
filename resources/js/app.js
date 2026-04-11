@@ -11,11 +11,14 @@ window.AbiyTsomResetTour = resetTour;
 
 // Register global app store (replaces x-data on <html> for performance)
 document.addEventListener('alpine:init', () => {
+    const publicFasika = document.documentElement.dataset.abiyPublicFasika === '1';
     const serverTheme = document.documentElement.dataset.serverTheme || 'sepia';
     const stored = localStorage.getItem('theme');
-    const initialTheme = (stored === 'light' || stored === 'sepia' || stored === 'dark')
-        ? stored
-        : ((serverTheme === 'light' || serverTheme === 'sepia' || serverTheme === 'dark') ? serverTheme : 'sepia');
+    const initialTheme = publicFasika
+        ? 'dark'
+        : ((stored === 'light' || stored === 'sepia' || stored === 'dark')
+            ? stored
+            : ((serverTheme === 'light' || serverTheme === 'sepia' || serverTheme === 'dark') ? serverTheme : 'sepia'));
 
     Alpine.store('app', {
         theme: initialTheme,

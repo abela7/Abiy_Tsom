@@ -5,7 +5,7 @@
 @section('content')
     @include('public.partials.yefasika-beal-background')
 
-    <main class="relative z-10 max-w-lg mx-auto px-4 py-10 space-y-6 ybb-page"
+    <main class="relative z-10 space-y-6 ybb-page"
           x-data="{
               copied: false,
               pageUrl: @js($shareUrl),

@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
+      class="dark"
+      data-abiy-public-fasika="1">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
@@ -15,7 +17,7 @@
     <title>@yield('title')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen min-h-dvh min-h-[100dvh] font-sans antialiased text-primary overscroll-y-none overflow-x-hidden bg-[#0f0a1a]" style="min-height:-webkit-fill-available">
+<body class="min-h-dvh min-h-screen font-sans antialiased text-primary overscroll-y-none overflow-x-hidden bg-[#0f0a1a]">
     @yield('content')
     @stack('scripts')
 </body>
