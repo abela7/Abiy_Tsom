@@ -103,6 +103,9 @@ Route::post('/feedback', [FeedbackController::class, 'store'])
     ->middleware('throttle:5,60')
     ->name('feedback.store');
 
+// Fasika (Easter) celebration page — public, optionally personalized
+Route::get('/fasika', [Member\FasikaController::class, 'show'])->name('fasika');
+
 // Post-Fasika feedback survey (token-based, no member session required)
 Route::get('/survey/{token}', [Member\SurveyController::class, 'show'])
     ->where('token', '[A-Za-z0-9]{48}')
