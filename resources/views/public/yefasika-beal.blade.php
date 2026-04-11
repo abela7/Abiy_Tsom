@@ -63,12 +63,12 @@
         </article>
 
         {{-- Share / personalize: separate surface = clearer modern affordance --}}
-        <section class="relative mx-auto w-full max-w-sm rounded-2xl border border-[#e2ca18]/[0.22] bg-zinc-950/70 px-4 py-5 shadow-[0_16px_36px_-12px_rgba(0,0,0,0.4)] ring-1 ring-inset ring-white/[0.04] backdrop-blur-xl sm:max-w-md sm:px-5 sm:py-6"
+        <section class="relative mx-auto w-full max-w-md rounded-2xl border border-[#e2ca18]/[0.22] bg-zinc-950/70 px-4 py-5 shadow-[0_16px_36px_-12px_rgba(0,0,0,0.4)] ring-1 ring-inset ring-white/[0.04] backdrop-blur-xl sm:max-w-lg sm:px-5 sm:py-6"
                  aria-labelledby="ybb-share-heading">
             <div class="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#e2ca18]/40 to-transparent"></div>
 
             <h2 id="ybb-share-heading"
-                class="text-center text-lg font-extrabold leading-snug text-[#e2ca18] sm:text-xl">
+                class="mx-auto max-w-prose text-center text-base font-extrabold leading-relaxed text-[#e2ca18] sm:text-lg">
                 {{ __('app.yefasika_beal_generator_title') }}
             </h2>
 
