@@ -24,6 +24,8 @@ Route::get('/', [Member\OnboardingController::class, 'welcome'])->name('home');
 
 // Public Easter greeting card (share with friends)
 Route::get('/yefasika-beal', [PublicYefasikaBealController::class, 'show'])->name('public.yefasika-beal');
+Route::post('/yefasika-beal/share', [PublicYefasikaBealController::class, 'store'])->name('public.yefasika-beal.store');
+Route::get('/yefasika-beal/{share}', [PublicYefasikaBealController::class, 'show'])->name('public.yefasika-beal.share');
 
 // Registration with phone/email verification (replaces old cookie-based registration)
 Route::post('/register', [Member\RegistrationController::class, 'register'])
@@ -468,6 +470,7 @@ Route::middleware(['auth', 'admin.audit'])->prefix('admin')->name('admin.')->gro
         // Post-Fasika survey results
         Route::get('/survey', [Admin\SurveyController::class, 'index'])->name('survey.index');
         Route::get('/survey/export', [Admin\SurveyController::class, 'export'])->name('survey.export');
+        Route::get('/fasika-greetings', [Admin\FasikaGreetingController::class, 'index'])->name('fasika-greetings.index');
 
         // Content suggestions review
         Route::get('/suggestions', [Admin\ContentSuggestionController::class, 'index'])->name('suggestions.index');
