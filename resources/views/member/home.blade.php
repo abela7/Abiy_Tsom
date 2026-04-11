@@ -397,7 +397,7 @@
 
     @if($today)
 
-        {{-- Day content (Bible, Mezmur, checklist, etc.) is shown on member.day view only --}}
+        {{-- Day content (Bible, Mezmur, etc.) is shown on member.day view only --}}
 
     @else
         {{-- No daily content — announcements (if any) are shown at top --}}

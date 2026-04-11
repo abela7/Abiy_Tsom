@@ -2244,6 +2244,9 @@
     </div>
     @endif
 
+    {{-- Tour anchor for privacy step (checklist section removed) --}}
+    <div data-tour="day-privacy" class="w-full h-px shrink-0" aria-hidden="true"></div>
+
     {{-- Bottom share prompt (appears when user scrolls near bottom) --}}
     <div x-ref="bottomSentinel" class="h-0"></div>
     <div x-show="showSharePrompt && !sharePromptDismissed"
@@ -2279,72 +2282,6 @@
         </div>
     </div>
 
-    {{-- Checklist (show when there are activities, custom activities, or member can add) --}}
-    @php
-        $customChecklistCompleted = ($customChecklist ?? collect())->mapWithKeys(fn ($c) => [(string) $c->member_custom_activity_id => $c->completed])->all();
-    @endphp
-    @if(!$publicPreview && ! $guestAccess && ($activities->isNotEmpty() || ($customActivities ?? collect())->isNotEmpty() || $member))
-    <div data-tour="day-checklist" class="rounded-2xl p-5 shadow-sm border-2 transition-all duration-300"
-         x-data="{
-             allDone: false,
-             checkAllDone() {
-                 this.$nextTick(() => {
-                     const cbs = this.$refs?.checklistItems?.querySelectorAll('input[type=checkbox]');
-                     this.allDone = cbs?.length > 0 && Array.from(cbs).every(c => c.checked);
-                 });
-             }
-         }"
-         x-init="$nextTick(() => checkAllDone())"
-         @checklist-updated="checkAllDone()"
-         :class="allDone ? 'bg-success-bg/30 border-success ring-2 ring-success/50' : 'bg-card border-border'">
-        <div class="flex items-center justify-between gap-3 mb-4">
-            <h3 class="font-bold text-sm text-primary">{{ __('app.checklist') }}</h3>
-            <p x-show="allDone" x-transition class="text-sm font-bold text-success flex items-center gap-1.5">
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-                {{ __('app.well_done') }}
-            </p>
-        </div>
-        <div class="space-y-2.5" x-ref="checklistItems">
-            @foreach($activities as $activity)
-                <label class="flex items-center gap-3 p-3.5 rounded-xl cursor-pointer transition-all duration-200"
-                       :class="checked ? 'bg-success-bg/50 border border-success/30' : 'bg-muted hover:bg-border border border-transparent'"
-                       x-data="{ checked: {{ isset($checklist[$activity->id]) && $checklist[$activity->id]->completed ? 'true' : 'false' }} }">
-                    <input type="checkbox" x-model="checked"
-                           @change="toggleChecklist({{ $daily->id }}, {{ $activity->id }}, checked); $dispatch('checklist-updated')"
-                           class="w-5 h-5 rounded-md border-2 border-border accent-success focus:ring-2 focus:ring-success focus:ring-offset-0">
-                    <span class="text-sm font-semibold" :class="checked ? 'line-through text-muted-text' : 'text-primary'">
-                        {{ localized($activity, 'name') }}
-                    </span>
-                </label>
-            @endforeach
-            <template x-for="activity in customActivities" :key="activity.id">
-                <label class="flex items-center gap-3 p-3.5 rounded-xl cursor-pointer transition-all duration-200"
-                       :class="customChecklistCompleted[activity.id] ? 'bg-success-bg/50 border border-success/30' : 'bg-muted hover:bg-border border border-transparent'">
-                    <input type="checkbox" :checked="customChecklistCompleted[activity.id]"
-                           @change="toggleCustomChecklist({{ $daily->id }}, activity.id, $event.target.checked); customChecklistCompleted[activity.id] = $event.target.checked; $dispatch('checklist-updated')"
-                           class="w-5 h-5 rounded-md border-2 border-border accent-success focus:ring-2 focus:ring-success focus:ring-offset-0">
-                    <span class="text-sm font-semibold block min-w-0 truncate" :class="customChecklistCompleted[activity.id] ? 'line-through text-muted-text' : 'text-primary'" x-text="activity.name"></span>
-                </label>
-            </template>
-        </div>
-        @if($member)
-        <div data-tour="day-custom" class="mt-4 pt-4 border-t border-border">
-            <p class="text-xs text-muted-text mb-3">{{ __('app.custom_activities_desc') }}</p>
-            <form @submit.prevent="addActivity().then(() => $dispatch('checklist-updated'))" class="flex flex-wrap gap-2">
-                <input type="text" x-model="addActivityName" maxlength="255"
-                       :placeholder="'{{ __('app.custom_activity_placeholder') }}'"
-                       class="min-w-0 flex-1 basis-24 px-4 py-2.5 border border-border rounded-xl bg-muted text-primary text-sm outline-none focus:ring-2 focus:ring-accent">
-                <button type="submit" :disabled="!addActivityName.trim() || addActivityLoading"
-                        class="shrink-0 px-4 py-2.5 bg-accent text-on-accent rounded-xl font-medium text-sm disabled:opacity-50 transition">
-                    <span x-show="!addActivityLoading">{{ __('app.add_activity_day_btn') }}</span>
-                    <span x-show="addActivityLoading" x-cloak>{{ __('app.loading') }}...</span>
-                </button>
-            </form>
-            <p x-show="addActivityMsg" x-text="addActivityMsg" class="text-sm mt-2" :class="addActivityMsgError ? 'text-error' : 'text-success'"></p>
-        </div>
-        @endif
-    </div>
-    @endif
 </div>
 @endsection
 
@@ -2360,14 +2297,6 @@ function dayPage() {
         shareTitle: @js($shareTitle),
         shareDescription: @js($shareDescription),
         shareUrl: @js($shareUrl),
-
-        customActivities: @js(($customActivities ?? collect())->values()->all()),
-        customChecklistCompleted: @js($customChecklistCompleted ?? []),
-
-        addActivityName: '',
-        addActivityLoading: false,
-        addActivityMsg: '',
-        addActivityMsgError: false,
 
         init() {
             this.$nextTick(() => {
@@ -2418,40 +2347,6 @@ function dayPage() {
             setTimeout(() => { this.linkCopied = false; }, 2000);
         },
 
-        async toggleChecklist(dailyContentId, activityId, completed) {
-            await AbiyTsom.api('/api/member/checklist/toggle', {
-                daily_content_id: dailyContentId,
-                activity_id: activityId,
-                completed: completed,
-            });
-        },
-        async toggleCustomChecklist(dailyContentId, customActivityId, completed) {
-            await AbiyTsom.api('/api/member/checklist/custom-toggle', {
-                daily_content_id: dailyContentId,
-                member_custom_activity_id: customActivityId,
-                completed: completed,
-            });
-        },
-
-        async addActivity() {
-            const name = this.addActivityName.trim();
-            if (!name || this.addActivityLoading) return;
-            this.addActivityLoading = true;
-            this.addActivityMsg = '';
-            const data = await AbiyTsom.api('/api/member/custom-activities', { name });
-            this.addActivityLoading = false;
-            if (data.success) {
-                this.customActivities.push(data.activity);
-                this.customChecklistCompleted = { ...this.customChecklistCompleted, [data.activity.id]: false };
-                this.addActivityName = '';
-                this.addActivityMsg = '{{ __("app.custom_activity_added") }}';
-                this.addActivityMsgError = false;
-                setTimeout(() => { this.addActivityMsg = ''; }, 3000);
-            } else {
-                this.addActivityMsg = data.message || '{{ __("app.failed_to_add") }}';
-                this.addActivityMsgError = true;
-            }
-        }
     };
 }
 document.addEventListener('DOMContentLoaded', function() {

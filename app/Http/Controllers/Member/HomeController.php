@@ -14,7 +14,6 @@ use App\Models\HimamatSeasonFaq;
 use App\Models\Lectionary;
 use App\Models\LentSeason;
 use App\Models\MemberChecklist;
-use App\Models\MemberCustomChecklist;
 use App\Models\MemberDailyView;
 use App\Models\WeeklyTheme;
 use App\Services\AbiyTsomStructure;
@@ -456,29 +455,6 @@ class HomeController extends Controller
 
         $ethDateInfo = $ethCalendar->getDateInfo($daily->date, app()->getLocale());
 
-        $activities = Activity::where('lent_season_id', $daily->lent_season_id)
-            ->where('is_active', true)
-            ->orderBy('sort_order')
-            ->get();
-
-        $customActivities = $member
-            ? $member->customActivities()->orderBy('sort_order')->get()
-            : collect();
-
-        $checklist = collect();
-        $customChecklist = collect();
-        if ($member) {
-            $checklist = MemberChecklist::where('member_id', $member->id)
-                ->where('daily_content_id', $daily->id)
-                ->get()
-                ->keyBy('activity_id');
-
-            $customChecklist = MemberCustomChecklist::where('member_id', $member->id)
-                ->where('daily_content_id', $daily->id)
-                ->get()
-                ->keyBy('member_custom_activity_id');
-        }
-
         $prevDay = DailyContent::where('lent_season_id', $daily->lent_season_id)
             ->where('day_number', $daily->day_number - 1)
             ->where('is_published', true)
@@ -516,10 +492,6 @@ class HomeController extends Controller
         return view('member.day', compact(
             'member',
             'daily',
-            'activities',
-            'checklist',
-            'customActivities',
-            'customChecklist',
             'ethDateInfo',
             'prevDay',
             'nextDay',

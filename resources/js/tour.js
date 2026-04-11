@@ -294,23 +294,7 @@ function buildDaySteps(c) {
             },
         },
         {
-            element: '[data-tour="day-checklist"]',
-            popover: {
-                title:       c?.day?.checklist?.title ?? 'Daily Checklist',
-                description: c?.day?.checklist?.desc  ?? '',
-                side: 'bottom', align: 'start',
-            },
-        },
-        {
-            element: '[data-tour="day-custom"]',
-            popover: {
-                title:       c?.day?.custom?.title ?? 'Custom Activities',
-                description: c?.day?.custom?.desc  ?? '',
-                side: 'bottom', align: 'start',
-            },
-        },
-        {
-            element: '[data-tour="day-checklist"]',
+            element: '[data-tour="day-privacy"]',
             popover: {
                 title:       c?.day?.privacy?.title ?? 'Your Privacy',
                 description: c?.day?.privacy?.desc  ?? '',

@@ -184,11 +184,6 @@ class ShareController extends Controller
 
         $daily->load(['weeklyTheme', 'mezmurs', 'references', 'books', 'sinksarImages']);
         $ethDateInfo = $ethCalendar->getDateInfo($daily->date, app()->getLocale());
-        $activities = collect();
-        $checklist = collect();
-        $customActivities = collect();
-        $customChecklist = collect();
-
         $prevDay = DailyContent::where('lent_season_id', $daily->lent_season_id)
             ->where('day_number', $daily->day_number - 1)
             ->where('is_published', true)
@@ -210,10 +205,6 @@ class ShareController extends Controller
         return view('member.day', compact(
             'member',
             'daily',
-            'activities',
-            'checklist',
-            'customActivities',
-            'customChecklist',
             'publicPreview',
             'ethDateInfo',
             'prevDay',

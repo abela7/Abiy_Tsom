@@ -266,8 +266,6 @@
                 'sinksar'    => ['title' => __('app.tour_day_sinksar_title'),    'desc' => __('app.tour_day_sinksar_desc')],
                 'book'       => ['title' => __('app.tour_day_book_title'),       'desc' => __('app.tour_day_book_desc')],
                 'references' => ['title' => __('app.tour_day_references_title'), 'desc' => __('app.tour_day_references_desc')],
-                'checklist'  => ['title' => __('app.tour_day_checklist_title'),  'desc' => __('app.tour_day_checklist_desc')],
-                'custom'     => ['title' => __('app.tour_day_custom_title'),     'desc' => __('app.tour_day_custom_desc')],
                 'privacy'    => ['title' => __('app.tour_day_privacy_title'),    'desc' => __('app.tour_day_privacy_desc')],
             ],
             'settings' => [

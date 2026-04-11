@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Activity;
 use App\Models\DailyContent;
 use App\Models\DailyContentBook;
 use App\Models\DailyContentMezmur;
@@ -115,15 +114,7 @@ class DailyContentController extends Controller
     {
         $daily->load(['weeklyTheme', 'mezmurs', 'references', 'books', 'sinksarImages']);
         $ethDateInfo = $ethCalendar->getDateInfo($daily->date, app()->getLocale());
-        $activities = Activity::where('lent_season_id', $daily->lent_season_id)
-            ->where('is_active', true)
-            ->orderBy('sort_order')
-            ->get();
-
         $member = null;
-        $checklist = collect();
-        $customActivities = collect();
-        $customChecklist = collect();
         $publicPreview = true;
         $backUrl = route('admin.daily.index');
         $prevDay = null;
@@ -157,10 +148,6 @@ class DailyContentController extends Controller
         return view('member.day', compact(
             'member',
             'daily',
-            'activities',
-            'checklist',
-            'customActivities',
-            'customChecklist',
             'publicPreview',
             'backUrl',
             'ethDateInfo',
