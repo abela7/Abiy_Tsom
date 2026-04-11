@@ -2275,6 +2275,12 @@
         </div>
     </div>
 
+    @if($isFasika ?? false)
+    <section class="rounded-2xl border border-border/70 bg-card/90 p-4 shadow-sm">
+        <p class="text-sm leading-[1.85] text-primary text-center whitespace-pre-line">{{ __('app.fasika_gratitude_doxology') }}</p>
+    </section>
+    @endif
+
 </div>
 @endsection
 
