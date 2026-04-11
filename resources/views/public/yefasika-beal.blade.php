@@ -5,7 +5,7 @@
 @section('content')
     @include('public.partials.yefasika-beal-background')
 
-    <main class="relative z-10 flex flex-col gap-6 ybb-page sm:gap-8"
+    <main class="relative z-10 flex flex-col gap-8 ybb-page sm:gap-10"
           x-data="fasikaGreetingPage({
               initialUrl: @js($shareUrl),
               initialShareText: @js($shareText),
@@ -14,7 +14,7 @@
               initialSenderName: '',
           })">
         {{-- Hero: cross + titles in a focused glass frame --}}
-        <div class="mx-auto w-full max-w-md rounded-3xl border border-[#e2ca18]/[0.14] bg-gradient-to-br from-amber-800/45 via-[#1c1018]/70 to-[#0a6286]/38 p-5 shadow-[0_20px_50px_-12px_rgba(35,18,10,0.52)] ring-1 ring-[#f5d060]/[0.08] backdrop-blur-[3px] backdrop-saturate-125 sm:max-w-lg sm:p-6">
+        <div class="mx-auto w-full max-w-md rounded-3xl border border-[#e2ca18]/[0.14] bg-gradient-to-br from-amber-800/45 via-[#1c1018]/70 to-[#0a6286]/38 p-6 shadow-[0_20px_50px_-12px_rgba(35,18,10,0.52)] ring-1 ring-[#f5d060]/[0.08] backdrop-blur-[3px] backdrop-saturate-125 sm:max-w-lg sm:p-7">
             <div class="mx-auto w-full max-w-[16rem] origin-top scale-[0.94] sm:max-w-none sm:scale-100">
                 @include('member.partials.fasika-celebration-banner')
             </div>
@@ -22,7 +22,7 @@
 
         {{-- Reading card: message only (modern editorial stack) --}}
         <article
-            class="relative mx-auto w-full max-w-md overflow-hidden rounded-3xl border border-[#e2ca18]/[0.12] bg-gradient-to-br from-amber-100/18 via-orange-950/40 to-[#0c0614]/88 px-6 py-9 shadow-[0_32px_64px_-16px_rgba(28,14,8,0.52)] ring-1 ring-inset ring-[#e2ca18]/[0.07] backdrop-blur-[3px] backdrop-saturate-125 sm:max-w-lg sm:px-9 sm:py-11"
+            class="relative mx-auto w-full max-w-md overflow-hidden rounded-3xl border border-[#e2ca18]/[0.12] bg-gradient-to-br from-amber-100/18 via-orange-950/40 to-[#0c0614]/88 px-6 py-10 shadow-[0_32px_64px_-16px_rgba(28,14,8,0.52)] ring-1 ring-inset ring-[#e2ca18]/[0.07] backdrop-blur-[3px] backdrop-saturate-125 sm:max-w-lg sm:px-10 sm:py-12"
             itemscope
             itemtype="https://schema.org/Article">
             <div class="pointer-events-none absolute -left-24 top-20 h-64 w-64 rounded-full bg-[#e2ca18]/[0.11] blur-3xl"></div>
@@ -35,14 +35,14 @@
                 </p>
             </header>
 
-            <div class="relative mx-auto my-9 flex items-center justify-center gap-3 sm:my-10"
+            <div class="relative mx-auto my-10 flex items-center justify-center gap-3 sm:my-12"
                  aria-hidden="true">
                 <span class="h-px w-[4.5rem] shrink-0 bg-gradient-to-r from-transparent to-white/20 sm:w-24"></span>
                 <span class="size-1.5 shrink-0 rounded-full bg-[#e2ca18]/70 shadow-[0_0_12px_rgba(226,202,24,0.45)]"></span>
                 <span class="h-px w-[4.5rem] shrink-0 bg-gradient-to-l from-transparent to-white/20 sm:w-24"></span>
             </div>
 
-            <div class="relative mx-auto max-w-prose space-y-6 text-center text-[1.0625rem] leading-[1.92] text-zinc-100/90 sm:text-[1.075rem] sm:leading-[2.02]">
+            <div class="relative mx-auto max-w-prose space-y-7 text-center text-[1.0625rem] leading-[1.92] text-zinc-100/90 sm:space-y-8 sm:text-[1.075rem] sm:leading-[2.02]">
                 <p class="text-pretty">{{ __('app.yefasika_beal_long_message_paragraph_one') }}</p>
                 <p class="text-pretty">{{ __('app.yefasika_beal_long_message_paragraph_two') }}</p>
                 <p class="pt-1 text-lg font-semibold leading-snug text-[#e2ca18] sm:text-xl">
@@ -60,16 +60,17 @@
         </article>
 
         {{-- Share / personalize: separate surface = clearer modern affordance --}}
-        <section class="relative mx-auto w-full max-w-md rounded-xl border border-[#e2ca18]/[0.26] bg-gradient-to-br from-amber-950/55 via-[#1a1210]/78 to-[#0a2832]/72 px-3 py-3 shadow-[0_12px_28px_-10px_rgba(30,16,8,0.4)] ring-1 ring-inset ring-[#f5d060]/[0.06] backdrop-blur-[3px] backdrop-saturate-125 sm:max-w-lg sm:px-4 sm:py-4"
+        <section class="relative mx-auto w-full max-w-md rounded-2xl border border-[#e2ca18]/[0.26] bg-gradient-to-br from-amber-950/55 via-[#1a1210]/78 to-[#0a2832]/72 px-4 py-5 shadow-[0_16px_36px_-12px_rgba(30,16,8,0.42)] ring-1 ring-inset ring-[#f5d060]/[0.06] backdrop-blur-[3px] backdrop-saturate-125 sm:max-w-lg sm:px-6 sm:py-6"
                  aria-labelledby="ybb-share-heading">
             <div class="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#e2ca18]/40 to-transparent"></div>
+            <div class="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[#e2ca18]/25 to-transparent"></div>
 
             <h2 id="ybb-share-heading"
                 class="mx-auto max-w-prose text-center text-sm font-extrabold leading-snug text-[#e2ca18] sm:text-base sm:leading-snug">
                 {{ __('app.yefasika_beal_generator_title') }}
             </h2>
 
-            <div class="mt-3 space-y-3">
+            <div class="mt-4 space-y-4">
                 <div x-show="!composerOpen" x-cloak class="flex justify-center">
                     <button type="button"
                             @click="openComposer()"
@@ -81,7 +82,7 @@
                     </button>
                 </div>
 
-                <div x-show="composerOpen" x-cloak class="mx-auto max-w-md space-y-3">
+                <div x-show="composerOpen" x-cloak class="mx-auto max-w-md space-y-4">
                     <div>
                         <label for="fasika-sender-name" class="sr-only">{{ __('app.yefasika_beal_name_label') }}</label>
                         <input id="fasika-sender-name"
@@ -95,7 +96,7 @@
                         <p x-show="errorMessage" x-cloak class="mt-1.5 text-center text-xs font-medium text-rose-300 sm:text-sm" x-text="errorMessage"></p>
                     </div>
 
-                    <div class="flex flex-col gap-2.5 sm:flex-row sm:justify-center">
+                    <div class="flex flex-col gap-3 sm:flex-row sm:justify-center">
                         <button type="button"
                                 @click="createPersonalizedLink()"
                                 :disabled="isSubmitting"
@@ -114,15 +115,15 @@
                     </div>
                 </div>
 
-                <div x-show="generatedUrl" x-cloak class="space-y-2 rounded-lg border border-white/10 bg-zinc-900/50 p-3 ring-1 ring-inset ring-white/[0.04]">
+                <div x-show="generatedUrl" x-cloak class="space-y-3 rounded-xl border border-white/10 bg-zinc-900/50 p-4 ring-1 ring-inset ring-white/[0.04]">
                     <div class="text-center">
                         <p class="text-xs font-semibold text-[#e2ca18] sm:text-sm">{{ __('app.yefasika_beal_ready_title') }}</p>
                     </div>
 
-                    <div class="rounded-lg border border-white/8 bg-black/40 px-2.5 py-2 text-center font-mono text-[10px] leading-snug break-all text-zinc-300 sm:text-[11px]"
+                    <div class="rounded-lg border border-white/8 bg-black/40 px-3 py-3 text-center font-mono text-[11px] leading-relaxed break-all text-zinc-300 sm:text-xs"
                          x-text="generatedUrl"></div>
 
-                    <div class="flex flex-col gap-2.5 sm:flex-row sm:justify-center">
+                    <div class="flex flex-col gap-3 sm:flex-row sm:justify-center">
                         <button type="button"
                                 @click="shareGenerated()"
                                 class="touch-manipulation inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[#e2ca18] px-5 text-sm font-bold text-zinc-950 shadow-[0_8px_22px_-6px_rgba(226,202,24,0.35)] transition hover:bg-[#edd85c] active:scale-[0.98] sm:flex-none">
