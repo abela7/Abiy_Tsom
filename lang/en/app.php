@@ -2201,7 +2201,6 @@ return [
         'By His mighty authority;',
         'He bound Satan;',
         'He opened the way for Adam;',
-        'By His mighty authority;',
         'Peace;',
         'Beyond measure;',
         'We are granted joy and peace.',

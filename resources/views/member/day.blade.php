@@ -547,9 +547,9 @@
             {{ __('app.fasika_banner_main') }}
         </h2>
 
-        <div class="space-y-1.5 text-center">
+        <div class="space-y-2 text-center">
             @foreach(trans('app.fasika_banner_lines') as $fasikaBannerLine)
-                <h4 class="text-sm font-semibold text-white/90 leading-snug">{{ $fasikaBannerLine }}</h4>
+                <h3 class="text-base font-semibold text-white/90 leading-snug">{{ $fasikaBannerLine }}</h3>
             @endforeach
         </div>
 
