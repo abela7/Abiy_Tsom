@@ -27,23 +27,22 @@
          transform:translate(-50%,-50%);pointer-events:none;
          animation:fasika-glow 3.5s ease-in-out infinite;"></div>
 
-    {{-- Risen artwork (portrait SVG) with light rays --}}
-    <div class="relative mx-auto flex max-h-20 w-full max-w-[3.5rem] justify-center sm:max-h-24 sm:max-w-[4.25rem]">
-        <div class="pointer-events-none absolute inset-[-14%] opacity-25"
+    {{-- Risen artwork: fixed box + min-w-0 so flex does not honor 794px intrinsic width. --}}
+    <div class="relative mx-auto flex h-10 w-8 shrink-0 items-center justify-center overflow-visible min-h-0 min-w-0 sm:h-11 sm:w-9">
+        <div class="pointer-events-none absolute inset-[-12%] opacity-20"
              style="animation: fasika-rays 28s linear infinite;">
             @for ($r = 0; $r < 12; $r++)
-            <div style="position:absolute;top:50%;left:50%;width:2px;height:52px;
+            <div style="position:absolute;top:50%;left:50%;width:2px;height:36px;
                  background:linear-gradient(to top,#F5D060,transparent);
                  transform-origin:bottom center;
                  transform:translate(-50%,-100%) rotate({{ $r * 30 }}deg);"></div>
             @endfor
         </div>
         <img src="{{ asset('images/Risen.svg') }}"
-             width="794"
-             height="1123"
              alt="{{ __('app.fasika_celebration_risen_image_alt') }}"
-             class="relative z-10 h-auto max-h-20 w-full object-contain object-center drop-shadow-[0_0_18px_rgba(245,208,96,0.4)] sm:max-h-24"
-             decoding="async">
+             class="relative z-10 max-h-full max-w-full min-h-0 min-w-0 object-contain object-center drop-shadow-[0_0_12px_rgba(245,208,96,0.35)]"
+             decoding="async"
+             loading="lazy">
     </div>
 
     <p class="text-xs font-bold uppercase tracking-[0.25em] text-[rgba(245,208,96,0.7)]">
