@@ -70,8 +70,10 @@
         @endforeach
     </div>
 
-    <div class="inline-flex items-center justify-center px-4 py-2.5 rounded-full
-                bg-white/10 border border-[rgba(245,208,96,0.22)]">
-        <span class="text-sm font-semibold text-[#F5D060]">{{ __('app.fasika_banner_badge') }}</span>
-    </div>
+    @unless($hideFooterBadge ?? false)
+        <div class="inline-flex items-center justify-center px-4 py-2.5 rounded-full
+                    bg-white/10 border border-[rgba(245,208,96,0.22)]">
+            <span class="text-sm font-semibold text-[#F5D060]">{{ __('app.fasika_banner_badge') }}</span>
+        </div>
+    @endunless
 </div>

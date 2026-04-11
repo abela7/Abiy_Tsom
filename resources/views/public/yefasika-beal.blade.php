@@ -16,7 +16,7 @@
         {{-- Hero: cross + titles in a focused glass frame --}}
         <div class="mx-auto w-full max-w-md rounded-3xl border border-white/[0.08] bg-black/30 p-5 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] ring-1 ring-white/[0.04] backdrop-blur-md sm:max-w-lg sm:p-6">
             <div class="mx-auto w-full max-w-[16rem] origin-top scale-[0.94] sm:max-w-none sm:scale-100">
-                @include('member.partials.fasika-celebration-banner')
+                @include('member.partials.fasika-celebration-banner', ['hideFooterBadge' => true])
             </div>
         </div>
 
@@ -32,9 +32,6 @@
                 <p id="ybb-greeting"
                    class="mx-auto max-w-[30ch] text-[1.0625rem] font-medium leading-[1.72] tracking-wide text-white/[0.94] sm:text-lg sm:leading-[1.78]">
                     {{ __('app.yefasika_beal_short_greeting_line_one') }}
-                </p>
-                <p class="mx-auto mt-6 max-w-[26ch] text-xl font-semibold leading-snug tracking-wide text-[#F5E6B3] sm:text-2xl sm:leading-tight">
-                    {{ __('app.yefasika_beal_short_greeting_line_two') }}
                 </p>
             </header>
 
@@ -152,6 +149,68 @@
                 </p>
             </div>
         </section>
+
+        @php
+            $hasPublicFasikaExtras = ($fasikaDaily && (
+                $fasikaDaily->mezmurs->isNotEmpty() ||
+                filled(localized($fasikaDaily, 'bible_reference'))
+            )) || ($fasikaLectionary && $fasikaLectionary->hasContent());
+        @endphp
+
+        @if($hasPublicFasikaExtras)
+            <section class="relative mx-auto w-full max-w-md rounded-2xl border border-white/[0.09] bg-black/35 px-4 py-4 shadow-[0_18px_40px_-12px_rgba(0,0,0,0.45)] ring-1 ring-inset ring-white/[0.05] backdrop-blur-xl sm:max-w-lg sm:px-5"
+                     x-data="{ extrasOpen: false }"
+                     aria-labelledby="ybb-extra-content-heading">
+                <button type="button"
+                        @click="extrasOpen = !extrasOpen"
+                        class="flex w-full items-center justify-between gap-3 rounded-xl px-1 py-1 text-left touch-manipulation">
+                    <div>
+                        <h2 id="ybb-extra-content-heading" class="text-base font-extrabold text-[#e2ca18] sm:text-lg">
+                            {{ __('app.yefasika_beal_additional_content_title') }}
+                        </h2>
+                        <p class="mt-1 text-xs leading-relaxed text-zinc-400 sm:text-sm">
+                            {{ __('app.yefasika_beal_additional_content_help') }}
+                        </p>
+                    </div>
+                    <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-zinc-200 transition"
+                          :class="extrasOpen ? 'text-[#e2ca18] border-[#e2ca18]/25' : ''">
+                        <svg class="h-4 w-4 transition-transform duration-200" :class="extrasOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </span>
+                </button>
+
+                <div x-show="extrasOpen"
+                     x-cloak
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 -translate-y-1"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     class="mt-4 space-y-4 border-t border-white/[0.08] pt-4">
+                    @if($fasikaDaily && filled(localized($fasikaDaily, 'bible_reference')))
+                        @include('member.partials.day-bible-reading', [
+                            'daily' => $fasikaDaily,
+                            'locale' => app()->getLocale(),
+                            'sectionTitle' => __('app.fasika_bible_reading_title'),
+                        ])
+                    @endif
+
+                    @if($fasikaLectionary && $fasikaLectionary->hasContent())
+                        @include('member.partials.day-lectionary', [
+                            'lectionary' => $fasikaLectionary,
+                            'locale' => app()->getLocale(),
+                        ])
+                    @endif
+
+                    @if($fasikaDaily && $fasikaDaily->mezmurs->isNotEmpty())
+                        @include('member.partials.day-mezmurs', [
+                            'daily' => $fasikaDaily,
+                            'locale' => app()->getLocale(),
+                            'sectionTitle' => __('app.fasika_selected_hymn_title'),
+                        ])
+                    @endif
+                </div>
+            </section>
+        @endif
 
         <p class="mx-auto mt-2 max-w-md pb-2 text-center">
             <a href="{{ rtrim((string) config('app.parish_website_url'), '/') }}/"
