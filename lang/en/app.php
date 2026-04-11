@@ -2194,7 +2194,7 @@ return [
     'himamat_slot_reminder_open_line' => "Tap the link below to open the Gospel reading for this hour.\n:url",
 
     // Fasika (Easter Sunday) celebration — shown in day.blade.php (one language per locale)
-    'fasika_day_title' => 'Fasika — Easter Sunday',
+    'fasika_day_title' => 'Feast of the Resurrection',
     'fasika_eyebrow' => 'Fasika — Easter',
     'fasika_banner_main' => 'Christ is risen from the dead!',
     'fasika_banner_lines' => [

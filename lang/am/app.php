@@ -2174,7 +2174,7 @@ return [
     'himamat_slot_reminder_open_line' => "በዚህ ሰዓት የሚነበበውን የወንጌል ክፍል ለማግኘት እንዲሁም ስለ ሕማማት እና ስለ ዕለቱ ተጨማሪ መረጃ ለማግኘት የሚከተለውን ሊንክ ይንኩ\n:url",
 
     // Fasika (Easter Sunday) celebration — shown in day.blade.php (one language per locale)
-    'fasika_day_title' => 'ፋሲካ — የትንሣኤ እሑድ',
+    'fasika_day_title' => 'የትንሣኤ በዓል',
     'fasika_eyebrow' => 'ፋሲካ · ትንሣኤ',
     'fasika_banner_main' => 'ክርስቶስ ተንስአ እሙታን',
     'fasika_banner_lines' => [
