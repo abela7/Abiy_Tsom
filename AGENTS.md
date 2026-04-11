@@ -4,19 +4,21 @@
 
 - Build everything in English first; use translation keys (e.g. `__('admin.inventory.stock_levels.title')`). Amharic and Tigrinya stay as placeholders until English is stable.
 - Mobile-first design for all member-facing pages and new features (same pattern as existing pages).
-- Build incrementally: ship one subsection at a time and finish it fully before moving on. Stop and wait for PM review after commits.
+- Build incrementally: ship one subsection at a time and finish it fully before moving on. Prefer waiting for PM review after commits unless the user explicitly asks to commit and push to `origin/main` to deploy.
 - Do not add new packages, UI pages, or extras unless explicitly approved.
 - On local setup: when manual steps are required (DB creation, config, etc.), ask the user to do them.
 - Special fast-day experiences (Good Friday, Fasika, etc.) belong inside `day.blade.php` as conditional blocks driven by controller flags (`$isGoodFriday`, `$isFasika`), not as new routes, standalone Blade pages, or separate member controllers.
-- Never push to `main`/production or deploy without explicit user approval; a request to view or share a link is not permission to push or ship.
+- Do not push to `main`/production or deploy without explicit user approval; clear requests such as “commit and push”, “push to main”, or “push it” count as approval for that push. A request only to view or share a link is not permission to push or ship.
 
 ## Learned Workspace Facts
 
 - Brand colors: Primary Blue `#0a6286`, Primary Gold `#e2ca18`.
 - Tech stack: Laravel, Blade, Tailwind v4, Alpine.js, MySQL. Always use Tailwind v4 syntax.
 - Member special-day UI: `HomeController::renderDayView()` sets flags such as `$isGoodFriday` and `$isFasika`; `day.blade.php` gates styling and celebration sections with `@if($isGoodFriday ?? false)` / `@if($isFasika ?? false)` while the normal daily content still renders underneath.
-- Fasting `DailyContent` is keyed by day number through the last fasting day of the season; Easter Sunday may have no `DailyContent` row. `$isFasika` is intended to be true on the season's last fasting day and when the viewed date matches `config('app.easter_date')` / `EASTER_DATE` in `.env`.
-- Production site `abuneteklehaymanot.org`: deploy over SSH with `git pull origin main` from the app directory; if the server repo has diverged from `origin/main`, `git reset --hard origin/main` then pull again.
+- `DailyContent` is keyed by day number through the last fasting day of the season; the app may include a Day 56 row for Easter. `$isFasika` follows the configured Easter date (`config('app.easter_date')` / `EASTER_DATE` in `.env`) and related controller logic.
+- On `$isFasika`, member day, admin preview, and public share force Amharic locale and DB translations; the member layout hides the header language switcher; the Himamat FAQ block in `himamat-linked-sections` is omitted; the closing gratitude doxology uses the `fasika_gratitude_doxology` copy in `lang/am` and `lang/en` without an extra heading.
+- Production Abiy Tsom app: `abiytsom.abuneteklehaymanot.org`; deploy over SSH from that app directory with `git pull origin main` (if the server repo has diverged from `origin/main`, `git reset --hard origin/main` then pull again).
+- Production cPanel cron lines for this app that ran `schedule:run`, `reminders:send-whatsapp --queue`, and `queue:work ... whatsapp-reminders` were removed; Laravel-scheduled jobs from `routes/console.php` (e.g. writer and email reminders) and WhatsApp reminder dispatch therefore do not run from cron unless comparable cron entries are added back.
 
 ## Cursor Cloud specific instructions
 
