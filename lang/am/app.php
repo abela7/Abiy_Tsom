@@ -2190,5 +2190,5 @@ return [
     'fasika_himamat_eyebrow' => 'የ ትንሣኤ በዓል',
     'fasika_season_farewell_eyebrow' => 'የዐብይ ጾም · ሰላምታ',
     'fasika_season_farewell_title' => 'ለዚህ ዘመን በደህና ሰላምታ',
-    'fasika_gratitude_doxology' => "አነሳስቶ ላስጀመረን፣ አስጀምሮ ላስጨረሰን ለ ልዑል እግዚአብሔር። ኃይል፣ ክብር፣ ምስጋና ይሁን፡፡\n\nየከርሞ ሰው ይበለን፡፡",
+    'fasika_gratitude_doxology' => "አነሳስቶ ላስጀመረን፣ አስጀምሮ ላስጨረሰን ለ ልዑል እግዚአብሔር. ኃይል፣ ክብር፣ ምስጋና ይሁን፡፡\n\nየከርሞ ሰው ይበለን፡፡",
   ];
