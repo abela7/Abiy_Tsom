@@ -851,7 +851,7 @@ class HimamatDayController extends Controller
         return DailyContent::query()
             ->whereKey($dailyId)
             ->where('lent_season_id', $himamatDay->lent_season_id)
-            ->whereBetween('day_number', [50, 55])
+            ->whereBetween('day_number', [50, 56])
             ->whereDate('date', $himamatDay->date)
             ->first();
     }

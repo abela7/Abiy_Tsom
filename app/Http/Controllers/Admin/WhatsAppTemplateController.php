@@ -721,7 +721,7 @@ class WhatsAppTemplateController extends Controller
 
     private function resolvePublishedHimamatDay(DailyContent $dailyContent): ?HimamatDay
     {
-        if ($dailyContent->day_number < 50 || $dailyContent->day_number > 55) {
+        if ($dailyContent->day_number < 50 || $dailyContent->day_number > 56) {
             return null;
         }
 

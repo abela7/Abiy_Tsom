@@ -50,6 +50,11 @@ return [
             'title_en' => 'Holy Saturday',
             'title_am' => null,
         ],
+        [
+            'slug' => 'fasika',
+            'title_en' => 'Fasika (Easter Sunday)',
+            'title_am' => 'ፋሲካ',
+        ],
     ],
 
     'slots' => [

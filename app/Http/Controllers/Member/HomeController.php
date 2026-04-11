@@ -533,7 +533,7 @@ class HomeController extends Controller
 
     private function resolveLinkedHimamatDay(DailyContent $daily): ?HimamatDay
     {
-        if ($daily->day_number < 50 || $daily->day_number > 55) {
+        if ($daily->day_number < 50 || $daily->day_number > 56) {
             return null;
         }
 

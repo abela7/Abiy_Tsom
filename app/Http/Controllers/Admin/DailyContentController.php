@@ -133,7 +133,7 @@ class DailyContentController extends Controller
         $himamatTimeline = null;
         $isGoodFriday = false;
 
-        if ($daily->day_number >= 50 && $daily->day_number <= 55) {
+        if ($daily->day_number >= 50 && $daily->day_number <= 56) {
             $himamatDay = HimamatDay::query()
                 ->where('lent_season_id', $daily->lent_season_id)
                 ->whereDate('date', $daily->date)
@@ -642,7 +642,7 @@ class DailyContentController extends Controller
 
     private function resolveLinkedHimamatDay(DailyContent $daily): ?HimamatDay
     {
-        if ($daily->day_number < 50 || $daily->day_number > 55) {
+        if ($daily->day_number < 50 || $daily->day_number > 56) {
             return null;
         }
 

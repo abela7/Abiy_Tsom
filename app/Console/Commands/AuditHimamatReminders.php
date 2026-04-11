@@ -72,8 +72,8 @@ class AuditHimamatReminders extends Command
         ));
         $this->line('Daily page URL pattern: '.$dailyContent->memberDayUrl('TOKEN', false));
 
-        if ((int) $dailyContent->day_number < 50 || (int) $dailyContent->day_number > 55) {
-            $this->warn('This day is outside Passion Week (days 50-55). No Himamat reminders should send.');
+        if ((int) $dailyContent->day_number < 50 || (int) $dailyContent->day_number > 56) {
+            $this->warn('This day is outside Passion Week + Fasika (days 50-56). No Himamat reminders should send.');
 
             return self::SUCCESS;
         }

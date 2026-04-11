@@ -195,7 +195,7 @@ class HimamatScaffoldService
 
         $dailyDates = DailyContent::query()
             ->where('lent_season_id', $season->id)
-            ->whereBetween('day_number', [50, 55])
+            ->whereBetween('day_number', [50, 56])
             ->orderBy('day_number')
             ->pluck('date')
             ->map(fn ($date): string => CarbonImmutable::parse((string) $date)->toDateString())
