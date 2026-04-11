@@ -4,7 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Models\DailyContent;
 use App\Models\FasikaGreetingShare;
+use App\Models\Lectionary;
+use App\Models\LentSeason;
+use App\Models\WeeklyTheme;
+use App\Services\EthiopianCalendarService;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -78,5 +84,86 @@ class PublicYefasikaBealTest extends TestCase
         $this->assertSame(1, $share->open_count);
         $this->assertNotNull($share->first_opened_at);
         $this->assertNotNull($share->last_opened_at);
+    }
+
+    public function test_public_fasika_page_can_show_additional_daily_content(): void
+    {
+        $season = LentSeason::query()->create([
+            'year' => 2026,
+            'start_date' => '2026-02-15',
+            'end_date' => '2026-04-12',
+            'total_days' => 56,
+            'is_active' => true,
+        ]);
+
+        $week = WeeklyTheme::query()->create([
+            'lent_season_id' => $season->id,
+            'week_number' => 8,
+            'name_en' => 'Holy Week',
+            'name_am' => 'ሕማማት',
+            'meaning' => 'Holy Week',
+            'week_start_date' => '2026-04-06',
+            'week_end_date' => '2026-04-12',
+        ]);
+
+        $daily = DailyContent::query()->create([
+            'lent_season_id' => $season->id,
+            'weekly_theme_id' => $week->id,
+            'day_number' => 56,
+            'date' => Carbon::parse(
+                config('app.easter_date', '2026-04-12 03:00'),
+                config('app.easter_timezone', 'Europe/London')
+            )->toDateString(),
+            'day_title' => 'Fasika',
+            'day_title_en' => 'Fasika',
+            'day_title_am' => 'ፋሲካ',
+            'bible_reference' => 'John 20:1-18',
+            'bible_reference_en' => 'John 20:1-18',
+            'bible_reference_am' => 'ዮሐንስ 20፥1-18',
+            'bible_summary' => 'Resurrection reading',
+            'bible_summary_en' => 'Resurrection reading',
+            'bible_summary_am' => 'የትንሣኤ ንባብ',
+            'bible_text_en' => 'Mary Magdalene came to the tomb early in the morning.',
+            'bible_text_am' => 'ማርያም መግደላዊት በማለዳ ወደ መቃብር መጣች።',
+            'is_published' => true,
+        ]);
+
+        $daily->mezmurs()->create([
+            'title_en' => 'Christ is risen',
+            'title_am' => 'ክርስቶስ ተነስቷል',
+            'description_en' => 'Selected hymn for Easter day',
+            'description_am' => 'ለትንሣኤ የተመረጠ መዝሙር',
+            'lyrics_en' => 'Christ is risen from the dead.',
+            'lyrics_am' => 'ክርስቶስ ከሙታን ተነስቷል።',
+            'sort_order' => 0,
+        ]);
+
+        $ethDateInfo = app(EthiopianCalendarService::class)->getDateInfo($daily->date, 'am');
+
+        Lectionary::query()->create([
+            'month' => data_get($ethDateInfo, 'ethiopian_date.month'),
+            'day' => data_get($ethDateInfo, 'ethiopian_date.day'),
+            'title_am' => 'የትንሣኤ ግጻዌ',
+            'title_en' => 'Easter Lectionary',
+            'description_am' => 'የቀኑ ንባቦች',
+            'description_en' => 'Readings for the day',
+            'gospel_book_am' => 'ዮሐንስ',
+            'gospel_book_en' => 'John',
+            'gospel_chapter' => 20,
+            'gospel_verses' => '1-18',
+            'gospel_text_am' => 'በሳምንቱ መጀመሪያ ቀን ማለዳ...',
+            'gospel_text_en' => 'On the first day of the week...',
+        ]);
+
+        $response = $this->get(route('public.yefasika-beal'));
+
+        $response->assertOk()
+            ->assertSee(__('app.yefasika_beal_additional_content_title'))
+            ->assertSee(__('app.fasika_bible_reading_title'))
+            ->assertSee(__('app.lectionary'))
+            ->assertSee(__('app.fasika_selected_hymn_title'))
+            ->assertSee('ዮሐንስ 20፥1-18')
+            ->assertSee('የትንሣኤ ግጻዌ')
+            ->assertSee('ክርስቶስ ተነስቷል');
     }
 }

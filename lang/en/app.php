@@ -2240,6 +2240,8 @@ return [
     'yefasika_beal_share_personalized_button' => 'Share',
     'yefasika_beal_copy_personalized_button' => 'Copy link',
     'yefasika_beal_link_copied' => 'Link copied!',
+    'yefasika_beal_additional_content_title' => 'Additional Content',
+    'yefasika_beal_additional_content_help' => 'Open the Bible Reading, Lectionary, and selected Hymn for Easter day.',
     'yefasika_beal_back_home' => 'Back to home',
 
     // Fasika greetings admin

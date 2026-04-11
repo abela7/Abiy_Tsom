@@ -4,7 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\DailyContent;
 use App\Models\FasikaGreetingShare;
+use App\Models\Lectionary;
+use App\Models\LentSeason;
+use App\Models\Translation;
+use App\Services\EthiopianCalendarService;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,9 +25,16 @@ class PublicYefasikaBealController extends Controller
 {
     public function show(Request $request, ?FasikaGreetingShare $share = null): View
     {
+        app()->setLocale('am');
+        Carbon::setLocale('am');
+        Translation::loadFromDb('am');
+
         if ($share) {
             $share->recordOpen($request);
         }
+
+        $fasikaDaily = $this->resolveFasikaDailyContent();
+        $fasikaLectionary = $this->resolveFasikaLectionary($fasikaDaily);
 
         $pageTitle = __('app.yefasika_beal_page_title').' - '.__('app.app_name');
         $shareText = __('app.yefasika_beal_share_text');
@@ -41,6 +54,8 @@ class PublicYefasikaBealController extends Controller
             'shareUrl',
             'shareText',
             'share',
+            'fasikaDaily',
+            'fasikaLectionary',
         ));
     }
 
@@ -81,5 +96,51 @@ class PublicYefasikaBealController extends Controller
         } while (FasikaGreetingShare::query()->where('share_token', $token)->exists());
 
         return $token;
+    }
+
+    private function resolveFasikaDailyContent(): ?DailyContent
+    {
+        $season = LentSeason::active();
+
+        $baseQuery = DailyContent::query()
+            ->with(['mezmurs'])
+            ->where('is_published', true);
+
+        if ($season) {
+            $baseQuery->where('lent_season_id', $season->id);
+        }
+
+        $easterDate = Carbon::parse(
+            config('app.easter_date', '2026-04-12 03:00'),
+            config('app.easter_timezone', 'Europe/London')
+        )->toDateString();
+
+        return (clone $baseQuery)
+            ->whereDate('date', $easterDate)
+            ->first()
+            ?? (clone $baseQuery)
+                ->where('day_number', 56)
+                ->latest('date')
+                ->first();
+    }
+
+    private function resolveFasikaLectionary(?DailyContent $daily): ?Lectionary
+    {
+        if (! $daily?->date) {
+            return null;
+        }
+
+        $ethDateInfo = app(EthiopianCalendarService::class)->getDateInfo($daily->date, app()->getLocale());
+        $month = data_get($ethDateInfo, 'ethiopian_date.month');
+        $day = data_get($ethDateInfo, 'ethiopian_date.day');
+
+        if (! $month || ! $day) {
+            return null;
+        }
+
+        return Lectionary::query()
+            ->where('month', $month)
+            ->where('day', $day)
+            ->first();
     }
 }
