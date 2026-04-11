@@ -9,11 +9,25 @@
             <h1 class="text-2xl font-bold text-primary">{{ __('app.fasika_greeting_admin_title') }}</h1>
             <p class="mt-1 text-sm text-muted-text">{{ __('app.fasika_greeting_admin_subtitle') }}</p>
         </div>
-        <a href="{{ route('public.yefasika-beal') }}"
-           target="_blank"
-           class="inline-flex items-center justify-center rounded-xl border border-border bg-card px-4 py-2 text-sm font-semibold text-primary transition hover:bg-muted/50">
-            {{ __('app.fasika_greeting_open_public_page') }}
-        </a>
+        <div class="flex flex-wrap items-center justify-end gap-3">
+            <a href="{{ route('public.yefasika-beal') }}"
+               target="_blank"
+               class="inline-flex items-center justify-center rounded-xl border border-border bg-card px-4 py-2 text-sm font-semibold text-primary transition hover:bg-muted/50">
+                {{ __('app.fasika_greeting_open_public_page') }}
+            </a>
+            @if($stats['created'] > 0)
+                <form method="POST"
+                      action="{{ route('admin.fasika-greetings.clear-all') }}"
+                      onsubmit="return confirm('{{ __('app.fasika_greeting_clear_all_confirm') }}')">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit"
+                            class="inline-flex items-center justify-center rounded-xl border border-error/30 bg-error/10 px-4 py-2 text-sm font-semibold text-error transition hover:bg-error/15">
+                        {{ __('app.fasika_greeting_clear_all_button') }}
+                    </button>
+                </form>
+            @endif
+        </div>
     </div>
 
     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -45,6 +59,7 @@
                         <th class="px-4 py-3 text-left font-semibold text-secondary">{{ __('app.fasika_greeting_created_at') }}</th>
                         <th class="px-4 py-3 text-left font-semibold text-secondary">{{ __('app.fasika_greeting_last_opened_at') }}</th>
                         <th class="px-4 py-3 text-left font-semibold text-secondary">{{ __('app.fasika_greeting_link') }}</th>
+                        <th class="px-4 py-3 text-left font-semibold text-secondary">{{ __('app.actions') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
@@ -61,10 +76,22 @@
                                     {{ route('public.yefasika-beal.share', $share) }}
                                 </a>
                             </td>
+                            <td class="px-4 py-3">
+                                <form method="POST"
+                                      action="{{ route('admin.fasika-greetings.destroy', $share) }}"
+                                      onsubmit="return confirm('{{ __('app.fasika_greeting_delete_confirm', ['name' => $share->sender_name]) }}')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit"
+                                            class="inline-flex items-center justify-center rounded-lg border border-error/30 bg-error/10 px-3 py-2 text-xs font-semibold text-error transition hover:bg-error/15">
+                                        {{ __('app.delete') }}
+                                    </button>
+                                </form>
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-4 py-10 text-center text-muted-text">{{ __('app.fasika_greeting_empty') }}</td>
+                            <td colspan="6" class="px-4 py-10 text-center text-muted-text">{{ __('app.fasika_greeting_empty') }}</td>
                         </tr>
                     @endforelse
                 </tbody>

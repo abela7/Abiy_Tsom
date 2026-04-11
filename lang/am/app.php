@@ -2178,7 +2178,6 @@ return [
     'fasika_selected_hymn_title' => 'ለቀኑ የተመረጠ መዝሙር',
     'fasika_bible_reading_title' => 'የመጽሐፍ ቅዱስ ንባብ',
     'fasika_eyebrow' => 'ፋሲካ · ትንሣኤ',
-    'fasika_celebration_risen_image_alt' => 'The risen Lord Jesus Christ.',
     'fasika_banner_main' => 'ክርስቶስ ተንስአ እሙታን',
     'fasika_banner_lines' => [
         'በአብይ ኋይል ወስልጣን',
@@ -2239,4 +2238,9 @@ return [
     'fasika_greeting_last_opened_at' => 'መጨረሻ የተከፈተበት',
     'fasika_greeting_link' => 'ሊንክ',
     'fasika_greeting_empty' => 'እስካሁን ግላዊ የፋሲካ ሰላምታ የለም።',
+    'fasika_greeting_clear_all_button' => 'ሁሉንም ዳታ አጥፋ',
+    'fasika_greeting_clear_all_confirm' => 'ሁሉንም የፋሲካ ሰላምታ መከታተያ ዳታ ማጥፋት ይፈልጋሉ? ይህ ወደ ኋላ አይመለስም።',
+    'fasika_greeting_clear_all_success' => ':count የፋሲካ ሰላምታ መዝገብ ተደምስሷል።',
+    'fasika_greeting_delete_confirm' => 'ለ:name የተፈጠረውን የሰላምታ ዳታ ማጥፋት ይፈልጋሉ?',
+    'fasika_greeting_delete_success' => 'ለ:name የተፈጠረው የሰላምታ ዳታ ተደምስሷል።',
 ];

@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\FasikaGreetingShare;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class FasikaGreetingController extends Controller
@@ -27,5 +28,27 @@ class FasikaGreetingController extends Controller
         ];
 
         return view('admin.fasika-greetings.index', compact('shares', 'stats'));
+    }
+
+    public function destroy(FasikaGreetingShare $share): RedirectResponse
+    {
+        $senderName = $share->sender_name;
+
+        $share->delete();
+
+        return redirect()
+            ->route('admin.fasika-greetings.index')
+            ->with('success', __('app.fasika_greeting_delete_success', ['name' => $senderName]));
+    }
+
+    public function clearAll(): RedirectResponse
+    {
+        $deletedCount = FasikaGreetingShare::query()->count();
+
+        FasikaGreetingShare::query()->delete();
+
+        return redirect()
+            ->route('admin.fasika-greetings.index')
+            ->with('success', __('app.fasika_greeting_clear_all_success', ['count' => $deletedCount]));
     }
 }

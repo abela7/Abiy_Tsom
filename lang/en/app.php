@@ -2198,7 +2198,6 @@ return [
     'fasika_selected_hymn_title' => 'Selected Hymn of the Day',
     'fasika_bible_reading_title' => 'Bible Reading',
     'fasika_eyebrow' => 'Fasika — Easter',
-    'fasika_celebration_risen_image_alt' => 'The risen Lord Jesus Christ.',
     'fasika_banner_main' => 'Christ is risen from the dead!',
     'fasika_banner_lines' => [
         'By His mighty authority;',
@@ -2259,4 +2258,9 @@ return [
     'fasika_greeting_last_opened_at' => 'Last Opened',
     'fasika_greeting_link' => 'Link',
     'fasika_greeting_empty' => 'No personalized Easter greetings yet.',
+    'fasika_greeting_clear_all_button' => 'Clear All Data',
+    'fasika_greeting_clear_all_confirm' => 'Remove all Fasika greeting tracker data? This cannot be undone.',
+    'fasika_greeting_clear_all_success' => 'Cleared :count Fasika greeting record(s).',
+    'fasika_greeting_delete_confirm' => 'Remove the greeting data for :name?',
+    'fasika_greeting_delete_success' => 'Removed the greeting data for :name.',
 ];

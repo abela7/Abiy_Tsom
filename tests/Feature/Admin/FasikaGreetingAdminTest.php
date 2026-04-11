@@ -46,4 +46,53 @@ class FasikaGreetingAdminTest extends TestCase
             ->assertSee((string) 3)
             ->assertSee(route('public.yefasika-beal'));
     }
+
+    public function test_admin_can_delete_single_fasika_greeting_record(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'admin',
+        ]);
+
+        $share = FasikaGreetingShare::query()->create([
+            'share_token' => 'fasika-share-delete-123',
+            'sender_name' => 'Abel',
+            'sender_name_normalized' => 'abel',
+            'open_count' => 2,
+        ]);
+
+        $response = $this->actingAs($admin)->delete(route('admin.fasika-greetings.destroy', $share));
+
+        $response->assertRedirect(route('admin.fasika-greetings.index'))
+            ->assertSessionHas('success', __('app.fasika_greeting_delete_success', ['name' => 'Abel']));
+
+        $this->assertDatabaseMissing('fasika_greeting_shares', [
+            'id' => $share->id,
+        ]);
+    }
+
+    public function test_admin_can_clear_all_fasika_greeting_records(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'admin',
+        ]);
+
+        FasikaGreetingShare::query()->create([
+            'share_token' => 'fasika-share-clear-123',
+            'sender_name' => 'Abel',
+            'sender_name_normalized' => 'abel',
+        ]);
+
+        FasikaGreetingShare::query()->create([
+            'share_token' => 'fasika-share-clear-456',
+            'sender_name' => 'Sara',
+            'sender_name_normalized' => 'sara',
+        ]);
+
+        $response = $this->actingAs($admin)->delete(route('admin.fasika-greetings.clear-all'));
+
+        $response->assertRedirect(route('admin.fasika-greetings.index'))
+            ->assertSessionHas('success', __('app.fasika_greeting_clear_all_success', ['count' => 2]));
+
+        $this->assertDatabaseCount('fasika_greeting_shares', 0);
+    }
 }

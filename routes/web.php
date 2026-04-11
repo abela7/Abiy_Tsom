@@ -471,6 +471,8 @@ Route::middleware(['auth', 'admin.audit'])->prefix('admin')->name('admin.')->gro
         Route::get('/survey', [Admin\SurveyController::class, 'index'])->name('survey.index');
         Route::get('/survey/export', [Admin\SurveyController::class, 'export'])->name('survey.export');
         Route::get('/fasika-greetings', [Admin\FasikaGreetingController::class, 'index'])->name('fasika-greetings.index');
+        Route::delete('/fasika-greetings/clear-all', [Admin\FasikaGreetingController::class, 'clearAll'])->name('fasika-greetings.clear-all');
+        Route::delete('/fasika-greetings/{share}', [Admin\FasikaGreetingController::class, 'destroy'])->name('fasika-greetings.destroy');
 
         // Content suggestions review
         Route::get('/suggestions', [Admin\ContentSuggestionController::class, 'index'])->name('suggestions.index');
