@@ -1,7 +1,20 @@
-﻿{{-- Fasika: one fixed full-screen background (cover) + tint. No particles. --}}
+﻿{{-- Fasika: fixed full-viewport stack; photo is an img with object-fit: cover (reliable on iOS). --}}
 <style>
+    /* Stretch document to the real viewport (avoids gaps under mobile chrome / iOS). */
+    html:has(.fasika-bg-cover),
+    html:has(.fasika-bg-cover) body {
+        min-height: 100vh;
+        min-height: 100dvh;
+        min-height: -webkit-fill-available;
+    }
+
+    html:has(.fasika-bg-cover) body {
+        overflow-x: hidden;
+    }
+
     html.dark body { background: #0f0a1a !important; }
     html.dark { background: #0f0a1a !important; }
+
     .fasika-page {
         --color-card: rgba(45, 24, 84, 0.52);
         --color-muted: rgba(26, 14, 46, 0.45);
@@ -44,26 +57,57 @@
         to { background-position: 200% center; }
     }
 
-    /* One layer: photo + gradients, always cover the viewport (mobile-friendly). */
     .fasika-bg-cover {
         position: fixed;
+        z-index: 0;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
-        z-index: 0;
+        width: 100%;
+        height: 100vh;
+        height: 100dvh;
+        height: -webkit-fill-available;
+        min-height: 100vh;
+        min-height: 100dvh;
+        min-height: -webkit-fill-available;
+        overflow: hidden;
         background-color: #0f0a1a;
-        background-image:
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+    }
+
+    .fasika-bg-cover__photo {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        pointer-events: none;
+    }
+
+    .fasika-bg-cover__scrim {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background:
             linear-gradient(to bottom, rgba(26, 14, 46, 0.6), rgba(45, 24, 84, 0.5), rgba(15, 10, 26, 0.72)),
-            radial-gradient(ellipse 130% 70% at 50% 18%, rgba(212, 165, 87, 0.2) 0%, transparent 52%),
-            url("{{ asset('images/Jesus_In_Eastern.avif') }}");
-        background-size: cover, cover, cover;
-        background-position: center, center, center;
-        background-repeat: no-repeat, no-repeat, no-repeat;
+            radial-gradient(ellipse 130% 70% at 50% 18%, rgba(212, 165, 87, 0.2) 0%, transparent 52%);
     }
 </style>
 
-<div class="fasika-bg-cover" aria-hidden="true"></div>
+<div class="fasika-bg-cover" aria-hidden="true">
+    <img class="fasika-bg-cover__photo"
+         src="{{ asset('images/Jesus_In_Eastern.avif') }}"
+         alt=""
+         width="1600"
+         height="1067"
+         decoding="async"
+         fetchpriority="high">
+    <div class="fasika-bg-cover__scrim" aria-hidden="true"></div>
+</div>
 
 <script>
     window.addEventListener('alpine:initialized', function () {
