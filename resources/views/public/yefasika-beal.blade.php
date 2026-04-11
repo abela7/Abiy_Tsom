@@ -159,33 +159,17 @@
 
         @if($hasPublicFasikaExtras)
             <section class="relative mx-auto w-full max-w-md rounded-2xl border border-white/[0.09] bg-black/35 px-4 py-4 shadow-[0_18px_40px_-12px_rgba(0,0,0,0.45)] ring-1 ring-inset ring-white/[0.05] backdrop-blur-xl sm:max-w-lg sm:px-5"
-                     x-data="{ extrasOpen: false }"
                      aria-labelledby="ybb-extra-content-heading">
-                <button type="button"
-                        @click="extrasOpen = !extrasOpen"
-                        class="flex w-full items-center justify-between gap-3 rounded-xl px-1 py-1 text-left touch-manipulation">
-                    <div>
-                        <h2 id="ybb-extra-content-heading" class="text-base font-extrabold text-[#e2ca18] sm:text-lg">
-                            {{ __('app.yefasika_beal_additional_content_title') }}
-                        </h2>
-                        <p class="mt-1 text-xs leading-relaxed text-zinc-400 sm:text-sm">
-                            {{ __('app.yefasika_beal_additional_content_help') }}
-                        </p>
-                    </div>
-                    <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-zinc-200 transition"
-                          :class="extrasOpen ? 'text-[#e2ca18] border-[#e2ca18]/25' : ''">
-                        <svg class="h-4 w-4 transition-transform duration-200" :class="extrasOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                        </svg>
-                    </span>
-                </button>
+                <div class="rounded-xl px-1 py-1">
+                    <h2 id="ybb-extra-content-heading" class="text-base font-extrabold text-[#e2ca18] sm:text-lg">
+                        {{ __('app.yefasika_beal_additional_content_title') }}
+                    </h2>
+                    <p class="mt-1 text-xs leading-relaxed text-zinc-400 sm:text-sm">
+                        {{ __('app.yefasika_beal_additional_content_help') }}
+                    </p>
+                </div>
 
-                <div x-show="extrasOpen"
-                     x-cloak
-                     x-transition:enter="transition ease-out duration-200"
-                     x-transition:enter-start="opacity-0 -translate-y-1"
-                     x-transition:enter-end="opacity-100 translate-y-0"
-                     class="mt-4 space-y-4 border-t border-white/[0.08] pt-4">
+                <div class="mt-4 space-y-4 border-t border-white/[0.08] pt-4">
                     @if($fasikaDaily && filled(localized($fasikaDaily, 'bible_reference')))
                         @include('member.partials.day-bible-reading', [
                             'daily' => $fasikaDaily,

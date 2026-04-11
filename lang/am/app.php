@@ -2220,7 +2220,7 @@ return [
     'yefasika_beal_share_personalized_button' => 'አጋራ',
     'yefasika_beal_copy_personalized_button' => 'ኮፒ ሊንክ',
     'yefasika_beal_link_copied' => 'ሊንኩ ተቀድቷል!',
-    'yefasika_beal_additional_content_title' => 'ተጨማሪ ይዘቶች',
+    'yefasika_beal_additional_content_title' => 'ለቀኑ የተመረጡ ይዘቶች',
     'yefasika_beal_additional_content_help' => 'የቀኑን የመጽሐፍ ቅዱስ ንባብ፣ ግጻዌ እና ለቀኑ የተመረጠ መዝሙር ይክፈቱ።',
     'yefasika_beal_back_home' => 'ወደ መነሻ ይሂዱ',
 
