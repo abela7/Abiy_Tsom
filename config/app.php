@@ -56,6 +56,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Parish main website
+    |--------------------------------------------------------------------------
+    |
+    | Public pages (e.g. Yefasika Beal) may link visitors to the parish root
+    | site instead of this Abiy Tsom app URL.
+    |
+    */
+
+    'parish_website_url' => env('PARISH_WEBSITE_URL', 'https://abuneteklehaymanot.org'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

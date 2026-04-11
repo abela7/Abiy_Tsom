@@ -68,7 +68,8 @@
         </p>
 
         <p class="text-center text-xs text-white/50 pt-2">
-            <a href="{{ route('home') }}" class="underline hover:text-white/80">{{ __('app.yefasika_beal_back_home') }}</a>
+            <a href="{{ rtrim((string) config('app.parish_website_url'), '/') }}/"
+               class="underline hover:text-white/80">{{ __('app.yefasika_beal_back_home') }}</a>
         </p>
     </main>
 @endsection
