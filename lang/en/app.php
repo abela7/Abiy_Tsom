@@ -2206,4 +2206,5 @@ return [
         'We are granted joy and peace.',
     ],
     'fasika_banner_badge' => 'Blessed Feast of the Resurrection to you in peace!',
+    'fasika_member_header_greeting' => 'Blessed feast to you',
   ];

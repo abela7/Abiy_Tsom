@@ -81,7 +81,21 @@
             @php $baptismName = trim((string) ($currentMember->baptism_name ?? '')); @endphp
             <h1 class="flex-1 min-w-0 pr-2 font-bold text-primary leading-tight whitespace-nowrap overflow-hidden text-ellipsis"
                 style="font-size: clamp(0.95rem, 4.6vw, 1.125rem);">
-                @if(app()->getLocale() === 'am')
+                @if(($isFasika ?? false))
+                    @if(app()->getLocale() === 'am')
+                        @if($baptismName !== '')
+                            <span class="text-accent">{{ $baptismName }}</span>
+                            <span> {{ __('app.fasika_member_header_greeting') }}</span>
+                        @else
+                            <span>{{ __('app.fasika_member_header_greeting') }}</span>
+                        @endif
+                    @else
+                        <span>{{ __('app.fasika_member_header_greeting') }}</span>
+                        @if($baptismName !== '')
+                            <span> </span><span class="text-accent">{{ $baptismName }}</span>
+                        @endif
+                    @endif
+                @elseif(app()->getLocale() === 'am')
                     @if($baptismName !== '')
                         <span class="text-accent">{{ $baptismName }}</span>
                         <span> እንኳን ደህና መጡ</span>
