@@ -2276,12 +2276,30 @@
     </div>
 
     @if($isFasika ?? false)
-    @php
-        $fasikaDoxologyName = trim((string) (($currentMember ?? null)?->baptism_name ?? ''));
-        $fasikaDoxologyName = $fasikaDoxologyName !== '' ? $fasikaDoxologyName : __('app.fasika_gratitude_name_fallback');
-    @endphp
-    <section class="rounded-2xl border border-border/70 bg-card/90 p-4 shadow-sm">
-        <p class="text-sm leading-[1.85] text-primary text-center whitespace-pre-line">{{ __('app.fasika_gratitude_doxology', ['name' => $fasikaDoxologyName]) }}</p>
+    <section class="relative overflow-hidden rounded-3xl border border-accent/35 bg-gradient-to-b from-accent/[0.14] via-card to-card p-6 sm:p-7 shadow-[0_12px_40px_-12px_rgba(10,98,134,0.35)] ring-1 ring-accent/10"
+             aria-labelledby="fasika-season-farewell-title">
+        <div class="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-accent/55 to-transparent"></div>
+        <div class="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-accent/10 blur-2xl"></div>
+        <div class="pointer-events-none absolute -left-8 bottom-0 h-28 w-28 rounded-full bg-primary/5 blur-2xl"></div>
+
+        <div class="relative flex flex-col items-center text-center gap-5">
+            <div class="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/10 px-3.5 py-1.5">
+                <span class="flex h-2 w-2 rounded-full bg-accent shadow-[0_0_10px_rgba(226,202,24,0.65)]" aria-hidden="true"></span>
+                <span class="text-[10px] font-bold uppercase tracking-[0.22em] text-accent/90">{{ __('app.fasika_season_farewell_eyebrow') }}</span>
+            </div>
+
+            <h2 id="fasika-season-farewell-title" class="max-w-sm text-lg sm:text-xl font-black leading-snug text-primary tracking-tight">
+                {{ __('app.fasika_season_farewell_title') }}
+            </h2>
+
+            <div class="w-12 h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent" aria-hidden="true"></div>
+
+            <div class="max-w-md rounded-2xl border border-border/40 bg-muted/20 px-5 py-5 sm:px-6 sm:py-6">
+                <p class="text-[15px] sm:text-base leading-[2.05] text-primary font-semibold whitespace-pre-line text-balance">
+                    {{ __('app.fasika_gratitude_doxology') }}
+                </p>
+            </div>
+        </div>
     </section>
     @endif
 

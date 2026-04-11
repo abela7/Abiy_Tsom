@@ -2208,6 +2208,7 @@ return [
     'fasika_banner_badge' => 'Blessed Feast of the Resurrection to you in peace!',
     'fasika_member_header_greeting' => 'Blessed feast to you',
     'fasika_himamat_eyebrow' => 'Feast of the Resurrection',
-    'fasika_gratitude_name_fallback' => 'brother or sister',
-    'fasika_gratitude_doxology' => 'Dear :name, glory and thanksgiving belong to the Almighty Lord, who inspired us to begin and to finish. May the people of Christ say so.',
+    'fasika_season_farewell_eyebrow' => 'Great Lent · Farewell',
+    'fasika_season_farewell_title' => 'A warm closing for this season',
+    'fasika_gratitude_doxology' => "You moved us to begin and carried us through to the end. To the Almighty Lord be power, honor, and praise.\n\nMay the people of Christ say: Amen.",
   ];

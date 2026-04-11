@@ -2188,6 +2188,7 @@ return [
     'fasika_banner_badge' => 'እንኳን ለብርሀነ ተንሳኤው በሰላም አደረስዎ!',
     'fasika_member_header_greeting' => 'እንኳን አደረስዎ',
     'fasika_himamat_eyebrow' => 'የ ትንሣኤ በዓል',
-    'fasika_gratitude_name_fallback' => 'ወንድም ወይም እህት',
-    'fasika_gratitude_doxology' => 'ውድ :name አነሳስቶ ላስጀመረን አስጀምሮ ላስጨረሰን ለ ልዑል እግዚሕአብሄር ክብር እና ምስጋና ይገባል። የከርሞ ሰው ይበለን።',
+    'fasika_season_farewell_eyebrow' => 'የዐብይ ጾም · ሰላምታ',
+    'fasika_season_farewell_title' => 'ለዚህ ዘመን በደህና ሰላምታ',
+    'fasika_gratitude_doxology' => "አነሳስቶ ላስጀመረን፣ አስጀምሮ ላስጨረሰን ለ ልዑል እግዚአብሔር። ኃይል፣ ክብር፣ ምስጋና ይሁን፡፡\n\nየከርሞ ሰው ይበለን፡፡",
   ];
