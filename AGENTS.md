@@ -9,6 +9,7 @@
 - On local setup: when manual steps are required (DB creation, config, etc.), ask the user to do them.
 - Special fast-day experiences (Good Friday, Fasika, etc.) belong inside `day.blade.php` as conditional blocks driven by controller flags (`$isGoodFriday`, `$isFasika`), not as new routes, standalone Blade pages, or separate member controllers.
 - Do not push to `main`/production or deploy without explicit user approval; clear requests such as “commit and push”, “push to main”, or “push it” count as approval for that push. A request only to view or share a link is not permission to push or ship.
+- **Standing ship workflow:** After changes that touch the project, run **`npm run build`** locally (Vite production build), then **commit** all relevant files **including** updated `public/build/` assets when the manifest changes, then **`git push origin main`**, unless the user explicitly asks not to push for that turn.
 
 ## Learned Workspace Facts
 
