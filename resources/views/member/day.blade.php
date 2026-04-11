@@ -1090,7 +1090,7 @@
             <div class="h-px flex-1 bg-gradient-to-r from-transparent via-accent/25 to-transparent"></div>
             <div class="flex items-center gap-1.5 shrink-0">
                 <svg class="w-3.5 h-3.5 text-accent/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <span class="text-[11px] font-bold uppercase tracking-[0.16em] text-accent/70">{{ __('app.himamat_eyebrow') }}</span>
+                <span class="text-[11px] font-bold uppercase tracking-[0.16em] text-accent/70">{{ ($isFasika ?? false) ? __('app.fasika_himamat_eyebrow') : __('app.himamat_eyebrow') }}</span>
             </div>
             <div class="h-px flex-1 bg-gradient-to-r from-transparent via-accent/25 to-transparent"></div>
         </div>

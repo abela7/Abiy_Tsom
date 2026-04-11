@@ -2207,4 +2207,5 @@ return [
     ],
     'fasika_banner_badge' => 'Blessed Feast of the Resurrection to you in peace!',
     'fasika_member_header_greeting' => 'Blessed feast to you',
+    'fasika_himamat_eyebrow' => 'Feast of the Resurrection',
   ];
