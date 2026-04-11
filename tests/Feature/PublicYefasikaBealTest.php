@@ -22,6 +22,8 @@ class PublicYefasikaBealTest extends TestCase
         $response->assertSee('ybb-particles', false);
         $response->assertSee(__('app.fasika_banner_main'), false);
         $response->assertSee(rtrim((string) config('app.parish_website_url'), '/').'/', false);
+        $response->assertSee('property="og:title" content="'.e(__('app.yefasika_beal_og_title')).'"', false);
+        $response->assertSee('property="og:image" content="'.e(asset('images/Jesus_In_Eastern.avif')).'"', false);
     }
 
     public function test_member_day_fasika_path_serves_same_page(): void
@@ -67,7 +69,9 @@ class PublicYefasikaBealTest extends TestCase
 
         $response->assertOk()
             ->assertSee(__('app.yefasika_beal_short_greeting_line_one'))
-            ->assertSee(__('app.yefasika_beal_from_name', ['name' => 'አቤል']));
+            ->assertSee(__('app.yefasika_beal_from_name', ['name' => 'አቤል']))
+            ->assertSee('property="og:title" content="'.e(__('app.yefasika_beal_personalized_og_title')).'"', false)
+            ->assertSee('property="og:image" content="'.e(asset('images/Jesus_In_Eastern.avif')).'"', false);
 
         $share->refresh();
 

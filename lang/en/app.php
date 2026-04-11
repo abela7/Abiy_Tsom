@@ -2212,9 +2212,9 @@ return [
 
     // Public Easter card (Yefasika Beal) — /yefasika-beal
     'yefasika_beal_page_title' => 'Yefasika Beal',
-    'yefasika_beal_og_title' => 'Happy Easter - share with a friend',
+    'yefasika_beal_og_title' => 'Easter Message',
     'yefasika_beal_og_description' => 'Send a blessed Easter greeting from Abiy Tsom.',
-    'yefasika_beal_personalized_og_title' => 'Easter greeting from :name',
+    'yefasika_beal_personalized_og_title' => 'Easter Message',
     'yefasika_beal_share_text' => 'Happy Easter - Christ is risen!',
     'yefasika_beal_personalized_share_text' => 'Blessed Feast of the Resurrection to you in peace. From :name.',
     'yefasika_beal_short_greeting_line_one' => 'Blessed Feast of the Resurrection of our Lord and Savior Jesus Christ to you in peace.',
@@ -2253,4 +2253,4 @@ return [
     'fasika_greeting_last_opened_at' => 'Last Opened',
     'fasika_greeting_link' => 'Link',
     'fasika_greeting_empty' => 'No personalized Easter greetings yet.',
-  ];
+];

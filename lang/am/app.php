@@ -2192,9 +2192,9 @@ return [
 
     // Public Easter card (Yefasika Beal) — /yefasika-beal
     'yefasika_beal_page_title' => 'የፋሲካ በዓል',
-    'yefasika_beal_og_title' => 'እንኳን ለደስታ ቀን ለጓደኞች ያጋሩ',
+    'yefasika_beal_og_title' => 'የትንሣኤ በዓል መልዕክት',
     'yefasika_beal_og_description' => 'ከአብይ ጾም መልካም የትንሣኤ ሰላምታ ያጋሩ።',
-    'yefasika_beal_personalized_og_title' => 'ከ :name የትንሣኤ ሰላምታ',
+    'yefasika_beal_personalized_og_title' => 'የትንሣኤ በዓል መልዕክት',
     'yefasika_beal_share_text' => 'እንኳን ለጌታችንና ለመድኃኒታችን ለኢየሱስ ክርስቶስ የትንሣኤ በዓል በሰላም አደረሳችሁ አደረሰን! መልካም በዓል ይሁንልዎ።',
     'yefasika_beal_personalized_share_text' => 'እንኳን ለጌታችንና ለመድኃኒታችን ለኢየሱስ ክርስቶስ የትንሣኤ በዓል በሰላም አደረሳችሁ አደረሰን! መልካም በዓል ይሁንልዎ። ከ :name',
     'yefasika_beal_short_greeting_line_one' => 'እንኳን ለጌታችንና ለመድኃኒታችን ለኢየሱስ ክርስቶስ የትንሣኤ በዓል በሰላም አደረሳችሁ አደረሰን!',
@@ -2233,4 +2233,4 @@ return [
     'fasika_greeting_last_opened_at' => 'መጨረሻ የተከፈተበት',
     'fasika_greeting_link' => 'ሊንክ',
     'fasika_greeting_empty' => 'እስካሁን ግላዊ የፋሲካ ሰላምታ የለም።',
-  ];
+];

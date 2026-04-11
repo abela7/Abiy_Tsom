@@ -30,6 +30,7 @@ class PublicYefasikaBealController extends Controller
             : __('app.yefasika_beal_og_title');
         $ogDescription = $shareText;
         $ogUrl = $request->fullUrl();
+        $ogImage = asset('images/Jesus_In_Eastern.avif');
         $shareUrl = $request->fullUrl();
 
         return view('public.yefasika-beal', compact(
@@ -37,6 +38,7 @@ class PublicYefasikaBealController extends Controller
             'ogTitle',
             'ogDescription',
             'ogUrl',
+            'ogImage',
             'shareUrl',
             'shareText',
             'share',
