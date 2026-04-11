@@ -2276,8 +2276,12 @@
     </div>
 
     @if($isFasika ?? false)
+    @php
+        $fasikaDoxologyName = trim((string) (($currentMember ?? null)?->baptism_name ?? ''));
+        $fasikaDoxologyName = $fasikaDoxologyName !== '' ? $fasikaDoxologyName : __('app.fasika_gratitude_name_fallback');
+    @endphp
     <section class="rounded-2xl border border-border/70 bg-card/90 p-4 shadow-sm">
-        <p class="text-sm leading-[1.85] text-primary text-center whitespace-pre-line">{{ __('app.fasika_gratitude_doxology') }}</p>
+        <p class="text-sm leading-[1.85] text-primary text-center whitespace-pre-line">{{ __('app.fasika_gratitude_doxology', ['name' => $fasikaDoxologyName]) }}</p>
     </section>
     @endif
 
