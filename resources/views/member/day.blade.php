@@ -1080,7 +1080,28 @@
 
     {{-- Mezmur for Himamat days — shown here, below "Continue Daily Content" bridge --}}
     @if($isHimamatDaily && $daily->mezmurs->isNotEmpty())
-    @include('member.partials.day-mezmurs', ['daily' => $daily, 'locale' => $locale])
+    @include('member.partials.day-mezmurs', [
+        'daily' => $daily,
+        'locale' => $locale,
+        'sectionTitle' => ($isFasika ?? false) ? __('app.fasika_selected_hymn_title') : null,
+    ])
+    @endif
+
+    @if($isHimamatDaily && ($isFasika ?? false))
+        @if(localized($daily, 'bible_reference'))
+        @include('member.partials.day-bible-reading', [
+            'daily' => $daily,
+            'locale' => $locale,
+            'sectionTitle' => __('app.fasika_bible_reading_title'),
+        ])
+        @endif
+
+        @if(isset($lectionary) && $lectionary && $lectionary->hasContent())
+        @include('member.partials.day-lectionary', [
+            'lectionary' => $lectionary,
+            'locale' => $locale,
+        ])
+        @endif
     @endif
 
     {{-- Sinksar (Synaxarium) — Read / Listen toggle with immersive reader --}}
