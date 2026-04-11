@@ -13,7 +13,8 @@ class PublicYefasikaBealTest extends TestCase
         $response = $this->get(route('public.yefasika-beal'));
 
         $response->assertOk();
-        $response->assertSee('fasika-page', false);
+        $response->assertSee('ybb-page', false);
+        $response->assertSee('ybb-bg', false);
         $response->assertSee(__('app.fasika_banner_main'), false);
     }
 

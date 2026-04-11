@@ -1,20 +1,20 @@
-﻿{{-- Member Fasika day only — not used on the public Yefasika Beal page. --}}
+{{-- Public Yefasika Beal only — not shared with member Fasika day. --}}
 <style>
-    html:has(.fasika-member-bg),
-    html:has(.fasika-member-bg) body {
+    html:has(.ybb-bg),
+    html:has(.ybb-bg) body {
         min-height: 100vh;
         min-height: 100dvh;
         min-height: -webkit-fill-available;
     }
 
-    html:has(.fasika-member-bg) body {
+    html:has(.ybb-bg) body {
         overflow-x: hidden;
     }
 
     html.dark body { background: #0f0a1a !important; }
     html.dark { background: #0f0a1a !important; }
 
-    .fasika-page {
+    .ybb-page {
         --color-card: rgba(45, 24, 84, 0.52);
         --color-muted: rgba(26, 14, 46, 0.45);
         --color-border: rgba(245, 208, 96, 0.18);
@@ -22,21 +22,12 @@
         --color-secondary: rgba(255, 255, 255, 0.75);
         --color-muted-text: rgba(245, 208, 96, 0.55);
     }
-    .fasika-page > * {
+    .ybb-page > * {
         backdrop-filter: blur(3px);
         -webkit-backdrop-filter: blur(3px);
     }
 
-    .fasika-page [class~="z-50"],
-    .fasika-page [class~="z-50"] * {
-        --color-card: rgb(20, 10, 40);
-        --color-muted: rgb(30, 15, 55);
-        --color-border: rgba(245, 208, 96, 0.22);
-        backdrop-filter: none !important;
-        -webkit-backdrop-filter: none !important;
-    }
-
-    .fasika-member-bg {
+    .ybb-bg {
         position: fixed;
         z-index: 0;
         top: 0;
@@ -56,7 +47,7 @@
         transform: translateZ(0);
     }
 
-    .fasika-member-bg__photo {
+    .ybb-bg__photo {
         position: absolute;
         top: 0;
         left: 0;
@@ -67,7 +58,7 @@
         pointer-events: none;
     }
 
-    .fasika-member-bg__scrim {
+    .ybb-bg__scrim {
         position: absolute;
         inset: 0;
         pointer-events: none;
@@ -77,19 +68,13 @@
     }
 </style>
 
-<div class="fasika-member-bg" aria-hidden="true">
-    <img class="fasika-member-bg__photo"
+<div class="ybb-bg" aria-hidden="true">
+    <img class="ybb-bg__photo"
          src="{{ asset('images/Jesus_In_Eastern.avif') }}"
          alt=""
          width="1600"
          height="1067"
          decoding="async"
          fetchpriority="high">
-    <div class="fasika-member-bg__scrim" aria-hidden="true"></div>
+    <div class="ybb-bg__scrim" aria-hidden="true"></div>
 </div>
-
-<script>
-    window.addEventListener('alpine:initialized', function () {
-        window.dispatchEvent(new CustomEvent('theme-changed', { detail: { theme: 'dark' } }));
-    }, { once: true });
-</script>

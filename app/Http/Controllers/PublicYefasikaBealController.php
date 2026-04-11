@@ -8,7 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
- * Public Easter greeting card (Yefasika Beal) — same celebration visuals as Fasika day.
+ * Public Easter greeting card (Yefasika Beal). Uses public-only background CSS;
+ * member in-app Fasika day keeps its own shell in {@see \App\Http\Controllers\Member\HomeController} day view.
  */
 class PublicYefasikaBealController extends Controller
 {

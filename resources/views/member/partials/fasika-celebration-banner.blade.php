@@ -1,4 +1,25 @@
-{{-- Fasika celebration card (shared by member day and public Yefasika Beal page). --}}
+{{-- Fasika celebration card (member day + public Yefasika Beal). Styles stay with the card. --}}
+<style>
+    @keyframes fasika-glow {
+        0%,100% { opacity: 0.7; transform: translate(-50%,-50%) scale(1); }
+        50%      { opacity: 1;   transform: translate(-50%,-50%) scale(1.1); }
+    }
+    @keyframes fasika-rays {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+    }
+    .fasika-shimmer-text {
+        background: linear-gradient(90deg, #B8860B 0%, #F5E6A3 30%, #D4A537 50%, #FFF8DC 70%, #B8860B 100%);
+        background-size: 200% auto;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: fasika-shimmer 3s linear infinite;
+    }
+    @keyframes fasika-shimmer {
+        to { background-position: 200% center; }
+    }
+</style>
 <div class="relative rounded-3xl overflow-hidden px-5 py-6 text-center space-y-3">
     {{-- Ambient glow behind cross --}}
     <div style="position:absolute;top:50%;left:50%;width:280px;height:280px;border-radius:50%;
