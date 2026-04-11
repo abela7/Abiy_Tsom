@@ -539,31 +539,24 @@
             </svg>
         </div>
 
-        {{-- Eyebrow --}}
         <p class="text-xs font-bold uppercase tracking-[0.25em] text-[rgba(245,208,96,0.7)]">
             {{ __('app.fasika_eyebrow') }}
         </p>
 
-        {{-- "Christ is Risen!" --}}
         <h2 class="text-3xl font-black leading-tight fasika-shimmer-text">
-            ክርስቶስ ተንሥአ ከሙታን!
+            {{ __('app.fasika_banner_main') }}
         </h2>
-        <p class="text-lg font-bold text-white/85">{{ __('app.fasika_hero_en') }}</p>
 
-        {{-- Response badge --}}
-        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full
-                    bg-white/10 border border-[rgba(245,208,96,0.22)]">
-            <span class="text-sm font-semibold text-[#F5D060]">{{ __('app.fasika_response_am') }}</span>
-            <span class="text-white/30">·</span>
-            <span class="text-sm font-semibold text-white/80">{{ __('app.fasika_response_en') }}</span>
+        <div class="space-y-1.5 text-center">
+            @foreach(trans('app.fasika_banner_lines') as $fasikaBannerLine)
+                <h4 class="text-sm font-semibold text-white/90 leading-snug">{{ $fasikaBannerLine }}</h4>
+            @endforeach
         </div>
 
-        {{-- Personalised greeting --}}
-        @if(($member ?? null)?->baptism_name)
-        <p class="text-sm text-[#F5D060] font-semibold">
-            {{ __('app.fasika_greeting', ['name' => $member->baptism_name]) }}
-        </p>
-        @endif
+        <div class="inline-flex items-center justify-center px-4 py-2.5 rounded-full
+                    bg-white/10 border border-[rgba(245,208,96,0.22)]">
+            <span class="text-sm font-semibold text-[#F5D060]">{{ __('app.fasika_banner_badge') }}</span>
+        </div>
     </div>
     @endif
 

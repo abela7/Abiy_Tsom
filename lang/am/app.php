@@ -2173,11 +2173,18 @@ return [
     'himamat_intro_reminder_open_line' => "ስለ ሕማማት እንዲሁም ስለ ዕለቱ ተጨማሪ መረጃ ለማግኘት የሚከተለውን ሊንክ ይንኩ\n:url",
     'himamat_slot_reminder_open_line' => "በዚህ ሰዓት የሚነበበውን የወንጌል ክፍል ለማግኘት እንዲሁም ስለ ሕማማት እና ስለ ዕለቱ ተጨማሪ መረጃ ለማግኘት የሚከተለውን ሊንክ ይንኩ\n:url",
 
-    // Fasika (Easter Sunday) celebration — shown in day.blade.php
-    'fasika_day_title'    => 'ፋሲካ — የትንሣኤ እሑድ',
-    'fasika_eyebrow'      => 'ፋሲካ · ትንሣኤ',
-    'fasika_hero_en'      => 'Christ is Risen!',
-    'fasika_response_am'  => 'በእውነት ተንሥአ!',
-    'fasika_response_en'  => 'Truly He is Risen!',
-    'fasika_greeting'     => 'ውድ :name፣',
+    // Fasika (Easter Sunday) celebration — shown in day.blade.php (one language per locale)
+    'fasika_day_title' => 'ፋሲካ — የትንሣኤ እሑድ',
+    'fasika_eyebrow' => 'ፋሲካ · ትንሣኤ',
+    'fasika_banner_main' => 'ክርስቶስ ተንስአ እሙታን',
+    'fasika_banner_lines' => [
+        'በአብይ ኋይል ወስልጣን',
+        'አሰሮ ለሰይጣን',
+        'አግዐዞ ለአዳም',
+        'በአብይ ኋይል ወስልጣን',
+        'ሰላም',
+        'እምይእዜሰ',
+        'ኮነ ፍሥሓ ወሰላም',
+    ],
+    'fasika_banner_badge' => 'እንኳን ለብርሀነ ተንሳኤው በሰላም አደረስዎ!',
   ];
