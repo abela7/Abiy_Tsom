@@ -2210,7 +2210,7 @@ return [
     'yefasika_beal_name_label' => 'ስምዎ',
     'yefasika_beal_name_placeholder' => 'ስምዎን ያስገቡ',
     'yefasika_beal_name_required' => 'እባክዎ መጀመሪያ ስምዎን ያስገቡ።',
-    'yefasika_beal_generate_button' => 'የእኔን ሊንክ ፍጠር',
+    'yefasika_beal_generate_button' => 'ሊንክ ይፍጠሩ ያጋሩ',
     'yefasika_beal_generating' => 'ሊንኩ በመፍጠር ላይ...',
     'yefasika_beal_create_failed' => 'ሊንኩን መፍጠር አልተቻለም። እባክዎ ደግሞ ይሞክሩ።',
     'yefasika_beal_ready_title' => 'የእርስዎ የትንሣኤ ሰላምታ ዝግጁ ነው',

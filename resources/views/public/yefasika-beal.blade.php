@@ -104,7 +104,7 @@
                                 :disabled="isSubmitting"
                                 class="touch-manipulation inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[#e2ca18] px-5 text-sm font-bold text-zinc-950 shadow-[0_8px_22px_-6px_rgba(226,202,24,0.38)] transition hover:bg-[#edd85c] disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98] sm:max-w-xs sm:flex-none">
                             <svg class="h-5 w-5 shrink-0 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A2 2 0 0122 9.514v4.972a2 2 0 01-2.447 1.79L15 14m-6 4h6a2 2 0 002-2V8a2 2 0 00-2-2H9a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
                             </svg>
                             <span x-text="isSubmitting ? @js(__('app.yefasika_beal_generating')) : @js(__('app.yefasika_beal_generate_button'))"></span>
                         </button>

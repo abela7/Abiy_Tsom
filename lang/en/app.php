@@ -2230,7 +2230,7 @@ return [
     'yefasika_beal_name_label' => 'Your name',
     'yefasika_beal_name_placeholder' => 'Write your name here',
     'yefasika_beal_name_required' => 'Please enter your name first.',
-    'yefasika_beal_generate_button' => 'Create my share link',
+    'yefasika_beal_generate_button' => 'Create link & share',
     'yefasika_beal_generating' => 'Creating link...',
     'yefasika_beal_create_failed' => 'Could not create your share link right now.',
     'yefasika_beal_ready_title' => 'Your Easter greeting is ready',
