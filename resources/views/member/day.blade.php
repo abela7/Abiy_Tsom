@@ -695,7 +695,11 @@
 
         <div class="text-center flex-1 min-w-0">
             <h1 class="text-2xl font-black text-primary">
-                {{ __('app.day_of', ['day' => $daily->day_number, 'total' => 55]) }}
+                @if($isFasika ?? false)
+                    {{ __('app.fasika_day_title') }}
+                @else
+                    {{ __('app.day_of', ['day' => $daily->day_number, 'total' => 55]) }}
+                @endif
             </h1>
             <p class="text-sm text-muted-text mt-0.5">{{ $daily->date->locale('en')->translatedFormat('l, F j, Y') }}</p>
         </div>

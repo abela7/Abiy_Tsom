@@ -1117,7 +1117,7 @@ return [
     'step_review_publish' => 'Review and Publish',
     'step_saved_continue' => 'Step saved. Continue to the next section.',
     'finish' => 'Finish',
-    'day_number_label' => 'Day Number (1-55)',
+    'day_number_label' => 'Day Number (1-56)',
     'date_label' => 'Date',
     'weekly_theme_label' => 'Weekly Theme',
     'select_placeholder' => 'Select...',
@@ -2194,6 +2194,7 @@ return [
     'himamat_slot_reminder_open_line' => "Tap the link below to open the Gospel reading for this hour.\n:url",
 
     // Fasika (Easter Sunday) celebration — shown in day.blade.php
+    'fasika_day_title'    => 'Fasika — Easter Sunday',
     'fasika_eyebrow'      => 'Fasika · Easter',
     'fasika_hero_en'      => 'Christ is Risen!',
     'fasika_response_am'  => 'በእውነት ተንሥአ!',

@@ -1115,7 +1115,7 @@ return [
     'step_review_publish' => 'ገምግም እና አትም',
     'step_saved_continue' => 'ደረጃ ተቀምጧል። ወደ ቀጣዩ ክፍል ይቀጥሉ።',
     'finish' => 'ጨርስ',
-    'day_number_label' => 'የቀን ቁጥር (1-55)',
+    'day_number_label' => 'የቀን ቁጥር (1-56)',
     'date_label' => 'ቀን',
     'weekly_theme_label' => 'የሳምንት ጭብጨባ',
     'select_placeholder' => 'ምረጥ...',
@@ -2174,6 +2174,7 @@ return [
     'himamat_slot_reminder_open_line' => "በዚህ ሰዓት የሚነበበውን የወንጌል ክፍል ለማግኘት እንዲሁም ስለ ሕማማት እና ስለ ዕለቱ ተጨማሪ መረጃ ለማግኘት የሚከተለውን ሊንክ ይንኩ\n:url",
 
     // Fasika (Easter Sunday) celebration — shown in day.blade.php
+    'fasika_day_title'    => 'ፋሲካ — የትንሣኤ እሑድ',
     'fasika_eyebrow'      => 'ፋሲካ · ትንሣኤ',
     'fasika_hero_en'      => 'Christ is Risen!',
     'fasika_response_am'  => 'በእውነት ተንሥአ!',

@@ -130,7 +130,7 @@ class DailyContentSuggestionController extends Controller
         return validator($payload, [
             'lent_season_id' => ['required', 'exists:lent_seasons,id'],
             'weekly_theme_id' => ['required', 'exists:weekly_themes,id'],
-            'day_number' => ['required', 'integer', 'min:1', 'max:55', $dayUnique],
+            'day_number' => ['required', 'integer', 'min:1', 'max:56', $dayUnique],
             'date' => ['required', 'date'],
             'day_title_en' => ['nullable', 'string', 'max:255'],
             'day_title_am' => ['nullable', 'string', 'max:255'],

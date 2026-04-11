@@ -13,6 +13,7 @@ use App\Models\HimamatDay;
 use App\Models\LentSeason;
 use App\Services\AbiyTsomStructure;
 use App\Services\EthiopianCalendarService;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -128,6 +129,31 @@ class DailyContentController extends Controller
         $prevDay = null;
         $nextDay = null;
 
+        $himamatDay = null;
+        $himamatTimeline = null;
+        $isGoodFriday = false;
+
+        if ($daily->day_number >= 50 && $daily->day_number <= 55) {
+            $himamatDay = HimamatDay::query()
+                ->where('lent_season_id', $daily->lent_season_id)
+                ->whereDate('date', $daily->date)
+                ->where('is_published', true)
+                ->with([
+                    'slots' => fn ($q) => $q->where('is_published', true)
+                        ->with(['resources' => fn ($rq) => $rq->orderBy('sort_order')])
+                        ->orderBy('slot_order'),
+                    'faqs' => fn ($q) => $q->orderBy('sort_order'),
+                ])
+                ->first();
+            $isGoodFriday = $himamatDay?->slug === 'good-friday';
+        }
+
+        $easterDate = Carbon::parse(
+            config('app.easter_date', '2026-04-12 03:00'),
+            config('app.easter_timezone', 'Europe/London')
+        );
+        $isFasika = $daily->date !== null && $daily->date->isSameDay($easterDate);
+
         return view('member.day', compact(
             'member',
             'daily',
@@ -140,6 +166,10 @@ class DailyContentController extends Controller
             'ethDateInfo',
             'prevDay',
             'nextDay',
+            'himamatDay',
+            'himamatTimeline',
+            'isGoodFriday',
+            'isFasika',
         ));
     }
 
@@ -169,7 +199,7 @@ class DailyContentController extends Controller
                 'required',
                 'integer',
                 'min:1',
-                'max:55',
+                'max:56',
                 "unique:daily_contents,day_number,NULL,id,lent_season_id,{$request->input('lent_season_id')}",
             ],
             'date' => ['required', 'date'],
@@ -464,7 +494,7 @@ class DailyContentController extends Controller
                         'required',
                         'integer',
                         'min:1',
-                        'max:55',
+                        'max:56',
                         "unique:daily_contents,day_number,{$daily->id},id,lent_season_id,{$request->input('lent_season_id', $daily->lent_season_id)}",
                     ],
                     'date' => ['required', 'date'],
@@ -811,7 +841,7 @@ class DailyContentController extends Controller
         return $request->validate([
             'lent_season_id' => ['required', 'exists:lent_seasons,id'],
             'weekly_theme_id' => ['required', 'exists:weekly_themes,id'],
-            'day_number' => ['required', 'integer', 'min:1', 'max:55', $dayUnique],
+            'day_number' => ['required', 'integer', 'min:1', 'max:56', $dayUnique],
             'date' => ['required', 'date'],
             'day_title_en' => ['nullable', 'string', 'max:255'],
             'day_title_am' => ['nullable', 'string', 'max:255'],
