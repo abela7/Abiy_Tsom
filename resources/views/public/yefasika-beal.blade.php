@@ -71,14 +71,8 @@
                 class="text-center text-[0.65rem] font-bold uppercase tracking-[0.28em] text-[#e2ca18]/90">
                 {{ __('app.yefasika_beal_generator_title') }}
             </h2>
-            <p class="mx-auto mt-5 max-w-md text-center text-[0.98rem] font-normal leading-relaxed text-zinc-200/85">
-                {{ __('app.yefasika_beal_cta_lead') }}
-            </p>
-            <p class="mx-auto mt-2 max-w-sm text-center text-sm leading-relaxed text-zinc-400">
-                {{ __('app.yefasika_beal_generator_help') }}
-            </p>
 
-            <div class="mt-8 space-y-5">
+            <div class="mt-7 space-y-5">
                 <div x-show="!composerOpen" x-cloak class="flex justify-center">
                     <button type="button"
                             @click="openComposer()"
