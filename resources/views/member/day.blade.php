@@ -501,7 +501,7 @@
          FASIKA CELEBRATION BANNER — shown only on Easter Sunday
          ═══════════════════════════════════════════════════════════ --}}
     @if($isFasika ?? false)
-        @include('member.partials.fasika-celebration-banner')
+        @include('member.partials.fasika-celebration-banner', ['fasikaCelebrationShowFooterBadge' => true])
     @endif
 
     {{-- Day title with prev/next navigation --}}

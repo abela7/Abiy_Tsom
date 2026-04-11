@@ -16,7 +16,7 @@
         {{-- Hero: cross + titles in a focused glass frame --}}
         <div class="mx-auto w-full max-w-md rounded-3xl border border-white/[0.08] bg-black/30 p-5 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] ring-1 ring-white/[0.04] backdrop-blur-md sm:max-w-lg sm:p-6">
             <div class="mx-auto w-full max-w-[16rem] origin-top scale-[0.94] sm:max-w-none sm:scale-100">
-                @include('member.partials.fasika-celebration-banner', ['hideFooterBadge' => true])
+                @include('member.partials.fasika-celebration-banner')
             </div>
         </div>
 

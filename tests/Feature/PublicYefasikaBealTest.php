@@ -27,6 +27,8 @@ class PublicYefasikaBealTest extends TestCase
         $response->assertSee('ybb-fullbleed', false);
         $response->assertSee('ybb-particles', false);
         $response->assertSee(__('app.fasika_banner_main'), false);
+        $response->assertDontSee(__('app.fasika_banner_badge'), false);
+        $response->assertDontSee(__('app.yefasika_beal_short_greeting_line_two'), false);
         $response->assertSee(rtrim((string) config('app.parish_website_url'), '/').'/', false);
         $response->assertSee('property="og:title" content="'.e(__('app.yefasika_beal_og_title')).'"', false);
         $response->assertSee('property="og:image" content="'.e(asset('images/Jesus_In_Eastern.avif')).'"', false);
@@ -75,6 +77,8 @@ class PublicYefasikaBealTest extends TestCase
 
         $response->assertOk()
             ->assertSee(__('app.yefasika_beal_short_greeting_line_one'))
+            ->assertDontSee(__('app.fasika_banner_badge'), false)
+            ->assertDontSee(__('app.yefasika_beal_short_greeting_line_two'), false)
             ->assertSee(__('app.yefasika_beal_from_name', ['name' => 'አቤል']))
             ->assertSee('property="og:title" content="'.e(__('app.yefasika_beal_og_title')).'"', false)
             ->assertSee('property="og:image" content="'.e(asset('images/Jesus_In_Eastern.avif')).'"', false);
