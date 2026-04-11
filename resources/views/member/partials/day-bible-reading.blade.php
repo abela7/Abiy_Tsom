@@ -28,7 +28,7 @@
 
         {{-- Card header --}}
         <div class="px-4 pt-4 pb-3">
-            <h3 class="font-semibold text-sm text-accent mb-1">{{ __('app.bible_reading') }}</h3>
+            <h3 class="font-semibold text-sm text-accent mb-1">{{ $sectionTitle ?? __('app.bible_reading') }}</h3>
             <p class="font-medium text-primary">{{ localized($daily, 'bible_reference') }}</p>
             @if(localized($daily, 'bible_summary'))
             <p class="text-sm text-muted-text mt-1.5 leading-relaxed">{{ localized($daily, 'bible_summary') }}</p>
@@ -337,7 +337,7 @@
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                         </button>
                         <div>
-                            <p class="text-xs font-bold uppercase tracking-wider text-accent">{{ __('app.bible_reading') }}</p>
+                            <p class="text-xs font-bold uppercase tracking-wider text-accent">{{ $sectionTitle ?? __('app.bible_reading') }}</p>
                             <p class="text-sm font-semibold mt-0.5 text-primary">{{ localized($daily, 'bible_reference') }}</p>
                         </div>
                     </div>
@@ -422,4 +422,3 @@
         </template>
         @endif
     </div>
-    @endif

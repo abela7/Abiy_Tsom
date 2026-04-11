@@ -1,6 +1,6 @@
 {{-- Mezmur (multiple) — exclusive accordion: when one opens, others collapse --}}
 <div data-tour="day-mezmur" class="bg-card rounded-2xl p-4 shadow-sm border border-border" x-data="{ openId: null }">
-    <h3 class="font-semibold text-sm text-accent-secondary mb-3">{{ __('app.mezmur') }}</h3>
+    <h3 class="font-semibold text-sm text-accent-secondary mb-3">{{ $sectionTitle ?? __('app.mezmur') }}</h3>
     <div class="space-y-2">
         @foreach($daily->mezmurs as $mezmur)
         <div class="rounded-xl overflow-hidden" :class="openId === {{ $mezmur->id }} ? 'ring-2 ring-accent-secondary' : ''">

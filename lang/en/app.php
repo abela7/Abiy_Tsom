@@ -2195,6 +2195,8 @@ return [
 
     // Fasika (Easter Sunday) celebration — shown in day.blade.php (one language per locale)
     'fasika_day_title' => 'Feast of the Resurrection',
+    'fasika_selected_hymn_title' => 'Selected Hymn of the Day',
+    'fasika_bible_reading_title' => 'Bible Reading',
     'fasika_eyebrow' => 'Fasika — Easter',
     'fasika_banner_main' => 'Christ is risen from the dead!',
     'fasika_banner_lines' => [

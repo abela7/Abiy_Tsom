@@ -84,7 +84,7 @@
 
         {{-- Card header --}}
         <div class="px-4 pt-4 pb-3">
-            <h3 class="font-semibold text-sm text-accent mb-1">{{ __('app.lectionary') }}</h3>
+            <h3 class="font-semibold text-sm text-accent mb-1">{{ $sectionTitle ?? __('app.lectionary') }}</h3>
             @if(filled($lectionary->title_am) || filled($lectionary->title_en))
             <p class="font-medium text-primary">{{ $locale === 'am' ? $lectionary->title_am : $lectionary->title_en }}</p>
             @endif
@@ -248,7 +248,7 @@
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                         </button>
                         <div>
-                            <p class="text-xs font-bold uppercase tracking-wider text-accent">{{ __('app.lectionary') }}</p>
+                            <p class="text-xs font-bold uppercase tracking-wider text-accent">{{ $sectionTitle ?? __('app.lectionary') }}</p>
                             @if(filled($lectionary->title_am)||filled($lectionary->title_en))
                             <p class="text-sm font-semibold mt-0.5 text-primary">
                                 {{ $locale==='am'?$lectionary->title_am:$lectionary->title_en }}
@@ -399,4 +399,3 @@
             </div>
         </template>
     </div>
-    @endif

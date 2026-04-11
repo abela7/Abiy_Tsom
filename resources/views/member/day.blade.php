@@ -596,7 +596,7 @@
     </div>
 
     {{-- Bible Reading --}}
-    @if(!$isHimamatDaily && localized($daily, 'bible_reference'))
+    @if(!$isHimamatDaily && !($isFasika ?? false) && localized($daily, 'bible_reference'))
     @php
         $bibleText     = localized($daily, 'bible_text');
         $bibleAudioAm  = $daily->bible_audio_url_am ?: null;
@@ -1025,7 +1025,28 @@
 
     {{-- Mezmur (multiple) — exclusive accordion: when one opens, others collapse --}}
     @if(!$isHimamatDaily && $daily->mezmurs->isNotEmpty())
-    @include('member.partials.day-mezmurs', ['daily' => $daily, 'locale' => $locale])
+    @include('member.partials.day-mezmurs', [
+        'daily' => $daily,
+        'locale' => $locale,
+        'sectionTitle' => ($isFasika ?? false) ? __('app.fasika_selected_hymn_title') : null,
+    ])
+    @endif
+
+    @if(!$isHimamatDaily && ($isFasika ?? false))
+        @if(localized($daily, 'bible_reference'))
+        @include('member.partials.day-bible-reading', [
+            'daily' => $daily,
+            'locale' => $locale,
+            'sectionTitle' => __('app.fasika_bible_reading_title'),
+        ])
+        @endif
+
+        @if(isset($lectionary) && $lectionary && $lectionary->hasContent())
+        @include('member.partials.day-lectionary', [
+            'lectionary' => $lectionary,
+            'locale' => $locale,
+        ])
+        @endif
     @endif
 
     @if($isHimamatDaily)
@@ -1609,7 +1630,7 @@
     @endif
 
     {{-- Lectionary (ግጻዌ) --}}
-    @if(!$isHimamatDaily && isset($lectionary) && $lectionary && $lectionary->hasContent())
+    @if(!$isHimamatDaily && !($isFasika ?? false) && isset($lectionary) && $lectionary && $lectionary->hasContent())
     @php
     $lecReadings = [
         ['key'=>'pauline','num'=>1,'label_key'=>'app.lectionary_pauline',

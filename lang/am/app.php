@@ -2175,6 +2175,8 @@ return [
 
     // Fasika (Easter Sunday) celebration — shown in day.blade.php (one language per locale)
     'fasika_day_title' => 'የትንሣኤ በዓል',
+    'fasika_selected_hymn_title' => 'ለቀኑ የተመረጠ መዝሙር',
+    'fasika_bible_reading_title' => 'የመጽሐፍ ቅዱስ ንባብ',
     'fasika_eyebrow' => 'ፋሲካ · ትንሣኤ',
     'fasika_banner_main' => 'ክርስቶስ ተንስአ እሙታን',
     'fasika_banner_lines' => [
