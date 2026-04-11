@@ -405,7 +405,7 @@
     </section>
 @endif
 
-@if($himamatDay->faqs->isNotEmpty())
+@if($himamatDay->faqs->isNotEmpty() && !($isFasika ?? false))
     <section class="mt-8" x-data="{ activeFaq: null, showFaqModal: false }">
         {{-- Section Header — tap to open FAQ modal --}}
         <div class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden mb-3 cursor-pointer hover:border-border/70 active:scale-[0.99] transition-all touch-manipulation"

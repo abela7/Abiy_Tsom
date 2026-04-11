@@ -10,10 +10,12 @@ use App\Models\DailyContent;
 use App\Models\Lectionary;
 use App\Models\Member;
 use App\Models\MemberReminderOpen;
+use App\Models\Translation;
 use App\Models\WeeklyTheme;
 use App\Services\EthiopianCalendarService;
 use App\Services\MemberSessionService;
 use App\Services\TelegramAuthService;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -183,6 +185,19 @@ class ShareController extends Controller
         $publicPreview = true;
 
         $daily->load(['weeklyTheme', 'mezmurs', 'references', 'books', 'sinksarImages']);
+
+        $easterDate = Carbon::parse(
+            config('app.easter_date', '2026-04-12 03:00'),
+            config('app.easter_timezone', 'Europe/London')
+        );
+        $isFasika = $daily->date !== null && $daily->date->isSameDay($easterDate);
+
+        if ($isFasika) {
+            app()->setLocale('am');
+            Carbon::setLocale('am');
+            Translation::loadFromDb('am');
+        }
+
         $ethDateInfo = $ethCalendar->getDateInfo($daily->date, app()->getLocale());
         $prevDay = DailyContent::where('lent_season_id', $daily->lent_season_id)
             ->where('day_number', $daily->day_number - 1)
@@ -202,6 +217,10 @@ class ShareController extends Controller
         $nextDayUrl = $nextDay ? route('share.day.public', ['daily' => $nextDay]) : null;
         $commemorationsUrl = "/commemorations/{$daily->day_number}-{$daily->id}";
 
+        $isGoodFriday = false;
+        $himamatDay = null;
+        $himamatTimeline = null;
+
         return view('member.day', compact(
             'member',
             'daily',
@@ -213,6 +232,10 @@ class ShareController extends Controller
             'nextDayUrl',
             'commemorationsUrl',
             'lectionary',
+            'isFasika',
+            'isGoodFriday',
+            'himamatDay',
+            'himamatTimeline',
         ));
     }
 }

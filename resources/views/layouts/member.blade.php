@@ -82,18 +82,11 @@
             <h1 class="flex-1 min-w-0 pr-2 font-bold text-primary leading-tight whitespace-nowrap overflow-hidden text-ellipsis"
                 style="font-size: clamp(0.95rem, 4.6vw, 1.125rem);">
                 @if(($isFasika ?? false))
-                    @if(app()->getLocale() === 'am')
-                        @if($baptismName !== '')
-                            <span class="text-accent">{{ $baptismName }}</span>
-                            <span> {{ __('app.fasika_member_header_greeting') }}</span>
-                        @else
-                            <span>{{ __('app.fasika_member_header_greeting') }}</span>
-                        @endif
+                    @if($baptismName !== '')
+                        <span class="text-accent">{{ $baptismName }}</span>
+                        <span> {{ __('app.fasika_member_header_greeting') }}</span>
                     @else
                         <span>{{ __('app.fasika_member_header_greeting') }}</span>
-                        @if($baptismName !== '')
-                            <span> </span><span class="text-accent">{{ $baptismName }}</span>
-                        @endif
                     @endif
                 @elseif(app()->getLocale() === 'am')
                     @if($baptismName !== '')
@@ -113,6 +106,7 @@
             <div class="flex-1"></div>
             @endif
             <div class="flex items-center gap-1.5 shrink-0">
+                @if(!($isFasika ?? false))
                 <div class="relative overflow-visible" x-data="{ open: false }" @click.away="open = false" data-tour="language">
                     <button type="button"
                             @click="open = !open"
@@ -152,6 +146,7 @@
                         </button>
                     </div>
                 </div>
+                @endif
                 <button type="button"
                         @click="$store.app.toggleTheme()"
                         class="w-9 h-9 rounded-full bg-muted/70 border border-border/50 flex items-center justify-center hover:bg-muted transition active:scale-95"

@@ -15,6 +15,7 @@ use App\Models\Lectionary;
 use App\Models\LentSeason;
 use App\Models\MemberChecklist;
 use App\Models\MemberDailyView;
+use App\Models\Translation;
 use App\Models\WeeklyTheme;
 use App\Services\AbiyTsomStructure;
 use App\Services\EthiopianCalendarService;
@@ -453,6 +454,18 @@ class HomeController extends Controller
             $daily->setRelation('weeklyTheme', $resolvedWeekTheme);
         }
 
+        $easterDate = Carbon::parse(
+            config('app.easter_date', '2026-04-12 03:00'),
+            config('app.easter_timezone', 'Europe/London')
+        );
+        $isFasika = $daily->date !== null && $daily->date->isSameDay($easterDate);
+
+        if ($isFasika) {
+            app()->setLocale('am');
+            Carbon::setLocale('am');
+            Translation::loadFromDb('am');
+        }
+
         $ethDateInfo = $ethCalendar->getDateInfo($daily->date, app()->getLocale());
 
         $prevDay = DailyContent::where('lent_season_id', $daily->lent_season_id)
@@ -482,12 +495,6 @@ class HomeController extends Controller
             : null;
 
         $isGoodFriday = $himamatDay?->slug === 'good-friday';
-
-        $easterDate = Carbon::parse(
-            config('app.easter_date', '2026-04-12 03:00'),
-            config('app.easter_timezone', 'Europe/London')
-        );
-        $isFasika = $daily->date !== null && $daily->date->isSameDay($easterDate);
 
         return view('member.day', compact(
             'member',

@@ -578,7 +578,7 @@
                     {{ __('app.day_of', ['day' => $daily->day_number, 'total' => \App\Services\AbiyTsomStructure::TOTAL_DAYS]) }}
                 @endif
             </h1>
-            <p class="text-sm text-muted-text mt-0.5">{{ $daily->date->locale('en')->translatedFormat('l, F j, Y') }}</p>
+            <p class="text-sm text-muted-text mt-0.5">{{ $daily->date->locale(app()->getLocale())->translatedFormat('l, F j, Y') }}</p>
         </div>
 
         @if($nextDay)

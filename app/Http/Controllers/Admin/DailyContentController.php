@@ -10,6 +10,7 @@ use App\Models\DailyContentBook;
 use App\Models\DailyContentMezmur;
 use App\Models\HimamatDay;
 use App\Models\LentSeason;
+use App\Models\Translation;
 use App\Services\AbiyTsomStructure;
 use App\Services\EthiopianCalendarService;
 use Carbon\Carbon;
@@ -113,7 +114,6 @@ class DailyContentController extends Controller
     public function preview(DailyContent $daily, EthiopianCalendarService $ethCalendar): View
     {
         $daily->load(['weeklyTheme', 'mezmurs', 'references', 'books', 'sinksarImages']);
-        $ethDateInfo = $ethCalendar->getDateInfo($daily->date, app()->getLocale());
         $member = null;
         $publicPreview = true;
         $backUrl = route('admin.daily.index');
@@ -144,6 +144,14 @@ class DailyContentController extends Controller
             config('app.easter_timezone', 'Europe/London')
         );
         $isFasika = $daily->date !== null && $daily->date->isSameDay($easterDate);
+
+        if ($isFasika) {
+            app()->setLocale('am');
+            Carbon::setLocale('am');
+            Translation::loadFromDb('am');
+        }
+
+        $ethDateInfo = $ethCalendar->getDateInfo($daily->date, app()->getLocale());
 
         return view('member.day', compact(
             'member',
