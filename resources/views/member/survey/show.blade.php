@@ -103,6 +103,17 @@ function surveyWizard() {
             }
         },
 
+        // ── Go back to previous step ──────────────────────────────────────
+        back() {
+            if (this.step === 4) {
+                const q1 = this.answers.q1_usefulness;
+                this.step = (q1 === 'not_very_useful' || q1 === 'not_useful') ? 2 : 3;
+            } else {
+                this.step = 1;
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        },
+
         // ── Advance to next step ──────────────────────────────────────────
         async next() {
             // not_seen → instant early exit, no draft save needed
@@ -135,8 +146,12 @@ function surveyWizard() {
                 const data = await res.json();
                 if (data.ok && data.redirect) {
                     window.location.href = data.redirect;
+                } else if (data.errors) {
+                    const first = Object.values(data.errors)[0]?.[0];
+                    this.error      = first ?? 'Validation failed. Please check your answers.';
+                    this.submitting = false;
                 } else {
-                    this.error      = 'Something went wrong. Please try again.';
+                    this.error      = data.message ?? 'Something went wrong. Please try again.';
                     this.submitting = false;
                 }
             } catch (e) {
@@ -250,11 +265,17 @@ function surveyWizard() {
                 </p>
             </div>
 
-            <button type="button" @click="next()" :disabled="saving"
-                    class="mt-4 w-full py-3.5 rounded-xl bg-accent text-white font-bold text-[15px] transition active:scale-[0.98] disabled:opacity-40 touch-manipulation">
-                <span x-show="!saving">Continue →</span>
-                <span x-show="saving">Saving…</span>
-            </button>
+            <div class="mt-4 flex gap-3">
+                <button type="button" @click="back()"
+                        class="px-5 py-3.5 rounded-xl border border-border text-primary text-[15px] font-semibold hover:bg-muted/40 transition touch-manipulation">
+                    ← Back
+                </button>
+                <button type="button" @click="next()" :disabled="saving"
+                        class="flex-1 py-3.5 rounded-xl bg-accent text-white font-bold text-[15px] transition active:scale-[0.98] disabled:opacity-40 touch-manipulation">
+                    <span x-show="!saving">Continue →</span>
+                    <span x-show="saving">Saving…</span>
+                </button>
+            </div>
         </div>
     </template>
 
@@ -293,11 +314,17 @@ function surveyWizard() {
                 </div>
             </div>
 
-            <button type="button" @click="next()" :disabled="!answers.q3_continuity_preference || saving"
-                    class="mt-4 w-full py-3.5 rounded-xl bg-accent text-white font-bold text-[15px] transition active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed touch-manipulation">
-                <span x-show="!saving">Continue →</span>
-                <span x-show="saving">Saving…</span>
-            </button>
+            <div class="mt-4 flex gap-3">
+                <button type="button" @click="back()"
+                        class="px-5 py-3.5 rounded-xl border border-border text-primary text-[15px] font-semibold hover:bg-muted/40 transition touch-manipulation">
+                    ← Back
+                </button>
+                <button type="button" @click="next()" :disabled="!answers.q3_continuity_preference || saving"
+                        class="flex-1 py-3.5 rounded-xl bg-accent text-white font-bold text-[15px] transition active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed touch-manipulation">
+                    <span x-show="!saving">Continue →</span>
+                    <span x-show="saving">Saving…</span>
+                </button>
+            </div>
         </div>
     </template>
 
@@ -329,8 +356,13 @@ function surveyWizard() {
                 </p>
             </div>
 
+            <button type="button" @click="back()"
+                    class="mt-4 w-full py-2.5 rounded-xl border border-border text-muted-text text-[14px] font-medium hover:bg-muted/40 transition touch-manipulation">
+                ← Back
+            </button>
+
             <button type="button" @click="submitSurvey()" :disabled="!answers.q4_overall_rating || submitting"
-                    class="mt-4 w-full py-3.5 rounded-xl bg-accent text-white font-bold text-[15px] transition active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed touch-manipulation">
+                    class="mt-3 w-full py-3.5 rounded-xl bg-accent text-white font-bold text-[15px] transition active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed touch-manipulation">
                 <span x-show="!submitting">Submit Feedback 🙏</span>
                 <span x-show="submitting" class="flex items-center justify-center gap-2">
                     <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
