@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
 use App\Models\MemberFeedback;
+use App\Models\Translation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -19,6 +20,8 @@ class SurveyController extends Controller
         if ($feedback->status === 'submitted') {
             return redirect()->route('survey.thanks', ['token' => $token]);
         }
+
+        $this->applyMemberLocale($feedback->member);
 
         return view('member.survey.show', [
             'feedback'      => $feedback,
@@ -109,10 +112,21 @@ class SurveyController extends Controller
     {
         $feedback = MemberFeedback::where('token', $token)->firstOrFail();
 
+        $this->applyMemberLocale($feedback->member);
+
         return view('member.survey.thankyou', [
             'feedback'      => $feedback,
             'member'        => $feedback->member,
             'currentMember' => $feedback->member,
         ]);
+    }
+
+    private function applyMemberLocale(?object $member): void
+    {
+        $locale = $member?->locale ?? 'en';
+        if (in_array($locale, ['en', 'am'], true)) {
+            app()->setLocale($locale);
+            Translation::loadFromDb($locale);
+        }
     }
 }

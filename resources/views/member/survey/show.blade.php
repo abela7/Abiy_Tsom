@@ -1,6 +1,6 @@
 @extends('layouts.member')
 
-@section('title', 'Post-Fasika Feedback — ' . __('app.app_name'))
+@section('title', __('app.survey_page_title') . ' — ' . __('app.app_name'))
 
 @section('content')
 
@@ -17,17 +17,27 @@
         'q3_continuity_preference' => $feedback->q3_continuity_preference,
         'q4_overall_rating'        => $feedback->q4_overall_rating,
     ];
+
+    $ratingLabels = [
+        '',
+        __('app.survey_q4_poor'),
+        __('app.survey_q4_fair'),
+        __('app.survey_q4_good'),
+        __('app.survey_q4_very_good'),
+        __('app.survey_q4_excellent'),
+    ];
 @endphp
 
 <script>
 function surveyWizard() {
     return {
         // ── State ──────────────────────────────────────────────────────────
-        step:       {{ $currentStep }},
-        saving:     false,
-        submitting: false,
-        error:      null,
-        answers:    {!! json_encode($savedAnswers, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) !!},
+        step:         {{ $currentStep }},
+        saving:       false,
+        submitting:   false,
+        error:        null,
+        answers:      {!! json_encode($savedAnswers, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) !!},
+        ratingLabels: {!! json_encode($ratingLabels, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) !!},
 
         // ── Progress (3 visible steps max per path) ────────────────────────
         get displayStep() {
@@ -47,8 +57,18 @@ function surveyWizard() {
                 if (q1 === 'not_very_useful' || q1 === 'not_useful') return 2;
                 if (q1 === 'very_useful'     || q1 === 'useful')     return 3;
             }
-            // Steps 2 and 3 both lead to the final step
             return 4;
+        },
+
+        // ── Go back to previous step ──────────────────────────────────────
+        back() {
+            if (this.step === 4) {
+                const q1 = this.answers.q1_usefulness;
+                this.step = (q1 === 'not_very_useful' || q1 === 'not_useful') ? 2 : 3;
+            } else {
+                this.step = 1;
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         },
 
         // ── CSRF helper ───────────────────────────────────────────────────
@@ -103,20 +123,8 @@ function surveyWizard() {
             }
         },
 
-        // ── Go back to previous step ──────────────────────────────────────
-        back() {
-            if (this.step === 4) {
-                const q1 = this.answers.q1_usefulness;
-                this.step = (q1 === 'not_very_useful' || q1 === 'not_useful') ? 2 : 3;
-            } else {
-                this.step = 1;
-            }
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        },
-
         // ── Advance to next step ──────────────────────────────────────────
         async next() {
-            // not_seen → instant early exit, no draft save needed
             if (this.step === 1 && this.answers.q1_usefulness === 'not_seen') {
                 await this.earlyExit();
                 return;
@@ -168,18 +176,19 @@ function surveyWizard() {
     {{-- Header --}}
     <div class="text-center pb-1">
         <p class="text-xs font-semibold text-accent uppercase tracking-widest mb-1">Abiy Tsom {{ now()->year }}</p>
-        <h1 class="text-[22px] font-bold text-primary leading-snug">Post-Fasika Feedback</h1>
-        <p class="text-sm text-muted-text mt-1">Help us serve you better next season</p>
+        <h1 class="text-[22px] font-bold text-primary leading-snug">{{ __('app.survey_page_title') }}</h1>
+        <p class="text-sm text-muted-text mt-1">{{ __('app.survey_subtitle') }}</p>
     </div>
 
-    {{-- Progress bar (hidden on not_seen path since it exits immediately) --}}
+    {{-- Progress bar --}}
     <div class="space-y-1.5">
         <div class="w-full h-1.5 bg-muted rounded-full overflow-hidden">
             <div class="h-full bg-accent rounded-full transition-all duration-500"
                  :style="`width: ${progress}%`"></div>
         </div>
+        @php [$stepBefore, $stepAfter] = explode(':step', __('app.survey_step_of')) + ['', '']; @endphp
         <p class="text-xs text-muted-text text-right">
-            Step <span x-text="displayStep"></span> of 3
+            {{ $stepBefore }}<span x-text="displayStep"></span>{{ $stepAfter }}
         </p>
     </div>
 
@@ -197,17 +206,17 @@ function surveyWizard() {
                 <div class="flex items-start gap-3">
                     <span class="w-7 h-7 rounded-full bg-accent/10 text-accent flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">1</span>
                     <h2 class="text-[15px] font-bold text-primary leading-snug">
-                        How useful did you find the Abiy Tsom app this season?
+                        {{ __('app.survey_q1_question') }}
                     </h2>
                 </div>
 
                 <div class="space-y-2">
                     @foreach ([
-                        'very_useful'     => ['label' => 'Very useful',        'icon' => '🌟'],
-                        'useful'          => ['label' => 'Useful',             'icon' => '👍'],
-                        'not_very_useful' => ['label' => 'Not very useful',    'icon' => '😐'],
-                        'not_useful'      => ['label' => 'Not useful at all',  'icon' => '👎'],
-                        'not_seen'        => ['label' => "I didn't use it",    'icon' => '👀'],
+                        'very_useful'     => ['label' => __('app.survey_q1_very_useful'),    'icon' => '🌟'],
+                        'useful'          => ['label' => __('app.survey_q1_useful'),         'icon' => '👍'],
+                        'not_very_useful' => ['label' => __('app.survey_q1_not_very_useful'),'icon' => '😐'],
+                        'not_useful'      => ['label' => __('app.survey_q1_not_useful'),     'icon' => '👎'],
+                        'not_seen'        => ['label' => __('app.survey_q1_not_seen'),       'icon' => '👀'],
                     ] as $value => $opt)
                         <button type="button"
                                 @click="answers.q1_usefulness = '{{ $value }}'"
@@ -230,13 +239,13 @@ function surveyWizard() {
 
             <button type="button" @click="next()" :disabled="!answers.q1_usefulness || saving || submitting"
                     class="mt-4 w-full py-3.5 rounded-xl bg-accent text-white font-bold text-[15px] transition active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed touch-manipulation">
-                <span x-show="!saving && !submitting">Continue →</span>
+                <span x-show="!saving && !submitting">{{ __('app.survey_continue') }}</span>
                 <span x-show="saving || submitting" class="flex items-center justify-center gap-2">
                     <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
                     </svg>
-                    <span x-text="answers.q1_usefulness === 'not_seen' ? 'Submitting…' : 'Saving…'"></span>
+                    <span x-text="answers.q1_usefulness === 'not_seen' ? '{{ __('app.survey_submitting') }}' : '{{ __('app.survey_saving') }}'"></span>
                 </span>
             </button>
         </div>
@@ -249,13 +258,13 @@ function surveyWizard() {
                 <div class="flex items-start gap-3">
                     <span class="w-7 h-7 rounded-full bg-accent/10 text-accent flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">2</span>
                     <h2 class="text-[15px] font-bold text-primary leading-snug">
-                        What could we do better? <span class="text-muted-text font-normal text-[13px]">— optional</span>
+                        {{ __('app.survey_q2_question') }} <span class="text-muted-text font-normal text-[13px]">— {{ __('app.survey_q2_optional') }}</span>
                     </h2>
                 </div>
-                <p class="text-[13px] text-muted-text -mt-1 pl-10">We genuinely want to improve — your honest feedback helps.</p>
+                <p class="text-[13px] text-muted-text -mt-1 pl-10">{{ __('app.survey_q2_subtitle') }}</p>
 
                 <textarea x-model="answers.q2_improvement_feedback"
-                          placeholder="What was missing or frustrating? What would make it more useful for you?"
+                          placeholder="{{ __('app.survey_q2_placeholder') }}"
                           rows="5"
                           maxlength="2000"
                           class="w-full rounded-xl border border-border bg-muted/20 px-4 py-3 text-[14px] text-primary placeholder-muted-text resize-none focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent/60 transition">
@@ -268,12 +277,12 @@ function surveyWizard() {
             <div class="mt-4 flex gap-3">
                 <button type="button" @click="back()"
                         class="px-5 py-3.5 rounded-xl border border-border text-primary text-[15px] font-semibold hover:bg-muted/40 transition touch-manipulation">
-                    ← Back
+                    {{ __('app.survey_back') }}
                 </button>
                 <button type="button" @click="next()" :disabled="saving"
                         class="flex-1 py-3.5 rounded-xl bg-accent text-white font-bold text-[15px] transition active:scale-[0.98] disabled:opacity-40 touch-manipulation">
-                    <span x-show="!saving">Continue →</span>
-                    <span x-show="saving">Saving…</span>
+                    <span x-show="!saving">{{ __('app.survey_continue') }}</span>
+                    <span x-show="saving">{{ __('app.survey_saving') }}</span>
                 </button>
             </div>
         </div>
@@ -286,14 +295,14 @@ function surveyWizard() {
                 <div class="flex items-start gap-3">
                     <span class="w-7 h-7 rounded-full bg-accent/10 text-accent flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">2</span>
                     <h2 class="text-[15px] font-bold text-primary leading-snug">
-                        Would you like reminders for future fasting seasons?
+                        {{ __('app.survey_q3_question') }}
                     </h2>
                 </div>
 
                 <div class="space-y-2">
                     @foreach ([
-                        'all_seasons'    => ['label' => 'Yes — all fasting seasons (Filseta, Tsome Hawaryat…)', 'icon' => '✅'],
-                        'abiy_tsom_only' => ['label' => 'Only for Abiy Tsom',                                   'icon' => '📅'],
+                        'all_seasons'    => ['label' => __('app.survey_q3_all_seasons'),    'icon' => '✅'],
+                        'abiy_tsom_only' => ['label' => __('app.survey_q3_abiy_tsom_only'), 'icon' => '📅'],
                     ] as $value => $opt)
                         <button type="button"
                                 @click="answers.q3_continuity_preference = '{{ $value }}'"
@@ -317,12 +326,12 @@ function surveyWizard() {
             <div class="mt-4 flex gap-3">
                 <button type="button" @click="back()"
                         class="px-5 py-3.5 rounded-xl border border-border text-primary text-[15px] font-semibold hover:bg-muted/40 transition touch-manipulation">
-                    ← Back
+                    {{ __('app.survey_back') }}
                 </button>
                 <button type="button" @click="next()" :disabled="!answers.q3_continuity_preference || saving"
                         class="flex-1 py-3.5 rounded-xl bg-accent text-white font-bold text-[15px] transition active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed touch-manipulation">
-                    <span x-show="!saving">Continue →</span>
-                    <span x-show="saving">Saving…</span>
+                    <span x-show="!saving">{{ __('app.survey_continue') }}</span>
+                    <span x-show="saving">{{ __('app.survey_saving') }}</span>
                 </button>
             </div>
         </div>
@@ -335,7 +344,7 @@ function surveyWizard() {
                 <div class="flex items-start gap-3">
                     <span class="w-7 h-7 rounded-full bg-accent/10 text-accent flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">3</span>
                     <h2 class="text-[15px] font-bold text-primary leading-snug">
-                        Overall, how would you rate your experience?
+                        {{ __('app.survey_q4_question') }}
                     </h2>
                 </div>
 
@@ -352,27 +361,27 @@ function surveyWizard() {
 
                 <p class="text-center text-sm font-medium h-5 transition-all"
                    :class="answers.q4_overall_rating ? 'text-accent' : 'text-muted-text'"
-                   x-text="['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'][answers.q4_overall_rating ?? 0]">
+                   x-text="ratingLabels[answers.q4_overall_rating ?? 0]">
                 </p>
             </div>
 
             <button type="button" @click="back()"
                     class="mt-4 w-full py-2.5 rounded-xl border border-border text-muted-text text-[14px] font-medium hover:bg-muted/40 transition touch-manipulation">
-                ← Back
+                {{ __('app.survey_back') }}
             </button>
 
             <button type="button" @click="submitSurvey()" :disabled="!answers.q4_overall_rating || submitting"
                     class="mt-3 w-full py-3.5 rounded-xl bg-accent text-white font-bold text-[15px] transition active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed touch-manipulation">
-                <span x-show="!submitting">Submit Feedback 🙏</span>
+                <span x-show="!submitting">{{ __('app.survey_submit_btn') }}</span>
                 <span x-show="submitting" class="flex items-center justify-center gap-2">
                     <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
                     </svg>
-                    Submitting…
+                    {{ __('app.survey_submitting') }}
                 </span>
             </button>
-            <p class="text-xs text-center text-muted-text mt-3">Your response is private and only seen by our team.</p>
+            <p class="text-xs text-center text-muted-text mt-3">{{ __('app.survey_privacy') }}</p>
         </div>
     </template>
 

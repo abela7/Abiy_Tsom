@@ -2192,4 +2192,39 @@ return [
     'himamat_reminder_open_line' => 'Open: :url',
     'himamat_intro_reminder_open_line' => "Tap the link below to learn more about Holy Week and today’s journey:\n:url",
     'himamat_slot_reminder_open_line' => "Tap the link below to open the Gospel reading for this hour.\n:url",
+
+    // Post-Fasika Survey
+    'survey_page_title'        => 'Post-Fasika Feedback',
+    'survey_subtitle'          => 'Help us serve you better next season',
+    'survey_step_of'           => 'Step :step of 3',
+    'survey_continue'          => 'Continue →',
+    'survey_back'              => '← Back',
+    'survey_saving'            => 'Saving…',
+    'survey_submitting'        => 'Submitting…',
+    'survey_submit_btn'        => 'Submit Feedback 🙏',
+    'survey_privacy'           => 'Your response is private and only seen by our team.',
+
+    'survey_q1_question'       => 'How useful did you find the Abiy Tsom app this season?',
+    'survey_q1_very_useful'    => 'Very useful',
+    'survey_q1_useful'         => 'Useful',
+    'survey_q1_not_very_useful'=> 'Not very useful',
+    'survey_q1_not_useful'     => 'Not useful at all',
+    'survey_q1_not_seen'       => "I didn't use it",
+
+    'survey_q2_question'       => 'What could we do better?',
+    'survey_q2_optional'       => 'optional',
+    'survey_q2_subtitle'       => 'We genuinely want to improve — your honest feedback helps.',
+    'survey_q2_placeholder'    => 'What was missing or frustrating? What would make it more useful for you?',
+
+    'survey_q3_question'       => 'Would you like reminders for future fasting seasons?',
+    'survey_q3_shown_to'       => 'Only shown to members who found it useful',
+    'survey_q3_all_seasons'    => 'Yes — all fasting seasons (Filseta, Tsome Hawaryat…)',
+    'survey_q3_abiy_tsom_only' => 'Only for Abiy Tsom',
+
+    'survey_q4_question'       => 'Overall, how would you rate your experience?',
+    'survey_q4_poor'           => 'Poor',
+    'survey_q4_fair'           => 'Fair',
+    'survey_q4_good'           => 'Good',
+    'survey_q4_very_good'      => 'Very Good',
+    'survey_q4_excellent'      => 'Excellent',
   ];

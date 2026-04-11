@@ -2172,4 +2172,39 @@ return [
     'himamat_reminder_open_line' => 'Open: :url',
     'himamat_intro_reminder_open_line' => "ስለ ሕማማት እንዲሁም ስለ ዕለቱ ተጨማሪ መረጃ ለማግኘት የሚከተለውን ሊንክ ይንኩ\n:url",
     'himamat_slot_reminder_open_line' => "በዚህ ሰዓት የሚነበበውን የወንጌል ክፍል ለማግኘት እንዲሁም ስለ ሕማማት እና ስለ ዕለቱ ተጨማሪ መረጃ ለማግኘት የሚከተለውን ሊንክ ይንኩ\n:url",
+
+    // Post-Fasika Survey
+    'survey_page_title'        => 'ከፋሲካ በኋላ ግምገማ',
+    'survey_subtitle'          => 'ለሚቀጥለው ወቅት የተሻለ አገልግሎት ለመስጠት ይርዱን',
+    'survey_step_of'           => 'ደረጃ :step ከ3',
+    'survey_continue'          => 'ቀጥል →',
+    'survey_back'              => '← ተመለስ',
+    'survey_saving'            => 'በማስቀመጥ ላይ…',
+    'survey_submitting'        => 'በማስገባት ላይ…',
+    'survey_submit_btn'        => 'ግምገማ አስገባ 🙏',
+    'survey_privacy'           => 'ምላሽዎ ለቡድናችን ብቻ ነው።',
+
+    'survey_q1_question'       => 'የዓቢይ ጾም መተግበሪያ ለዚህ ወቅት ምን ያህል ጠቃሚ ሆኖ አገኙት?',
+    'survey_q1_very_useful'    => 'በጣም ጠቃሚ',
+    'survey_q1_useful'         => 'ጠቃሚ',
+    'survey_q1_not_very_useful'=> 'ብዙም ጠቃሚ አልሆነም',
+    'survey_q1_not_useful'     => 'ጭርሱኑ ጠቃሚ አልሆነም',
+    'survey_q1_not_seen'       => 'አልተጠቀምኩበትም',
+
+    'survey_q2_question'       => 'ምን ብናሻሽል ይሻላል?',
+    'survey_q2_optional'       => 'አማራጭ',
+    'survey_q2_subtitle'       => 'ለማሻሻል ቆርጠናል — ሐቀኛ ግብረ መልስዎ ይረዳናል።',
+    'survey_q2_placeholder'    => 'ምን ይጎድለው ነበር ወይም ምን ያበሳጭዎ ነበር? ይበልጥ ጠቃሚ ለማድረግ ምን ያስፈልጋል?',
+
+    'survey_q3_question'       => 'ለሚቀጥሉ የጾም ወቅቶች ማስታወሻ መቀበል ይፈልጋሉ?',
+    'survey_q3_shown_to'       => 'ጠቃሚ ብለው ላገኙ አባላት ብቻ ይታያል',
+    'survey_q3_all_seasons'    => 'አዎ — ለሁሉም የጾም ወቅቶች (ፍልሰታ፣ ጾመ ሐዋርያት…)',
+    'survey_q3_abiy_tsom_only' => 'ለዓቢይ ጾም ብቻ',
+
+    'survey_q4_question'       => 'በአጠቃላይ ልምድዎን እንዴት ይገምታሉ?',
+    'survey_q4_poor'           => 'ደካማ',
+    'survey_q4_fair'           => 'መካከለኛ',
+    'survey_q4_good'           => 'ጥሩ',
+    'survey_q4_very_good'      => 'በጣም ጥሩ',
+    'survey_q4_excellent'      => 'አስደናቂ',
   ];
