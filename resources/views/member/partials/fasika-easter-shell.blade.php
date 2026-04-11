@@ -39,15 +39,15 @@
     .fasika-member-bg {
         position: fixed;
         z-index: 0;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
+        inset: 0;
         width: 100%;
+        min-width: 100%;
         height: 100vh;
+        height: 100svh;
         height: 100dvh;
         height: -webkit-fill-available;
         min-height: 100vh;
+        min-height: 100svh;
         min-height: 100dvh;
         min-height: -webkit-fill-available;
         overflow: hidden;
@@ -57,13 +57,18 @@
     }
 
     .fasika-member-bg__photo {
+        display: block;
         position: absolute;
-        top: 0;
-        left: 0;
+        inset: 0;
         width: 100%;
         height: 100%;
+        min-width: 100%;
+        min-height: 100%;
+        max-width: none;
+        max-height: none;
+        margin: 0;
         object-fit: cover;
-        object-position: center;
+        object-position: center center;
         pointer-events: none;
     }
 
@@ -83,6 +88,7 @@
          alt=""
          width="1600"
          height="1067"
+         sizes="100vw"
          decoding="async"
          fetchpriority="high">
     <div class="fasika-member-bg__scrim" aria-hidden="true"></div>
