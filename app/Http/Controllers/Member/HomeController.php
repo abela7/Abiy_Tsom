@@ -507,17 +507,17 @@ class HomeController extends Controller
 
         $isGoodFriday = $himamatDay?->slug === 'good-friday';
 
-        $season = $daily->lentSeason;
-        $isLastDayOfSeason = $season
-            && $daily->date !== null
-            && $season->end_date !== null
-            && $daily->date->isSameDay(Carbon::parse($season->end_date));
         $easterDate = Carbon::parse(
             config('app.easter_date', '2026-04-12 03:00'),
             config('app.easter_timezone', 'Europe/London')
         );
-        $isFasika = $isLastDayOfSeason
-            || ($daily->date !== null && $daily->date->isSameDay($easterDate));
+        $season = $daily->lentSeason;
+        $isFasika = $daily->date !== null && (
+            $daily->date->isSameDay($easterDate)
+            || $daily->date->isSameDay($easterDate->copy()->subDay())
+            || ($season && $season->end_date !== null
+                && $daily->date->isSameDay(Carbon::parse($season->end_date)->subDay()))
+        );
 
         return view('member.day', compact(
             'member',
