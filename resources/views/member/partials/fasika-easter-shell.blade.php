@@ -45,34 +45,45 @@
         to { background-position: 200% center; }
     }
 
-    /* Full-viewport background (mobile: dvh/svh + fill-available; avoids short 100vh under browser chrome). */
+    /* Full-bleed background: match mobile visual viewport (toolbars, iOS). */
     .fasika-bg-stack {
         position: fixed;
-        inset: 0;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
         z-index: 0;
         width: 100%;
-        min-height: 100vh;
-        min-height: 100dvh;
-        min-height: 100svh;
+        overflow: hidden;
+        height: 100vh;
+        height: 100dvh;
+        height: 100svh;
         min-height: -webkit-fill-available;
+    }
+    @supports (height: 100lvh) {
+        .fasika-bg-stack {
+            height: 100lvh;
+        }
     }
     .fasika-bg-photo {
         position: absolute;
         inset: 0;
         width: 100%;
-        min-height: 100vh;
-        min-height: 100dvh;
-        min-height: 100svh;
-        min-height: -webkit-fill-available;
+        height: 100%;
+        overflow: hidden;
     }
+    /* Center + slight overscale kills 1px letterboxing on some WebKit phones. */
     .fasika-bg-photo img {
         position: absolute;
-        inset: 0;
+        left: 50%;
+        top: 50%;
         width: 100%;
         height: 100%;
-        min-height: 100vh;
-        min-height: 100dvh;
-        min-height: 100svh;
+        min-width: 100%;
+        min-height: 100%;
+        max-width: none;
+        transform: translate(-50%, -50%) scale(1.04);
+        transform-origin: center center;
         object-fit: cover;
         object-position: center center;
         pointer-events: none;
@@ -80,15 +91,23 @@
     }
     #fasika-particles.fasika-particles-full {
         position: fixed;
-        inset: 0;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
         z-index: 1;
         pointer-events: none;
         width: 100%;
-        height: 100%;
-        min-height: 100vh;
-        min-height: 100dvh;
-        min-height: 100svh;
+        overflow: hidden;
+        height: 100vh;
+        height: 100dvh;
+        height: 100svh;
         min-height: -webkit-fill-available;
+    }
+    @supports (height: 100lvh) {
+        #fasika-particles.fasika-particles-full {
+            height: 100lvh;
+        }
     }
 </style>
 
@@ -125,11 +144,21 @@
             var W, H, particles = [];
 
             function resize() {
-                W = canvas.width = canvas.offsetWidth;
-                H = canvas.height = canvas.offsetHeight;
+                var vv = window.visualViewport;
+                if (vv) {
+                    W = canvas.width = Math.max(1, Math.round(vv.width));
+                    H = canvas.height = Math.max(1, Math.round(vv.height));
+                } else {
+                    W = canvas.width = window.innerWidth;
+                    H = canvas.height = window.innerHeight;
+                }
             }
             resize();
             window.addEventListener('resize', resize);
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', resize);
+                window.visualViewport.addEventListener('scroll', resize);
+            }
 
             var count = Math.min({{ \App\Services\AbiyTsomStructure::TOTAL_DAYS }}, Math.floor((W * H) / 9000));
             for (var i = 0; i < count; i++) {
