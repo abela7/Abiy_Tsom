@@ -44,21 +44,73 @@
     @keyframes fasika-shimmer {
         to { background-position: 200% center; }
     }
+
+    /* Full-viewport background (mobile: dvh/svh + fill-available; avoids short 100vh under browser chrome). */
+    .fasika-bg-stack {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        width: 100%;
+        min-height: 100vh;
+        min-height: 100dvh;
+        min-height: 100svh;
+        min-height: -webkit-fill-available;
+    }
+    .fasika-bg-photo {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        min-height: 100vh;
+        min-height: 100dvh;
+        min-height: 100svh;
+        min-height: -webkit-fill-available;
+    }
+    .fasika-bg-photo img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        min-height: 100vh;
+        min-height: 100dvh;
+        min-height: 100svh;
+        object-fit: cover;
+        object-position: center center;
+        pointer-events: none;
+        user-select: none;
+    }
+    #fasika-particles.fasika-particles-full {
+        position: fixed;
+        inset: 0;
+        z-index: 1;
+        pointer-events: none;
+        width: 100%;
+        height: 100%;
+        min-height: 100vh;
+        min-height: 100dvh;
+        min-height: 100svh;
+        min-height: -webkit-fill-available;
+    }
 </style>
 
-{{-- Photo + liturgical purple gradient + gold wash (same stack as pre–Good-Friday-copy Easter) --}}
-<div style="position:fixed;inset:0;z-index:0;">
-    <div style="position:absolute;inset:0;
-         background-image:url('{{ asset('images/Jesus_In_Eastern.avif') }}');
-         background-size:cover;background-position:center top;background-repeat:no-repeat;"></div>
-    <div style="position:absolute;inset:0;
-         background:linear-gradient(to bottom, rgba(26, 14, 46, 0.62), rgba(45, 24, 84, 0.55), rgba(15, 10, 26, 0.72));"></div>
-    <div style="position:absolute;inset:0;
-         background:radial-gradient(ellipse at 50% 18%, rgba(212, 165, 87, 0.22) 0%, transparent 58%);"></div>
+{{-- Photo + liturgical purple gradient + gold wash — image layer scales edge-to-edge on phones. --}}
+<div class="fasika-bg-stack" aria-hidden="true">
+    <div class="fasika-bg-photo">
+        <img src="{{ asset('images/Jesus_In_Eastern.avif') }}"
+             alt=""
+             width="1920"
+             height="1080"
+             decoding="async"
+             fetchpriority="high"
+             sizes="100vw">
+    </div>
+    <div class="absolute inset-0"
+         style="background:linear-gradient(to bottom, rgba(26, 14, 46, 0.62), rgba(45, 24, 84, 0.55), rgba(15, 10, 26, 0.72));"></div>
+    <div class="absolute inset-0"
+         style="background:radial-gradient(ellipse at 50% 18%, rgba(212, 165, 87, 0.22) 0%, transparent 58%);"></div>
 </div>
 
 <canvas id="fasika-particles"
-        style="position:fixed;inset:0;z-index:1;pointer-events:none;width:100%;height:100%;"></canvas>
+        class="fasika-particles-full"></canvas>
 
 <script>
     window.addEventListener('alpine:initialized', function () {
