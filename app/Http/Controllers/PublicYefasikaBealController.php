@@ -17,7 +17,7 @@ class PublicYefasikaBealController extends Controller
         $pageTitle = __('app.yefasika_beal_page_title').' — '.__('app.app_name');
         $ogTitle = __('app.yefasika_beal_og_title');
         $ogDescription = __('app.yefasika_beal_og_description');
-        $ogUrl = route('public.yefasika-beal');
+        $ogUrl = route('member.day.fasika');
         $shareUrl = $request->fullUrl();
 
         return view('public.yefasika-beal', compact(

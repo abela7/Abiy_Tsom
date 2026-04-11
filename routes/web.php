@@ -269,6 +269,10 @@ Route::middleware('member')->prefix('member')->group(function () {
 });
 
 // Legacy redirects for old-format URLs (no auth — these are shared links)
+// Public Easter card — friendly path (must be before /member/day/{daily})
+Route::get('/member/day/fasika', [PublicYefasikaBealController::class, 'show'])->name('member.day.fasika');
+Route::redirect('/member/day/Fasika', '/member/day/fasika', 301);
+
 // /member/day/{id} → /day/{dayNumber}-{id} (public)
 Route::get('/member/day/{daily}/commemorations', function (\App\Models\DailyContent $daily) {
     return redirect("/commemorations/{$daily->day_number}-{$daily->id}");

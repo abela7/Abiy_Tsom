@@ -16,4 +16,18 @@ class PublicYefasikaBealTest extends TestCase
         $response->assertSee('fasika-page', false);
         $response->assertSee(__('app.fasika_banner_main'), false);
     }
+
+    public function test_member_day_fasika_path_serves_same_page(): void
+    {
+        $response = $this->get('/member/day/fasika');
+
+        $response->assertOk();
+        $response->assertSee(__('app.fasika_banner_main'), false);
+    }
+
+    public function test_member_day_capital_f_redirects_to_lowercase(): void
+    {
+        $this->get('/member/day/Fasika')
+            ->assertRedirect('/member/day/fasika');
+    }
 }
