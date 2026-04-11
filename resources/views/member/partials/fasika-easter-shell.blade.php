@@ -45,51 +45,48 @@
         to { background-position: 200% center; }
     }
 
-    /* Full-bleed background: match mobile visual viewport (toolbars, iOS). */
-    .fasika-bg-stack {
+    /* Full-screen bleed: html/body fill viewport; photo is its own fixed layer (no wrapper height bugs). */
+    html.fasika-fullbleed,
+    html.fasika-fullbleed body {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-height: 100vh !important;
+        min-height: 100dvh !important;
+        min-height: 100svh !important;
+        overflow-x: hidden !important;
+    }
+
+    .fasika-bg-img-fixed {
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
         z-index: 0;
+        display: block;
         width: 100%;
-        overflow: hidden;
         height: 100vh;
         height: 100dvh;
         height: 100svh;
         min-height: -webkit-fill-available;
-    }
-    @supports (height: 100lvh) {
-        .fasika-bg-stack {
-            height: 100lvh;
-        }
-    }
-    .fasika-bg-photo {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-    }
-    /* Center + slight overscale kills 1px letterboxing on some WebKit phones. */
-    .fasika-bg-photo img {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        width: 100%;
-        height: 100%;
-        min-width: 100%;
-        min-height: 100%;
         max-width: none;
-        transform: translate(-50%, -50%) scale(1.04);
-        transform-origin: center center;
         object-fit: cover;
         object-position: center center;
+        transform: scale(1.08);
+        transform-origin: center center;
         pointer-events: none;
         user-select: none;
     }
-    #fasika-particles.fasika-particles-full {
+
+    @supports (height: 100lvh) {
+        .fasika-bg-img-fixed {
+            height: 100lvh;
+        }
+    }
+
+    .fasika-bg-scrim {
         position: fixed;
         top: 0;
         left: 0;
@@ -97,13 +94,24 @@
         bottom: 0;
         z-index: 1;
         pointer-events: none;
+    }
+
+    #fasika-particles.fasika-particles-full {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 2;
+        pointer-events: none;
         width: 100%;
-        overflow: hidden;
         height: 100vh;
         height: 100dvh;
         height: 100svh;
         min-height: -webkit-fill-available;
+        overflow: hidden;
     }
+
     @supports (height: 100lvh) {
         #fasika-particles.fasika-particles-full {
             height: 100lvh;
@@ -111,22 +119,25 @@
     }
 </style>
 
-{{-- Photo + liturgical purple gradient + gold wash — image layer scales edge-to-edge on phones. --}}
-<div class="fasika-bg-stack" aria-hidden="true">
-    <div class="fasika-bg-photo">
-        <img src="{{ asset('images/Jesus_In_Eastern.avif') }}"
-             alt=""
-             width="1920"
-             height="1080"
-             decoding="async"
-             fetchpriority="high"
-             sizes="100vw">
-    </div>
-    <div class="absolute inset-0"
-         style="background:linear-gradient(to bottom, rgba(26, 14, 46, 0.62), rgba(45, 24, 84, 0.55), rgba(15, 10, 26, 0.72));"></div>
-    <div class="absolute inset-0"
-         style="background:radial-gradient(ellipse at 50% 18%, rgba(212, 165, 87, 0.22) 0%, transparent 58%);"></div>
-</div>
+<script>document.documentElement.classList.add('fasika-fullbleed');</script>
+
+{{-- Photo fixed to viewport; scrims + canvas above (z-index stack). --}}
+<img src="{{ asset('images/Jesus_In_Eastern.avif') }}"
+     alt=""
+     width="1920"
+     height="1080"
+     decoding="async"
+     fetchpriority="high"
+     sizes="100vw"
+     class="fasika-bg-img-fixed"
+     aria-hidden="true">
+
+<div class="fasika-bg-scrim"
+     style="background:linear-gradient(to bottom, rgba(26, 14, 46, 0.62), rgba(45, 24, 84, 0.55), rgba(15, 10, 26, 0.72));"
+     aria-hidden="true"></div>
+<div class="fasika-bg-scrim"
+     style="background:radial-gradient(ellipse at 50% 18%, rgba(212, 165, 87, 0.22) 0%, transparent 58%);"
+     aria-hidden="true"></div>
 
 <canvas id="fasika-particles"
         class="fasika-particles-full"></canvas>
@@ -145,13 +156,14 @@
 
             function resize() {
                 var vv = window.visualViewport;
-                if (vv) {
-                    W = canvas.width = Math.max(1, Math.round(vv.width));
-                    H = canvas.height = Math.max(1, Math.round(vv.height));
-                } else {
-                    W = canvas.width = window.innerWidth;
-                    H = canvas.height = window.innerHeight;
-                }
+                var w = vv ? vv.width : window.innerWidth;
+                var h = Math.max(
+                    window.innerHeight || 0,
+                    document.documentElement.clientHeight || 0,
+                    vv ? vv.height : 0
+                );
+                W = canvas.width = Math.max(1, Math.round(w));
+                H = canvas.height = Math.max(1, Math.round(h));
             }
             resize();
             window.addEventListener('resize', resize);
