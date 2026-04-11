@@ -2209,4 +2209,15 @@ return [
     'fasika_member_header_greeting' => 'Blessed feast to you',
     'fasika_himamat_eyebrow' => 'Feast of the Resurrection',
     'fasika_gratitude_doxology' => "You moved us to begin and carried us through to the end. To the Almighty Lord be power, honor, and praise.\n\nMay the people of Christ say: Amen.",
+
+    // Public Easter card (Yefasika Beal) — /yefasika-beal
+    'yefasika_beal_page_title' => 'Yefasika Beal',
+    'yefasika_beal_og_title' => 'Happy Easter — share with a friend',
+    'yefasika_beal_og_description' => 'Send a blessed Easter greeting from Abiy Tsom.',
+    'yefasika_beal_intro' => 'Share this page with friends and family to wish them a blessed Feast of the Resurrection.',
+    'yefasika_beal_share_text' => 'Happy Easter — Christ is risen!',
+    'yefasika_beal_share_button' => 'Share with a friend',
+    'yefasika_beal_copy_link' => 'Copy link',
+    'yefasika_beal_link_copied' => 'Link copied!',
+    'yefasika_beal_back_home' => 'Back to home',
   ];

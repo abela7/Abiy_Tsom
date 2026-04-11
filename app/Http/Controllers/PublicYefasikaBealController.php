@@ -1,0 +1,31 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\View\View;
+
+/**
+ * Public Easter greeting card (Yefasika Beal) — same celebration visuals as Fasika day.
+ */
+class PublicYefasikaBealController extends Controller
+{
+    public function show(Request $request): View
+    {
+        $pageTitle = __('app.yefasika_beal_page_title').' — '.__('app.app_name');
+        $ogTitle = __('app.yefasika_beal_og_title');
+        $ogDescription = __('app.yefasika_beal_og_description');
+        $ogUrl = route('public.yefasika-beal');
+        $shareUrl = $request->fullUrl();
+
+        return view('public.yefasika-beal', compact(
+            'pageTitle',
+            'ogTitle',
+            'ogDescription',
+            'ogUrl',
+            'shareUrl',
+        ));
+    }
+}

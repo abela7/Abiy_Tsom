@@ -2189,4 +2189,15 @@ return [
     'fasika_member_header_greeting' => 'እንኳን አደረስዎ',
     'fasika_himamat_eyebrow' => 'የ ትንሣኤ በዓል',
     'fasika_gratitude_doxology' => "አነሳስቶ ላስጀመረን፣ አስጀምሮ ላስጨረሰን ለ ልዑል እግዚአብሔር. ኃይል፣ ክብር፣ ምስጋና ይሁን፡፡\n\nየከርሞ ሰው ይበለን፡፡",
+
+    // Public Easter card (Yefasika Beal) — /yefasika-beal
+    'yefasika_beal_page_title' => 'የፋሲካ በዓል',
+    'yefasika_beal_og_title' => 'እንኳን ለደስታ ቀን ለጓደኞች ያጋሩ',
+    'yefasika_beal_og_description' => 'ከአብይ ጾም ድረስ መልካም የትንሣኤ ሰላምታ ያጋሩ።',
+    'yefasika_beal_intro' => 'ይህን ገጽ ለጓደኞች እና ለቤተሰብ በመላክ የትንሣኤ በዓልን ይመስገኑ።',
+    'yefasika_beal_share_text' => 'እንኳን ለደስታ ቀን! ክርስቶስ ተንሥአ!',
+    'yefasika_beal_share_button' => 'ለጓደኛ ያጋሩ',
+    'yefasika_beal_copy_link' => 'ሊንክ ቅዳ',
+    'yefasika_beal_link_copied' => 'ሊንክ ተቅድጧል!',
+    'yefasika_beal_back_home' => 'ወደ መነሻ ይሂዱ',
   ];

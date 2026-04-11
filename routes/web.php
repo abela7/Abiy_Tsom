@@ -7,6 +7,7 @@ use App\Http\Controllers\ContentSuggestionController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\Member;
 use App\Http\Controllers\PublicContentController;
+use App\Http\Controllers\PublicYefasikaBealController;
 use App\Http\Controllers\TelegramAuthController;
 use App\Http\Controllers\VolunteerInviteController;
 use App\Http\Controllers\Webhook;
@@ -20,6 +21,9 @@ use Illuminate\Support\Facades\Route;
 
 // Welcome / landing page
 Route::get('/', [Member\OnboardingController::class, 'welcome'])->name('home');
+
+// Public Easter greeting card (share with friends)
+Route::get('/yefasika-beal', [PublicYefasikaBealController::class, 'show'])->name('public.yefasika-beal');
 
 // Registration with phone/email verification (replaces old cookie-based registration)
 Route::post('/register', [Member\RegistrationController::class, 'register'])
