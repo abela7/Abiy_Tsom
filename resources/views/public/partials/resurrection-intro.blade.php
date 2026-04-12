@@ -44,13 +44,10 @@
   <div class="ri-radial-white"></div>
   <div class="ri-white-takeover"></div>
 
-  <div class="ri-title-stage">
-    <p class="ri-bridge-line">ህያውን ከሙታን መካከል ለምን ትፈልጋላችሁ?</p>
-    <div class="ri-title-text">
-      <h1>ተነስቷል</h1>
-      <p>ማቴ 28፡6</p>
-      <span class="ri-flourish"></span>
-    </div>
+  <div class="ri-title-text">
+    <h1>ተነስቷል</h1>
+    <p>ማቴ 28፡6</p>
+    <span class="ri-flourish"></span>
   </div>
 </div>
 </div>
@@ -271,55 +268,33 @@
   .ri-scene.active .ri-white-takeover{animation:riWhiteTakeover 6s ease-in 4s forwards;}
   @keyframes riWhiteTakeover{0%{opacity:0}30%{opacity:.3}60%{opacity:.7}85%{opacity:.95}100%{opacity:1}}
 
-  /* ═══ Bridge line (Luke 24:5 tone) → ተነስቷል (tight after full white) ═══ */
-  .ri-title-stage {
-    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-    z-index:60;display:flex;flex-direction:column;align-items:center;gap:.75rem;
-    max-width:min(92vw,28rem);text-align:center;pointer-events:none;
-  }
-  .ri-bridge-line {
-    margin:0;order:1;opacity:0;max-width:100%;
-    font-family:'Benaiah','Noto Serif Ethiopic',serif;font-weight:700;
-    font-size:clamp(.95rem,3.1vw,1.28rem);line-height:1.55;letter-spacing:.04em;
-    color:#6b5a38;
-    text-shadow:0 0 1px rgba(255,255,255,.95),0 1px 2px rgba(255,255,255,.9);
-  }
-  .ri-scene.active .ri-bridge-line{
-    animation:riBridgeLineBeat 2.2s ease-in-out 10s forwards;
-  }
-  @keyframes riBridgeLineBeat{
-    0%{opacity:0;transform:translateY(10px)}
-    14%{opacity:1;transform:translateY(0)}
-    72%{opacity:1}
-    100%{opacity:0;transform:translateY(-8px)}
-  }
+  /* ═══ RISEN TITLE ═══ */
   .ri-title-text {
-    order:2;position:relative;width:100%;opacity:0;text-align:center;
+    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    z-index:60;text-align:center;opacity:0;pointer-events:none;
   }
-  .ri-scene.active .ri-title-text{
-    animation:riTitleReveal 1.05s ease-out 11.15s forwards;
-  }
+  .ri-scene.active .ri-title-text{animation:riTitleReveal 3s ease 8s forwards;}
   @keyframes riTitleReveal{
-    0%{opacity:0;transform:scale(.92)}
-    100%{opacity:1;transform:scale(1)}
+    0%{opacity:0;transform:translate(-50%,-50%) scale(.85)}
+    100%{opacity:1;transform:translate(-50%,-50%) scale(1)}
   }
   .ri-title-text h1 {
-    margin:0;font-family:'Noto Serif Ethiopic',serif;font-weight:700;
+    font-family:'Noto Serif Ethiopic',serif;font-weight:700;
     font-size:clamp(2.5rem,8vw,6rem);color:#b8963e;
     text-shadow:0 0 30px rgba(184,150,62,.5),0 0 60px rgba(184,150,62,.25),0 0 100px rgba(184,150,62,.1);
     letter-spacing:.15em;
   }
   .ri-title-text p {
-    margin:16px 0 0;font-family:'Noto Serif Ethiopic',serif;font-weight:400;
-    font-size:clamp(1rem,3vw,1.6rem);color:rgba(150,130,90,.85);
-    letter-spacing:.1em;
+    font-family:'Noto Serif Ethiopic',serif;font-weight:400;
+    font-size:clamp(1rem,3vw,1.6rem);color:rgba(150,130,90,.8);
+    margin-top:20px;letter-spacing:.1em;
   }
   .ri-flourish {
-    display:block;margin:20px auto 0;width:0;height:2px;
+    display:block;margin:24px auto 0;width:0;height:2px;
     background:linear-gradient(90deg,transparent,#b8963e,transparent);opacity:0;
   }
-  .ri-scene.active .ri-flourish{animation:riFlourishIn 1.35s ease-out 12.35s forwards;}
-  @keyframes riFlourishIn{0%{opacity:0;width:0}100%{opacity:.65;width:120px}}
+  .ri-scene.active .ri-flourish{animation:riFlourishIn 2s ease 9.5s forwards;}
+  @keyframes riFlourishIn{0%{opacity:0;width:0}100%{opacity:.6;width:120px}}
 
   /* ═══ INTRO — glass card above tomb (matches Resurrection.html) ═══ */
   .ri-intro-prompt {
@@ -519,16 +494,18 @@
     if (scene.classList.contains('active')) return;
     scene.classList.add('active');
 
-    // After bridge + ተነስቷል + flourish (~14s), hold briefly, then greeting page
+    // After title is visible (~11.5s), hold for 2s, then transition to greeting page
     setTimeout(function() {
       overlay.classList.add('ri-fade-out');
+      // Reveal the main content
       var main = document.getElementById('ybb-main-content');
       if (main) main.classList.add('ybb-revealed');
-    }, 15200);
+    }, 12000);
 
+    // Remove overlay from DOM after fade completes
     setTimeout(function() {
       overlay.remove();
-    }, 17200);
+    }, 14000);
   });
 })();
 </script>
