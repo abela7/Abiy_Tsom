@@ -43,15 +43,18 @@
     </section>
 
     {{-- ═══════════════════════════════════════════
-         FULL-SCREEN MODAL (outside section, no stacking context issues)
+         FULL-SCREEN MODAL — teleported to <body> so position:fixed is viewport-
+         relative (#ybb-main-content uses transform, which traps fixed children).
+         z-index above #ri-overlay (9999).
     ═══════════════════════════════════════════ --}}
+    <template x-teleport="body">
     <div x-show="modalOpen"
          x-cloak
-         style="position:fixed;inset:0;z-index:99999;"
+         class="fixed inset-0 z-[100050]"
          @keydown.escape.window="maybeClose()">
 
         {{-- Backdrop --}}
-        <div style="position:absolute;inset:0;background:rgba(0,0,0,0.82);"
+        <div class="absolute inset-0 bg-black/82"
              x-show="modalOpen"
              x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0"
@@ -63,11 +66,8 @@
         </div>
 
         {{-- Modal card: full-screen on mobile, centered on desktop --}}
-        <div style="position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:center;pointer-events:none;"
-             class="sm:items-center sm:p-6">
-            <div class="pointer-events-auto w-full bg-[#0f0a1a] shadow-2xl ring-1 ring-white/10 flex flex-col rounded-t-3xl sm:rounded-3xl sm:max-w-lg"
-                 style="max-height:100dvh;max-height:100vh;"
-                 class="sm:!max-h-[90vh]"
+        <div class="pointer-events-none absolute inset-0 flex items-end justify-center sm:items-center sm:p-6">
+            <div class="pointer-events-auto flex max-h-[100dvh] w-full flex-col rounded-t-3xl bg-[#0f0a1a] shadow-2xl ring-1 ring-white/10 sm:max-h-[90vh] sm:max-w-lg sm:rounded-3xl"
                  x-show="modalOpen"
                  x-transition:enter="transition ease-out duration-300"
                  x-transition:enter-start="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95"
@@ -244,6 +244,7 @@
             </div>
         </div>
     </div>
+    </template>
 </div>
 
 @push('scripts')
