@@ -22,12 +22,6 @@
             15 ከቀላል እስከ ከባድ ጥያቄዎች አሉ፣ እርስዎ ስንቱን ይመልሳሉ? ይሞክሩት
         </p>
 
-        <div class="mt-5 flex flex-wrap items-center gap-2 text-xs text-zinc-400">
-            <span class="inline-flex items-center gap-1 rounded-full bg-green-500/10 px-2.5 py-1 text-green-400 ring-1 ring-green-500/20">5 ቀላል · 1pt</span>
-            <span class="inline-flex items-center gap-1 rounded-full bg-yellow-500/10 px-2.5 py-1 text-yellow-400 ring-1 ring-yellow-500/20">5 መካከለኛ · 2pt</span>
-            <span class="inline-flex items-center gap-1 rounded-full bg-red-500/10 px-2.5 py-1 text-red-400 ring-1 ring-red-500/20">5 ከባድ · 3pt</span>
-        </div>
-
         <div class="mt-5">
             <label for="fq-name" class="sr-only">ስምዎ</label>
             <input id="fq-name"

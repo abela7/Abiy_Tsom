@@ -26,12 +26,13 @@ Route::get('/', [Member\OnboardingController::class, 'welcome'])->name('home');
 // Public Easter greeting card (share with friends)
 Route::get('/yefasika-beal', [PublicYefasikaBealController::class, 'show'])->name('public.yefasika-beal');
 Route::post('/yefasika-beal/share', [PublicYefasikaBealController::class, 'store'])->name('public.yefasika-beal.store');
-Route::get('/yefasika-beal/{share}', [PublicYefasikaBealController::class, 'show'])->name('public.yefasika-beal.share');
 
-// Fasika Quiz API (public)
+// Fasika Quiz API — must be before the {share} wildcard
 Route::get('/yefasika-beal/quiz/questions', [PublicFasikaQuizController::class, 'questions'])->name('public.yefasika-beal.quiz.questions');
 Route::post('/yefasika-beal/quiz/answer', [PublicFasikaQuizController::class, 'answer'])->name('public.yefasika-beal.quiz.answer');
 Route::post('/yefasika-beal/quiz/complete', [PublicFasikaQuizController::class, 'complete'])->name('public.yefasika-beal.quiz.complete');
+
+Route::get('/yefasika-beal/{share}', [PublicYefasikaBealController::class, 'show'])->name('public.yefasika-beal.share');
 
 // Standalone Resurrection.html animation (resources/views/public — not /resurrection)
 Route::get('/resurrection-scene', static function () {
