@@ -209,11 +209,14 @@
             </section>
         @endif
 
-        <p class="mx-auto mt-2 max-w-md pb-2 text-center">
-            <a href="{{ rtrim((string) config('app.parish_website_url'), '/') }}/"
-               class="inline-flex items-center justify-center rounded-full px-4 py-2 text-xs font-medium text-zinc-500 transition hover:bg-white/[0.04] hover:text-zinc-300">
-                {{ __('app.yefasika_beal_back_home') }}
-            </a>
+        @php
+            $parishHomeUrl = rtrim((string) config('app.parish_website_url'), '/') . '/';
+        @endphp
+        <p class="mx-auto mt-2 max-w-md px-2 pb-2 text-center text-xs font-medium leading-relaxed text-zinc-500">
+            <span class="inline-flex flex-wrap items-center justify-center gap-x-0.5">
+                {{ __('app.yefasika_beal_parish_footer_prefix') }}<a href="{{ $parishHomeUrl }}"
+                   class="rounded-full px-1 py-0.5 text-zinc-400 underline decoration-zinc-600/60 underline-offset-2 transition hover:bg-white/[0.04] hover:text-zinc-300 hover:decoration-zinc-400">{{ __('app.yefasika_beal_parish_footer_link') }}</a>
+            </span>
         </p>
     </main>
 @endsection

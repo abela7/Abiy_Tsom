@@ -2243,7 +2243,8 @@ return [
     'yefasika_beal_link_copied' => 'Link copied!',
     'yefasika_beal_additional_content_title' => 'Selected Content for the Day',
     'yefasika_beal_additional_content_help' => 'Open the Bible Reading, Lectionary, and selected Hymn for Easter day.',
-    'yefasika_beal_back_home' => 'Back to home',
+    'yefasika_beal_parish_footer_prefix' => 'At ',
+    'yefasika_beal_parish_footer_link' => 'Liverpool Mekane Kidusan Abune Teklehaymanot Church',
 
     // Fasika greetings admin
     'fasika_greeting_admin_title' => 'Fasika Greetings',

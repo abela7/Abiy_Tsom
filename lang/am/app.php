@@ -2223,7 +2223,8 @@ return [
     'yefasika_beal_link_copied' => 'ሊንኩ ተቀድቷል!',
     'yefasika_beal_additional_content_title' => 'ለቀኑ የተመረጡ ይዘቶች',
     'yefasika_beal_additional_content_help' => 'የቀኑን የመጽሐፍ ቅዱስ ንባብ፣ ግጻዌ እና ለቀኑ የተመረጠ መዝሙር ይክፈቱ።',
-    'yefasika_beal_back_home' => 'ወደ መነሻ ይሂዱ',
+    'yefasika_beal_parish_footer_prefix' => 'በ ',
+    'yefasika_beal_parish_footer_link' => 'ሊቨርፑል መካነ ቅዱሳን አቡነ ተክለሃይማኖት ቤተክርስቲያን',
 
     // Fasika greetings admin
     'fasika_greeting_admin_title' => 'የፋሲካ ሰላምታዎች',
