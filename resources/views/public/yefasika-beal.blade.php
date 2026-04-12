@@ -3,9 +3,22 @@
 @section('title', $pageTitle)
 
 @section('content')
+    @include('public.partials.resurrection-intro')
     @include('public.partials.yefasika-beal-background')
 
-    <main class="relative z-10 flex flex-col gap-8 ybb-page sm:gap-10"
+    <style>
+        #ybb-main-content {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity 1.6s ease, transform 1.6s ease;
+        }
+        #ybb-main-content.ybb-revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+
+    <main id="ybb-main-content" class="relative z-10 flex flex-col gap-8 ybb-page sm:gap-10"
           x-data="fasikaGreetingPage({
               initialUrl: @js($shareUrl),
               initialShareText: @js($shareText),

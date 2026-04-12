@@ -27,6 +27,16 @@ Route::get('/yefasika-beal', [PublicYefasikaBealController::class, 'show'])->nam
 Route::post('/yefasika-beal/share', [PublicYefasikaBealController::class, 'store'])->name('public.yefasika-beal.store');
 Route::get('/yefasika-beal/{share}', [PublicYefasikaBealController::class, 'show'])->name('public.yefasika-beal.share');
 
+// Standalone Resurrection.html animation (resources/views/public — not /resurrection)
+Route::get('/resurrection-scene', static function () {
+    $path = resource_path('views/public/Resurrection.html');
+    abort_unless(is_file($path), 404);
+
+    return response()->file($path, [
+        'Content-Type' => 'text/html; charset=UTF-8',
+    ]);
+})->name('public.resurrection_scene');
+
 // Registration with phone/email verification (replaces old cookie-based registration)
 Route::post('/register', [Member\RegistrationController::class, 'register'])
     ->middleware('throttle:10,1')
