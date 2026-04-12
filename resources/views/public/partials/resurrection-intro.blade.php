@@ -122,7 +122,7 @@
   .ri-stone {
     position:absolute;bottom:25px;left:50%;transform:translateX(-50%);
     width:160px;height:160px;border-radius:50%;z-index:8;
-    transition:transform 2.8s cubic-bezier(.22,.61,.36,1);
+    transition:transform 2.2s cubic-bezier(.22,.61,.36,1);
     background:radial-gradient(circle at 35% 35%,#555048,#3a3530 40%,#2a2520 70%,#1f1b18 100%);
     box-shadow:inset -12px -8px 25px rgba(0,0,0,.5),inset 6px 6px 15px rgba(255,255,255,.05),8px 8px 30px rgba(0,0,0,.7);
   }
@@ -143,14 +143,14 @@
   .ri-divine-light {
     position:absolute;inset:-5px;border-radius:50%;z-index:5;opacity:0;
     background:radial-gradient(circle,#fff 0%,#fffbe6 20%,#f5d76e 40%,transparent 70%);
-    transition:opacity 1.5s ease 1.8s;
+    transition:opacity .85s ease .75s;
   }
   .ri-scene.active .ri-divine-light{opacity:1;}
 
   /* LIGHT RAYS */
   .ri-light-rays {
     position:absolute;bottom:105px;left:50%;transform:translateX(-50%);
-    width:0;height:0;z-index:4;opacity:0;transition:opacity 1s ease 2s;
+    width:0;height:0;z-index:4;opacity:0;transition:opacity .55s ease .85s;
   }
   .ri-scene.active .ri-light-rays{opacity:1;}
   .ri-ray {
@@ -158,7 +158,7 @@
     background:linear-gradient(0deg,#fff,#fffbe688,transparent);
     transform-origin:bottom center;border-radius:2px;filter:blur(1.5px);
   }
-  .ri-scene.active .ri-ray{animation:riRayGrow 2.5s ease-out forwards;}
+  .ri-scene.active .ri-ray{animation:riRayGrow 1.45s ease-out forwards;}
   @keyframes riRayGrow{0%{height:0;opacity:0}40%{opacity:.9}100%{height:var(--ray-h);opacity:var(--ray-o)}}
 
   /* JESUS FIGURE */
@@ -166,7 +166,7 @@
     position:absolute;bottom:0;left:50%;
     transform:translateX(-50%) translateY(60px) scale(.8);
     z-index:9;opacity:0;
-    transition:opacity 2s ease 2.8s,transform 3.5s ease 2.8s;
+    transition:opacity 1.15s ease 1.15s,transform 2s ease 1.15s;
   }
   .ri-scene.active .ri-jesus-figure{opacity:1;transform:translateX(-50%) translateY(-40px) scale(1);}
   .ri-figure-body{position:relative;width:70px;height:160px;}
@@ -203,7 +203,7 @@
   .ri-arm {
     position:absolute;top:40px;width:48px;height:8px;
     background:linear-gradient(180deg,#fff,#ebe5da);border-radius:4px;
-    opacity:0;transition:opacity 1.2s ease 4.2s,transform 1.8s ease 4.2s;
+    opacity:0;transition:opacity .75s ease 2.05s,transform 1.1s ease 2.05s;
   }
   .ri-arm-left{right:52px;transform:rotate(20deg) scaleX(0);transform-origin:right center;}
   .ri-arm-right{left:52px;transform:rotate(-20deg) scaleX(0);transform-origin:left center;}
@@ -214,7 +214,7 @@
     position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
     width:120px;height:200px;border-radius:50%;
     background:radial-gradient(circle,rgba(255,255,255,.5),rgba(255,255,255,.1),transparent);
-    filter:blur(15px);opacity:0;transition:opacity 2s ease 3.5s;
+    filter:blur(15px);opacity:0;transition:opacity 1s ease 1.65s;
   }
   .ri-scene.active .ri-figure-glow{opacity:1;}
 
@@ -237,7 +237,7 @@
     position:absolute;inset:0;z-index:12;opacity:0;pointer-events:none;
     background:radial-gradient(circle at 50% 62%,#fff,rgba(255,255,255,.6) 30%,transparent 65%);
   }
-  .ri-scene.active .ri-flash-burst{animation:riFlashBurst 1.2s ease-out 2s forwards;}
+  .ri-scene.active .ri-flash-burst{animation:riFlashBurst .55s ease-out 1.05s forwards;}
   @keyframes riFlashBurst{0%{opacity:0}40%{opacity:.7}100%{opacity:0}}
 
   .ri-radial-white {
@@ -246,7 +246,7 @@
     background:radial-gradient(circle,#fff,rgba(255,255,255,.8),transparent);
     z-index:45;opacity:0;pointer-events:none;
   }
-  .ri-scene.active .ri-radial-white{animation:riRadialExpand 5s ease-out 3.5s forwards;}
+  .ri-scene.active .ri-radial-white{animation:riRadialExpand 2.1s ease-out 1.35s forwards;}
   @keyframes riRadialExpand{
     0%{opacity:0;width:10px;height:10px}10%{opacity:.9}100%{opacity:1;width:300vw;height:300vh}
   }
@@ -257,7 +257,7 @@
     background:radial-gradient(circle,#fff,rgba(255,248,220,.9),transparent);
     z-index:44;opacity:0;pointer-events:none;
   }
-  .ri-scene.active .ri-light-wave-2{animation:riRadialExpand2 6s ease-out 3s forwards;}
+  .ri-scene.active .ri-light-wave-2{animation:riRadialExpand2 2.05s ease-out 1.2s forwards;}
   @keyframes riRadialExpand2{
     0%{opacity:0;width:5px;height:5px}15%{opacity:.6}100%{opacity:.8;width:250vw;height:250vh}
   }
@@ -265,16 +265,17 @@
   .ri-white-takeover {
     position:absolute;inset:0;background:#fff;z-index:50;opacity:0;pointer-events:none;
   }
-  .ri-scene.active .ri-white-takeover{animation:riWhiteTakeover 6s ease-in 4s forwards;}
-  @keyframes riWhiteTakeover{0%{opacity:0}30%{opacity:.3}60%{opacity:.7}85%{opacity:.95}100%{opacity:1}}
+  /* ease-in: reaches solid white quickly at end; shorter = less “lag” */
+  .ri-scene.active .ri-white-takeover{animation:riWhiteTakeover 2.35s ease-in 1.75s forwards;}
+  @keyframes riWhiteTakeover{0%{opacity:0}45%{opacity:.45}100%{opacity:1}}
 
   /* ═══ RISEN TITLE ═══ */
   .ri-title-text {
     position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
     z-index:60;text-align:center;opacity:0;pointer-events:none;
   }
-  /* White takeover: delay 4s + duration 6s → full white at ~10s; title after that */
-  .ri-scene.active .ri-title-text{animation:riTitleReveal 1.25s ease 10.05s forwards;}
+  /* Full white ~4.1s (1.75+2.35); title immediately after */
+  .ri-scene.active .ri-title-text{animation:riTitleReveal .95s ease 4.12s forwards;}
   @keyframes riTitleReveal{
     0%{opacity:0;transform:translate(-50%,-50%) scale(.85)}
     100%{opacity:1;transform:translate(-50%,-50%) scale(1)}
@@ -294,7 +295,7 @@
     display:block;margin:24px auto 0;width:0;height:2px;
     background:linear-gradient(90deg,transparent,#b8963e,transparent);opacity:0;
   }
-  .ri-scene.active .ri-flourish{animation:riFlourishIn 1.2s ease 10.85s forwards;}
+  .ri-scene.active .ri-flourish{animation:riFlourishIn .85s ease 4.75s forwards;}
   @keyframes riFlourishIn{0%{opacity:0;width:0}100%{opacity:.6;width:120px}}
 
   /* ═══ INTRO — glass card above tomb (matches Resurrection.html) ═══ */
@@ -306,8 +307,8 @@
     background:linear-gradient(155deg,rgba(42,32,38,.42) 0%,rgba(14,10,20,.38) 45%,rgba(10,8,16,.48) 100%);
     border:1px solid rgba(226,202,24,.12);
     box-shadow:0 12px 40px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.04) inset,inset 0 1px 0 rgba(255,248,220,.08);
-    backdrop-filter:blur(12px) saturate(1.2);
-    -webkit-backdrop-filter:blur(12px) saturate(1.2);
+    backdrop-filter:blur(8px) saturate(1.1);
+    -webkit-backdrop-filter:blur(8px) saturate(1.1);
     transition:opacity 1.2s ease,transform 1.2s ease,box-shadow 1.2s ease;
   }
   .ri-intro-prompt::before {
@@ -402,7 +403,7 @@
 
   /* Screen shake (single burst, Resurrection.html) */
   .ri-scene.active {
-    animation:riScreenShake .8s ease 1.5s;
+    animation:riScreenShake .55s ease 1.05s;
   }
   @keyframes riScreenShake {
     0%,100%{transform:translate(0,0)}
@@ -435,7 +436,7 @@
 
   // Stars
   var starsEl = document.getElementById('ri-stars');
-  for (var i = 0; i < 90; i++) {
+  for (var i = 0; i < 52; i++) {
     var s = document.createElement('div');
     s.className = 'ri-star';
     var sz = Math.random() * 2.5 + 0.8;
@@ -445,36 +446,36 @@
 
   // Light rays
   var raysEl = document.getElementById('ri-lightRays');
-  for (var i = 0; i < 32; i++) {
+  for (var i = 0; i < 22; i++) {
     var r = document.createElement('div');
     r.className = 'ri-ray';
-    var angle = (i / 32) * 360;
+    var angle = (i / 22) * 360;
     var h = 120 + Math.random() * 350;
     var o = 0.15 + Math.random() * 0.4;
     var w = 2 + Math.random() * 5;
-    r.style.cssText = 'transform:rotate('+angle+'deg);--ray-h:'+h+'px;--ray-o:'+o+';width:'+w+'px;animation-delay:'+(2+Math.random()*1.5)+'s;';
+    r.style.cssText = 'transform:rotate('+angle+'deg);--ray-h:'+h+'px;--ray-o:'+o+';width:'+w+'px;animation-delay:'+(0.55+Math.random()*0.65)+'s;';
     raysEl.appendChild(r);
   }
 
   // Particles
   var particlesEl = document.getElementById('ri-particles');
-  for (var i = 0; i < 55; i++) {
+  for (var i = 0; i < 32; i++) {
     var p = document.createElement('div');
     p.className = 'ri-particle';
     var sz = 2 + Math.random() * 5;
-    p.style.cssText = 'width:'+sz+'px;height:'+sz+'px;left:'+(25+Math.random()*50)+'%;bottom:'+(10+Math.random()*35)+'%;--dur:'+(3+Math.random()*4)+'s;--delay:'+(2.5+Math.random()*3)+'s;filter:blur('+Math.random()*2+'px);';
+    p.style.cssText = 'width:'+sz+'px;height:'+sz+'px;left:'+(25+Math.random()*50)+'%;bottom:'+(10+Math.random()*35)+'%;--dur:'+(2+Math.random()*2.2)+'s;--delay:'+(1.1+Math.random()*1.4)+'s;filter:blur('+Math.random()*1.2+'px);';
     particlesEl.appendChild(p);
   }
 
   // Grass
   var grassEl = document.getElementById('ri-grass');
-  for (var i = 0; i < 130; i++) {
+  for (var i = 0; i < 80; i++) {
     var t = document.createElement('div');
     t.className = 'ri-tuft';
     var h = 5 + Math.random() * 18;
     var hue = 75 + Math.random() * 45;
     var light = 7 + Math.random() * 10;
-    t.style.cssText = 'left:'+(i/130)*100+'%;height:'+h+'px;background:hsl('+hue+',25%,'+light+'%);transform:rotate('+(-15+Math.random()*30)+'deg);';
+    t.style.cssText = 'left:'+(i/80)*100+'%;height:'+h+'px;background:hsl('+hue+',25%,'+light+'%);transform:rotate('+(-15+Math.random()*30)+'deg);';
     grassEl.appendChild(t);
   }
 
@@ -495,16 +496,16 @@
     if (scene.classList.contains('active')) return;
     scene.classList.add('active');
 
-    // Full white ends ~10s; title ~1.25s; then 2s hold → greeting page
+    // ~4.1s full white; title ~0.95s; 2s hold → ~7.1s handoff
     setTimeout(function() {
       overlay.classList.add('ri-fade-out');
       var main = document.getElementById('ybb-main-content');
       if (main) main.classList.add('ybb-revealed');
-    }, 13300);
+    }, 7100);
 
     setTimeout(function() {
       overlay.remove();
-    }, 15300);
+    }, 9000);
   });
 })();
 </script>
