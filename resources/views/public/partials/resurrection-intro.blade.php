@@ -9,6 +9,17 @@
   <div class="ri-light-rays" id="ri-lightRays"></div>
 
   <div class="ri-tomb-container">
+    <div class="ri-intro-prompt" id="ri-introPrompt">
+      <div class="ri-intro-text">ሂዱ ንገሩ አውሩ ለ</div>
+      <div class="ri-btn-wrap">
+        <button class="ri-btn-aleme" id="ri-btnAleme" type="button">ዓለም</button>
+        <div class="ri-click-hint" aria-hidden="true">
+          <span class="ri-click-hint-ring"></span>
+          <span class="ri-click-hint-head"></span>
+          <span class="ri-click-hint-shaft"></span>
+        </div>
+      </div>
+    </div>
     <div class="ri-tomb-mound"></div>
     <div class="ri-tomb-hole">
       <div class="ri-divine-light"></div>
@@ -38,23 +49,17 @@
     <p>ማቴ 28፡6</p>
     <span class="ri-flourish"></span>
   </div>
-
-  <div class="ri-intro-prompt" id="ri-introPrompt">
-    <div class="ri-intro-text">ሂዱ ንገሩ አውሩ ለ</div>
-    <div style="position:relative;display:inline-block;">
-      <button class="ri-btn-aleme" id="ri-btnAleme" type="button">ዓለም</button>
-      <div class="ri-click-hint" aria-hidden="true">
-        <span class="ri-click-hint-ring"></span>
-        <span class="ri-click-hint-head"></span>
-        <span class="ri-click-hint-shaft"></span>
-      </div>
-    </div>
-  </div>
 </div>
 </div>
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+Ethiopic:wght@300;400;500;600;700;900&display=swap');
+
+  @font-face {
+    font-family: 'Benaiah';
+    src: url('{{ asset('fonts/Benaiah_536454528f.ttf') }}') format('truetype');
+    font-display: swap;
+  }
 
   /* ═══ SCENE ═══ */
   .ri-scene {
@@ -291,20 +296,36 @@
   .ri-scene.active .ri-flourish{animation:riFlourishIn 2s ease 9.5s forwards;}
   @keyframes riFlourishIn{0%{opacity:0;width:0}100%{opacity:.6;width:120px}}
 
-  /* ═══ INTRO PROMPT ═══ */
+  /* ═══ INTRO — glass card above tomb (matches Resurrection.html) ═══ */
   .ri-intro-prompt {
-    position:absolute;bottom:8%;left:50%;transform:translateX(-50%);
-    z-index:20;text-align:center;
-    transition:opacity 1.2s ease,transform 1.2s ease;
+    position:absolute;left:50%;bottom:208px;transform:translateX(-50%);
+    z-index:25;
+    width:min(calc(100vw - 2rem),292px);max-width:calc(100% + 32px);
+    padding:1rem 1.15rem 1.2rem;text-align:center;border-radius:1.25rem;
+    background:linear-gradient(155deg,rgba(42,32,38,.42) 0%,rgba(14,10,20,.38) 45%,rgba(10,8,16,.48) 100%);
+    border:1px solid rgba(226,202,24,.12);
+    box-shadow:0 12px 40px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.04) inset,inset 0 1px 0 rgba(255,248,220,.08);
+    backdrop-filter:blur(12px) saturate(1.2);
+    -webkit-backdrop-filter:blur(12px) saturate(1.2);
+    transition:opacity 1.2s ease,transform 1.2s ease,box-shadow 1.2s ease;
   }
-  .ri-scene.active .ri-intro-prompt{opacity:0;transform:translateX(-50%) translateY(20px);pointer-events:none;}
+  .ri-intro-prompt::before {
+    content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+    background:linear-gradient(180deg,rgba(255,248,220,.07) 0%,transparent 42%);
+  }
+  .ri-scene.active .ri-intro-prompt{
+    opacity:0;transform:translateX(-50%) translateY(16px);pointer-events:none;box-shadow:none;
+  }
   .ri-intro-text {
-    font-family:'Noto Serif Ethiopic',serif;font-weight:400;
-    font-size:clamp(1rem,2.5vw,1.4rem);color:rgba(255,248,220,.55);
-    letter-spacing:.08em;margin-bottom:20px;line-height:1.6;
+    position:relative;z-index:1;
+    font-family:'Benaiah','Noto Serif Ethiopic',serif;font-weight:700;
+    font-size:clamp(1.05rem,2.6vw,1.35rem);
+    color:rgba(255,252,245,.95);
+    letter-spacing:.06em;margin-bottom:14px;line-height:1.65;
     animation:riIntroPulse 3s ease-in-out infinite alternate;
   }
-  @keyframes riIntroPulse{0%{opacity:.4}100%{opacity:.7}}
+  @keyframes riIntroPulse{0%{opacity:.88}100%{opacity:1}}
+  .ri-intro-prompt .ri-btn-wrap{position:relative;z-index:1;display:inline-block;}
 
   /* ═══ BUTTON ═══ */
   .ri-btn-aleme {
@@ -378,21 +399,21 @@
     100%{opacity:0;transform:rotate(calc(var(--start) + 360deg)) translateX(var(--radius)) scale(0)}
   }
 
-  /* ═══ CONTINUOUS SCREEN SHAKE ═══ */
+  /* Screen shake (single burst, Resurrection.html) */
   .ri-scene.active {
-    animation:riScreenShake .45s ease-in-out 1.5s infinite;
+    animation:riScreenShake .8s ease 1.5s;
   }
   @keyframes riScreenShake {
     0%,100%{transform:translate(0,0)}
-    10%{transform:translate(-2px,1px)}
-    20%{transform:translate(3px,-2px)}
-    30%{transform:translate(-1px,2px)}
-    40%{transform:translate(2px,-1px)}
-    50%{transform:translate(-2px,1px)}
-    60%{transform:translate(1px,-2px)}
+    10%{transform:translate(-3px,2px)}
+    20%{transform:translate(4px,-2px)}
+    30%{transform:translate(-2px,3px)}
+    40%{transform:translate(3px,-1px)}
+    50%{transform:translate(-1px,2px)}
+    60%{transform:translate(2px,-3px)}
     70%{transform:translate(-3px,1px)}
-    80%{transform:translate(1px,-1px)}
-    90%{transform:translate(-1px,2px)}
+    80%{transform:translate(1px,-2px)}
+    90%{transform:translate(-2px,1px)}
   }
 
   /* ═══ OVERLAY FADE-OUT ═══ */
