@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ተነስቷል</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+Ethiopic:wght@300;400;500;600;700;900&display=swap');
+
+  /* Local copy: resources/views/public/fonts/Benaiah.ttf (fallback: app public/fonts) */
+  @font-face {
+    font-family: 'Benaiah';
+    src:
+      url('fonts/Benaiah.ttf') format('truetype'),
+      url('/fonts/Benaiah_536454528f.ttf') format('truetype');
+    font-display: swap;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #000;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .scene {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* SKY */
+  .sky {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, #03030a 0%, #0a0a18 40%, #12101e 70%, #1a1220 100%);
+  }
+
+  /* STARS */
+  .stars { position: absolute; inset: 0; }
+  .star {
+    position: absolute;
+    background: #fff;
+    border-radius: 50%;
+    animation: twinkle 3s ease-in-out infinite alternate;
+  }
+  @keyframes twinkle { 0% { opacity: 0.2; } 100% { opacity: 1; } }
+
+  /* GROUND */
+  .ground {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 40%;
+    background: linear-gradient(180deg, #1a1510 0%, #0d0b08 100%);
+    clip-path: ellipse(85% 100% at 50% 100%);
+    z-index: 2;
+  }
+  .ground-rocks {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 38%;
+    background: linear-gradient(180deg, #15120d 0%, #0a0908 100%);
+    clip-path: ellipse(78% 90% at 50% 100%);
+    z-index: 2;
+  }
+
+  /* CIRCULAR TOMB */
+  .tomb-container {
+    position: absolute;
+    bottom: 18%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 5;
+    width: 260px;
+    height: 300px;
+  }
+
+  .tomb-mound {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 300px;
+    height: 200px;
+    background: radial-gradient(ellipse at 50% 80%, #2a2520, #1a1510);
+    border-radius: 50% 50% 10% 10%;
+    box-shadow:
+      inset -10px -5px 25px rgba(0,0,0,0.5),
+      inset 3px 3px 10px rgba(255,255,255,0.02),
+      0 15px 50px rgba(0,0,0,0.8);
+  }
+
+  .tomb-hole {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle, #000 60%, #0a0a0a 100%);
+    border-radius: 50%;
+    z-index: 6;
+    box-shadow: inset 0 0 30px rgba(0,0,0,1), 0 0 15px rgba(0,0,0,0.8);
+    overflow: visible;
+  }
+
+  .tomb-hole::before {
+    content: '';
+    position: absolute;
+    inset: -8px;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, #3a3530, #2a2520, #3a3530, #2d2925, #3a3530);
+    z-index: -1;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.6);
+  }
+
+  .stone {
+    position: absolute;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    z-index: 8;
+    transition: transform 2.8s cubic-bezier(0.22, 0.61, 0.36, 1);
+    background:
+      radial-gradient(circle at 35% 35%, #555048, #3a3530 40%, #2a2520 70%, #1f1b18 100%);
+    box-shadow:
+      inset -12px -8px 25px rgba(0,0,0,0.5),
+      inset 6px 6px 15px rgba(255,255,255,0.05),
+      8px 8px 30px rgba(0,0,0,0.7);
+  }
+  .stone::after {
+    content: '';
+    position: absolute;
+    inset: 12px;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 30% 30%, rgba(255,255,255,0.06) 0%, transparent 50%),
+      radial-gradient(circle at 65% 70%, rgba(0,0,0,0.2) 0%, transparent 40%);
+  }
+  .stone::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 20%;
+    width: 60%;
+    height: 1px;
+    background: rgba(0,0,0,0.4);
+    transform: rotate(-12deg);
+    box-shadow: 0 20px 0 rgba(0,0,0,0.25), -10px 40px 0 rgba(0,0,0,0.2);
+  }
+
+  .scene.active .stone {
+    transform: translateX(-50%) translateX(180px) rotate(90deg);
+  }
+
+  /* DIVINE LIGHT */
+  .divine-light {
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+    z-index: 5;
+    opacity: 0;
+    background: radial-gradient(circle, #fff 0%, #fffbe6 20%, #f5d76e 40%, transparent 70%);
+    transition: opacity 1.5s ease 1.8s;
+  }
+  .scene.active .divine-light { opacity: 1; }
+
+  /* LIGHT RAYS */
+  .light-rays {
+    position: absolute;
+    bottom: 105px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0; height: 0;
+    z-index: 4;
+    opacity: 0;
+    transition: opacity 1s ease 2s;
+  }
+  .scene.active .light-rays { opacity: 1; }
+
+  .ray {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 3px;
+    height: 0;
+    background: linear-gradient(0deg, #fff, #fffbe688, transparent);
+    transform-origin: bottom center;
+    border-radius: 2px;
+    filter: blur(1.5px);
+  }
+  .scene.active .ray {
+    animation: rayGrow 2.5s ease-out forwards;
+  }
+  @keyframes rayGrow {
+    0% { height: 0; opacity: 0; }
+    40% { opacity: 0.9; }
+    100% { height: var(--ray-h); opacity: var(--ray-o); }
+  }
+
+  /* JESUS FIGURE */
+  .jesus-figure {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%) translateY(60px) scale(0.8);
+    z-index: 9;
+    opacity: 0;
+    transition: opacity 2s ease 2.8s, transform 3.5s ease 2.8s;
+  }
+  .scene.active .jesus-figure {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-40px) scale(1);
+  }
+
+  .figure-body {
+    position: relative;
+    width: 70px;
+    height: 160px;
+  }
+
+  .figure-head {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 26px;
+    height: 30px;
+    background: radial-gradient(ellipse, #f5e6d3, #d4b896);
+    border-radius: 50%;
+    box-shadow: 0 0 30px rgba(255,255,255,0.8), 0 0 60px rgba(255,248,220,0.5);
+  }
+
+  .halo {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.7);
+    box-shadow:
+      0 0 20px rgba(255,255,255,0.5),
+      0 0 40px rgba(255,248,220,0.3),
+      inset 0 0 15px rgba(255,255,255,0.15);
+    animation: haloGlow 1.8s ease-in-out infinite alternate;
+    animation-play-state: paused;
+  }
+  .scene.active .halo { animation-play-state: running; }
+  @keyframes haloGlow {
+    0% { box-shadow: 0 0 20px rgba(255,255,255,0.5), 0 0 40px rgba(255,248,220,0.3), inset 0 0 15px rgba(255,255,255,0.15); }
+    100% { box-shadow: 0 0 35px rgba(255,255,255,0.8), 0 0 70px rgba(255,248,220,0.5), inset 0 0 25px rgba(255,255,255,0.25); }
+  }
+
+  .figure-robe {
+    position: absolute;
+    top: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 54px;
+    height: 125px;
+    background: linear-gradient(180deg, #fff 0%, #f5f0e8 30%, #ebe5da 100%);
+    clip-path: polygon(18% 0%, 82% 0%, 100% 100%, 0% 100%);
+    box-shadow: 0 0 30px rgba(255,255,255,0.4);
+  }
+  .figure-robe::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 12%; width: 76%; height: 100%;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+  }
+
+  .arm {
+    position: absolute;
+    top: 40px;
+    width: 48px;
+    height: 8px;
+    background: linear-gradient(180deg, #fff, #ebe5da);
+    border-radius: 4px;
+    opacity: 0;
+    transition: opacity 1.2s ease 4.2s, transform 1.8s ease 4.2s;
+  }
+  .arm-left {
+    right: 52px;
+    transform: rotate(20deg) scaleX(0);
+    transform-origin: right center;
+  }
+  .arm-right {
+    left: 52px;
+    transform: rotate(-20deg) scaleX(0);
+    transform-origin: left center;
+  }
+  .scene.active .arm { opacity: 1; }
+  .scene.active .arm-left { transform: rotate(-20deg) scaleX(1); }
+  .scene.active .arm-right { transform: rotate(20deg) scaleX(1); }
+
+  .figure-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 120px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,0.5), rgba(255,255,255,0.1), transparent);
+    filter: blur(15px);
+    opacity: 0;
+    transition: opacity 2s ease 3.5s;
+  }
+  .scene.active .figure-glow { opacity: 1; }
+
+  /* PARTICLES */
+  .particles { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+  .particle {
+    position: absolute;
+    background: #fff;
+    border-radius: 50%;
+    opacity: 0;
+  }
+  .scene.active .particle {
+    animation: floatUp var(--dur) ease-out var(--delay) infinite;
+  }
+  @keyframes floatUp {
+    0% { opacity: 0; transform: translateY(0) scale(0.5); }
+    15% { opacity: 0.9; }
+    100% { opacity: 0; transform: translateY(-350px) scale(0); }
+  }
+
+  /* GRASS */
+  .grass {
+    position: absolute; bottom: 0; width: 100%; height: 30px;
+    z-index: 9; pointer-events: none;
+  }
+  .tuft {
+    position: absolute; bottom: -2px; width: 3px; border-radius: 2px 2px 0 0;
+  }
+
+  /* ═══ WHITE LIGHT TAKEOVER ═══ */
+  .flash-burst {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 62%, #fff, rgba(255,255,255,0.6) 30%, transparent 65%);
+    z-index: 12;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .scene.active .flash-burst {
+    animation: flashBurst 1.2s ease-out 2s forwards;
+  }
+  @keyframes flashBurst {
+    0% { opacity: 0; }
+    40% { opacity: 0.7; }
+    100% { opacity: 0; }
+  }
+
+  .radial-white {
+    position: absolute;
+    bottom: 30%;
+    left: 50%;
+    transform: translate(-50%, 50%);
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff, rgba(255,255,255,0.8), transparent);
+    z-index: 45;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .scene.active .radial-white {
+    animation: radialExpand 5s ease-out 3.5s forwards;
+  }
+  @keyframes radialExpand {
+    0% { opacity: 0; width: 10px; height: 10px; }
+    10% { opacity: 0.9; }
+    100% { opacity: 1; width: 300vw; height: 300vh; }
+  }
+
+  .light-wave-2 {
+    position: absolute;
+    bottom: 30%;
+    left: 50%;
+    transform: translate(-50%, 50%);
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff, rgba(255,248,220,0.9), transparent);
+    z-index: 44;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .scene.active .light-wave-2 {
+    animation: radialExpand2 6s ease-out 3s forwards;
+  }
+  @keyframes radialExpand2 {
+    0% { opacity: 0; width: 5px; height: 5px; }
+    15% { opacity: 0.6; }
+    100% { opacity: 0.8; width: 250vw; height: 250vh; }
+  }
+
+  .white-takeover {
+    position: absolute;
+    inset: 0;
+    background: #fff;
+    z-index: 50;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .scene.active .white-takeover {
+    animation: whiteTakeover 6s ease-in 4s forwards;
+  }
+  @keyframes whiteTakeover {
+    0% { opacity: 0; }
+    30% { opacity: 0.3; }
+    60% { opacity: 0.7; }
+    85% { opacity: 0.95; }
+    100% { opacity: 1; }
+  }
+
+  /* ═══ RISEN TITLE (after white) ═══ */
+  .title-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 60;
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .scene.active .title-text {
+    animation: titleReveal 3s ease 8s forwards;
+  }
+  @keyframes titleReveal {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.85); }
+    100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  }
+
+  .title-text h1 {
+    font-family: 'Noto Serif Ethiopic', serif;
+    font-weight: 700;
+    font-size: clamp(2.5rem, 8vw, 6rem);
+    color: #b8963e;
+    text-shadow:
+      0 0 30px rgba(184,150,62,0.5),
+      0 0 60px rgba(184,150,62,0.25),
+      0 0 100px rgba(184,150,62,0.1);
+    letter-spacing: 0.15em;
+  }
+
+  .title-text p {
+    font-family: 'Noto Serif Ethiopic', serif;
+    font-weight: 400;
+    font-size: clamp(1rem, 3vw, 1.6rem);
+    color: rgba(150,130,90,0.8);
+    margin-top: 20px;
+    letter-spacing: 0.1em;
+  }
+
+  .title-text .flourish {
+    display: block;
+    margin: 24px auto 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #b8963e, transparent);
+    opacity: 0;
+  }
+  .scene.active .title-text .flourish {
+    animation: flourishIn 2s ease 9.5s forwards;
+  }
+  @keyframes flourishIn {
+    0% { opacity: 0; width: 0; }
+    100% { opacity: 0.6; width: 120px; }
+  }
+
+  /* ═══════════════════════════════════
+     INTRO — glass card above the tomb
+     ═══════════════════════════════════ */
+  .intro-prompt {
+    position: absolute;
+    left: 50%;
+    bottom: 208px;
+    transform: translateX(-50%);
+    z-index: 25;
+    width: min(calc(100vw - 2rem), 292px);
+    max-width: calc(100% + 32px);
+    padding: 1rem 1.15rem 1.2rem;
+    text-align: center;
+    border-radius: 1.25rem;
+    background: linear-gradient(
+      155deg,
+      rgba(42, 32, 38, 0.42) 0%,
+      rgba(14, 10, 20, 0.38) 45%,
+      rgba(10, 8, 16, 0.48) 100%
+    );
+    border: 1px solid rgba(226, 202, 24, 0.12);
+    box-shadow:
+      0 12px 40px rgba(0, 0, 0, 0.45),
+      0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+      inset 0 1px 0 rgba(255, 248, 220, 0.08);
+    backdrop-filter: blur(12px) saturate(1.2);
+    -webkit-backdrop-filter: blur(12px) saturate(1.2);
+    transition: opacity 1.2s ease, transform 1.2s ease, box-shadow 1.2s ease;
+  }
+
+  .intro-prompt::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 248, 220, 0.07) 0%,
+      transparent 42%
+    );
+  }
+
+  .scene.active .intro-prompt {
+    opacity: 0;
+    transform: translateX(-50%) translateY(16px);
+    pointer-events: none;
+    box-shadow: none;
+  }
+
+  .intro-text {
+    position: relative;
+    z-index: 1;
+    font-family: 'Benaiah', 'Noto Serif Ethiopic', serif;
+    font-weight: 700;
+    font-size: clamp(1.05rem, 2.6vw, 1.35rem);
+    color: rgba(255, 252, 245, 0.95);
+    letter-spacing: 0.06em;
+    margin-bottom: 14px;
+    line-height: 1.65;
+    animation: introTextPulse 3s ease-in-out infinite alternate;
+  }
+  @keyframes introTextPulse {
+    0% { opacity: 0.88; }
+    100% { opacity: 1; }
+  }
+
+  .intro-prompt .btn-wrap {
+    position: relative;
+    z-index: 1;
+    display: inline-block;
+  }
+
+  /* ── THE ዓለም BUTTON ── */
+  .btn-aleme {
+    position: relative;
+    display: inline-block;
+    font-family: 'Noto Serif Ethiopic', serif;
+    font-weight: 700;
+    font-size: clamp(1.2rem, 3vw, 1.8rem);
+    color: #fffbe6;
+    background: transparent;
+    border: 2px solid rgba(184,150,62,0.5);
+    padding: 14px 48px;
+    border-radius: 60px;
+    cursor: pointer;
+    letter-spacing: 0.15em;
+    overflow: hidden;
+    transition: all 0.4s ease;
+    animation: btnFloat 3s ease-in-out infinite;
+  }
+
+  @keyframes btnFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+
+  .btn-aleme:hover {
+    border-color: rgba(184,150,62,0.9);
+    color: #fff;
+    text-shadow: 0 0 15px rgba(255,248,220,0.6);
+    box-shadow:
+      0 0 25px rgba(184,150,62,0.3),
+      0 0 50px rgba(184,150,62,0.15),
+      inset 0 0 20px rgba(184,150,62,0.1);
+  }
+
+  /* Shimmer sweep effect */
+  .btn-aleme::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255,248,220,0.15) 40%,
+      rgba(255,248,220,0.3) 50%,
+      rgba(255,248,220,0.15) 60%,
+      transparent 100%
+    );
+    animation: shimmerSweep 2.5s ease-in-out infinite;
+  }
+  @keyframes shimmerSweep {
+    0% { left: -100%; }
+    100% { left: 200%; }
+  }
+
+  /* Outer glow ring pulse */
+  .btn-aleme::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 60px;
+    border: 1px solid rgba(184,150,62,0.2);
+    animation: ringPulse 2s ease-in-out infinite;
+  }
+  @keyframes ringPulse {
+    0%, 100% { opacity: 0.3; inset: -6px; }
+    50% { opacity: 0.7; inset: -12px; }
+  }
+
+  /* Themed “tap here” arrow (↑ toward button) */
+  .click-hint {
+    position: absolute;
+    bottom: -56px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: none;
+    animation: clickBounce 1.2s ease-in-out infinite;
+    opacity: 0.85;
+  }
+
+  .click-hint-head {
+    position: relative;
+    z-index: 1;
+    width: 0;
+    height: 0;
+    border-left: 11px solid transparent;
+    border-right: 11px solid transparent;
+    border-bottom: 15px solid #d4b45a;
+    filter:
+      drop-shadow(0 0 6px rgba(226, 202, 24, 0.55))
+      drop-shadow(0 0 14px rgba(184, 150, 62, 0.45));
+  }
+
+  .click-hint-shaft {
+    position: relative;
+    z-index: 1;
+    width: 3px;
+    height: 20px;
+    margin-top: -1px;
+    border-radius: 2px;
+    background: linear-gradient(
+      180deg,
+      #fffbe6 0%,
+      #c9a04a 45%,
+      #8a7030 100%
+    );
+    box-shadow:
+      0 0 10px rgba(226, 202, 24, 0.35),
+      0 0 18px rgba(184, 150, 62, 0.25),
+      inset 0 0 2px rgba(255, 255, 255, 0.25);
+  }
+
+  .click-hint-ring {
+    position: absolute;
+    left: 50%;
+    top: 42%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 58px;
+    border-radius: 999px;
+    border: 1px solid rgba(184, 150, 62, 0.22);
+    box-shadow:
+      0 0 20px rgba(184, 150, 62, 0.12),
+      inset 0 0 12px rgba(184, 150, 62, 0.06);
+    animation: hintRingPulse 2s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  @keyframes hintRingPulse {
+    0%, 100% { opacity: 0.35; transform: translate(-50%, -50%) scale(1); }
+    50% { opacity: 0.65; transform: translate(-50%, -50%) scale(1.06); }
+  }
+
+  @keyframes clickBounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); opacity: 0.55; }
+    50% { transform: translateX(-50%) translateY(-8px); opacity: 1; }
+  }
+
+  /* Sparkle dots around button */
+  .btn-sparkle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: #fffbe6;
+    border-radius: 50%;
+    pointer-events: none;
+    animation: sparkleOrbit var(--dur) linear infinite;
+    opacity: 0;
+  }
+  @keyframes sparkleOrbit {
+    0% { opacity: 0; transform: rotate(var(--start)) translateX(var(--radius)) scale(0); }
+    20% { opacity: 0.8; }
+    80% { opacity: 0.6; }
+    100% { opacity: 0; transform: rotate(calc(var(--start) + 360deg)) translateX(var(--radius)) scale(0); }
+  }
+
+  /* Screen shake */
+  .scene.active {
+    animation: screenShake 0.8s ease 1.5s;
+  }
+  @keyframes screenShake {
+    0%, 100% { transform: translate(0,0); }
+    10% { transform: translate(-3px, 2px); }
+    20% { transform: translate(4px, -2px); }
+    30% { transform: translate(-2px, 3px); }
+    40% { transform: translate(3px, -1px); }
+    50% { transform: translate(-1px, 2px); }
+    60% { transform: translate(2px, -3px); }
+    70% { transform: translate(-3px, 1px); }
+    80% { transform: translate(1px, -2px); }
+    90% { transform: translate(-2px, 1px); }
+  }
+</style>
+</head>
+<body>
+
+<div class="scene" id="scene">
+  <div class="sky"></div>
+  <div class="stars" id="stars"></div>
+  <div class="particles" id="particles"></div>
+  <div class="ground"></div>
+  <div class="ground-rocks"></div>
+  <div class="light-rays" id="lightRays"></div>
+
+  <div class="tomb-container">
+    <!-- INTRO — above tomb mound -->
+    <div class="intro-prompt" id="introPrompt">
+      <div class="intro-text">ሂዱ ንገሩ አውሩ ለ</div>
+      <div class="btn-wrap">
+        <button class="btn-aleme" id="btnAleme">ዓለም</button>
+        <div class="click-hint" aria-hidden="true">
+          <span class="click-hint-ring"></span>
+          <span class="click-hint-head"></span>
+          <span class="click-hint-shaft"></span>
+        </div>
+      </div>
+    </div>
+    <div class="tomb-mound"></div>
+    <div class="tomb-hole">
+      <div class="divine-light"></div>
+      <div class="jesus-figure">
+        <div class="figure-body">
+          <div class="figure-glow"></div>
+          <div class="halo"></div>
+          <div class="figure-head"></div>
+          <div class="figure-robe"></div>
+          <div class="arm arm-left"></div>
+          <div class="arm arm-right"></div>
+        </div>
+      </div>
+    </div>
+    <div class="stone"></div>
+  </div>
+
+  <div class="grass" id="grass"></div>
+
+  <div class="flash-burst"></div>
+  <div class="light-wave-2"></div>
+  <div class="radial-white"></div>
+  <div class="white-takeover"></div>
+
+  <div class="title-text">
+    <h1>ተነስቷል</h1>
+    <p>ማቴ 28፡6</p>
+    <span class="flourish"></span>
+  </div>
+
+</div>
+
+<script>
+  // Stars
+  const starsEl = document.getElementById('stars');
+  for (let i = 0; i < 90; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = Math.random() * 2.5 + 0.8;
+    s.style.cssText = `width:${size}px;height:${size}px;top:${Math.random()*50}%;left:${Math.random()*100}%;animation-delay:${Math.random()*3}s;animation-duration:${2+Math.random()*3}s;`;
+    starsEl.appendChild(s);
+  }
+
+  // Light rays
+  const raysEl = document.getElementById('lightRays');
+  for (let i = 0; i < 32; i++) {
+    const r = document.createElement('div');
+    r.className = 'ray';
+    const angle = (i / 32) * 360;
+    const h = 120 + Math.random() * 350;
+    const o = 0.15 + Math.random() * 0.4;
+    const w = 2 + Math.random() * 5;
+    r.style.cssText = `transform:rotate(${angle}deg);--ray-h:${h}px;--ray-o:${o};width:${w}px;animation-delay:${2+Math.random()*1.5}s;`;
+    raysEl.appendChild(r);
+  }
+
+  // Particles
+  const particlesEl = document.getElementById('particles');
+  for (let i = 0; i < 55; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = 2 + Math.random() * 5;
+    p.style.cssText = `width:${size}px;height:${size}px;left:${25+Math.random()*50}%;bottom:${10+Math.random()*35}%;--dur:${3+Math.random()*4}s;--delay:${2.5+Math.random()*3}s;filter:blur(${Math.random()*2}px);`;
+    particlesEl.appendChild(p);
+  }
+
+  // Grass
+  const grassEl = document.getElementById('grass');
+  for (let i = 0; i < 130; i++) {
+    const t = document.createElement('div');
+    t.className = 'tuft';
+    const h = 5 + Math.random() * 18;
+    const hue = 75 + Math.random() * 45;
+    const light = 7 + Math.random() * 10;
+    t.style.cssText = `left:${(i/130)*100}%;height:${h}px;background:hsl(${hue},25%,${light}%);transform:rotate(${-15+Math.random()*30}deg);`;
+    grassEl.appendChild(t);
+  }
+
+  // Sparkle dots around button
+  const btn = document.getElementById('btnAleme');
+  for (let i = 0; i < 8; i++) {
+    const sp = document.createElement('div');
+    sp.className = 'btn-sparkle';
+    const startAngle = (i / 8) * 360;
+    const radius = 55 + Math.random() * 20;
+    const dur = 3 + Math.random() * 2;
+    sp.style.cssText = `
+      top: 50%; left: 50%;
+      --start: ${startAngle}deg;
+      --radius: ${radius}px;
+      --dur: ${dur}s;
+      animation-delay: ${(i / 8) * dur}s;
+      width: ${2 + Math.random() * 3}px;
+      height: ${2 + Math.random() * 3}px;
+    `;
+    btn.parentElement.appendChild(sp);
+  }
+
+  // Button triggers tomb animation
+  const scene = document.getElementById('scene');
+  btn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    if (!scene.classList.contains('active')) {
+      scene.classList.add('active');
+    }
+  });
+</script>
+
+</body>
+</html>

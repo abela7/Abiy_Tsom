@@ -19,6 +19,11 @@
     @keyframes fasika-shimmer {
         to { background-position: 200% center; }
     }
+    /* Geʿez hymn stack (app.css @font-face "Benaiah") */
+    .fasika-banner-benaiah {
+        font-family: 'Benaiah', 'Noto Serif Ethiopic', ui-serif, Georgia, serif;
+        font-weight: 700;
+    }
 </style>
 <div class="relative rounded-3xl overflow-hidden px-5 py-6 text-center space-y-3">
     {{-- Ambient glow behind artwork --}}
@@ -49,13 +54,13 @@
         {{ __('app.fasika_eyebrow') }}
     </p>
 
-    <h2 class="text-3xl font-black leading-tight fasika-shimmer-text">
+    <h2 class="fasika-banner-benaiah text-3xl leading-tight fasika-shimmer-text">
         {{ __('app.fasika_banner_main') }}
     </h2>
 
     <div class="space-y-2 text-center">
         @foreach(trans('app.fasika_banner_lines') as $fasikaBannerLine)
-            <h3 class="text-base font-semibold text-white/90 leading-snug">{{ $fasikaBannerLine }}</h3>
+            <h3 class="fasika-banner-benaiah text-base text-white/90 leading-snug">{{ $fasikaBannerLine }}</h3>
         @endforeach
     </div>
 
