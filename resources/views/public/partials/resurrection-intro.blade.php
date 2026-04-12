@@ -36,7 +36,7 @@
       ">
         <span style="
           display:inline-block;
-          font-family:'Noto Serif Ethiopic',serif;font-weight:600;
+          font-family:'Benaiah','Noto Serif Ethiopic',serif;font-weight:600;
           font-size:clamp(0.72rem,2vw,0.88rem);
           color:rgba(184,150,62,0.8);
           letter-spacing:.22em;text-transform:uppercase;
@@ -101,7 +101,7 @@
         display:flex;flex-direction:column;align-items:center;gap:0.6rem;
       ">
         <span style="
-          font-family:'Noto Serif Ethiopic',serif;
+          font-family:'Benaiah','Noto Serif Ethiopic',serif;
           font-size:clamp(0.78rem,2vw,0.9rem);
           color:rgba(184,150,62,0.6);
           letter-spacing:.12em;
@@ -189,7 +189,7 @@
 
   /* ── verse base ── */
   .ri-bv {
-    font-family:'Noto Serif Ethiopic',serif;
+    font-family:'Benaiah','Noto Serif Ethiopic',serif;
     font-size:clamp(1rem,2.6vw,1.18rem);
     line-height:2.05;
     color:rgba(255,252,245,.82);
