@@ -273,7 +273,8 @@
     position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
     z-index:60;text-align:center;opacity:0;pointer-events:none;
   }
-  .ri-scene.active .ri-title-text{animation:riTitleReveal 3s ease 8s forwards;}
+  /* Was 8s delay + 3s reveal — too slow; title shows sooner after click */
+  .ri-scene.active .ri-title-text{animation:riTitleReveal 1.1s ease 2.8s forwards;}
   @keyframes riTitleReveal{
     0%{opacity:0;transform:translate(-50%,-50%) scale(.85)}
     100%{opacity:1;transform:translate(-50%,-50%) scale(1)}
@@ -293,7 +294,7 @@
     display:block;margin:24px auto 0;width:0;height:2px;
     background:linear-gradient(90deg,transparent,#b8963e,transparent);opacity:0;
   }
-  .ri-scene.active .ri-flourish{animation:riFlourishIn 2s ease 9.5s forwards;}
+  .ri-scene.active .ri-flourish{animation:riFlourishIn 1.1s ease 3.7s forwards;}
   @keyframes riFlourishIn{0%{opacity:0;width:0}100%{opacity:.6;width:120px}}
 
   /* ═══ INTRO — glass card above tomb (matches Resurrection.html) ═══ */
@@ -494,18 +495,16 @@
     if (scene.classList.contains('active')) return;
     scene.classList.add('active');
 
-    // After title is visible (~11.5s), hold for 2s, then transition to greeting page
+    // After title + short read (was 12s; faster title → shorter wait)
     setTimeout(function() {
       overlay.classList.add('ri-fade-out');
-      // Reveal the main content
       var main = document.getElementById('ybb-main-content');
       if (main) main.classList.add('ybb-revealed');
-    }, 12000);
+    }, 6000);
 
-    // Remove overlay from DOM after fade completes
     setTimeout(function() {
       overlay.remove();
-    }, 14000);
+    }, 8000);
   });
 })();
 </script>
