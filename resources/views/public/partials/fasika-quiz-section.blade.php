@@ -4,12 +4,7 @@
          answerUrl:    @js(route('public.yefasika-beal.quiz.answer')),
          completeUrl:  @js(route('public.yefasika-beal.quiz.complete')),
          csrf:         @js(csrf_token()),
-         labels: {
-             thankYou:     @js(__('app.fasika_quiz_results_thank_you')),
-             scorePerfect: @js(__('app.fasika_quiz_score_label_perfect')),
-             scoreGreat:   @js(__('app.fasika_quiz_score_label_great')),
-             scoreGood:    @js(__('app.fasika_quiz_score_label_good')),
-         },
+         thankYouText: @js(__('app.fasika_quiz_results_thank_you_am', [], 'am')),
      })">
 
     {{-- ═══════════════════════════════════════════
@@ -90,8 +85,11 @@
                 <div x-show="state === 'intro'" class="flex flex-col overflow-y-auto">
                     <div class="flex items-center justify-between px-5 pt-4 pb-3 border-b border-white/[0.07] shrink-0 sm:px-7">
                         <h3 class="text-base font-bold text-white">ፈተናውን ጀምሩ</h3>
-                        <button @click="closeModal()" class="rounded-lg p-1.5 text-zinc-400 transition hover:bg-white/10 hover:text-white">
-                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button type="button"
+                                @click="closeModal()"
+                                class="rounded-lg p-1.5 text-zinc-400 transition hover:bg-white/10 hover:text-white"
+                                aria-label="{{ __('app.fasika_quiz_modal_close_aria') }}">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                             </svg>
                         </button>
@@ -117,21 +115,31 @@
                 {{-- ── PLAYING ── --}}
                 <div x-show="state === 'playing'" x-cloak class="flex flex-col min-h-0 flex-1">
 
-                    {{-- Header --}}
-                    <div class="flex items-center gap-3 px-5 pt-3 pb-2.5 border-b border-white/[0.07] shrink-0 sm:px-7">
-                        <div class="flex items-center gap-1.5 min-w-[3.5rem]"
-                             :class="timeLeft <= 60 ? 'text-rose-400' : 'text-[#e2ca18]'">
-                            <svg class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    {{-- Header (timer + cancel) --}}
+                    <div class="flex items-center gap-2 border-b border-white/[0.07] px-5 pb-2.5 pt-3 shrink-0 sm:gap-3 sm:px-7">
+                        <div class="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+                            <div class="flex shrink-0 items-center gap-1.5 min-w-[3.25rem]"
+                                 :class="timeLeft <= 60 ? 'text-rose-400' : 'text-[#e2ca18]'">
+                                <svg class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <span class="font-mono text-sm font-bold tabular-nums" x-text="formattedTime"></span>
+                            </div>
+                            <div class="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-white/10">
+                                <div class="h-full rounded-full bg-[#e2ca18] transition-all duration-500" :style="`width:${progress}%`"></div>
+                            </div>
+                            <span class="shrink-0 text-right text-xs font-semibold text-zinc-400 min-w-[2.5rem]">
+                                <span x-text="currentIndex + 1"></span>/<span x-text="questions.length"></span>
+                            </span>
+                        </div>
+                        <button type="button"
+                                @click="cancelQuiz()"
+                                class="shrink-0 rounded-lg p-1.5 text-zinc-400 transition hover:bg-white/10 hover:text-white"
+                                aria-label="{{ __('app.fasika_quiz_cancel_quiz_aria') }}">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                             </svg>
-                            <span class="font-mono text-sm font-bold tabular-nums" x-text="formattedTime"></span>
-                        </div>
-                        <div class="flex-1 h-1.5 rounded-full bg-white/10 overflow-hidden">
-                            <div class="h-full rounded-full bg-[#e2ca18] transition-all duration-500" :style="`width:${progress}%`"></div>
-                        </div>
-                        <span class="text-xs font-semibold text-zinc-400 min-w-[2.5rem] text-right">
-                            <span x-text="currentIndex + 1"></span>/<span x-text="questions.length"></span>
-                        </span>
+                        </button>
                     </div>
 
                     {{-- Question area (scrollable) --}}
@@ -213,8 +221,11 @@
                 <div x-show="state === 'results'" x-cloak class="flex flex-col overflow-y-auto">
                     <div class="flex items-center justify-between px-5 pt-4 pb-3 border-b border-white/[0.07] shrink-0 sm:px-7">
                         <h3 class="text-base font-bold text-white">ውጤትዎ</h3>
-                        <button @click="closeModal()" class="rounded-lg p-1.5 text-zinc-400 transition hover:bg-white/10 hover:text-white">
-                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button type="button"
+                                @click="closeModal()"
+                                class="rounded-lg p-1.5 text-zinc-400 transition hover:bg-white/10 hover:text-white"
+                                aria-label="{{ __('app.fasika_quiz_modal_close_aria') }}">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                             </svg>
                         </button>
@@ -267,8 +278,15 @@ function fasikaQuiz(config) {
         get formattedTime() { const m = Math.floor(this.timeLeft / 60), s = this.timeLeft % 60; return m + ':' + String(s).padStart(2, '0'); },
 
         openModal()  { this.modalOpen = true;  document.body.style.overflow = 'hidden'; },
-        closeModal() { this.modalOpen = false; document.body.style.overflow = ''; },
-        maybeClose() { if (this.state !== 'playing') this.closeModal(); },
+        closeModal() {
+            if (this.timerInterval) { clearInterval(this.timerInterval); this.timerInterval = null; }
+            if (this.state === 'playing' || this.state === 'results') { this.resetQuiz(); }
+            this.isLoading = false;
+            this.modalOpen = false;
+            document.body.style.overflow = '';
+        },
+        cancelQuiz() { this.closeModal(); },
+        maybeClose() { this.closeModal(); },
 
         optionClass(opt) {
             if (!this.feedback) {
@@ -288,14 +306,7 @@ function fasikaQuiz(config) {
             if (opt === this.selectedOption && !this.feedback.is_correct) return 'border-rose-500 bg-rose-500/20 text-rose-400';
             return 'border-white/10 text-zinc-600';
         },
-        scoreLabel() {
-            const pct = this.results?.percentage ?? 0;
-            const L = config.labels || {};
-            if (pct === 100) return L.scorePerfect || '';
-            if (pct >= 80) return L.scoreGreat || '';
-            if (pct >= 60) return L.scoreGood || '';
-            return L.thankYou || '';
-        },
+        scoreLabel() { return config.thankYouText || ''; },
 
         async startQuiz() {
             this.isLoading = true; this.errorMessage = '';
@@ -344,7 +355,7 @@ function fasikaQuiz(config) {
         },
 
         async finishQuiz() {
-            clearInterval(this.timerInterval);
+            if (this.timerInterval) { clearInterval(this.timerInterval); this.timerInterval = null; }
             try {
                 const res = await fetch(config.completeUrl, {
                     method: 'POST',
@@ -358,7 +369,7 @@ function fasikaQuiz(config) {
             this.state = 'results';
         },
         resetQuiz() {
-            clearInterval(this.timerInterval);
+            if (this.timerInterval) { clearInterval(this.timerInterval); this.timerInterval = null; }
             this.state = 'intro'; this.token = ''; this.questions = []; this.currentIndex = 0;
             this.selectedOption = null; this.feedback = null; this.answers = []; this.answeredMap = {};
             this.score = 0; this.timeLeft = 600; this.results = null; this.errorMessage = '';

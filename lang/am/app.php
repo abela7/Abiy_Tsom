@@ -2227,12 +2227,11 @@ return [
     'yefasika_beal_parish_footer_link' => 'ሊቨርፑል መካነ ቅዱሳን አቡነ ተክለሃይማኖት ቤተክርስቲያን',
 
     // Public Fasika quiz (yefasika-beal)
-    'fasika_quiz_results_thank_you' => 'ጥያቄዎችን ስለሞከሩ እናመሰግናለን።',
-    'fasika_quiz_score_label_perfect' => 'አስደናቂ! ሙሉ ነጥብ!',
-    'fasika_quiz_score_label_great' => 'እጅግ ጥሩ!',
-    'fasika_quiz_score_label_good' => 'ጥሩ ሙከራ!',
+    'fasika_quiz_results_thank_you_am' => 'ጥያቄዎችን ስለሞከሩ እናመሰግናለን።',
     'fasika_quiz_try_again_button' => 'እንደገና ይሞክሩ',
     'fasika_quiz_close_button' => 'ይዝጉ',
+    'fasika_quiz_modal_close_aria' => 'ዝጋ',
+    'fasika_quiz_cancel_quiz_aria' => 'ፈተናውን ለማቆም',
 
     // Fasika greetings admin
     'fasika_greeting_admin_title' => 'የፋሲካ ሰላምታዎች',
