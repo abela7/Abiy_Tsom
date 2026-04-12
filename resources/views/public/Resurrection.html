@@ -439,10 +439,10 @@
     pointer-events: none;
   }
   .scene.active .title-text {
-    animation: titleReveal 1.05s cubic-bezier(0.2, 0.9, 0.25, 1) 10.05s forwards;
+    animation: titleReveal 3s ease 8s forwards;
   }
   @keyframes titleReveal {
-    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.92); }
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.85); }
     100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
   }
 
@@ -476,7 +476,7 @@
     opacity: 0;
   }
   .scene.active .title-text .flourish {
-    animation: flourishIn 1.15s ease-out 11.05s forwards;
+    animation: flourishIn 2s ease 9.5s forwards;
   }
   @keyframes flourishIn {
     0% { opacity: 0; width: 0; }
