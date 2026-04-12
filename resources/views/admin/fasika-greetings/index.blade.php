@@ -49,6 +49,23 @@
         </div>
     </div>
 
+    <div class="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div class="min-w-0">
+            <h2 class="text-lg font-bold text-primary">{{ __('app.fasika_greeting_quiz_hub_title') }}</h2>
+            <p class="mt-1 text-sm text-muted-text">{{ __('app.fasika_greeting_quiz_hub_desc') }}</p>
+        </div>
+        <div class="flex shrink-0 flex-wrap gap-2 sm:justify-end">
+            <a href="{{ route('admin.fasika-quiz.index') }}"
+               class="inline-flex items-center justify-center rounded-xl border border-border bg-surface px-4 py-2 text-sm font-semibold text-primary transition hover:bg-muted/50">
+                {{ __('app.fasika_greeting_quiz_hub_manage') }}
+            </a>
+            <a href="{{ route('admin.fasika-quiz.submissions') }}"
+               class="inline-flex items-center justify-center rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-on-accent shadow transition hover:opacity-90">
+                {{ __('app.fasika_greeting_quiz_hub_submissions') }}
+            </a>
+        </div>
+    </div>
+
     <div class="overflow-hidden rounded-2xl border border-border bg-card">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-border text-sm">

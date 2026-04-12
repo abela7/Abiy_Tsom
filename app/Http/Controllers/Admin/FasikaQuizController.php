@@ -23,10 +23,10 @@ class FasikaQuizController extends Controller
             ->get();
 
         $stats = [
-            'total'       => FasikaQuizQuestion::query()->count(),
-            'active'      => FasikaQuizQuestion::query()->where('is_active', true)->count(),
+            'total' => FasikaQuizQuestion::query()->count(),
+            'active' => FasikaQuizQuestion::query()->where('is_active', true)->count(),
             'submissions' => FasikaQuizSubmission::query()->count(),
-            'avg_score'   => (int) round((float) FasikaQuizSubmission::query()->avg('score')),
+            'avg_score' => (int) round((float) FasikaQuizSubmission::query()->avg('score')),
         ];
 
         return view('admin.fasika-quiz.index', compact('questions', 'stats'));
@@ -45,7 +45,7 @@ class FasikaQuizController extends Controller
 
         return redirect()
             ->route('admin.fasika-quiz.index')
-            ->with('success', 'ጥያቄው በተሳካ ሁኔታ ተጨምሯል።');
+            ->with('success', __('app.fasika_quiz_admin_store_success'));
     }
 
     public function edit(FasikaQuizQuestion $question): View
@@ -61,7 +61,7 @@ class FasikaQuizController extends Controller
 
         return redirect()
             ->route('admin.fasika-quiz.index')
-            ->with('success', 'ጥያቄው በተሳካ ሁኔታ ተዘምኗል።');
+            ->with('success', __('app.fasika_quiz_admin_update_success'));
     }
 
     public function toggle(FasikaQuizQuestion $question): RedirectResponse
@@ -70,7 +70,12 @@ class FasikaQuizController extends Controller
 
         return redirect()
             ->route('admin.fasika-quiz.index')
-            ->with('success', $question->is_active ? 'ጥያቄው ነቅቷል።' : 'ጥያቄው ተዘግቷል።');
+            ->with(
+                'success',
+                $question->is_active
+                    ? __('app.fasika_quiz_admin_toggle_active_success')
+                    : __('app.fasika_quiz_admin_toggle_inactive_success')
+            );
     }
 
     public function destroy(FasikaQuizQuestion $question): RedirectResponse
@@ -79,7 +84,7 @@ class FasikaQuizController extends Controller
 
         return redirect()
             ->route('admin.fasika-quiz.index')
-            ->with('success', 'ጥያቄው ተሰርዟል።');
+            ->with('success', __('app.fasika_quiz_admin_destroy_success'));
     }
 
     // ─── Submissions ──────────────────────────────────────────────────────────
@@ -91,10 +96,10 @@ class FasikaQuizController extends Controller
             ->paginate(30);
 
         $stats = [
-            'total'        => FasikaQuizSubmission::query()->count(),
-            'named'        => FasikaQuizSubmission::query()->whereNotNull('participant_name')->count(),
-            'avg_score'    => (int) round((float) FasikaQuizSubmission::query()->avg('score')),
-            'perfect'      => FasikaQuizSubmission::query()->whereColumn('score', 'total_possible')->count(),
+            'total' => FasikaQuizSubmission::query()->count(),
+            'named' => FasikaQuizSubmission::query()->whereNotNull('participant_name')->count(),
+            'avg_score' => (int) round((float) FasikaQuizSubmission::query()->avg('score')),
+            'perfect' => FasikaQuizSubmission::query()->whereColumn('score', 'total_possible')->count(),
         ];
 
         return view('admin.fasika-quiz.submissions', compact('submissions', 'stats'));
@@ -106,7 +111,7 @@ class FasikaQuizController extends Controller
 
         return redirect()
             ->route('admin.fasika-quiz.submissions')
-            ->with('success', 'ውጤቱ ተሰርዟል።');
+            ->with('success', __('app.fasika_quiz_admin_submission_destroy_success'));
     }
 
     // ─── Private ──────────────────────────────────────────────────────────────
@@ -114,16 +119,16 @@ class FasikaQuizController extends Controller
     private function validateQuestion(Request $request): array
     {
         return $request->validate([
-            'question'       => ['required', 'string', 'max:1000'],
-            'option_a'       => ['required', 'string', 'max:500'],
-            'option_b'       => ['required', 'string', 'max:500'],
-            'option_c'       => ['required', 'string', 'max:500'],
-            'option_d'       => ['required', 'string', 'max:500'],
+            'question' => ['required', 'string', 'max:1000'],
+            'option_a' => ['required', 'string', 'max:500'],
+            'option_b' => ['required', 'string', 'max:500'],
+            'option_c' => ['required', 'string', 'max:500'],
+            'option_d' => ['required', 'string', 'max:500'],
             'correct_option' => ['required', 'in:a,b,c,d'],
-            'difficulty'     => ['required', 'in:easy,medium,hard'],
-            'points'         => ['required', 'integer', 'min:1', 'max:10'],
-            'sort_order'     => ['required', 'integer', 'min:0'],
-            'is_active'      => ['boolean'],
+            'difficulty' => ['required', 'in:easy,medium,hard'],
+            'points' => ['required', 'integer', 'min:1', 'max:10'],
+            'sort_order' => ['required', 'integer', 'min:0'],
+            'is_active' => ['boolean'],
         ]);
     }
 }

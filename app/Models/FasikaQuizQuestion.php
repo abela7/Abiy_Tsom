@@ -25,7 +25,7 @@ class FasikaQuizQuestion extends Model
     {
         return [
             'is_active' => 'boolean',
-            'points'    => 'integer',
+            'points' => 'integer',
             'sort_order' => 'integer',
         ];
     }
@@ -33,24 +33,24 @@ class FasikaQuizQuestion extends Model
     public function toPublicArray(): array
     {
         return [
-            'id'         => $this->id,
-            'question'   => $this->question,
-            'option_a'   => $this->option_a,
-            'option_b'   => $this->option_b,
-            'option_c'   => $this->option_c,
-            'option_d'   => $this->option_d,
+            'id' => $this->id,
+            'question' => $this->question,
+            'option_a' => $this->option_a,
+            'option_b' => $this->option_b,
+            'option_c' => $this->option_c,
+            'option_d' => $this->option_d,
             'difficulty' => $this->difficulty,
-            'points'     => $this->points,
+            'points' => $this->points,
         ];
     }
 
     public function difficultyLabel(): string
     {
         return match ($this->difficulty) {
-            'easy'   => 'ቀላል',
-            'medium' => 'መካከለኛ',
-            'hard'   => 'ከባድ',
-            default  => $this->difficulty,
+            'easy' => __('app.fasika_quiz_difficulty_easy'),
+            'medium' => __('app.fasika_quiz_difficulty_medium'),
+            'hard' => __('app.fasika_quiz_difficulty_hard'),
+            default => (string) $this->difficulty,
         };
     }
 }

@@ -1,22 +1,26 @@
 @extends('layouts.admin')
 
-@section('title', 'የፋሲካ ጥያቄዎች')
+@section('title', __('app.fasika_quiz_admin_page_title'))
 
 @section('content')
 <div class="space-y-6">
     <div class="flex flex-wrap items-center justify-between gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-primary">የፋሲካ ጥያቄዎች</h1>
-            <p class="mt-1 text-sm text-muted-text">ጥያቄዎችን ያስተዳድሩ፣ ያርትዑ ወይም አዲስ ያክሉ።</p>
+            <a href="{{ route('admin.fasika-greetings.index') }}"
+               class="mb-2 inline-flex text-sm font-medium text-muted-text hover:text-primary">
+                {{ __('app.fasika_quiz_admin_back_greetings') }}
+            </a>
+            <h1 class="text-2xl font-bold text-primary">{{ __('app.fasika_quiz_admin_page_title') }}</h1>
+            <p class="mt-1 text-sm text-muted-text">{{ __('app.fasika_quiz_admin_page_subtitle') }}</p>
         </div>
         <div class="flex flex-wrap items-center gap-3">
             <a href="{{ route('admin.fasika-quiz.submissions') }}"
                class="inline-flex items-center justify-center rounded-xl border border-border bg-card px-4 py-2 text-sm font-semibold text-primary transition hover:bg-muted/50">
-                ውጤቶች ይመልከቱ
+                {{ __('app.fasika_quiz_admin_view_submissions') }}
             </a>
             <a href="{{ route('admin.fasika-quiz.create') }}"
-               class="inline-flex items-center justify-center rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-white shadow transition hover:opacity-90">
-                + አዲስ ጥያቄ
+               class="inline-flex items-center justify-center rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-on-accent shadow transition hover:opacity-90">
+                {{ __('app.fasika_quiz_admin_add_question') }}
             </a>
         </div>
     </div>
@@ -29,19 +33,19 @@
 
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div class="rounded-2xl border border-border bg-card p-5">
-            <p class="text-xs font-semibold uppercase tracking-wide text-muted-text">ጠቅላላ ጥያቄዎች</p>
+            <p class="text-xs font-semibold uppercase tracking-wide text-muted-text">{{ __('app.fasika_quiz_admin_stat_total_questions') }}</p>
             <p class="mt-3 text-3xl font-black text-primary">{{ number_format($stats['total']) }}</p>
         </div>
         <div class="rounded-2xl border border-border bg-card p-5">
-            <p class="text-xs font-semibold uppercase tracking-wide text-muted-text">ንቁ ጥያቄዎች</p>
+            <p class="text-xs font-semibold uppercase tracking-wide text-muted-text">{{ __('app.fasika_quiz_admin_stat_active_questions') }}</p>
             <p class="mt-3 text-3xl font-black text-primary">{{ number_format($stats['active']) }}</p>
         </div>
         <div class="rounded-2xl border border-border bg-card p-5">
-            <p class="text-xs font-semibold uppercase tracking-wide text-muted-text">ጠቅላላ ሙከራዎች</p>
+            <p class="text-xs font-semibold uppercase tracking-wide text-muted-text">{{ __('app.fasika_quiz_admin_stat_attempts') }}</p>
             <p class="mt-3 text-3xl font-black text-primary">{{ number_format($stats['submissions']) }}</p>
         </div>
         <div class="rounded-2xl border border-border bg-card p-5">
-            <p class="text-xs font-semibold uppercase tracking-wide text-muted-text">አማካይ ነጥብ</p>
+            <p class="text-xs font-semibold uppercase tracking-wide text-muted-text">{{ __('app.fasika_quiz_admin_stat_avg_score') }}</p>
             <p class="mt-3 text-3xl font-black text-primary">{{ $stats['avg_score'] }}<span class="text-base font-medium text-muted-text">/30</span></p>
         </div>
     </div>
@@ -51,13 +55,13 @@
             <table class="min-w-full divide-y divide-border text-sm">
                 <thead class="bg-surface/70">
                     <tr>
-                        <th class="px-4 py-3 text-left font-semibold text-secondary">#</th>
-                        <th class="px-4 py-3 text-left font-semibold text-secondary">ጥያቄ</th>
-                        <th class="px-4 py-3 text-left font-semibold text-secondary">ደረጃ</th>
-                        <th class="px-4 py-3 text-left font-semibold text-secondary">ነጥብ</th>
-                        <th class="px-4 py-3 text-left font-semibold text-secondary">ትክክለኛ</th>
-                        <th class="px-4 py-3 text-left font-semibold text-secondary">ሁኔታ</th>
-                        <th class="px-4 py-3 text-left font-semibold text-secondary">ድርጊቶች</th>
+                        <th class="px-4 py-3 text-left font-semibold text-secondary">{{ __('app.fasika_quiz_admin_col_sort') }}</th>
+                        <th class="px-4 py-3 text-left font-semibold text-secondary">{{ __('app.fasika_quiz_admin_col_question') }}</th>
+                        <th class="px-4 py-3 text-left font-semibold text-secondary">{{ __('app.fasika_quiz_admin_col_difficulty') }}</th>
+                        <th class="px-4 py-3 text-left font-semibold text-secondary">{{ __('app.fasika_quiz_admin_col_points') }}</th>
+                        <th class="px-4 py-3 text-left font-semibold text-secondary">{{ __('app.fasika_quiz_admin_col_correct') }}</th>
+                        <th class="px-4 py-3 text-left font-semibold text-secondary">{{ __('app.fasika_quiz_admin_col_status') }}</th>
+                        <th class="px-4 py-3 text-left font-semibold text-secondary">{{ __('app.fasika_quiz_admin_col_actions') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
@@ -81,7 +85,7 @@
                                     <button type="submit"
                                             class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold transition
                                                 {{ $q->is_active ? 'bg-success/15 text-success hover:bg-success/25' : 'bg-muted text-muted-text hover:bg-muted/70' }}">
-                                        {{ $q->is_active ? 'ንቁ' : 'ዝግ' }}
+                                        {{ $q->is_active ? __('app.fasika_quiz_admin_status_active') : __('app.fasika_quiz_admin_status_inactive') }}
                                     </button>
                                 </form>
                             </td>
@@ -89,14 +93,14 @@
                                 <div class="flex items-center gap-2">
                                     <a href="{{ route('admin.fasika-quiz.edit', $q) }}"
                                        class="inline-flex items-center rounded-lg border border-accent/30 bg-accent/10 px-3 py-1.5 text-xs font-semibold text-accent transition hover:bg-accent/15">
-                                        ያርትዑ
+                                        {{ __('app.fasika_quiz_admin_edit') }}
                                     </a>
                                     <form method="POST" action="{{ route('admin.fasika-quiz.destroy', $q) }}"
-                                          onsubmit="return confirm('ይህን ጥያቄ ሊሰርዙ ይፈልጋሉ?')">
+                                          onsubmit="return confirm(@json(__('app.fasika_quiz_admin_delete_confirm')))">
                                         @csrf @method('DELETE')
                                         <button type="submit"
                                                 class="inline-flex items-center rounded-lg border border-error/30 bg-error/10 px-3 py-1.5 text-xs font-semibold text-error transition hover:bg-error/15">
-                                            ሰርዝ
+                                            {{ __('app.fasika_quiz_admin_delete') }}
                                         </button>
                                     </form>
                                 </div>
@@ -104,7 +108,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-4 py-10 text-center text-muted-text">ምንም ጥያቄ አልተጨመረም።</td>
+                            <td colspan="7" class="px-4 py-10 text-center text-muted-text">{{ __('app.fasika_quiz_admin_empty') }}</td>
                         </tr>
                     @endforelse
                 </tbody>

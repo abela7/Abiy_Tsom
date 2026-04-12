@@ -1,15 +1,15 @@
 @extends('layouts.admin')
 
-@section('title', $question ? 'ጥያቄ ያርትዑ' : 'አዲስ ጥያቄ')
+@section('title', $question ? __('app.fasika_quiz_admin_form_title_edit') : __('app.fasika_quiz_admin_form_title_new'))
 
 @section('content')
 <div class="mx-auto max-w-2xl space-y-6">
     <div class="flex items-center gap-4">
         <a href="{{ route('admin.fasika-quiz.index') }}"
            class="inline-flex items-center text-sm font-medium text-muted-text hover:text-primary">
-            ← ወደ ጥያቄዎች
+            {{ __('app.fasika_quiz_admin_form_back') }}
         </a>
-        <h1 class="text-2xl font-bold text-primary">{{ $question ? 'ጥያቄ ያርትዑ' : 'አዲስ ጥያቄ ያክሉ' }}</h1>
+        <h1 class="text-2xl font-bold text-primary">{{ $question ? __('app.fasika_quiz_admin_form_title_edit') : __('app.fasika_quiz_admin_form_title_new') }}</h1>
     </div>
 
     @if($errors->any())
@@ -85,7 +85,7 @@
                     <input type="checkbox" name="is_active" value="1"
                            {{ old('is_active', $question?->is_active ?? true) ? 'checked' : '' }}
                            class="h-4 w-4 rounded border-border text-accent focus:ring-accent/30">
-                    <span class="text-sm font-semibold text-secondary">ንቁ ያድርጉ</span>
+                    <span class="text-sm font-semibold text-secondary">{{ __('app.fasika_quiz_admin_form_active_label') }}</span>
                 </label>
             </div>
         </div>
@@ -93,11 +93,11 @@
         <div class="flex justify-end gap-3 pt-2 border-t border-border">
             <a href="{{ route('admin.fasika-quiz.index') }}"
                class="inline-flex items-center rounded-xl border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-primary transition hover:bg-muted/50">
-                ሰርዝ
+                {{ __('app.fasika_quiz_admin_form_cancel') }}
             </a>
             <button type="submit"
                     class="inline-flex items-center rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-white shadow transition hover:opacity-90">
-                {{ $question ? 'አዘምን' : 'ጥያቄ ጨምር' }}
+                {{ $question ? __('app.fasika_quiz_admin_form_submit_edit') : __('app.fasika_quiz_admin_form_submit_new') }}
             </button>
         </div>
     </form>

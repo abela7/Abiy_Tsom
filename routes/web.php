@@ -492,16 +492,20 @@ Route::middleware(['auth', 'admin.audit'])->prefix('admin')->name('admin.')->gro
         Route::delete('/fasika-greetings/clear-all', [Admin\FasikaGreetingController::class, 'clearAll'])->name('fasika-greetings.clear-all');
         Route::delete('/fasika-greetings/{share}', [Admin\FasikaGreetingController::class, 'destroy'])->name('fasika-greetings.destroy');
 
-        // Fasika Quiz
-        Route::get('/fasika-quiz', [Admin\FasikaQuizController::class, 'index'])->name('fasika-quiz.index');
-        Route::get('/fasika-quiz/create', [Admin\FasikaQuizController::class, 'create'])->name('fasika-quiz.create');
-        Route::post('/fasika-quiz', [Admin\FasikaQuizController::class, 'store'])->name('fasika-quiz.store');
-        Route::get('/fasika-quiz/submissions', [Admin\FasikaQuizController::class, 'submissions'])->name('fasika-quiz.submissions');
-        Route::get('/fasika-quiz/{question}/edit', [Admin\FasikaQuizController::class, 'edit'])->name('fasika-quiz.edit');
-        Route::put('/fasika-quiz/{question}', [Admin\FasikaQuizController::class, 'update'])->name('fasika-quiz.update');
-        Route::patch('/fasika-quiz/{question}/toggle', [Admin\FasikaQuizController::class, 'toggle'])->name('fasika-quiz.toggle');
-        Route::delete('/fasika-quiz/{question}', [Admin\FasikaQuizController::class, 'destroy'])->name('fasika-quiz.destroy');
-        Route::delete('/fasika-quiz/submissions/{submission}', [Admin\FasikaQuizController::class, 'destroySubmission'])->name('fasika-quiz.submission.destroy');
+        // Fasika quiz (Yefasika Beal): URLs under Fasika greetings for discoverability
+        Route::get('/fasika-greetings/quiz', [Admin\FasikaQuizController::class, 'index'])->name('fasika-quiz.index');
+        Route::get('/fasika-greetings/quiz/create', [Admin\FasikaQuizController::class, 'create'])->name('fasika-quiz.create');
+        Route::post('/fasika-greetings/quiz', [Admin\FasikaQuizController::class, 'store'])->name('fasika-quiz.store');
+        Route::get('/fasika-greetings/quiz/submissions', [Admin\FasikaQuizController::class, 'submissions'])->name('fasika-quiz.submissions');
+        Route::delete('/fasika-greetings/quiz/submissions/{submission}', [Admin\FasikaQuizController::class, 'destroySubmission'])->name('fasika-quiz.submission.destroy');
+        Route::get('/fasika-greetings/quiz/{question}/edit', [Admin\FasikaQuizController::class, 'edit'])->name('fasika-quiz.edit');
+        Route::put('/fasika-greetings/quiz/{question}', [Admin\FasikaQuizController::class, 'update'])->name('fasika-quiz.update');
+        Route::patch('/fasika-greetings/quiz/{question}/toggle', [Admin\FasikaQuizController::class, 'toggle'])->name('fasika-quiz.toggle');
+        Route::delete('/fasika-greetings/quiz/{question}', [Admin\FasikaQuizController::class, 'destroy'])->name('fasika-quiz.destroy');
+
+        Route::get('fasika-quiz', fn () => redirect()->route('admin.fasika-quiz.index', [], 301));
+        Route::get('fasika-quiz/create', fn () => redirect()->route('admin.fasika-quiz.create', [], 301));
+        Route::get('fasika-quiz/submissions', fn () => redirect()->route('admin.fasika-quiz.submissions', [], 301));
 
         // Content suggestions review
         Route::get('/suggestions', [Admin\ContentSuggestionController::class, 'index'])->name('suggestions.index');
