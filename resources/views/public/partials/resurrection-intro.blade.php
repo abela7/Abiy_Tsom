@@ -43,8 +43,8 @@
           color:rgba(255,252,245,0.92);
           margin:0;
         ">
-          <span style="color:#e2ca18;text-shadow:0 0 14px rgba(226,202,24,0.4);">{{ $share->sender_name }}</span>
-          <span style="color:rgba(255,252,245,0.78);"> መልዕክት ልኮልዎታል — እስከመጨረሻው ሙሉ ስቴፑን ይከተሉ!</span>
+          <span style="color:rgba(255,252,245,0.78);">ከ </span><span style="color:#e2ca18;text-shadow:0 0 14px rgba(226,202,24,0.4);">{{ $share->sender_name }}</span>
+          <span style="color:rgba(255,252,245,0.78);"> መልእክት ተልኮልዎታል — እስከመጨረሻው ሙሉ ስቴፑን ይከተሉ!</span>
         </p>
         <div style="
           margin:0.9rem auto 0;
