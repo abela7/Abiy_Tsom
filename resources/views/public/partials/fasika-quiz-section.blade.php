@@ -267,27 +267,6 @@
                             </div>
                         </div>
 
-                        {{-- Leaderboard --}}
-                        <div x-show="results?.leaderboard?.length">
-                            <h4 class="mb-2.5 text-xs font-extrabold uppercase tracking-wider text-[#e2ca18]/80">ምርጥ ተወዳዳሪዎች</h4>
-                            <div class="space-y-1.5">
-                                <template x-for="(entry, i) in results?.leaderboard ?? []" :key="i">
-                                    <div class="flex items-center justify-between rounded-xl px-3.5 py-2.5 text-sm"
-                                         :class="entry.participant_name === participantName && participantName
-                                             ? 'bg-[#e2ca18]/10 ring-1 ring-[#e2ca18]/30'
-                                             : 'bg-white/[0.04]'">
-                                        <span class="flex items-center gap-2.5">
-                                            <span class="w-5 text-center text-xs font-black"
-                                                  :class="i===0?'text-yellow-400':i===1?'text-zinc-300':i===2?'text-amber-600':'text-zinc-500'"
-                                                  x-text="i+1"></span>
-                                            <span class="font-medium text-white" x-text="entry.participant_name"></span>
-                                        </span>
-                                        <span class="font-bold text-[#e2ca18]" x-text="entry.score+'/'+entry.total_possible"></span>
-                                    </div>
-                                </template>
-                            </div>
-                        </div>
-
                         {{-- Actions --}}
                         <div class="flex gap-3 pt-1">
                             <button type="button"

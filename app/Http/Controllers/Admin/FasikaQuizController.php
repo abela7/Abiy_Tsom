@@ -100,6 +100,15 @@ class FasikaQuizController extends Controller
         return view('admin.fasika-quiz.submissions', compact('submissions', 'stats'));
     }
 
+    public function destroySubmission(FasikaQuizSubmission $submission): RedirectResponse
+    {
+        $submission->delete();
+
+        return redirect()
+            ->route('admin.fasika-quiz.submissions')
+            ->with('success', 'ውጤቱ ተሰርዟል።');
+    }
+
     // ─── Private ──────────────────────────────────────────────────────────────
 
     private function validateQuestion(Request $request): array

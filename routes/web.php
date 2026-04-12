@@ -501,6 +501,7 @@ Route::middleware(['auth', 'admin.audit'])->prefix('admin')->name('admin.')->gro
         Route::put('/fasika-quiz/{question}', [Admin\FasikaQuizController::class, 'update'])->name('fasika-quiz.update');
         Route::patch('/fasika-quiz/{question}/toggle', [Admin\FasikaQuizController::class, 'toggle'])->name('fasika-quiz.toggle');
         Route::delete('/fasika-quiz/{question}', [Admin\FasikaQuizController::class, 'destroy'])->name('fasika-quiz.destroy');
+        Route::delete('/fasika-quiz/submissions/{submission}', [Admin\FasikaQuizController::class, 'destroySubmission'])->name('fasika-quiz.submission.destroy');
 
         // Content suggestions review
         Route::get('/suggestions', [Admin\ContentSuggestionController::class, 'index'])->name('suggestions.index');

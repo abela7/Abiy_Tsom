@@ -45,6 +45,7 @@
                         <th class="px-4 py-3 text-left font-semibold text-secondary">ጊዜ</th>
                         <th class="px-4 py-3 text-left font-semibold text-secondary">IP</th>
                         <th class="px-4 py-3 text-left font-semibold text-secondary">ቀን</th>
+                        <th class="px-4 py-3 text-left font-semibold text-secondary">ድርጊት</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
@@ -64,10 +65,22 @@
                             <td class="px-4 py-3 font-mono text-primary">{{ $sub->formattedTime() }}</td>
                             <td class="px-4 py-3 font-mono text-xs text-muted-text">{{ $sub->ip_address ?? '—' }}</td>
                             <td class="px-4 py-3 text-muted-text">{{ $sub->created_at?->format('Y-m-d H:i') }}</td>
+                            <td class="px-4 py-3">
+                                <form method="POST"
+                                      action="{{ route('admin.fasika-quiz.submission.destroy', $sub) }}"
+                                      onsubmit="return confirm('ይህን ውጤት ሊሰርዙ ይፈልጋሉ?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit"
+                                            class="inline-flex items-center rounded-lg border border-error/30 bg-error/10 px-3 py-1.5 text-xs font-semibold text-error transition hover:bg-error/15">
+                                        ሰርዝ
+                                    </button>
+                                </form>
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-4 py-10 text-center text-muted-text">ምንም ውጤት አልተመዘገበም።</td>
+                            <td colspan="7" class="px-4 py-10 text-center text-muted-text">ምንም ውጤት አልተመዘገበም።</td>
                         </tr>
                     @endforelse
                 </tbody>
