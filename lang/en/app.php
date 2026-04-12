@@ -2254,6 +2254,8 @@ return [
     'fasika_greeting_stat_opens' => 'Total Opens',
     'fasika_greeting_stat_unique_senders' => 'Unique Senders',
     'fasika_greeting_sender_name' => 'Sender Name',
+    'fasika_greeting_update_button' => 'Save',
+    'fasika_greeting_update_success' => 'Updated sender name to :name.',
     'fasika_greeting_opens' => 'Opens',
     'fasika_greeting_created_at' => 'Created At',
     'fasika_greeting_last_opened_at' => 'Last Opened',

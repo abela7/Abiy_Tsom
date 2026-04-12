@@ -47,6 +47,57 @@ class FasikaGreetingAdminTest extends TestCase
             ->assertSee(route('public.yefasika-beal'));
     }
 
+    public function test_admin_can_update_fasika_greeting_sender_name(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'admin',
+        ]);
+
+        $share = FasikaGreetingShare::query()->create([
+            'share_token' => 'fasika-share-edit-abc',
+            'sender_name' => 'Old Name',
+            'sender_name_normalized' => 'old name',
+            'open_count' => 0,
+        ]);
+
+        $response = $this->actingAs($admin)->patch(
+            route('admin.fasika-greetings.update', $share),
+            ['sender_name' => '  New Display Name  ']
+        );
+
+        $response->assertRedirect(route('admin.fasika-greetings.index'))
+            ->assertSessionHas('success', __('app.fasika_greeting_update_success', ['name' => 'New Display Name']));
+
+        $share->refresh();
+        $this->assertSame('New Display Name', $share->sender_name);
+        $this->assertSame('new display name', $share->sender_name_normalized);
+    }
+
+    public function test_admin_update_fasika_greeting_validation_errors_preserve_row_input(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'admin',
+        ]);
+
+        $share = FasikaGreetingShare::query()->create([
+            'share_token' => 'fasika-share-edit-xyz',
+            'sender_name' => 'Valid',
+            'sender_name_normalized' => 'valid',
+        ]);
+
+        $response = $this->actingAs($admin)->from(route('admin.fasika-greetings.index'))->patch(
+            route('admin.fasika-greetings.update', $share),
+            ['sender_name' => '   ']
+        );
+
+        $response->assertRedirect(route('admin.fasika-greetings.index'))
+            ->assertSessionHasErrors('sender_name')
+            ->assertSessionHas('fasika_greeting_failed_token', 'fasika-share-edit-xyz');
+
+        $share->refresh();
+        $this->assertSame('Valid', $share->sender_name);
+    }
+
     public function test_admin_can_delete_single_fasika_greeting_record(): void
     {
         $admin = User::factory()->create([

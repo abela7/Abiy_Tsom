@@ -65,7 +65,26 @@
                 <tbody class="divide-y divide-border">
                     @forelse($shares as $share)
                         <tr class="align-top">
-                            <td class="px-4 py-3 text-primary font-semibold">{{ $share->sender_name }}</td>
+                            <td class="px-4 py-3 text-primary">
+                                <form method="POST"
+                                      action="{{ route('admin.fasika-greetings.update', $share) }}"
+                                      class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+                                    @csrf
+                                    @method('PATCH')
+                                    <label class="sr-only" for="sender-{{ $share->id }}">{{ __('app.fasika_greeting_sender_name') }}</label>
+                                    <input id="sender-{{ $share->id }}"
+                                           type="text"
+                                           name="sender_name"
+                                           value="{{ session('fasika_greeting_failed_token') === $share->share_token ? old('sender_name', $share->sender_name) : $share->sender_name }}"
+                                           maxlength="120"
+                                           required
+                                           class="min-w-[10rem] max-w-[18rem] flex-1 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-semibold text-primary shadow-inner outline-none transition placeholder:text-muted-text focus:border-accent/50 focus:ring-2 focus:ring-accent/20">
+                                    <button type="submit"
+                                            class="inline-flex shrink-0 items-center justify-center rounded-lg border border-accent/40 bg-accent/10 px-3 py-2 text-xs font-semibold text-accent transition hover:bg-accent/15">
+                                        {{ __('app.fasika_greeting_update_button') }}
+                                    </button>
+                                </form>
+                            </td>
                             <td class="px-4 py-3 text-primary">{{ number_format($share->open_count) }}</td>
                             <td class="px-4 py-3 text-primary">{{ $share->created_at?->format('Y-m-d H:i') }}</td>
                             <td class="px-4 py-3 text-primary">{{ $share->last_opened_at?->format('Y-m-d H:i') ?? __('app.never') }}</td>

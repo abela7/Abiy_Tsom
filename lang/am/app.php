@@ -2234,6 +2234,8 @@ return [
     'fasika_greeting_stat_opens' => 'ጠቅላላ ክፍት',
     'fasika_greeting_stat_unique_senders' => 'ልዩ ላኪዎች',
     'fasika_greeting_sender_name' => 'የላኪው ስም',
+    'fasika_greeting_update_button' => 'አስቀምጥ',
+    'fasika_greeting_update_success' => 'የላኪው ስም ወደ :name ተዘምኗል።',
     'fasika_greeting_opens' => 'የተከፈተበት ብዛት',
     'fasika_greeting_created_at' => 'የተፈጠረበት',
     'fasika_greeting_last_opened_at' => 'መጨረሻ የተከፈተበት',
