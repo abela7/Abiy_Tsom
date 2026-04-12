@@ -27,6 +27,33 @@
       box-sizing:border-box;
     ">
 
+      {{-- Sender intro (only when opened via a personal share link) --}}
+      @if($share && filled($share->sender_name))
+      <div style="
+        text-align:center;
+        margin-bottom:1.6rem;
+        opacity:0;
+        animation: riFadeUp 1.2s ease 0.2s forwards;
+      ">
+        <p style="
+          font-family:'Benaiah','Noto Serif Ethiopic',serif;
+          font-size:clamp(1rem,2.8vw,1.2rem);
+          font-weight:600;
+          line-height:1.7;
+          color:rgba(255,252,245,0.92);
+          margin:0;
+        ">
+          <span style="color:#e2ca18;text-shadow:0 0 14px rgba(226,202,24,0.4);">{{ $share->sender_name }}</span>
+          <span style="color:rgba(255,252,245,0.78);"> መልዕክት ልኮልዎታል — እስከመጨረሻው ሙሉ ስቴፑን ይከተሉ!</span>
+        </p>
+        <div style="
+          margin:0.9rem auto 0;
+          width:48px;height:1px;
+          background:linear-gradient(90deg,transparent,rgba(226,202,24,0.45),transparent);
+        "></div>
+      </div>
+      @endif
+
       {{-- Reference pill --}}
       <div id="ri-ref" style="
         text-align:center;
