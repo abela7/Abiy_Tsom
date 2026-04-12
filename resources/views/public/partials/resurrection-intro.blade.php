@@ -174,14 +174,53 @@
         <div class="ri-tomb-mound"></div>
         <div class="ri-tomb-hole">
           <div class="ri-divine-light"></div>
-          <div class="ri-jesus-figure">
-            <div class="ri-figure-body">
-              <div class="ri-figure-glow"></div>
-              <div class="ri-halo"></div>
-              <div class="ri-figure-head"></div>
-              <div class="ri-figure-robe"></div>
-              <div class="ri-arm ri-arm-left"></div>
-              <div class="ri-arm ri-arm-right"></div>
+          {{-- Clip mask so figure emerges FROM the tomb opening --}}
+          <div class="ri-tomb-clip">
+            <div class="ri-jesus-figure">
+              <div class="ri-figure-body">
+                <div class="ri-figure-glow"></div>
+                {{-- Outer radiance --}}
+                <div class="ri-figure-radiance"></div>
+                {{-- Halo with cross --}}
+                <div class="ri-halo">
+                  <div class="ri-halo-cross-h"></div>
+                  <div class="ri-halo-cross-v"></div>
+                </div>
+                {{-- Head & face --}}
+                <div class="ri-figure-head">
+                  <div class="ri-figure-hair"></div>
+                  <div class="ri-figure-face">
+                    <div class="ri-figure-eyes">
+                      <span class="ri-eye ri-eye-l"></span>
+                      <span class="ri-eye ri-eye-r"></span>
+                    </div>
+                    <div class="ri-figure-beard"></div>
+                  </div>
+                </div>
+                {{-- Neck --}}
+                <div class="ri-figure-neck"></div>
+                {{-- Body & robe --}}
+                <div class="ri-figure-torso">
+                  <div class="ri-figure-robe"></div>
+                  <div class="ri-robe-sash"></div>
+                  <div class="ri-robe-fold-l"></div>
+                  <div class="ri-robe-fold-r"></div>
+                </div>
+                {{-- Hands with wound marks --}}
+                <div class="ri-arm ri-arm-left">
+                  <div class="ri-hand ri-hand-l">
+                    <div class="ri-wound"></div>
+                  </div>
+                </div>
+                <div class="ri-arm ri-arm-right">
+                  <div class="ri-hand ri-hand-r">
+                    <div class="ri-wound"></div>
+                  </div>
+                </div>
+                {{-- Cloth draping from arms --}}
+                <div class="ri-cloth ri-cloth-l"></div>
+                <div class="ri-cloth ri-cloth-r"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -277,9 +316,9 @@
     50%    { transform:translateY(6px); }
   }
 
-  /* ══ TOMB SCENE ══ */
+  /* ══ TOMB SCENE — mobile-first, responsive ══ */
   .ri-scene {
-    position:relative;width:100%;min-height:100vh;overflow:hidden;
+    position:relative;width:100%;min-height:100vh;min-height:100dvh;overflow:hidden;
   }
 
   .ri-stars{position:absolute;inset:0;}
@@ -300,68 +339,311 @@
     clip-path:ellipse(78% 90% at 50% 100%);z-index:2;
   }
 
+  /* ── Tomb: responsive container ── */
   .ri-tomb-container {
-    position:absolute;bottom:18%;left:50%;transform:translateX(-50%);
-    z-index:5;width:260px;height:300px;
+    position:absolute;bottom:14%;left:50%;transform:translateX(-50%);
+    z-index:5;
+    width:clamp(200px, 65vw, 280px);
+    height:clamp(230px, 75vw, 320px);
   }
   .ri-tomb-mound {
     position:absolute;bottom:0;left:50%;transform:translateX(-50%);
-    width:300px;height:200px;
+    width:clamp(230px, 75vw, 320px);
+    height:clamp(150px, 50vw, 210px);
     background:radial-gradient(ellipse at 50% 80%,#2a2520,#1a1510);
     border-radius:50% 50% 10% 10%;
     box-shadow:inset -10px -5px 25px rgba(0,0,0,.5),inset 3px 3px 10px rgba(255,255,255,.02),0 15px 50px rgba(0,0,0,.8);
   }
   .ri-tomb-hole {
-    position:absolute;bottom:30px;left:50%;transform:translateX(-50%);
-    width:150px;height:150px;
+    position:absolute;bottom:clamp(18px,6vw,30px);left:50%;transform:translateX(-50%);
+    width:clamp(110px, 36vw, 160px);
+    height:clamp(110px, 36vw, 160px);
     background:radial-gradient(circle,#000 60%,#0a0a0a 100%);
     border-radius:50%;z-index:6;
     box-shadow:inset 0 0 30px rgba(0,0,0,1),0 0 15px rgba(0,0,0,.8);
     overflow:visible;
   }
   .ri-tomb-hole::before {
-    content:'';position:absolute;inset:-8px;border-radius:50%;
+    content:'';position:absolute;inset:clamp(-6px,-1.5vw,-8px);border-radius:50%;
     background:conic-gradient(from 0deg,#3a3530,#2a2520,#3a3530,#2d2925,#3a3530);
     z-index:-1;box-shadow:inset 0 0 20px rgba(0,0,0,.6);
   }
 
+  /* ── Stone: responsive ── */
   .ri-stone {
-    position:absolute;bottom:25px;left:50%;transform:translateX(-50%);
-    width:160px;height:160px;border-radius:50%;z-index:8;
+    position:absolute;bottom:clamp(15px,5vw,25px);left:50%;transform:translateX(-50%);
+    width:clamp(120px, 38vw, 170px);
+    height:clamp(120px, 38vw, 170px);
+    border-radius:50%;z-index:8;
     transition:transform 2.8s cubic-bezier(.22,.61,.36,1);
     background:radial-gradient(circle at 35% 35%,#555048,#3a3530 40%,#2a2520 70%,#1f1b18 100%);
     box-shadow:inset -12px -8px 25px rgba(0,0,0,.5),inset 6px 6px 15px rgba(255,255,255,.05),8px 8px 30px rgba(0,0,0,.7);
   }
   .ri-stone::after{content:'';position:absolute;inset:12px;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.06) 0%,transparent 50%),radial-gradient(circle at 65% 70%,rgba(0,0,0,.2) 0%,transparent 40%);}
   .ri-stone::before{content:'';position:absolute;top:50%;left:20%;width:60%;height:1px;background:rgba(0,0,0,.4);transform:rotate(-12deg);box-shadow:0 20px 0 rgba(0,0,0,.25),-10px 40px 0 rgba(0,0,0,.2);}
-  .ri-scene.active .ri-stone{transform:translateX(-50%) translateX(180px) rotate(90deg);}
+  .ri-scene.active .ri-stone{transform:translateX(-50%) translateX(clamp(130px,42vw,190px)) rotate(90deg);}
 
+  /* ── Divine light ── */
   .ri-divine-light{position:absolute;inset:-5px;border-radius:50%;z-index:5;opacity:0;background:radial-gradient(circle,#fff 0%,#fffbe6 20%,#f5d76e 40%,transparent 70%);transition:opacity 1.5s ease 1.8s;}
   .ri-scene.active .ri-divine-light{opacity:1;}
 
-  .ri-light-rays{position:absolute;bottom:105px;left:50%;transform:translateX(-50%);width:0;height:0;z-index:4;opacity:0;transition:opacity 1s ease 2s;}
+  /* ── Light rays ── */
+  .ri-light-rays{position:absolute;bottom:clamp(75px,25vw,110px);left:50%;transform:translateX(-50%);width:0;height:0;z-index:4;opacity:0;transition:opacity 1s ease 2s;}
   .ri-scene.active .ri-light-rays{opacity:1;}
   .ri-ray{position:absolute;bottom:0;left:50%;width:3px;height:0;background:linear-gradient(0deg,#fff,#fffbe688,transparent);transform-origin:bottom center;border-radius:2px;filter:blur(1.5px);}
   .ri-scene.active .ri-ray{animation:riRayGrow 2.5s ease-out forwards;}
   @keyframes riRayGrow{0%{height:0;opacity:0}40%{opacity:.9}100%{height:var(--ray-h);opacity:var(--ray-o)}}
 
-  .ri-jesus-figure{position:absolute;bottom:0;left:50%;transform:translateX(-50%) translateY(60px) scale(.8);z-index:9;opacity:0;transition:opacity 2s ease 2.8s,transform 3.5s ease 2.8s;}
-  .ri-scene.active .ri-jesus-figure{opacity:1;transform:translateX(-50%) translateY(-40px) scale(1);}
-  .ri-figure-body{position:relative;width:70px;height:160px;}
-  .ri-figure-head{position:absolute;top:0;left:50%;transform:translateX(-50%);width:26px;height:30px;background:radial-gradient(ellipse,#f5e6d3,#d4b896);border-radius:50%;box-shadow:0 0 30px rgba(255,255,255,.8),0 0 60px rgba(255,248,220,.5);}
-  .ri-halo{position:absolute;top:-14px;left:50%;transform:translateX(-50%);width:56px;height:56px;border-radius:50%;border:2px solid rgba(255,255,255,.7);box-shadow:0 0 20px rgba(255,255,255,.5),0 0 40px rgba(255,248,220,.3),inset 0 0 15px rgba(255,255,255,.15);animation:riHaloGlow 1.8s ease-in-out infinite alternate;animation-play-state:paused;}
-  .ri-scene.active .ri-halo{animation-play-state:running;}
-  @keyframes riHaloGlow{0%{box-shadow:0 0 20px rgba(255,255,255,.5),0 0 40px rgba(255,248,220,.3),inset 0 0 15px rgba(255,255,255,.15)}100%{box-shadow:0 0 35px rgba(255,255,255,.8),0 0 70px rgba(255,248,220,.5),inset 0 0 25px rgba(255,255,255,.25)}}
-  .ri-figure-robe{position:absolute;top:28px;left:50%;transform:translateX(-50%);width:54px;height:125px;background:linear-gradient(180deg,#fff 0%,#f5f0e8 30%,#ebe5da 100%);clip-path:polygon(18% 0%,82% 0%,100% 100%,0% 100%);box-shadow:0 0 30px rgba(255,255,255,.4);}
-  .ri-figure-robe::before{content:'';position:absolute;top:0;left:12%;width:76%;height:100%;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.3) 50%,transparent 100%);}
-  .ri-arm{position:absolute;top:40px;width:48px;height:8px;background:linear-gradient(180deg,#fff,#ebe5da);border-radius:4px;opacity:0;transition:opacity 1.2s ease 4.2s,transform 1.8s ease 4.2s;}
-  .ri-arm-left{right:52px;transform:rotate(20deg) scaleX(0);transform-origin:right center;}
-  .ri-arm-right{left:52px;transform:rotate(-20deg) scaleX(0);transform-origin:left center;}
-  .ri-scene.active .ri-arm{opacity:1;}
-  .ri-scene.active .ri-arm-left{transform:rotate(-20deg) scaleX(1);}
-  .ri-scene.active .ri-arm-right{transform:rotate(20deg) scaleX(1);}
-  .ri-figure-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:120px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.5),rgba(255,255,255,.1),transparent);filter:blur(15px);opacity:0;transition:opacity 2s ease 3.5s;}
+  /* ══════════════════════════════════════
+     JESUS FIGURE — realistic, responsive
+     ══════════════════════════════════════ */
+
+  /* Clip mask: hides the figure below the tomb opening so he RISES OUT */
+  .ri-tomb-clip {
+    position:absolute;
+    inset:0;
+    border-radius:50%;
+    overflow:hidden;
+    z-index:7;
+  }
+
+  /* Figure: starts deep inside tomb, rises up and OUT */
+  .ri-jesus-figure {
+    position:absolute;bottom:0;left:50%;
+    transform:translateX(-50%) translateY(100%);
+    z-index:9;opacity:0;
+    transition: opacity 1.8s ease 2.2s, transform 4s cubic-bezier(.16,.85,.45,1) 2.2s;
+  }
+  .ri-scene.active .ri-jesus-figure {
+    opacity:1;
+    transform:translateX(-50%) translateY(10%);
+  }
+
+  /* Body container — responsive sizing */
+  .ri-figure-body {
+    position:relative;
+    width:clamp(56px, 18vw, 80px);
+    height:clamp(140px, 44vw, 200px);
+  }
+
+  /* ── OUTER RADIANCE ── */
+  .ri-figure-radiance {
+    position:absolute;top:10%;left:50%;transform:translateX(-50%);
+    width:clamp(160px,52vw,260px);height:clamp(200px,66vw,320px);
+    border-radius:50%;
+    background:radial-gradient(circle,rgba(255,248,220,.35) 0%,rgba(245,215,110,.12) 30%,rgba(255,255,255,.04) 55%,transparent 70%);
+    filter:blur(clamp(10px,3vw,18px));
+    opacity:0;pointer-events:none;
+    transition:opacity 2.5s ease 3.2s;
+  }
+  .ri-scene.active .ri-figure-radiance{opacity:1;}
+
+  /* ── GLOW (close body) ── */
+  .ri-figure-glow {
+    position:absolute;top:30%;left:50%;transform:translate(-50%,-30%);
+    width:clamp(100px,32vw,160px);height:clamp(160px,52vw,240px);
+    border-radius:50%;
+    background:radial-gradient(circle,rgba(255,255,255,.55),rgba(255,255,255,.15) 40%,transparent 70%);
+    filter:blur(clamp(8px,2.5vw,15px));
+    opacity:0;pointer-events:none;
+    transition:opacity 2s ease 3s;
+  }
   .ri-scene.active .ri-figure-glow{opacity:1;}
+
+  /* ── HALO with cross ── */
+  .ri-halo {
+    position:absolute;
+    top:clamp(-16px,-5vw,-22px);
+    left:50%;transform:translateX(-50%);
+    width:clamp(44px,14vw,64px);height:clamp(44px,14vw,64px);
+    border-radius:50%;
+    border:2px solid rgba(255,248,220,.8);
+    box-shadow:0 0 20px rgba(255,255,255,.5),0 0 40px rgba(255,248,220,.3),inset 0 0 15px rgba(255,255,255,.15);
+    animation:riHaloGlow 1.8s ease-in-out infinite alternate;
+    animation-play-state:paused;
+    background:radial-gradient(circle,rgba(255,248,220,.12),transparent 70%);
+  }
+  .ri-scene.active .ri-halo{animation-play-state:running;}
+  @keyframes riHaloGlow{
+    0%{box-shadow:0 0 20px rgba(255,255,255,.5),0 0 40px rgba(255,248,220,.3),inset 0 0 15px rgba(255,255,255,.15)}
+    100%{box-shadow:0 0 35px rgba(255,255,255,.8),0 0 70px rgba(255,248,220,.5),inset 0 0 25px rgba(255,255,255,.25)}
+  }
+  .ri-halo-cross-h,.ri-halo-cross-v{position:absolute;background:rgba(255,248,220,.5);border-radius:2px;}
+  .ri-halo-cross-h{top:50%;left:15%;right:15%;height:1.5px;transform:translateY(-50%);}
+  .ri-halo-cross-v{left:50%;top:15%;bottom:15%;width:1.5px;transform:translateX(-50%);}
+
+  /* ── HEAD ── */
+  .ri-figure-head {
+    position:absolute;top:0;left:50%;transform:translateX(-50%);
+    width:clamp(22px,7vw,30px);height:clamp(26px,8.5vw,36px);
+    border-radius:48% 48% 42% 42%;
+    background:radial-gradient(ellipse at 45% 38%,#f0dcc8,#dbbf9e 50%,#c9a47e);
+    box-shadow:0 0 clamp(16px,5vw,30px) rgba(255,255,255,.7),0 0 clamp(30px,10vw,60px) rgba(255,248,220,.4);
+  }
+
+  /* Hair — dark, flowing behind */
+  .ri-figure-hair {
+    position:absolute;top:-2px;left:50%;transform:translateX(-50%);
+    width:clamp(26px,8.5vw,36px);height:clamp(18px,6vw,26px);
+    border-radius:50% 50% 35% 35%;
+    background:linear-gradient(180deg,#2a1f15 0%,#3d2e20 100%);
+    z-index:-1;
+  }
+  .ri-figure-hair::before {
+    content:'';position:absolute;top:55%;width:clamp(4px,1.3vw,6px);height:clamp(24px,8vw,38px);
+    left:-3px;
+    background:linear-gradient(180deg,#3d2e20,#2a1f15 80%,transparent);
+    border-radius:3px;
+    transform:rotate(6deg);
+  }
+  .ri-figure-hair::after {
+    content:'';position:absolute;top:55%;width:clamp(4px,1.3vw,6px);height:clamp(24px,8vw,38px);
+    right:-3px;
+    background:linear-gradient(180deg,#3d2e20,#2a1f15 80%,transparent);
+    border-radius:3px;
+    transform:rotate(-6deg);
+  }
+
+  /* Face */
+  .ri-figure-face {
+    position:absolute;top:30%;left:50%;transform:translateX(-50%);
+    width:70%;height:55%;
+  }
+  .ri-figure-eyes {
+    position:absolute;top:20%;left:50%;transform:translateX(-50%);
+    display:flex;gap:clamp(5px,1.6vw,7px);
+  }
+  .ri-eye {
+    display:block;
+    width:clamp(3px,1vw,4px);height:clamp(2px,.7vw,2.5px);
+    background:#3d2e20;border-radius:50%;
+    box-shadow:0 0 3px rgba(0,0,0,.3);
+  }
+
+  /* Beard */
+  .ri-figure-beard {
+    position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);
+    width:clamp(12px,4vw,16px);height:clamp(10px,3.2vw,14px);
+    background:linear-gradient(180deg,#3d2e20,#2a1f15 70%,transparent);
+    border-radius:30% 30% 50% 50%;
+    clip-path:ellipse(50% 60% at 50% 35%);
+  }
+
+  /* Neck */
+  .ri-figure-neck {
+    position:absolute;top:clamp(22px,7.5vw,32px);left:50%;transform:translateX(-50%);
+    width:clamp(10px,3.2vw,14px);height:clamp(6px,2vw,10px);
+    background:linear-gradient(180deg,#dbbf9e,#c9a47e);
+    border-radius:2px;
+  }
+
+  /* ── TORSO & ROBE ── */
+  .ri-figure-torso {
+    position:absolute;
+    top:clamp(28px,9vw,40px);left:50%;transform:translateX(-50%);
+    width:clamp(46px,15vw,66px);
+    height:clamp(105px,34vw,155px);
+  }
+  .ri-figure-robe {
+    position:absolute;inset:0;
+    background:linear-gradient(180deg,#fff 0%,#f8f3ec 15%,#f0eae0 40%,#e8e0d2 70%,#ddd4c4 100%);
+    clip-path:polygon(22% 0%,78% 0%,100% 100%,0% 100%);
+    box-shadow:0 0 clamp(16px,5vw,30px) rgba(255,255,255,.4);
+  }
+  .ri-figure-robe::before {
+    content:'';position:absolute;top:0;left:15%;width:70%;height:100%;
+    background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.35) 50%,transparent 100%);
+  }
+  .ri-figure-robe::after {
+    content:'';position:absolute;inset:0;
+    background:linear-gradient(195deg,transparent 30%,rgba(0,0,0,.05) 50%,transparent 70%);
+    clip-path:polygon(22% 0%,78% 0%,100% 100%,0% 100%);
+  }
+
+  /* Sash / belt */
+  .ri-robe-sash {
+    position:absolute;top:32%;left:50%;transform:translateX(-50%);
+    width:90%;height:clamp(4px,1.3vw,6px);
+    background:linear-gradient(90deg,transparent,rgba(184,150,62,.35),rgba(226,202,24,.45),rgba(184,150,62,.35),transparent);
+    border-radius:4px;
+  }
+
+  /* Fold lines on robe */
+  .ri-robe-fold-l,.ri-robe-fold-r {
+    position:absolute;width:1px;
+    height:55%;bottom:5%;
+    background:linear-gradient(180deg,transparent,rgba(0,0,0,.06),rgba(0,0,0,.03),transparent);
+  }
+  .ri-robe-fold-l{left:35%;transform:rotate(2deg);}
+  .ri-robe-fold-r{right:35%;transform:rotate(-2deg);}
+
+  /* ── ARMS ── */
+  .ri-arm {
+    position:absolute;
+    top:clamp(38px,12.5vw,56px);
+    width:clamp(38px,12vw,56px);
+    height:clamp(7px,2.2vw,10px);
+    background:linear-gradient(180deg,#f8f3ec,#e8e0d2);
+    border-radius:5px;
+    opacity:0;
+    transition:opacity 1.2s ease 4s,transform 2s cubic-bezier(.16,.85,.45,1) 4s;
+  }
+  .ri-arm-left {
+    right:clamp(40px,13vw,60px);
+    transform:rotate(15deg) scaleX(0);
+    transform-origin:right center;
+  }
+  .ri-arm-right {
+    left:clamp(40px,13vw,60px);
+    transform:rotate(-15deg) scaleX(0);
+    transform-origin:left center;
+  }
+  .ri-scene.active .ri-arm{opacity:1;}
+  .ri-scene.active .ri-arm-left{transform:rotate(-25deg) scaleX(1);}
+  .ri-scene.active .ri-arm-right{transform:rotate(25deg) scaleX(1);}
+
+  /* Hands */
+  .ri-hand {
+    position:absolute;top:50%;transform:translateY(-50%);
+    width:clamp(10px,3.2vw,14px);height:clamp(10px,3.2vw,14px);
+    background:radial-gradient(ellipse,#f0dcc8,#dbbf9e);
+    border-radius:50%;
+  }
+  .ri-hand-l{left:-2px;}
+  .ri-hand-r{right:-2px;}
+
+  /* Wound marks */
+  .ri-wound {
+    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    width:clamp(3px,1vw,4px);height:clamp(3px,1vw,4px);
+    border-radius:50%;
+    background:radial-gradient(circle,#c0392b,#922b21);
+    box-shadow:0 0 6px rgba(192,57,43,.6),0 0 12px rgba(192,57,43,.25);
+  }
+
+  /* Draped cloth from arms */
+  .ri-cloth {
+    position:absolute;
+    top:clamp(42px,13.5vw,60px);
+    width:clamp(24px,8vw,36px);
+    height:clamp(50px,16vw,80px);
+    opacity:0;
+    transition:opacity 1.5s ease 4.5s;
+    pointer-events:none;
+  }
+  .ri-cloth-l {
+    right:clamp(50px,16vw,76px);
+    background:linear-gradient(170deg,rgba(255,255,255,.5),rgba(232,224,210,.3) 50%,transparent);
+    clip-path:polygon(90% 0%,100% 0%,40% 100%,0% 100%);
+    transform:rotate(8deg);
+  }
+  .ri-cloth-r {
+    left:clamp(50px,16vw,76px);
+    background:linear-gradient(190deg,rgba(255,255,255,.5),rgba(232,224,210,.3) 50%,transparent);
+    clip-path:polygon(0% 0%,10% 0%,100% 100%,60% 100%);
+    transform:rotate(-8deg);
+  }
+  .ri-scene.active .ri-cloth{opacity:1;}
 
   .ri-particles{position:absolute;inset:0;z-index:3;pointer-events:none;}
   .ri-particle{position:absolute;background:#fff;border-radius:50%;opacity:0;}
@@ -397,7 +679,7 @@
   @keyframes riFlourishIn{0%{opacity:0;width:0}100%{opacity:.6;width:120px}}
 
   /* Intro prompt card */
-  .ri-intro-prompt{position:absolute;left:50%;bottom:208px;transform:translateX(-50%);z-index:25;width:min(calc(100vw - 2rem),292px);max-width:calc(100% + 32px);padding:1rem 1.15rem 1.2rem;text-align:center;border-radius:1.25rem;background:linear-gradient(155deg,rgba(42,32,38,.42) 0%,rgba(14,10,20,.38) 45%,rgba(10,8,16,.48) 100%);border:1px solid rgba(226,202,24,.12);box-shadow:0 12px 40px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.04) inset,inset 0 1px 0 rgba(255,248,220,.08);backdrop-filter:blur(12px) saturate(1.2);-webkit-backdrop-filter:blur(12px) saturate(1.2);transition:opacity 1.2s ease,transform 1.2s ease,box-shadow 1.2s ease;}
+  .ri-intro-prompt{position:absolute;left:50%;bottom:clamp(160px,52vw,220px);transform:translateX(-50%);z-index:25;width:min(calc(100vw - 2rem),292px);max-width:calc(100% + 32px);padding:1rem 1.15rem 1.2rem;text-align:center;border-radius:1.25rem;background:linear-gradient(155deg,rgba(42,32,38,.42) 0%,rgba(14,10,20,.38) 45%,rgba(10,8,16,.48) 100%);border:1px solid rgba(226,202,24,.12);box-shadow:0 12px 40px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.04) inset,inset 0 1px 0 rgba(255,248,220,.08);backdrop-filter:blur(12px) saturate(1.2);-webkit-backdrop-filter:blur(12px) saturate(1.2);transition:opacity 1.2s ease,transform 1.2s ease,box-shadow 1.2s ease;}
   .ri-intro-prompt::before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(180deg,rgba(255,248,220,.07) 0%,transparent 42%);}
   .ri-scene.active .ri-intro-prompt{opacity:0;transform:translateX(-50%) translateY(16px);pointer-events:none;box-shadow:none;}
   .ri-intro-text{position:relative;z-index:1;font-family:'Benaiah','Noto Serif Ethiopic',serif;font-weight:700;font-size:clamp(1.05rem,2.6vw,1.35rem);color:rgba(255,252,245,.95);letter-spacing:.06em;margin-bottom:14px;line-height:1.65;animation:riIntroPulse 3s ease-in-out infinite alternate;}
