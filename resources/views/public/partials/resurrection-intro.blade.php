@@ -1,9 +1,9 @@
-{{-- Resurrection intro — one long scrollable page: Bible verses (galaxy) → tomb scene → animation --}}
-<div id="ri-overlay" style="position:fixed;inset:0;z-index:9999;overflow-y:auto;overflow-x:hidden;background:#000;">
+{{-- Resurrection intro — one long scrollable page: Bible verses → tomb scene → animation --}}
+<div id="ri-overlay" style="position:fixed;inset:0;z-index:9999;overflow-y:auto;overflow-x:hidden;background:#03030a;">
 
   {{-- ════════════════════════════════════════
-       SECTION 1 — GALAXY + BIBLE VERSES
-       Full viewport height, user reads & scrolls
+       SECTION 1 — BIBLE VERSES
+       Same dark night sky as the tomb scene
        ════════════════════════════════════════ --}}
   <div id="ri-galaxy" style="
     position:relative;
@@ -14,15 +14,10 @@
     align-items:center;
     justify-content:flex-start;
     overflow:hidden;
-    background: radial-gradient(ellipse at 50% 0%, #0d0a2e 0%, #05030f 55%, #000 100%);
+    background:linear-gradient(180deg,#03030a 0%,#0a0a18 40%,#12101e 70%,#1a1220 100%);
   ">
-    {{-- Galaxy canvas --}}
-    <canvas id="ri-galaxy-canvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;"></canvas>
-
-    {{-- Nebula glows --}}
-    <div style="position:absolute;top:8%;left:15%;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(80,40,160,0.28) 0%,transparent 70%);filter:blur(48px);pointer-events:none;z-index:1;"></div>
-    <div style="position:absolute;top:20%;right:10%;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(30,80,180,0.22) 0%,transparent 70%);filter:blur(40px);pointer-events:none;z-index:1;"></div>
-    <div style="position:absolute;bottom:10%;left:20%;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(140,80,30,0.18) 0%,transparent 70%);filter:blur(50px);pointer-events:none;z-index:1;"></div>
+    {{-- Stars (same as tomb, built by JS below) --}}
+    <div id="ri-bible-stars" style="position:absolute;inset:0;z-index:0;pointer-events:none;"></div>
 
     {{-- Bible content --}}
     <div style="
@@ -128,7 +123,7 @@
     width:100%;
     min-height:100vh;
     overflow:hidden;
-    background:linear-gradient(180deg, #03030a 0%, #0a0a18 30%, #12101e 65%, #1a1220 100%);
+    background:linear-gradient(180deg,#03030a 0%,#0a0a18 40%,#12101e 70%,#1a1220 100%);
   ">
     <div class="ri-scene" id="ri-scene">
       <div class="ri-stars" id="ri-stars"></div>
@@ -416,83 +411,17 @@
   var sceneWrap= document.getElementById('ri-scene-wrap');
   var btn      = document.getElementById('ri-btnAleme');
 
-  /* ── Galaxy canvas: stars + slow drifting particles ── */
-  (function buildGalaxy() {
-    var cvs = document.getElementById('ri-galaxy-canvas');
-    if (!cvs) return;
-    var ctx = cvs.getContext('2d');
-    var W, H, stars = [], dust = [];
-
-    function resize() {
-      var galaxy = document.getElementById('ri-galaxy');
-      W = galaxy ? galaxy.offsetWidth  : window.innerWidth;
-      H = galaxy ? galaxy.offsetHeight : window.innerHeight;
-      cvs.width = W; cvs.height = H;
-      buildStars();
+  /* ── Bible section stars — identical style to the tomb stars ── */
+  (function buildBibleStars() {
+    var container = document.getElementById('ri-bible-stars');
+    if (!container) return;
+    for (var i = 0; i < 90; i++) {
+      var s = document.createElement('div');
+      s.className = 'ri-star';
+      var sz = Math.random() * 2.5 + 0.8;
+      s.style.cssText = 'width:'+sz+'px;height:'+sz+'px;top:'+Math.random()*100+'%;left:'+Math.random()*100+'%;animation-delay:'+Math.random()*3+'s;animation-duration:'+(2+Math.random()*3)+'s;';
+      container.appendChild(s);
     }
-
-    function buildStars() {
-      stars = [];
-      for (var i = 0; i < 320; i++) {
-        stars.push({
-          x: Math.random() * W,
-          y: Math.random() * H,
-          r: Math.random() * 1.6 + 0.3,
-          base: Math.random() * 0.6 + 0.25,
-          phase: Math.random() * Math.PI * 2,
-          speed: 0.4 + Math.random() * 1.2,
-        });
-      }
-      dust = [];
-      for (var i = 0; i < 80; i++) {
-        dust.push({
-          x: Math.random() * W,
-          y: Math.random() * H,
-          r: Math.random() * 2.8 + 0.8,
-          op: Math.random() * 0.18 + 0.04,
-          // gold or purple tint
-          hue: Math.random() < 0.5 ? '184,150,62' : '120,80,200',
-          dx: (Math.random() - 0.5) * 0.12,
-          dy: (Math.random() - 0.5) * 0.08,
-        });
-      }
-    }
-
-    var t = 0;
-    function draw() {
-      ctx.clearRect(0, 0, W, H);
-      t += 0.012;
-
-      // stars
-      for (var i = 0; i < stars.length; i++) {
-        var s = stars[i];
-        var op = s.base + Math.sin(t * s.speed + s.phase) * (s.base * 0.6);
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255,255,255,' + op + ')';
-        ctx.fill();
-      }
-
-      // dust nebula particles
-      for (var i = 0; i < dust.length; i++) {
-        var d = dust[i];
-        d.x += d.dx; d.y += d.dy;
-        if (d.x < -10) d.x = W + 10;
-        if (d.x > W + 10) d.x = -10;
-        if (d.y < -10) d.y = H + 10;
-        if (d.y > H + 10) d.y = -10;
-        ctx.beginPath();
-        ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(' + d.hue + ',' + d.op + ')';
-        ctx.fill();
-      }
-
-      requestAnimationFrame(draw);
-    }
-
-    resize();
-    window.addEventListener('resize', resize);
-    draw();
   })();
 
   /* ── Tomb scene: build elements ── */
