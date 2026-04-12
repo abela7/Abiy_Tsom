@@ -505,7 +505,7 @@
 
     setTimeout(function() {
       overlay.remove();
-    }, 9000);
+    }, 9200);
   });
 })();
 </script>
