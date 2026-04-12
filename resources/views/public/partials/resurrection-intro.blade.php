@@ -1,6 +1,55 @@
 {{-- Resurrection intro animation overlay — plays once, then reveals the greeting page. --}}
 <div id="ri-overlay" style="position:fixed;inset:0;z-index:9999;background:#000;">
-<div class="ri-scene" id="ri-scene">
+
+{{-- ═══ PHASE 1: Bible Verses ═══ --}}
+<div id="ri-bible-phase" class="ri-bible-phase">
+  <div class="ri-bible-sky"></div>
+  <div class="ri-bible-stars" id="ri-bibleStars"></div>
+
+  <div class="ri-bible-container" id="ri-bibleContainer">
+    <div class="ri-bible-reference" id="ri-bibleRef">ማቴዎስ 28፡1-8</div>
+
+    <div class="ri-bible-verses" id="ri-bibleVerses">
+      <p class="ri-verse" data-num="1">
+        <span class="ri-verse-num">፩</span>
+        በሰንበትም መጨረሻ መጀመሪያው ቀን ሲነጋ መግደላዊት ማርያมና ሁለተኛይቱ ማርያም መቃብሩን ሊያዩ መጡ።
+      </p>
+      <p class="ri-verse" data-num="2">
+        <span class="ri-verse-num">፪</span>
+        እነሆም፥ የጌታ መልአክ ከሰማይ ስለ ወረደ ታላቅ የምድር መናወጥ ሆነ፤ ቀርቦም ድንጋዩን አንከባሎ በላዩ ተቀመጠ።
+      </p>
+      <p class="ri-verse" data-num="3">
+        <span class="ri-verse-num">፫</span>
+        መልኩም እንደ መብረቅ ልብሱም እንደ በረዶ ነጭ ነበረ።
+      </p>
+      <p class="ri-verse" data-num="4">
+        <span class="ri-verse-num">፬</span>
+        ጠባቆቹም እርሱን ከመፍራት የተነሣ ተናወጡ እንደ ሞቱም ሆኑ።
+      </p>
+      <p class="ri-verse" data-num="5">
+        <span class="ri-verse-num">፭</span>
+        መልአኩም መልሶ ሴቶቹን አላቸው፦ &quot;እናንተስ አትፍሩ የተሰቀለውን ኢየሱስን እንድትሹ አውቃለሁና፤
+      </p>
+      <p class="ri-verse" data-num="6">
+        <span class="ri-verse-num">፮</span>
+        እንደ ተናገረ ተነሥቶአልና በዚህ የለም፤ የተኛበትን ስፍራ ኑና እዩ።
+      </p>
+      <p class="ri-verse" data-num="7">
+        <span class="ri-verse-num">፯</span>
+        ፈጥናችሁም ሂዱና፦ &lsquo;ከሙታን ተነሣ፥ እነሆም፥ ወደ ገሊላ ይቀድማችኋል በዚያም ታዩታላችሁ&rsquo; ብላችሁ ለደቀ መዛሙርቱ ንገሯቸው። እነሆም፥ ነገርኳችሁ።&quot;
+      </p>
+    </div>
+
+    <div class="ri-bible-divider" id="ri-bibleDivider">
+      <span class="ri-bible-divider-line"></span>
+      <span class="ri-bible-divider-dot"></span>
+      <span class="ri-bible-divider-line"></span>
+    </div>
+  </div>
+</div>
+
+{{-- ═══ PHASE 2: Tomb Scene ═══ --}}
+<div class="ri-scene" id="ri-scene" style="display:none;">
   <div class="ri-sky"></div>
   <div class="ri-stars" id="ri-stars"></div>
   <div class="ri-particles" id="ri-particles"></div>
@@ -61,9 +110,155 @@
     font-display: swap;
   }
 
-  /* ═══ SCENE ═══ */
+  /* ═══════════════════════════════════════════════
+     PHASE 1 — BIBLE VERSES
+     ═══════════════════════════════════════════════ */
+
+  .ri-bible-phase {
+    position:relative;width:100%;height:100%;overflow:hidden;
+  }
+
+  /* Sky (same dark night as tomb scene) */
+  .ri-bible-sky {
+    position:absolute;inset:0;
+    background:linear-gradient(180deg,#03030a 0%,#0a0a18 40%,#12101e 70%,#1a1220 100%);
+  }
+
+  /* Stars reuse for bible phase */
+  .ri-bible-stars{position:absolute;inset:0;z-index:1;}
+
+  /* Container: scrollable centered column */
+  .ri-bible-container {
+    position:relative;z-index:10;
+    display:flex;flex-direction:column;align-items:center;
+    width:100%;height:100%;
+    overflow-y:auto;overflow-x:hidden;
+    -webkit-overflow-scrolling:touch;
+    padding:max(2.5rem, env(safe-area-inset-top, 0px)) max(1.25rem, env(safe-area-inset-right, 0px))
+            max(2.5rem, env(safe-area-inset-bottom, 0px)) max(1.25rem, env(safe-area-inset-left, 0px));
+  }
+
+  /* Reference heading */
+  .ri-bible-reference {
+    font-family:'Noto Serif Ethiopic',serif;font-weight:600;
+    font-size:clamp(0.8rem,2vw,1rem);
+    color:rgba(184,150,62,.7);
+    letter-spacing:.2em;text-transform:uppercase;
+    text-align:center;
+    margin-top:clamp(1.5rem,6vh,4rem);
+    margin-bottom:clamp(1.5rem,4vh,2.5rem);
+    opacity:0;
+    animation:riBibleRefIn 1.5s ease 0.3s forwards;
+  }
+  @keyframes riBibleRefIn {
+    0%{opacity:0;transform:translateY(12px)}
+    100%{opacity:1;transform:translateY(0)}
+  }
+
+  /* Verses container */
+  .ri-bible-verses {
+    width:100%;
+    max-width:min(calc(100vw - 2.5rem), 520px);
+    display:flex;flex-direction:column;
+    gap:0;
+  }
+
+  /* Individual verse */
+  .ri-verse {
+    font-family:'Noto Serif Ethiopic',serif;font-weight:400;
+    font-size:clamp(0.95rem,2.4vw,1.15rem);
+    line-height:2;
+    color:rgba(255,252,245,.88);
+    text-align:justify;
+    padding:0.65rem 0;
+    border-bottom:1px solid rgba(184,150,62,.08);
+    opacity:0;
+    transform:translateY(18px);
+    transition:opacity 0.9s ease, transform 0.9s ease;
+  }
+  .ri-verse.ri-verse-visible {
+    opacity:1;
+    transform:translateY(0);
+  }
+  .ri-verse:last-child {
+    border-bottom:none;
+  }
+
+  /* Verse number */
+  .ri-verse-num {
+    display:inline-block;
+    font-family:'Noto Serif Ethiopic',serif;font-weight:700;
+    font-size:0.8em;
+    color:#b8963e;
+    min-width:1.6em;
+    margin-inline-end:0.35em;
+    opacity:.75;
+  }
+
+  /* Highlight for key verse (verse 6) */
+  .ri-verse[data-num="6"] {
+    color:rgba(255,252,245,1);
+    font-weight:500;
+  }
+  .ri-verse[data-num="6"] .ri-verse-num {
+    opacity:1;
+    color:#e2ca18;
+    text-shadow:0 0 12px rgba(226,202,24,.4);
+  }
+
+  /* Verse 7 — the command to "Go tell" (connects to next phase) */
+  .ri-verse[data-num="7"] {
+    color:rgba(255,252,245,1);
+    font-weight:500;
+  }
+  .ri-verse[data-num="7"] .ri-verse-num {
+    opacity:1;
+    color:#e2ca18;
+    text-shadow:0 0 12px rgba(226,202,24,.4);
+  }
+
+  /* Divider between verses and transition */
+  .ri-bible-divider {
+    display:flex;align-items:center;justify-content:center;gap:12px;
+    margin-top:clamp(1.5rem,4vh,2.5rem);
+    margin-bottom:clamp(1.5rem,4vh,2rem);
+    opacity:0;
+    transition:opacity 1s ease;
+  }
+  .ri-bible-divider.ri-divider-visible {
+    opacity:1;
+  }
+  .ri-bible-divider-line {
+    display:block;width:3rem;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(184,150,62,.4),transparent);
+  }
+  .ri-bible-divider-dot {
+    display:block;width:6px;height:6px;border-radius:50%;
+    background:rgba(226,202,24,.6);
+    box-shadow:0 0 12px rgba(226,202,24,.35);
+  }
+
+  /* Phase transition */
+  .ri-bible-phase {
+    transition:opacity 1.6s ease;
+  }
+  .ri-bible-phase.ri-phase-out {
+    opacity:0;
+    pointer-events:none;
+  }
+
+
+  /* ═══════════════════════════════════════════════
+     PHASE 2 — TOMB SCENE (existing, unchanged)
+     ═══════════════════════════════════════════════ */
+
   .ri-scene {
     position:relative;width:100%;height:100%;overflow:hidden;
+    opacity:0;
+    transition:opacity 1.6s ease;
+  }
+  .ri-scene.ri-scene-visible {
+    opacity:1;
   }
 
   /* SKY */
@@ -296,7 +491,7 @@
   .ri-scene.active .ri-flourish{animation:riFlourishIn 2s ease 9.5s forwards;}
   @keyframes riFlourishIn{0%{opacity:0;width:0}100%{opacity:.6;width:120px}}
 
-  /* ═══ INTRO — glass card above tomb (matches Resurrection.html) ═══ */
+  /* ═══ INTRO — glass card above tomb ═══ */
   .ri-intro-prompt {
     position:absolute;left:50%;bottom:208px;transform:translateX(-50%);
     z-index:25;
@@ -399,7 +594,7 @@
     100%{opacity:0;transform:rotate(calc(var(--start) + 360deg)) translateX(var(--radius)) scale(0)}
   }
 
-  /* Screen shake (single burst, Resurrection.html) */
+  /* Screen shake */
   .ri-scene.active {
     animation:riScreenShake .8s ease 1.5s;
   }
@@ -428,67 +623,127 @@
 
 <script>
 (function riInit() {
-  var scene = document.getElementById('ri-scene');
   var overlay = document.getElementById('ri-overlay');
+  var biblePhase = document.getElementById('ri-bible-phase');
+  var scene = document.getElementById('ri-scene');
   var btn = document.getElementById('ri-btnAleme');
 
-  // Stars
-  var starsEl = document.getElementById('ri-stars');
-  for (var i = 0; i < 90; i++) {
+  /* ─── Phase 1: Bible stars ─── */
+  var bibleStars = document.getElementById('ri-bibleStars');
+  for (var i = 0; i < 70; i++) {
     var s = document.createElement('div');
     s.className = 'ri-star';
-    var sz = Math.random() * 2.5 + 0.8;
-    s.style.cssText = 'width:'+sz+'px;height:'+sz+'px;top:'+Math.random()*50+'%;left:'+Math.random()*100+'%;animation-delay:'+Math.random()*3+'s;animation-duration:'+(2+Math.random()*3)+'s;';
-    starsEl.appendChild(s);
+    var sz = Math.random() * 2.2 + 0.6;
+    s.style.cssText = 'width:'+sz+'px;height:'+sz+'px;top:'+Math.random()*100+'%;left:'+Math.random()*100+'%;animation-delay:'+Math.random()*3+'s;animation-duration:'+(2+Math.random()*3)+'s;';
+    bibleStars.appendChild(s);
   }
 
-  // Light rays
-  var raysEl = document.getElementById('ri-lightRays');
-  for (var i = 0; i < 32; i++) {
-    var r = document.createElement('div');
-    r.className = 'ri-ray';
-    var angle = (i / 32) * 360;
-    var h = 120 + Math.random() * 350;
-    var o = 0.15 + Math.random() * 0.4;
-    var w = 2 + Math.random() * 5;
-    r.style.cssText = 'transform:rotate('+angle+'deg);--ray-h:'+h+'px;--ray-o:'+o+';width:'+w+'px;animation-delay:'+(2+Math.random()*1.5)+'s;';
-    raysEl.appendChild(r);
+  /* ─── Phase 1: Reveal verses one by one ─── */
+  var verses = document.querySelectorAll('.ri-verse');
+  var divider = document.getElementById('ri-bibleDivider');
+  var verseDelay = 800;   // ms between each verse appearing
+  var startDelay = 1200;  // initial wait
+
+  verses.forEach(function(v, i) {
+    setTimeout(function() {
+      v.classList.add('ri-verse-visible');
+
+      // Auto-scroll the verse into view
+      v.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      // After last verse, show divider then transition to tomb scene
+      if (i === verses.length - 1) {
+        setTimeout(function() {
+          divider.classList.add('ri-divider-visible');
+        }, 600);
+
+        // Transition to tomb scene after user has read
+        setTimeout(function() {
+          transitionToTombScene();
+        }, 2800);
+      }
+    }, startDelay + (i * verseDelay));
+  });
+
+  /* ─── Transition: Bible → Tomb ─── */
+  function transitionToTombScene() {
+    // Fade out bible phase
+    biblePhase.classList.add('ri-phase-out');
+
+    setTimeout(function() {
+      biblePhase.style.display = 'none';
+
+      // Show and fade in tomb scene
+      scene.style.display = '';
+      // Force reflow
+      scene.offsetHeight;
+      scene.classList.add('ri-scene-visible');
+
+      // Build tomb scene elements
+      buildTombScene();
+    }, 1600);
   }
 
-  // Particles
-  var particlesEl = document.getElementById('ri-particles');
-  for (var i = 0; i < 55; i++) {
-    var p = document.createElement('div');
-    p.className = 'ri-particle';
-    var sz = 2 + Math.random() * 5;
-    p.style.cssText = 'width:'+sz+'px;height:'+sz+'px;left:'+(25+Math.random()*50)+'%;bottom:'+(10+Math.random()*35)+'%;--dur:'+(3+Math.random()*4)+'s;--delay:'+(2.5+Math.random()*3)+'s;filter:blur('+Math.random()*2+'px);';
-    particlesEl.appendChild(p);
+  /* ─── Phase 2: Build tomb scene ─── */
+  function buildTombScene() {
+    // Stars
+    var starsEl = document.getElementById('ri-stars');
+    for (var i = 0; i < 90; i++) {
+      var s = document.createElement('div');
+      s.className = 'ri-star';
+      var sz = Math.random() * 2.5 + 0.8;
+      s.style.cssText = 'width:'+sz+'px;height:'+sz+'px;top:'+Math.random()*50+'%;left:'+Math.random()*100+'%;animation-delay:'+Math.random()*3+'s;animation-duration:'+(2+Math.random()*3)+'s;';
+      starsEl.appendChild(s);
+    }
+
+    // Light rays
+    var raysEl = document.getElementById('ri-lightRays');
+    for (var i = 0; i < 32; i++) {
+      var r = document.createElement('div');
+      r.className = 'ri-ray';
+      var angle = (i / 32) * 360;
+      var h = 120 + Math.random() * 350;
+      var o = 0.15 + Math.random() * 0.4;
+      var w = 2 + Math.random() * 5;
+      r.style.cssText = 'transform:rotate('+angle+'deg);--ray-h:'+h+'px;--ray-o:'+o+';width:'+w+'px;animation-delay:'+(2+Math.random()*1.5)+'s;';
+      raysEl.appendChild(r);
+    }
+
+    // Particles
+    var particlesEl = document.getElementById('ri-particles');
+    for (var i = 0; i < 55; i++) {
+      var p = document.createElement('div');
+      p.className = 'ri-particle';
+      var sz = 2 + Math.random() * 5;
+      p.style.cssText = 'width:'+sz+'px;height:'+sz+'px;left:'+(25+Math.random()*50)+'%;bottom:'+(10+Math.random()*35)+'%;--dur:'+(3+Math.random()*4)+'s;--delay:'+(2.5+Math.random()*3)+'s;filter:blur('+Math.random()*2+'px);';
+      particlesEl.appendChild(p);
+    }
+
+    // Grass
+    var grassEl = document.getElementById('ri-grass');
+    for (var i = 0; i < 130; i++) {
+      var t = document.createElement('div');
+      t.className = 'ri-tuft';
+      var h = 5 + Math.random() * 18;
+      var hue = 75 + Math.random() * 45;
+      var light = 7 + Math.random() * 10;
+      t.style.cssText = 'left:'+(i/130)*100+'%;height:'+h+'px;background:hsl('+hue+',25%,'+light+'%);transform:rotate('+(-15+Math.random()*30)+'deg);';
+      grassEl.appendChild(t);
+    }
+
+    // Button sparkles
+    for (var i = 0; i < 8; i++) {
+      var sp = document.createElement('div');
+      sp.className = 'ri-btn-sparkle';
+      var startAngle = (i / 8) * 360;
+      var radius = 55 + Math.random() * 20;
+      var dur = 3 + Math.random() * 2;
+      sp.style.cssText = 'top:50%;left:50%;--start:'+startAngle+'deg;--radius:'+radius+'px;--dur:'+dur+'s;animation-delay:'+(i/8)*dur+'s;width:'+(2+Math.random()*3)+'px;height:'+(2+Math.random()*3)+'px;';
+      btn.parentElement.appendChild(sp);
+    }
   }
 
-  // Grass
-  var grassEl = document.getElementById('ri-grass');
-  for (var i = 0; i < 130; i++) {
-    var t = document.createElement('div');
-    t.className = 'ri-tuft';
-    var h = 5 + Math.random() * 18;
-    var hue = 75 + Math.random() * 45;
-    var light = 7 + Math.random() * 10;
-    t.style.cssText = 'left:'+(i/130)*100+'%;height:'+h+'px;background:hsl('+hue+',25%,'+light+'%);transform:rotate('+(-15+Math.random()*30)+'deg);';
-    grassEl.appendChild(t);
-  }
-
-  // Button sparkles
-  for (var i = 0; i < 8; i++) {
-    var sp = document.createElement('div');
-    sp.className = 'ri-btn-sparkle';
-    var startAngle = (i / 8) * 360;
-    var radius = 55 + Math.random() * 20;
-    var dur = 3 + Math.random() * 2;
-    sp.style.cssText = 'top:50%;left:50%;--start:'+startAngle+'deg;--radius:'+radius+'px;--dur:'+dur+'s;animation-delay:'+(i/8)*dur+'s;width:'+(2+Math.random()*3)+'px;height:'+(2+Math.random()*3)+'px;';
-    btn.parentElement.appendChild(sp);
-  }
-
-  // Button triggers the animation
+  /* ─── Phase 2: Button triggers resurrection animation ─── */
   btn.addEventListener('click', function(e) {
     e.stopPropagation();
     if (scene.classList.contains('active')) return;
@@ -497,7 +752,6 @@
     // After title is visible (~11.5s), hold for 2s, then transition to greeting page
     setTimeout(function() {
       overlay.classList.add('ri-fade-out');
-      // Reveal the main content
       var main = document.getElementById('ybb-main-content');
       if (main) main.classList.add('ybb-revealed');
     }, 12000);
