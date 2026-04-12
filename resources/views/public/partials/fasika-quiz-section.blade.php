@@ -4,6 +4,12 @@
          answerUrl:    @js(route('public.yefasika-beal.quiz.answer')),
          completeUrl:  @js(route('public.yefasika-beal.quiz.complete')),
          csrf:         @js(csrf_token()),
+         labels: {
+             thankYou:     @js(__('app.fasika_quiz_results_thank_you')),
+             scorePerfect: @js(__('app.fasika_quiz_score_label_perfect')),
+             scoreGreat:   @js(__('app.fasika_quiz_score_label_great')),
+             scoreGood:    @js(__('app.fasika_quiz_score_label_good')),
+         },
      })">
 
     {{-- ═══════════════════════════════════════════
@@ -231,11 +237,11 @@
                         <div class="flex gap-3 pt-1">
                             <button type="button" @click="resetQuiz()"
                                     class="touch-manipulation flex-1 inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[#e2ca18]/30 text-sm font-semibold text-[#e2ca18] transition hover:bg-[#e2ca18]/10 active:scale-[0.98]">
-                                ዳግም ይሞክሩ
+                                {{ __('app.fasika_quiz_try_again_button') }}
                             </button>
                             <button type="button" @click="closeModal()"
                                     class="touch-manipulation flex-1 inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-white/10 text-sm font-semibold text-zinc-300 transition hover:bg-white/[0.06] active:scale-[0.98]">
-                                ዝጋ
+                                {{ __('app.fasika_quiz_close_button') }}
                             </button>
                         </div>
                     </div>
@@ -284,11 +290,11 @@ function fasikaQuiz(config) {
         },
         scoreLabel() {
             const pct = this.results?.percentage ?? 0;
-            if (pct === 100) return 'አስደናቂ! ሙሉ ነጥብ!';
-            if (pct >= 80) return 'እጅግ ጥሩ!';
-            if (pct >= 60) return 'ጥሩ ሙከራ!';
-            if (pct >= 40) return 'ቀጥሉ! ይሞክሩ!';
-            return 'ዳግም ይሞክሩ!';
+            const L = config.labels || {};
+            if (pct === 100) return L.scorePerfect || '';
+            if (pct >= 80) return L.scoreGreat || '';
+            if (pct >= 60) return L.scoreGood || '';
+            return L.thankYou || '';
         },
 
         async startQuiz() {

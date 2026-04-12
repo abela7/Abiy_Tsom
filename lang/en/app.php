@@ -2246,6 +2246,14 @@ return [
     'yefasika_beal_parish_footer_prefix' => 'At ',
     'yefasika_beal_parish_footer_link' => 'Liverpool Mekane Kidusan Abune Teklehaymanot Church',
 
+    // Public Fasika quiz (yefasika-beal)
+    'fasika_quiz_results_thank_you' => 'Thank you for trying the questions.',
+    'fasika_quiz_score_label_perfect' => 'Amazing! Full score!',
+    'fasika_quiz_score_label_great' => 'Excellent!',
+    'fasika_quiz_score_label_good' => 'Well done!',
+    'fasika_quiz_try_again_button' => 'Try again',
+    'fasika_quiz_close_button' => 'Close',
+
     // Fasika greetings admin
     'fasika_greeting_admin_title' => 'Fasika Greetings',
     'fasika_greeting_admin_subtitle' => 'Track how many people created and opened personalized Easter greeting links.',
