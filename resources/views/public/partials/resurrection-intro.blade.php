@@ -1,273 +1,265 @@
-{{-- Resurrection intro animation overlay — plays once, then reveals the greeting page. --}}
-<div id="ri-overlay" style="position:fixed;inset:0;z-index:9999;background:#000;">
+{{-- Resurrection intro — one long scrollable page: Bible verses (galaxy) → tomb scene → animation --}}
+<div id="ri-overlay" style="position:fixed;inset:0;z-index:9999;overflow-y:auto;overflow-x:hidden;background:#000;">
 
-{{-- ═══ PHASE 1: Bible Verses ═══ --}}
-<div id="ri-bible-phase" class="ri-bible-phase">
-  <div class="ri-bible-sky"></div>
-  <div class="ri-bible-stars" id="ri-bibleStars"></div>
+  {{-- ════════════════════════════════════════
+       SECTION 1 — GALAXY + BIBLE VERSES
+       Full viewport height, user reads & scrolls
+       ════════════════════════════════════════ --}}
+  <div id="ri-galaxy" style="
+    position:relative;
+    min-height:100vh;
+    width:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-start;
+    overflow:hidden;
+    background: radial-gradient(ellipse at 50% 0%, #0d0a2e 0%, #05030f 55%, #000 100%);
+  ">
+    {{-- Galaxy canvas --}}
+    <canvas id="ri-galaxy-canvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;"></canvas>
 
-  <div class="ri-bible-container" id="ri-bibleContainer">
-    <div class="ri-bible-reference" id="ri-bibleRef">ማቴዎስ 28፡1-8</div>
+    {{-- Nebula glows --}}
+    <div style="position:absolute;top:8%;left:15%;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(80,40,160,0.28) 0%,transparent 70%);filter:blur(48px);pointer-events:none;z-index:1;"></div>
+    <div style="position:absolute;top:20%;right:10%;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(30,80,180,0.22) 0%,transparent 70%);filter:blur(40px);pointer-events:none;z-index:1;"></div>
+    <div style="position:absolute;bottom:10%;left:20%;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(140,80,30,0.18) 0%,transparent 70%);filter:blur(50px);pointer-events:none;z-index:1;"></div>
 
-    <div class="ri-bible-verses" id="ri-bibleVerses">
-      <p class="ri-verse" data-num="1">
-        <span class="ri-verse-num">፩</span>
-        በሰንበትም መጨረሻ መጀመሪያው ቀን ሲነጋ መግደላዊት ማርያมና ሁለተኛይቱ ማርያም መቃብሩን ሊያዩ መጡ።
-      </p>
-      <p class="ri-verse" data-num="2">
-        <span class="ri-verse-num">፪</span>
-        እነሆም፥ የጌታ መልአክ ከሰማይ ስለ ወረደ ታላቅ የምድር መናወጥ ሆነ፤ ቀርቦም ድንጋዩን አንከባሎ በላዩ ተቀመጠ።
-      </p>
-      <p class="ri-verse" data-num="3">
-        <span class="ri-verse-num">፫</span>
-        መልኩም እንደ መብረቅ ልብሱም እንደ በረዶ ነጭ ነበረ።
-      </p>
-      <p class="ri-verse" data-num="4">
-        <span class="ri-verse-num">፬</span>
-        ጠባቆቹም እርሱን ከመፍራት የተነሣ ተናወጡ እንደ ሞቱም ሆኑ።
-      </p>
-      <p class="ri-verse" data-num="5">
-        <span class="ri-verse-num">፭</span>
-        መልአኩም መልሶ ሴቶቹን አላቸው፦ &quot;እናንተስ አትፍሩ የተሰቀለውን ኢየሱስን እንድትሹ አውቃለሁና፤
-      </p>
-      <p class="ri-verse" data-num="6">
-        <span class="ri-verse-num">፮</span>
-        እንደ ተናገረ ተነሥቶአልና በዚህ የለም፤ የተኛበትን ስፍራ ኑና እዩ።
-      </p>
-      <p class="ri-verse" data-num="7">
-        <span class="ri-verse-num">፯</span>
-        ፈጥናችሁም ሂዱና፦ &lsquo;ከሙታን ተነሣ፥ እነሆም፥ ወደ ገሊላ ይቀድማችኋል በዚያም ታዩታላችሁ&rsquo; ብላችሁ ለደቀ መዛሙርቱ ንገሯቸው። እነሆም፥ ነገርኳችሁ።&quot;
-      </p>
-    </div>
+    {{-- Bible content --}}
+    <div style="
+      position:relative;z-index:2;
+      width:100%;max-width:560px;
+      padding: max(3rem, env(safe-area-inset-top, 0px)) max(1.5rem, env(safe-area-inset-right, 0px)) 4rem max(1.5rem, env(safe-area-inset-left, 0px));
+      box-sizing:border-box;
+    ">
 
-    <div class="ri-bible-divider" id="ri-bibleDivider">
-      <span class="ri-bible-divider-line"></span>
-      <span class="ri-bible-divider-dot"></span>
-      <span class="ri-bible-divider-line"></span>
-    </div>
-  </div>
-</div>
+      {{-- Reference pill --}}
+      <div id="ri-ref" style="
+        text-align:center;
+        margin-bottom:2.5rem;
+        opacity:0;
+        animation: riFadeUp 1.2s ease 0.4s forwards;
+      ">
+        <span style="
+          display:inline-block;
+          font-family:'Noto Serif Ethiopic',serif;font-weight:600;
+          font-size:clamp(0.72rem,2vw,0.88rem);
+          color:rgba(184,150,62,0.8);
+          letter-spacing:.22em;text-transform:uppercase;
+          border:1px solid rgba(184,150,62,0.22);
+          border-radius:999px;
+          padding:0.35rem 1.2rem;
+          background:rgba(184,150,62,0.06);
+        ">ማቴዎስ ወንጌል 28፡1–8</span>
+      </div>
 
-{{-- ═══ PHASE 2: Tomb Scene ═══ --}}
-<div class="ri-scene" id="ri-scene" style="display:none;">
-  <div class="ri-sky"></div>
-  <div class="ri-stars" id="ri-stars"></div>
-  <div class="ri-particles" id="ri-particles"></div>
-  <div class="ri-ground"></div>
-  <div class="ri-ground-rocks"></div>
-  <div class="ri-light-rays" id="ri-lightRays"></div>
+      {{-- Verses --}}
+      <div style="display:flex;flex-direction:column;gap:0;">
 
-  <div class="ri-tomb-container">
-    <div class="ri-intro-prompt" id="ri-introPrompt">
-      <div class="ri-intro-text">ሂዱ ንገሩ አውሩ ለ</div>
-      <div class="ri-btn-wrap">
-        <button class="ri-btn-aleme" id="ri-btnAleme" type="button">ዓለም</button>
-        <div class="ri-click-hint" aria-hidden="true">
-          <span class="ri-click-hint-ring"></span>
-          <span class="ri-click-hint-head"></span>
-          <span class="ri-click-hint-shaft"></span>
+        <p class="ri-bv" style="--d:0.7s">
+          <span class="ri-vn">፩</span>
+          በሰንበትም መጨረሻ መጀመሪያው ቀን ሲነጋ መግደላዊት ማርያምና ሁለተኛይቱ ማርያም መቃብሩን ሊያዩ መጡ።
+        </p>
+
+        <p class="ri-bv" style="--d:1.1s">
+          <span class="ri-vn">፪</span>
+          እነሆም፥ የጌታ መልአክ ከሰማይ ስለ ወረደ ታላቅ የምድር መናወጥ ሆነ፤ ቀርቦም ድንጋዩን አንከባሎ በላዩ ተቀመጠ።
+        </p>
+
+        <p class="ri-bv" style="--d:1.5s">
+          <span class="ri-vn">፫</span>
+          መልኩም እንደ መብረቅ ልብሱም እንደ በረዶ ነጭ ነበረ።
+        </p>
+
+        <p class="ri-bv" style="--d:1.9s">
+          <span class="ri-vn">፬</span>
+          ጠባቆቹም እርሱን ከመፍራት የተነሣ ተናወጡ እንደ ሞቱም ሆኑ።
+        </p>
+
+        <p class="ri-bv" style="--d:2.3s">
+          <span class="ri-vn">፭</span>
+          መልአኩም መልሶ ሴቶቹን አላቸው፦ &ldquo;እናንተስ አትፍሩ የተሰቀለውን ኢየሱስን እንድትሹ አውቃለሁና፤
+        </p>
+
+        <p class="ri-bv ri-bv-key" style="--d:2.7s">
+          <span class="ri-vn ri-vn-key">፮</span>
+          እንደ ተናገረ ተነሥቶአልና በዚህ የለም፤ የተኛበትን ስፍራ ኑና እዩ።
+        </p>
+
+        <p class="ri-bv ri-bv-key" style="--d:3.1s">
+          <span class="ri-vn ri-vn-key">፯</span>
+          ፈጥናችሁም ሂዱና፦ &lsquo;ከሙታን ተነሣ፥ እነሆም፥ ወደ ገሊላ ይቀድማችኋል በዚያም ታዩታላችሁ&rsquo; ብላችሁ ለደቀ መዛሙርቱ ንገሯቸው። እነሆም፥ ነገርኳችሁ።&rdquo;
+        </p>
+
+        <p class="ri-bv" style="--d:3.5s">
+          <span class="ri-vn">፰</span>
+          እነርሱም በፍርሃትና በታላቅ ደስታ ፈጥነው መቃብሩን ትተው ሮጡ ደቀ መዛሙርቱንም ሊነግሩ ሄዱ።
+        </p>
+
+      </div>
+
+      {{-- Scroll hint --}}
+      <div id="ri-scroll-hint" style="
+        text-align:center;
+        margin-top:3.5rem;
+        opacity:0;
+        animation: riFadeUp 1.4s ease 4.2s forwards;
+        display:flex;flex-direction:column;align-items:center;gap:0.6rem;
+      ">
+        <span style="
+          font-family:'Noto Serif Ethiopic',serif;
+          font-size:clamp(0.78rem,2vw,0.9rem);
+          color:rgba(184,150,62,0.6);
+          letter-spacing:.12em;
+        ">ቀጥሉ ↓</span>
+        <div class="ri-scroll-arrow">
+          <span></span><span></span>
         </div>
       </div>
+
     </div>
-    <div class="ri-tomb-mound"></div>
-    <div class="ri-tomb-hole">
-      <div class="ri-divine-light"></div>
-      <div class="ri-jesus-figure">
-        <div class="ri-figure-body">
-          <div class="ri-figure-glow"></div>
-          <div class="ri-halo"></div>
-          <div class="ri-figure-head"></div>
-          <div class="ri-figure-robe"></div>
-          <div class="ri-arm ri-arm-left"></div>
-          <div class="ri-arm ri-arm-right"></div>
+  </div>
+
+  {{-- ════════════════════════════════════════
+       SECTION 2 — TOMB SCENE
+       Appears below, user scrolls into it
+       ════════════════════════════════════════ --}}
+  <div id="ri-scene-wrap" style="
+    position:relative;
+    width:100%;
+    min-height:100vh;
+    overflow:hidden;
+    background:linear-gradient(180deg, #03030a 0%, #0a0a18 30%, #12101e 65%, #1a1220 100%);
+  ">
+    <div class="ri-scene" id="ri-scene">
+      <div class="ri-stars" id="ri-stars"></div>
+      <div class="ri-particles" id="ri-particles"></div>
+      <div class="ri-ground"></div>
+      <div class="ri-ground-rocks"></div>
+      <div class="ri-light-rays" id="ri-lightRays"></div>
+
+      <div class="ri-tomb-container">
+        <div class="ri-intro-prompt" id="ri-introPrompt">
+          <div class="ri-intro-text">ሂዱ ንገሩ አውሩ ለ</div>
+          <div class="ri-btn-wrap">
+            <button class="ri-btn-aleme" id="ri-btnAleme" type="button">ዓለም</button>
+            <div class="ri-click-hint" aria-hidden="true">
+              <span class="ri-click-hint-ring"></span>
+              <span class="ri-click-hint-head"></span>
+              <span class="ri-click-hint-shaft"></span>
+            </div>
+          </div>
         </div>
+        <div class="ri-tomb-mound"></div>
+        <div class="ri-tomb-hole">
+          <div class="ri-divine-light"></div>
+          <div class="ri-jesus-figure">
+            <div class="ri-figure-body">
+              <div class="ri-figure-glow"></div>
+              <div class="ri-halo"></div>
+              <div class="ri-figure-head"></div>
+              <div class="ri-figure-robe"></div>
+              <div class="ri-arm ri-arm-left"></div>
+              <div class="ri-arm ri-arm-right"></div>
+            </div>
+          </div>
+        </div>
+        <div class="ri-stone"></div>
+      </div>
+
+      <div class="ri-grass" id="ri-grass"></div>
+
+      <div class="ri-flash-burst"></div>
+      <div class="ri-light-wave-2"></div>
+      <div class="ri-radial-white"></div>
+      <div class="ri-white-takeover"></div>
+
+      <div class="ri-title-text">
+        <h1>ተነስቷል</h1>
+        <p>ማቴ 28፡6</p>
+        <span class="ri-flourish"></span>
       </div>
     </div>
-    <div class="ri-stone"></div>
   </div>
 
-  <div class="ri-grass" id="ri-grass"></div>
-
-  <div class="ri-flash-burst"></div>
-  <div class="ri-light-wave-2"></div>
-  <div class="ri-radial-white"></div>
-  <div class="ri-white-takeover"></div>
-
-  <div class="ri-title-text">
-    <h1>ተነስቷል</h1>
-    <p>ማቴ 28፡6</p>
-    <span class="ri-flourish"></span>
-  </div>
-</div>
-</div>
+</div><!-- #ri-overlay -->
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+Ethiopic:wght@300;400;500;600;700;900&display=swap');
 
   @font-face {
-    font-family: 'Benaiah';
-    src: url('{{ asset('fonts/Benaiah_536454528f.ttf') }}') format('truetype');
-    font-display: swap;
+    font-family:'Benaiah';
+    src:url('{{ asset('fonts/Benaiah_536454528f.ttf') }}') format('truetype');
+    font-display:swap;
   }
 
-  /* ═══════════════════════════════════════════════
-     PHASE 1 — BIBLE VERSES
-     ═══════════════════════════════════════════════ */
-
-  .ri-bible-phase {
-    position:relative;width:100%;height:100%;overflow:hidden;
-  }
-
-  /* Sky (same dark night as tomb scene) */
-  .ri-bible-sky {
-    position:absolute;inset:0;
-    background:linear-gradient(180deg,#03030a 0%,#0a0a18 40%,#12101e 70%,#1a1220 100%);
-  }
-
-  /* Stars reuse for bible phase */
-  .ri-bible-stars{position:absolute;inset:0;z-index:1;}
-
-  /* Container: scrollable centered column */
-  .ri-bible-container {
-    position:relative;z-index:10;
-    display:flex;flex-direction:column;align-items:center;
-    width:100%;height:100%;
-    overflow-y:auto;overflow-x:hidden;
-    -webkit-overflow-scrolling:touch;
-    padding:max(2.5rem, env(safe-area-inset-top, 0px)) max(1.25rem, env(safe-area-inset-right, 0px))
-            max(2.5rem, env(safe-area-inset-bottom, 0px)) max(1.25rem, env(safe-area-inset-left, 0px));
-  }
-
-  /* Reference heading */
-  .ri-bible-reference {
-    font-family:'Noto Serif Ethiopic',serif;font-weight:600;
-    font-size:clamp(0.8rem,2vw,1rem);
-    color:rgba(184,150,62,.7);
-    letter-spacing:.2em;text-transform:uppercase;
-    text-align:center;
-    margin-top:clamp(1.5rem,6vh,4rem);
-    margin-bottom:clamp(1.5rem,4vh,2.5rem);
-    opacity:0;
-    animation:riBibleRefIn 1.5s ease 0.3s forwards;
-  }
-  @keyframes riBibleRefIn {
-    0%{opacity:0;transform:translateY(12px)}
-    100%{opacity:1;transform:translateY(0)}
-  }
-
-  /* Verses container */
-  .ri-bible-verses {
-    width:100%;
-    max-width:min(calc(100vw - 2.5rem), 520px);
-    display:flex;flex-direction:column;
-    gap:0;
-  }
-
-  /* Individual verse */
-  .ri-verse {
-    font-family:'Noto Serif Ethiopic',serif;font-weight:400;
-    font-size:clamp(0.95rem,2.4vw,1.15rem);
-    line-height:2;
-    color:rgba(255,252,245,.88);
+  /* ── verse base ── */
+  .ri-bv {
+    font-family:'Noto Serif Ethiopic',serif;
+    font-size:clamp(1rem,2.6vw,1.18rem);
+    line-height:2.05;
+    color:rgba(255,252,245,.82);
     text-align:justify;
-    padding:0.65rem 0;
-    border-bottom:1px solid rgba(184,150,62,.08);
+    padding:.7rem 0;
+    border-bottom:1px solid rgba(184,150,62,.07);
+    margin:0;
     opacity:0;
-    transform:translateY(18px);
-    transition:opacity 0.9s ease, transform 0.9s ease;
+    animation: riFadeUp 1s ease var(--d, 1s) forwards;
   }
-  .ri-verse.ri-verse-visible {
-    opacity:1;
-    transform:translateY(0);
-  }
-  .ri-verse:last-child {
+  .ri-bv:last-child { border-bottom:none; }
+
+  /* key verses (6 & 7) */
+  .ri-bv-key {
+    color:rgba(255,252,245,1);
+    font-weight:500;
+    background:rgba(184,150,62,.04);
+    border-radius:.5rem;
+    padding:.75rem .65rem;
     border-bottom:none;
+    margin:.25rem 0;
+    border:1px solid rgba(184,150,62,.12);
   }
 
-  /* Verse number */
-  .ri-verse-num {
+  /* verse numbers */
+  .ri-vn {
     display:inline-block;
-    font-family:'Noto Serif Ethiopic',serif;font-weight:700;
-    font-size:0.8em;
-    color:#b8963e;
-    min-width:1.6em;
-    margin-inline-end:0.35em;
-    opacity:.75;
+    font-size:.78em;font-weight:700;
+    color:rgba(184,150,62,.65);
+    min-width:1.7em;
+    margin-inline-end:.3em;
   }
-
-  /* Highlight for key verse (verse 6) */
-  .ri-verse[data-num="6"] {
-    color:rgba(255,252,245,1);
-    font-weight:500;
-  }
-  .ri-verse[data-num="6"] .ri-verse-num {
-    opacity:1;
+  .ri-vn-key {
     color:#e2ca18;
-    text-shadow:0 0 12px rgba(226,202,24,.4);
-  }
-
-  /* Verse 7 — the command to "Go tell" (connects to next phase) */
-  .ri-verse[data-num="7"] {
-    color:rgba(255,252,245,1);
-    font-weight:500;
-  }
-  .ri-verse[data-num="7"] .ri-verse-num {
-    opacity:1;
-    color:#e2ca18;
-    text-shadow:0 0 12px rgba(226,202,24,.4);
-  }
-
-  /* Divider between verses and transition */
-  .ri-bible-divider {
-    display:flex;align-items:center;justify-content:center;gap:12px;
-    margin-top:clamp(1.5rem,4vh,2.5rem);
-    margin-bottom:clamp(1.5rem,4vh,2rem);
-    opacity:0;
-    transition:opacity 1s ease;
-  }
-  .ri-bible-divider.ri-divider-visible {
+    text-shadow:0 0 10px rgba(226,202,24,.35);
     opacity:1;
   }
-  .ri-bible-divider-line {
-    display:block;width:3rem;height:1px;
-    background:linear-gradient(90deg,transparent,rgba(184,150,62,.4),transparent);
-  }
-  .ri-bible-divider-dot {
-    display:block;width:6px;height:6px;border-radius:50%;
-    background:rgba(226,202,24,.6);
-    box-shadow:0 0 12px rgba(226,202,24,.35);
+
+  @keyframes riFadeUp {
+    0%  { opacity:0; transform:translateY(16px); }
+    100%{ opacity:1; transform:translateY(0);    }
   }
 
-  /* Phase transition */
-  .ri-bible-phase {
-    transition:opacity 1.6s ease;
+  /* scroll arrow chevrons */
+  .ri-scroll-arrow {
+    display:flex;flex-direction:column;align-items:center;gap:2px;
+    animation:riScrollBounce 1.6s ease-in-out infinite;
   }
-  .ri-bible-phase.ri-phase-out {
-    opacity:0;
-    pointer-events:none;
+  .ri-scroll-arrow span {
+    display:block;width:16px;height:16px;
+    border-right:2px solid rgba(184,150,62,.55);
+    border-bottom:2px solid rgba(184,150,62,.55);
+    transform:rotate(45deg);
+  }
+  .ri-scroll-arrow span:first-child{ opacity:.45; }
+  @keyframes riScrollBounce {
+    0%,100%{ transform:translateY(0);   }
+    50%    { transform:translateY(6px); }
   }
 
-
-  /* ═══════════════════════════════════════════════
-     PHASE 2 — TOMB SCENE (existing, unchanged)
-     ═══════════════════════════════════════════════ */
-
+  /* ══ TOMB SCENE ══ */
   .ri-scene {
-    position:relative;width:100%;height:100%;overflow:hidden;
-    opacity:0;
-    transition:opacity 1.6s ease;
-  }
-  .ri-scene.ri-scene-visible {
-    opacity:1;
+    position:relative;width:100%;min-height:100vh;overflow:hidden;
   }
 
-  /* SKY */
-  .ri-sky {
-    position:absolute;inset:0;
-    background:linear-gradient(180deg,#03030a 0%,#0a0a18 40%,#12101e 70%,#1a1220 100%);
-  }
-
-  /* STARS */
   .ri-stars{position:absolute;inset:0;}
   .ri-star {
     position:absolute;background:#fff;border-radius:50%;
@@ -275,7 +267,6 @@
   }
   @keyframes riTwinkle{0%{opacity:.2}100%{opacity:1}}
 
-  /* GROUND */
   .ri-ground {
     position:absolute;bottom:0;width:100%;height:40%;
     background:linear-gradient(180deg,#1a1510 0%,#0d0b08 100%);
@@ -287,7 +278,6 @@
     clip-path:ellipse(78% 90% at 50% 100%);z-index:2;
   }
 
-  /* TOMB */
   .ri-tomb-container {
     position:absolute;bottom:18%;left:50%;transform:translateX(-50%);
     z-index:5;width:260px;height:300px;
@@ -313,7 +303,6 @@
     z-index:-1;box-shadow:inset 0 0 20px rgba(0,0,0,.6);
   }
 
-  /* STONE */
   .ri-stone {
     position:absolute;bottom:25px;left:50%;transform:translateX(-50%);
     width:160px;height:160px;border-radius:50%;z-index:8;
@@ -321,378 +310,200 @@
     background:radial-gradient(circle at 35% 35%,#555048,#3a3530 40%,#2a2520 70%,#1f1b18 100%);
     box-shadow:inset -12px -8px 25px rgba(0,0,0,.5),inset 6px 6px 15px rgba(255,255,255,.05),8px 8px 30px rgba(0,0,0,.7);
   }
-  .ri-stone::after {
-    content:'';position:absolute;inset:12px;border-radius:50%;
-    background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.06) 0%,transparent 50%),radial-gradient(circle at 65% 70%,rgba(0,0,0,.2) 0%,transparent 40%);
-  }
-  .ri-stone::before {
-    content:'';position:absolute;top:50%;left:20%;width:60%;height:1px;
-    background:rgba(0,0,0,.4);transform:rotate(-12deg);
-    box-shadow:0 20px 0 rgba(0,0,0,.25),-10px 40px 0 rgba(0,0,0,.2);
-  }
-  .ri-scene.active .ri-stone {
-    transform:translateX(-50%) translateX(180px) rotate(90deg);
-  }
+  .ri-stone::after{content:'';position:absolute;inset:12px;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.06) 0%,transparent 50%),radial-gradient(circle at 65% 70%,rgba(0,0,0,.2) 0%,transparent 40%);}
+  .ri-stone::before{content:'';position:absolute;top:50%;left:20%;width:60%;height:1px;background:rgba(0,0,0,.4);transform:rotate(-12deg);box-shadow:0 20px 0 rgba(0,0,0,.25),-10px 40px 0 rgba(0,0,0,.2);}
+  .ri-scene.active .ri-stone{transform:translateX(-50%) translateX(180px) rotate(90deg);}
 
-  /* DIVINE LIGHT */
-  .ri-divine-light {
-    position:absolute;inset:-5px;border-radius:50%;z-index:5;opacity:0;
-    background:radial-gradient(circle,#fff 0%,#fffbe6 20%,#f5d76e 40%,transparent 70%);
-    transition:opacity 1.5s ease 1.8s;
-  }
+  .ri-divine-light{position:absolute;inset:-5px;border-radius:50%;z-index:5;opacity:0;background:radial-gradient(circle,#fff 0%,#fffbe6 20%,#f5d76e 40%,transparent 70%);transition:opacity 1.5s ease 1.8s;}
   .ri-scene.active .ri-divine-light{opacity:1;}
 
-  /* LIGHT RAYS */
-  .ri-light-rays {
-    position:absolute;bottom:105px;left:50%;transform:translateX(-50%);
-    width:0;height:0;z-index:4;opacity:0;transition:opacity 1s ease 2s;
-  }
+  .ri-light-rays{position:absolute;bottom:105px;left:50%;transform:translateX(-50%);width:0;height:0;z-index:4;opacity:0;transition:opacity 1s ease 2s;}
   .ri-scene.active .ri-light-rays{opacity:1;}
-  .ri-ray {
-    position:absolute;bottom:0;left:50%;width:3px;height:0;
-    background:linear-gradient(0deg,#fff,#fffbe688,transparent);
-    transform-origin:bottom center;border-radius:2px;filter:blur(1.5px);
-  }
+  .ri-ray{position:absolute;bottom:0;left:50%;width:3px;height:0;background:linear-gradient(0deg,#fff,#fffbe688,transparent);transform-origin:bottom center;border-radius:2px;filter:blur(1.5px);}
   .ri-scene.active .ri-ray{animation:riRayGrow 2.5s ease-out forwards;}
   @keyframes riRayGrow{0%{height:0;opacity:0}40%{opacity:.9}100%{height:var(--ray-h);opacity:var(--ray-o)}}
 
-  /* JESUS FIGURE */
-  .ri-jesus-figure {
-    position:absolute;bottom:0;left:50%;
-    transform:translateX(-50%) translateY(60px) scale(.8);
-    z-index:9;opacity:0;
-    transition:opacity 2s ease 2.8s,transform 3.5s ease 2.8s;
-  }
+  .ri-jesus-figure{position:absolute;bottom:0;left:50%;transform:translateX(-50%) translateY(60px) scale(.8);z-index:9;opacity:0;transition:opacity 2s ease 2.8s,transform 3.5s ease 2.8s;}
   .ri-scene.active .ri-jesus-figure{opacity:1;transform:translateX(-50%) translateY(-40px) scale(1);}
   .ri-figure-body{position:relative;width:70px;height:160px;}
-  .ri-figure-head {
-    position:absolute;top:0;left:50%;transform:translateX(-50%);
-    width:26px;height:30px;
-    background:radial-gradient(ellipse,#f5e6d3,#d4b896);border-radius:50%;
-    box-shadow:0 0 30px rgba(255,255,255,.8),0 0 60px rgba(255,248,220,.5);
-  }
-  .ri-halo {
-    position:absolute;top:-14px;left:50%;transform:translateX(-50%);
-    width:56px;height:56px;border-radius:50%;
-    border:2px solid rgba(255,255,255,.7);
-    box-shadow:0 0 20px rgba(255,255,255,.5),0 0 40px rgba(255,248,220,.3),inset 0 0 15px rgba(255,255,255,.15);
-    animation:riHaloGlow 1.8s ease-in-out infinite alternate;
-    animation-play-state:paused;
-  }
+  .ri-figure-head{position:absolute;top:0;left:50%;transform:translateX(-50%);width:26px;height:30px;background:radial-gradient(ellipse,#f5e6d3,#d4b896);border-radius:50%;box-shadow:0 0 30px rgba(255,255,255,.8),0 0 60px rgba(255,248,220,.5);}
+  .ri-halo{position:absolute;top:-14px;left:50%;transform:translateX(-50%);width:56px;height:56px;border-radius:50%;border:2px solid rgba(255,255,255,.7);box-shadow:0 0 20px rgba(255,255,255,.5),0 0 40px rgba(255,248,220,.3),inset 0 0 15px rgba(255,255,255,.15);animation:riHaloGlow 1.8s ease-in-out infinite alternate;animation-play-state:paused;}
   .ri-scene.active .ri-halo{animation-play-state:running;}
-  @keyframes riHaloGlow{
-    0%{box-shadow:0 0 20px rgba(255,255,255,.5),0 0 40px rgba(255,248,220,.3),inset 0 0 15px rgba(255,255,255,.15)}
-    100%{box-shadow:0 0 35px rgba(255,255,255,.8),0 0 70px rgba(255,248,220,.5),inset 0 0 25px rgba(255,255,255,.25)}
-  }
-  .ri-figure-robe {
-    position:absolute;top:28px;left:50%;transform:translateX(-50%);
-    width:54px;height:125px;
-    background:linear-gradient(180deg,#fff 0%,#f5f0e8 30%,#ebe5da 100%);
-    clip-path:polygon(18% 0%,82% 0%,100% 100%,0% 100%);
-    box-shadow:0 0 30px rgba(255,255,255,.4);
-  }
-  .ri-figure-robe::before {
-    content:'';position:absolute;top:0;left:12%;width:76%;height:100%;
-    background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.3) 50%,transparent 100%);
-  }
-  .ri-arm {
-    position:absolute;top:40px;width:48px;height:8px;
-    background:linear-gradient(180deg,#fff,#ebe5da);border-radius:4px;
-    opacity:0;transition:opacity 1.2s ease 4.2s,transform 1.8s ease 4.2s;
-  }
+  @keyframes riHaloGlow{0%{box-shadow:0 0 20px rgba(255,255,255,.5),0 0 40px rgba(255,248,220,.3),inset 0 0 15px rgba(255,255,255,.15)}100%{box-shadow:0 0 35px rgba(255,255,255,.8),0 0 70px rgba(255,248,220,.5),inset 0 0 25px rgba(255,255,255,.25)}}
+  .ri-figure-robe{position:absolute;top:28px;left:50%;transform:translateX(-50%);width:54px;height:125px;background:linear-gradient(180deg,#fff 0%,#f5f0e8 30%,#ebe5da 100%);clip-path:polygon(18% 0%,82% 0%,100% 100%,0% 100%);box-shadow:0 0 30px rgba(255,255,255,.4);}
+  .ri-figure-robe::before{content:'';position:absolute;top:0;left:12%;width:76%;height:100%;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.3) 50%,transparent 100%);}
+  .ri-arm{position:absolute;top:40px;width:48px;height:8px;background:linear-gradient(180deg,#fff,#ebe5da);border-radius:4px;opacity:0;transition:opacity 1.2s ease 4.2s,transform 1.8s ease 4.2s;}
   .ri-arm-left{right:52px;transform:rotate(20deg) scaleX(0);transform-origin:right center;}
   .ri-arm-right{left:52px;transform:rotate(-20deg) scaleX(0);transform-origin:left center;}
   .ri-scene.active .ri-arm{opacity:1;}
   .ri-scene.active .ri-arm-left{transform:rotate(-20deg) scaleX(1);}
   .ri-scene.active .ri-arm-right{transform:rotate(20deg) scaleX(1);}
-  .ri-figure-glow {
-    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-    width:120px;height:200px;border-radius:50%;
-    background:radial-gradient(circle,rgba(255,255,255,.5),rgba(255,255,255,.1),transparent);
-    filter:blur(15px);opacity:0;transition:opacity 2s ease 3.5s;
-  }
+  .ri-figure-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:120px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.5),rgba(255,255,255,.1),transparent);filter:blur(15px);opacity:0;transition:opacity 2s ease 3.5s;}
   .ri-scene.active .ri-figure-glow{opacity:1;}
 
-  /* PARTICLES */
   .ri-particles{position:absolute;inset:0;z-index:3;pointer-events:none;}
   .ri-particle{position:absolute;background:#fff;border-radius:50%;opacity:0;}
   .ri-scene.active .ri-particle{animation:riFloatUp var(--dur) ease-out var(--delay) infinite;}
-  @keyframes riFloatUp{
-    0%{opacity:0;transform:translateY(0) scale(.5)}
-    15%{opacity:.9}
-    100%{opacity:0;transform:translateY(-350px) scale(0)}
-  }
+  @keyframes riFloatUp{0%{opacity:0;transform:translateY(0) scale(.5)}15%{opacity:.9}100%{opacity:0;transform:translateY(-350px) scale(0)}}
 
-  /* GRASS */
   .ri-grass{position:absolute;bottom:0;width:100%;height:30px;z-index:9;pointer-events:none;}
   .ri-tuft{position:absolute;bottom:-2px;width:3px;border-radius:2px 2px 0 0;}
 
-  /* ═══ WHITE LIGHT TAKEOVER ═══ */
-  .ri-flash-burst {
-    position:absolute;inset:0;z-index:12;opacity:0;pointer-events:none;
-    background:radial-gradient(circle at 50% 62%,#fff,rgba(255,255,255,.6) 30%,transparent 65%);
-  }
+  .ri-flash-burst{position:absolute;inset:0;z-index:12;opacity:0;pointer-events:none;background:radial-gradient(circle at 50% 62%,#fff,rgba(255,255,255,.6) 30%,transparent 65%);}
   .ri-scene.active .ri-flash-burst{animation:riFlashBurst 1.2s ease-out 2s forwards;}
   @keyframes riFlashBurst{0%{opacity:0}40%{opacity:.7}100%{opacity:0}}
 
-  .ri-radial-white {
-    position:absolute;bottom:30%;left:50%;transform:translate(-50%,50%);
-    width:10px;height:10px;border-radius:50%;
-    background:radial-gradient(circle,#fff,rgba(255,255,255,.8),transparent);
-    z-index:45;opacity:0;pointer-events:none;
-  }
+  .ri-radial-white{position:absolute;bottom:30%;left:50%;transform:translate(-50%,50%);width:10px;height:10px;border-radius:50%;background:radial-gradient(circle,#fff,rgba(255,255,255,.8),transparent);z-index:45;opacity:0;pointer-events:none;}
   .ri-scene.active .ri-radial-white{animation:riRadialExpand 5s ease-out 3.5s forwards;}
-  @keyframes riRadialExpand{
-    0%{opacity:0;width:10px;height:10px}10%{opacity:.9}100%{opacity:1;width:300vw;height:300vh}
-  }
+  @keyframes riRadialExpand{0%{opacity:0;width:10px;height:10px}10%{opacity:.9}100%{opacity:1;width:300vw;height:300vh}}
 
-  .ri-light-wave-2 {
-    position:absolute;bottom:30%;left:50%;transform:translate(-50%,50%);
-    width:5px;height:5px;border-radius:50%;
-    background:radial-gradient(circle,#fff,rgba(255,248,220,.9),transparent);
-    z-index:44;opacity:0;pointer-events:none;
-  }
+  .ri-light-wave-2{position:absolute;bottom:30%;left:50%;transform:translate(-50%,50%);width:5px;height:5px;border-radius:50%;background:radial-gradient(circle,#fff,rgba(255,248,220,.9),transparent);z-index:44;opacity:0;pointer-events:none;}
   .ri-scene.active .ri-light-wave-2{animation:riRadialExpand2 6s ease-out 3s forwards;}
-  @keyframes riRadialExpand2{
-    0%{opacity:0;width:5px;height:5px}15%{opacity:.6}100%{opacity:.8;width:250vw;height:250vh}
-  }
+  @keyframes riRadialExpand2{0%{opacity:0;width:5px;height:5px}15%{opacity:.6}100%{opacity:.8;width:250vw;height:250vh}}
 
-  .ri-white-takeover {
-    position:absolute;inset:0;background:#fff;z-index:50;opacity:0;pointer-events:none;
-  }
+  .ri-white-takeover{position:absolute;inset:0;background:#fff;z-index:50;opacity:0;pointer-events:none;}
   .ri-scene.active .ri-white-takeover{animation:riWhiteTakeover 6s ease-in 4s forwards;}
   @keyframes riWhiteTakeover{0%{opacity:0}30%{opacity:.3}60%{opacity:.7}85%{opacity:.95}100%{opacity:1}}
 
-  /* ═══ RISEN TITLE ═══ */
-  .ri-title-text {
-    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-    z-index:60;text-align:center;opacity:0;pointer-events:none;
-  }
+  .ri-title-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:60;text-align:center;opacity:0;pointer-events:none;}
   .ri-scene.active .ri-title-text{animation:riTitleReveal 3s ease 8s forwards;}
-  @keyframes riTitleReveal{
-    0%{opacity:0;transform:translate(-50%,-50%) scale(.85)}
-    100%{opacity:1;transform:translate(-50%,-50%) scale(1)}
-  }
-  .ri-title-text h1 {
-    font-family:'Noto Serif Ethiopic',serif;font-weight:700;
-    font-size:clamp(2.5rem,8vw,6rem);color:#b8963e;
-    text-shadow:0 0 30px rgba(184,150,62,.5),0 0 60px rgba(184,150,62,.25),0 0 100px rgba(184,150,62,.1);
-    letter-spacing:.15em;
-  }
-  .ri-title-text p {
-    font-family:'Noto Serif Ethiopic',serif;font-weight:400;
-    font-size:clamp(1rem,3vw,1.6rem);color:rgba(150,130,90,.8);
-    margin-top:20px;letter-spacing:.1em;
-  }
-  .ri-flourish {
-    display:block;margin:24px auto 0;width:0;height:2px;
-    background:linear-gradient(90deg,transparent,#b8963e,transparent);opacity:0;
-  }
+  @keyframes riTitleReveal{0%{opacity:0;transform:translate(-50%,-50%) scale(.85)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+  .ri-title-text h1{font-family:'Noto Serif Ethiopic',serif;font-weight:700;font-size:clamp(2.5rem,8vw,6rem);color:#b8963e;text-shadow:0 0 30px rgba(184,150,62,.5),0 0 60px rgba(184,150,62,.25),0 0 100px rgba(184,150,62,.1);letter-spacing:.15em;}
+  .ri-title-text p{font-family:'Noto Serif Ethiopic',serif;font-weight:400;font-size:clamp(1rem,3vw,1.6rem);color:rgba(150,130,90,.8);margin-top:20px;letter-spacing:.1em;}
+  .ri-flourish{display:block;margin:24px auto 0;width:0;height:2px;background:linear-gradient(90deg,transparent,#b8963e,transparent);opacity:0;}
   .ri-scene.active .ri-flourish{animation:riFlourishIn 2s ease 9.5s forwards;}
   @keyframes riFlourishIn{0%{opacity:0;width:0}100%{opacity:.6;width:120px}}
 
-  /* ═══ INTRO — glass card above tomb ═══ */
-  .ri-intro-prompt {
-    position:absolute;left:50%;bottom:208px;transform:translateX(-50%);
-    z-index:25;
-    width:min(calc(100vw - 2rem),292px);max-width:calc(100% + 32px);
-    padding:1rem 1.15rem 1.2rem;text-align:center;border-radius:1.25rem;
-    background:linear-gradient(155deg,rgba(42,32,38,.42) 0%,rgba(14,10,20,.38) 45%,rgba(10,8,16,.48) 100%);
-    border:1px solid rgba(226,202,24,.12);
-    box-shadow:0 12px 40px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.04) inset,inset 0 1px 0 rgba(255,248,220,.08);
-    backdrop-filter:blur(12px) saturate(1.2);
-    -webkit-backdrop-filter:blur(12px) saturate(1.2);
-    transition:opacity 1.2s ease,transform 1.2s ease,box-shadow 1.2s ease;
-  }
-  .ri-intro-prompt::before {
-    content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
-    background:linear-gradient(180deg,rgba(255,248,220,.07) 0%,transparent 42%);
-  }
-  .ri-scene.active .ri-intro-prompt{
-    opacity:0;transform:translateX(-50%) translateY(16px);pointer-events:none;box-shadow:none;
-  }
-  .ri-intro-text {
-    position:relative;z-index:1;
-    font-family:'Benaiah','Noto Serif Ethiopic',serif;font-weight:700;
-    font-size:clamp(1.05rem,2.6vw,1.35rem);
-    color:rgba(255,252,245,.95);
-    letter-spacing:.06em;margin-bottom:14px;line-height:1.65;
-    animation:riIntroPulse 3s ease-in-out infinite alternate;
-  }
+  /* Intro prompt card */
+  .ri-intro-prompt{position:absolute;left:50%;bottom:208px;transform:translateX(-50%);z-index:25;width:min(calc(100vw - 2rem),292px);max-width:calc(100% + 32px);padding:1rem 1.15rem 1.2rem;text-align:center;border-radius:1.25rem;background:linear-gradient(155deg,rgba(42,32,38,.42) 0%,rgba(14,10,20,.38) 45%,rgba(10,8,16,.48) 100%);border:1px solid rgba(226,202,24,.12);box-shadow:0 12px 40px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.04) inset,inset 0 1px 0 rgba(255,248,220,.08);backdrop-filter:blur(12px) saturate(1.2);-webkit-backdrop-filter:blur(12px) saturate(1.2);transition:opacity 1.2s ease,transform 1.2s ease,box-shadow 1.2s ease;}
+  .ri-intro-prompt::before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(180deg,rgba(255,248,220,.07) 0%,transparent 42%);}
+  .ri-scene.active .ri-intro-prompt{opacity:0;transform:translateX(-50%) translateY(16px);pointer-events:none;box-shadow:none;}
+  .ri-intro-text{position:relative;z-index:1;font-family:'Benaiah','Noto Serif Ethiopic',serif;font-weight:700;font-size:clamp(1.05rem,2.6vw,1.35rem);color:rgba(255,252,245,.95);letter-spacing:.06em;margin-bottom:14px;line-height:1.65;animation:riIntroPulse 3s ease-in-out infinite alternate;}
   @keyframes riIntroPulse{0%{opacity:.88}100%{opacity:1}}
   .ri-intro-prompt .ri-btn-wrap{position:relative;z-index:1;display:inline-block;}
 
-  /* ═══ BUTTON ═══ */
-  .ri-btn-aleme {
-    position:relative;display:inline-block;
-    font-family:'Noto Serif Ethiopic',serif;font-weight:700;
-    font-size:clamp(1.2rem,3vw,1.8rem);color:#fffbe6;
-    background:transparent;border:2px solid rgba(184,150,62,.5);
-    padding:14px 48px;border-radius:60px;cursor:pointer;
-    letter-spacing:.15em;overflow:hidden;
-    transition:all .4s ease;animation:riBtnFloat 3s ease-in-out infinite;
-  }
+  /* Button */
+  .ri-btn-aleme{position:relative;display:inline-block;font-family:'Noto Serif Ethiopic',serif;font-weight:700;font-size:clamp(1.2rem,3vw,1.8rem);color:#fffbe6;background:transparent;border:2px solid rgba(184,150,62,.5);padding:14px 48px;border-radius:60px;cursor:pointer;letter-spacing:.15em;overflow:hidden;transition:all .4s ease;animation:riBtnFloat 3s ease-in-out infinite;}
   @keyframes riBtnFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
-  .ri-btn-aleme:hover {
-    border-color:rgba(184,150,62,.9);color:#fff;
-    text-shadow:0 0 15px rgba(255,248,220,.6);
-    box-shadow:0 0 25px rgba(184,150,62,.3),0 0 50px rgba(184,150,62,.15),inset 0 0 20px rgba(184,150,62,.1);
-  }
-  .ri-btn-aleme::before {
-    content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
-    background:linear-gradient(90deg,transparent 0%,rgba(255,248,220,.15) 40%,rgba(255,248,220,.3) 50%,rgba(255,248,220,.15) 60%,transparent 100%);
-    animation:riShimmer 2.5s ease-in-out infinite;
-  }
+  .ri-btn-aleme:hover{border-color:rgba(184,150,62,.9);color:#fff;text-shadow:0 0 15px rgba(255,248,220,.6);box-shadow:0 0 25px rgba(184,150,62,.3),0 0 50px rgba(184,150,62,.15),inset 0 0 20px rgba(184,150,62,.1);}
+  .ri-btn-aleme::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent 0%,rgba(255,248,220,.15) 40%,rgba(255,248,220,.3) 50%,rgba(255,248,220,.15) 60%,transparent 100%);animation:riShimmer 2.5s ease-in-out infinite;}
   @keyframes riShimmer{0%{left:-100%}100%{left:200%}}
-  .ri-btn-aleme::after {
-    content:'';position:absolute;inset:-6px;border-radius:60px;
-    border:1px solid rgba(184,150,62,.2);animation:riRingPulse 2s ease-in-out infinite;
-  }
+  .ri-btn-aleme::after{content:'';position:absolute;inset:-6px;border-radius:60px;border:1px solid rgba(184,150,62,.2);animation:riRingPulse 2s ease-in-out infinite;}
   @keyframes riRingPulse{0%,100%{opacity:.3;inset:-6px}50%{opacity:.7;inset:-12px}}
 
-  /* CLICK HINT */
-  .ri-click-hint {
-    position:absolute;bottom:-56px;left:50%;transform:translateX(-50%);
-    display:flex;flex-direction:column;align-items:center;pointer-events:none;
-    animation:riClickBounce 1.2s ease-in-out infinite;opacity:.85;
-  }
-  .ri-click-hint-head {
-    position:relative;z-index:1;width:0;height:0;
-    border-left:11px solid transparent;border-right:11px solid transparent;
-    border-bottom:15px solid #d4b45a;
-    filter:drop-shadow(0 0 6px rgba(226,202,24,.55)) drop-shadow(0 0 14px rgba(184,150,62,.45));
-  }
-  .ri-click-hint-shaft {
-    position:relative;z-index:1;width:3px;height:20px;margin-top:-1px;border-radius:2px;
-    background:linear-gradient(180deg,#fffbe6 0%,#c9a04a 45%,#8a7030 100%);
-    box-shadow:0 0 10px rgba(226,202,24,.35),0 0 18px rgba(184,150,62,.25),inset 0 0 2px rgba(255,255,255,.25);
-  }
-  .ri-click-hint-ring {
-    position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);
-    width:40px;height:58px;border-radius:999px;
-    border:1px solid rgba(184,150,62,.22);
-    box-shadow:0 0 20px rgba(184,150,62,.12),inset 0 0 12px rgba(184,150,62,.06);
-    animation:riHintRingPulse 2s ease-in-out infinite;pointer-events:none;
-  }
-  @keyframes riHintRingPulse{
-    0%,100%{opacity:.35;transform:translate(-50%,-50%) scale(1)}
-    50%{opacity:.65;transform:translate(-50%,-50%) scale(1.06)}
-  }
-  @keyframes riClickBounce{
-    0%,100%{transform:translateX(-50%) translateY(0);opacity:.55}
-    50%{transform:translateX(-50%) translateY(-8px);opacity:1}
-  }
+  /* Click hint */
+  .ri-click-hint{position:absolute;bottom:-56px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;pointer-events:none;animation:riClickBounce 1.2s ease-in-out infinite;opacity:.85;}
+  .ri-click-hint-head{position:relative;z-index:1;width:0;height:0;border-left:11px solid transparent;border-right:11px solid transparent;border-bottom:15px solid #d4b45a;filter:drop-shadow(0 0 6px rgba(226,202,24,.55)) drop-shadow(0 0 14px rgba(184,150,62,.45));}
+  .ri-click-hint-shaft{position:relative;z-index:1;width:3px;height:20px;margin-top:-1px;border-radius:2px;background:linear-gradient(180deg,#fffbe6 0%,#c9a04a 45%,#8a7030 100%);box-shadow:0 0 10px rgba(226,202,24,.35),0 0 18px rgba(184,150,62,.25),inset 0 0 2px rgba(255,255,255,.25);}
+  .ri-click-hint-ring{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);width:40px;height:58px;border-radius:999px;border:1px solid rgba(184,150,62,.22);box-shadow:0 0 20px rgba(184,150,62,.12),inset 0 0 12px rgba(184,150,62,.06);animation:riHintRingPulse 2s ease-in-out infinite;pointer-events:none;}
+  @keyframes riHintRingPulse{0%,100%{opacity:.35;transform:translate(-50%,-50%) scale(1)}50%{opacity:.65;transform:translate(-50%,-50%) scale(1.06)}}
+  @keyframes riClickBounce{0%,100%{transform:translateX(-50%) translateY(0);opacity:.55}50%{transform:translateX(-50%) translateY(-8px);opacity:1}}
 
-  /* BUTTON SPARKLES */
-  .ri-btn-sparkle {
-    position:absolute;width:4px;height:4px;background:#fffbe6;border-radius:50%;
-    pointer-events:none;animation:riSparkleOrbit var(--dur) linear infinite;opacity:0;
-  }
-  @keyframes riSparkleOrbit{
-    0%{opacity:0;transform:rotate(var(--start)) translateX(var(--radius)) scale(0)}
-    20%{opacity:.8}80%{opacity:.6}
-    100%{opacity:0;transform:rotate(calc(var(--start) + 360deg)) translateX(var(--radius)) scale(0)}
-  }
+  .ri-btn-sparkle{position:absolute;width:4px;height:4px;background:#fffbe6;border-radius:50%;pointer-events:none;animation:riSparkleOrbit var(--dur) linear infinite;opacity:0;}
+  @keyframes riSparkleOrbit{0%{opacity:0;transform:rotate(var(--start)) translateX(var(--radius)) scale(0)}20%{opacity:.8}80%{opacity:.6}100%{opacity:0;transform:rotate(calc(var(--start) + 360deg)) translateX(var(--radius)) scale(0)}}
 
-  /* Screen shake */
-  .ri-scene.active {
-    animation:riScreenShake .8s ease 1.5s;
-  }
-  @keyframes riScreenShake {
-    0%,100%{transform:translate(0,0)}
-    10%{transform:translate(-3px,2px)}
-    20%{transform:translate(4px,-2px)}
-    30%{transform:translate(-2px,3px)}
-    40%{transform:translate(3px,-1px)}
-    50%{transform:translate(-1px,2px)}
-    60%{transform:translate(2px,-3px)}
-    70%{transform:translate(-3px,1px)}
-    80%{transform:translate(1px,-2px)}
-    90%{transform:translate(-2px,1px)}
-  }
+  .ri-scene.active{animation:riScreenShake .8s ease 1.5s;}
+  @keyframes riScreenShake{0%,100%{transform:translate(0,0)}10%{transform:translate(-3px,2px)}20%{transform:translate(4px,-2px)}30%{transform:translate(-2px,3px)}40%{transform:translate(3px,-1px)}50%{transform:translate(-1px,2px)}60%{transform:translate(2px,-3px)}70%{transform:translate(-3px,1px)}80%{transform:translate(1px,-2px)}90%{transform:translate(-2px,1px)}}
 
-  /* ═══ OVERLAY FADE-OUT ═══ */
-  #ri-overlay {
-    transition:opacity 1.8s ease;
-  }
-  #ri-overlay.ri-fade-out {
-    opacity:0;
-    pointer-events:none;
-  }
+  #ri-overlay{transition:opacity 1.8s ease;}
+  #ri-overlay.ri-fade-out{opacity:0;pointer-events:none;}
 </style>
 
 <script>
 (function riInit() {
-  var overlay = document.getElementById('ri-overlay');
-  var biblePhase = document.getElementById('ri-bible-phase');
-  var scene = document.getElementById('ri-scene');
-  var btn = document.getElementById('ri-btnAleme');
+  var overlay  = document.getElementById('ri-overlay');
+  var scene    = document.getElementById('ri-scene');
+  var sceneWrap= document.getElementById('ri-scene-wrap');
+  var btn      = document.getElementById('ri-btnAleme');
 
-  /* ─── Phase 1: Bible stars ─── */
-  var bibleStars = document.getElementById('ri-bibleStars');
-  for (var i = 0; i < 70; i++) {
-    var s = document.createElement('div');
-    s.className = 'ri-star';
-    var sz = Math.random() * 2.2 + 0.6;
-    s.style.cssText = 'width:'+sz+'px;height:'+sz+'px;top:'+Math.random()*100+'%;left:'+Math.random()*100+'%;animation-delay:'+Math.random()*3+'s;animation-duration:'+(2+Math.random()*3)+'s;';
-    bibleStars.appendChild(s);
-  }
+  /* ── Galaxy canvas: stars + slow drifting particles ── */
+  (function buildGalaxy() {
+    var cvs = document.getElementById('ri-galaxy-canvas');
+    if (!cvs) return;
+    var ctx = cvs.getContext('2d');
+    var W, H, stars = [], dust = [];
 
-  /* ─── Phase 1: Reveal verses one by one ─── */
-  var verses = document.querySelectorAll('.ri-verse');
-  var divider = document.getElementById('ri-bibleDivider');
-  var verseDelay = 800;   // ms between each verse appearing
-  var startDelay = 1200;  // initial wait
+    function resize() {
+      var galaxy = document.getElementById('ri-galaxy');
+      W = galaxy ? galaxy.offsetWidth  : window.innerWidth;
+      H = galaxy ? galaxy.offsetHeight : window.innerHeight;
+      cvs.width = W; cvs.height = H;
+      buildStars();
+    }
 
-  verses.forEach(function(v, i) {
-    setTimeout(function() {
-      v.classList.add('ri-verse-visible');
-
-      // Auto-scroll the verse into view
-      v.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-      // After last verse, show divider then transition to tomb scene
-      if (i === verses.length - 1) {
-        setTimeout(function() {
-          divider.classList.add('ri-divider-visible');
-        }, 600);
-
-        // Transition to tomb scene after user has read
-        setTimeout(function() {
-          transitionToTombScene();
-        }, 2800);
+    function buildStars() {
+      stars = [];
+      for (var i = 0; i < 320; i++) {
+        stars.push({
+          x: Math.random() * W,
+          y: Math.random() * H,
+          r: Math.random() * 1.6 + 0.3,
+          base: Math.random() * 0.6 + 0.25,
+          phase: Math.random() * Math.PI * 2,
+          speed: 0.4 + Math.random() * 1.2,
+        });
       }
-    }, startDelay + (i * verseDelay));
-  });
+      dust = [];
+      for (var i = 0; i < 80; i++) {
+        dust.push({
+          x: Math.random() * W,
+          y: Math.random() * H,
+          r: Math.random() * 2.8 + 0.8,
+          op: Math.random() * 0.18 + 0.04,
+          // gold or purple tint
+          hue: Math.random() < 0.5 ? '184,150,62' : '120,80,200',
+          dx: (Math.random() - 0.5) * 0.12,
+          dy: (Math.random() - 0.5) * 0.08,
+        });
+      }
+    }
 
-  /* ─── Transition: Bible → Tomb ─── */
-  function transitionToTombScene() {
-    // Fade out bible phase
-    biblePhase.classList.add('ri-phase-out');
+    var t = 0;
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      t += 0.012;
 
-    setTimeout(function() {
-      biblePhase.style.display = 'none';
+      // stars
+      for (var i = 0; i < stars.length; i++) {
+        var s = stars[i];
+        var op = s.base + Math.sin(t * s.speed + s.phase) * (s.base * 0.6);
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,' + op + ')';
+        ctx.fill();
+      }
 
-      // Show and fade in tomb scene
-      scene.style.display = '';
-      // Force reflow
-      scene.offsetHeight;
-      scene.classList.add('ri-scene-visible');
+      // dust nebula particles
+      for (var i = 0; i < dust.length; i++) {
+        var d = dust[i];
+        d.x += d.dx; d.y += d.dy;
+        if (d.x < -10) d.x = W + 10;
+        if (d.x > W + 10) d.x = -10;
+        if (d.y < -10) d.y = H + 10;
+        if (d.y > H + 10) d.y = -10;
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(' + d.hue + ',' + d.op + ')';
+        ctx.fill();
+      }
 
-      // Build tomb scene elements
-      buildTombScene();
-    }, 1600);
-  }
+      requestAnimationFrame(draw);
+    }
 
-  /* ─── Phase 2: Build tomb scene ─── */
-  function buildTombScene() {
+    resize();
+    window.addEventListener('resize', resize);
+    draw();
+  })();
+
+  /* ── Tomb scene: build elements ── */
+  (function buildTomb() {
     // Stars
     var starsEl = document.getElementById('ri-stars');
     for (var i = 0; i < 90; i++) {
       var s = document.createElement('div');
       s.className = 'ri-star';
       var sz = Math.random() * 2.5 + 0.8;
-      s.style.cssText = 'width:'+sz+'px;height:'+sz+'px;top:'+Math.random()*50+'%;left:'+Math.random()*100+'%;animation-delay:'+Math.random()*3+'s;animation-duration:'+(2+Math.random()*3)+'s;';
+      s.style.cssText = 'width:'+sz+'px;height:'+sz+'px;top:'+Math.random()*55+'%;left:'+Math.random()*100+'%;animation-delay:'+Math.random()*3+'s;animation-duration:'+(2+Math.random()*3)+'s;';
       starsEl.appendChild(s);
     }
 
@@ -722,13 +533,13 @@
     // Grass
     var grassEl = document.getElementById('ri-grass');
     for (var i = 0; i < 130; i++) {
-      var t = document.createElement('div');
-      t.className = 'ri-tuft';
+      var t2 = document.createElement('div');
+      t2.className = 'ri-tuft';
       var h = 5 + Math.random() * 18;
       var hue = 75 + Math.random() * 45;
       var light = 7 + Math.random() * 10;
-      t.style.cssText = 'left:'+(i/130)*100+'%;height:'+h+'px;background:hsl('+hue+',25%,'+light+'%);transform:rotate('+(-15+Math.random()*30)+'deg);';
-      grassEl.appendChild(t);
+      t2.style.cssText = 'left:'+(i/130)*100+'%;height:'+h+'px;background:hsl('+hue+',25%,'+light+'%);transform:rotate('+(-15+Math.random()*30)+'deg);';
+      grassEl.appendChild(t2);
     }
 
     // Button sparkles
@@ -741,22 +552,35 @@
       sp.style.cssText = 'top:50%;left:50%;--start:'+startAngle+'deg;--radius:'+radius+'px;--dur:'+dur+'s;animation-delay:'+(i/8)*dur+'s;width:'+(2+Math.random()*3)+'px;height:'+(2+Math.random()*3)+'px;';
       btn.parentElement.appendChild(sp);
     }
-  }
+  })();
 
-  /* ─── Phase 2: Button triggers resurrection animation ─── */
+  /* ── When user scrolls to tomb scene, lock scroll and freeze overlay ── */
+  var tombLocked = false;
+  overlay.addEventListener('scroll', function() {
+    if (tombLocked) return;
+    var scrolled = overlay.scrollTop;
+    var galaxyH  = document.getElementById('ri-galaxy').offsetHeight;
+
+    // Once user scrolls past the galaxy section, lock into tomb scene
+    if (scrolled >= galaxyH - 80) {
+      tombLocked = true;
+      overlay.style.overflowY = 'hidden';
+      overlay.scrollTop = galaxyH; // snap to tomb top
+    }
+  });
+
+  /* ── Button: trigger resurrection animation ── */
   btn.addEventListener('click', function(e) {
     e.stopPropagation();
     if (scene.classList.contains('active')) return;
     scene.classList.add('active');
 
-    // After title is visible (~11.5s), hold for 2s, then transition to greeting page
     setTimeout(function() {
       overlay.classList.add('ri-fade-out');
       var main = document.getElementById('ybb-main-content');
       if (main) main.classList.add('ybb-revealed');
     }, 12000);
 
-    // Remove overlay from DOM after fade completes
     setTimeout(function() {
       overlay.remove();
     }, 14000);
