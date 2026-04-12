@@ -427,26 +427,62 @@
     100% { opacity: 1; }
   }
 
-  /* ═══ RISEN TITLE (after white) ═══ */
-  .title-text {
+  /* ═══ Bridge line → ተነስቷል (aligned with resurrection-intro) ═══ */
+  .title-stage {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 60;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    max-width: min(92vw, 28rem);
     text-align: center;
-    opacity: 0;
     pointer-events: none;
   }
+  .bridge-line {
+    margin: 0;
+    order: 1;
+    opacity: 0;
+    max-width: 100%;
+    font-family: 'Benaiah', 'Noto Serif Ethiopic', serif;
+    font-weight: 700;
+    font-size: clamp(0.95rem, 3.1vw, 1.28rem);
+    line-height: 1.55;
+    letter-spacing: 0.04em;
+    color: #6b5a38;
+    text-shadow:
+      0 0 1px rgba(255, 255, 255, 0.95),
+      0 1px 2px rgba(255, 255, 255, 0.9);
+  }
+  .scene.active .bridge-line {
+    animation: bridgeLineBeat 2.2s ease-in-out 10s forwards;
+  }
+  @keyframes bridgeLineBeat {
+    0% { opacity: 0; transform: translateY(10px); }
+    14% { opacity: 1; transform: translateY(0); }
+    72% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-8px); }
+  }
+  .title-text {
+    order: 2;
+    position: relative;
+    width: 100%;
+    opacity: 0;
+    text-align: center;
+  }
   .scene.active .title-text {
-    animation: titleReveal 3s ease 8s forwards;
+    animation: titleReveal 1.05s ease-out 11.15s forwards;
   }
   @keyframes titleReveal {
-    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.85); }
-    100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    0% { opacity: 0; transform: scale(0.92); }
+    100% { opacity: 1; transform: scale(1); }
   }
 
   .title-text h1 {
+    margin: 0;
     font-family: 'Noto Serif Ethiopic', serif;
     font-weight: 700;
     font-size: clamp(2.5rem, 8vw, 6rem);
@@ -459,28 +495,28 @@
   }
 
   .title-text p {
+    margin: 16px 0 0;
     font-family: 'Noto Serif Ethiopic', serif;
     font-weight: 400;
     font-size: clamp(1rem, 3vw, 1.6rem);
-    color: rgba(150,130,90,0.8);
-    margin-top: 20px;
+    color: rgba(150,130,90,0.85);
     letter-spacing: 0.1em;
   }
 
   .title-text .flourish {
     display: block;
-    margin: 24px auto 0;
+    margin: 20px auto 0;
     width: 0;
     height: 2px;
     background: linear-gradient(90deg, transparent, #b8963e, transparent);
     opacity: 0;
   }
   .scene.active .title-text .flourish {
-    animation: flourishIn 2s ease 9.5s forwards;
+    animation: flourishIn 1.35s ease-out 12.35s forwards;
   }
   @keyframes flourishIn {
     0% { opacity: 0; width: 0; }
-    100% { opacity: 0.6; width: 120px; }
+    100% { opacity: 0.65; width: 120px; }
   }
 
   /* ═══════════════════════════════════
@@ -782,10 +818,13 @@
   <div class="radial-white"></div>
   <div class="white-takeover"></div>
 
-  <div class="title-text">
-    <h1>ተነስቷል</h1>
-    <p>ማቴ 28፡6</p>
-    <span class="flourish"></span>
+  <div class="title-stage">
+    <p class="bridge-line">ህያውን ከሙታን መካከል ለምን ትፈልጋላችሁ?</p>
+    <div class="title-text">
+      <h1>ተነስቷል</h1>
+      <p>ማቴ 28፡6</p>
+      <span class="flourish"></span>
+    </div>
   </div>
 
 </div>
