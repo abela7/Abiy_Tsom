@@ -163,6 +163,8 @@
             </div>
         </section>
 
+        @include('public.partials.fasika-quiz-section')
+
         @php
             $hasPublicFasikaExtras = ($fasikaDaily && (
                 $fasikaDaily->mezmurs->isNotEmpty() ||

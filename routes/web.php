@@ -7,6 +7,7 @@ use App\Http\Controllers\ContentSuggestionController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\Member;
 use App\Http\Controllers\PublicContentController;
+use App\Http\Controllers\PublicFasikaQuizController;
 use App\Http\Controllers\PublicYefasikaBealController;
 use App\Http\Controllers\TelegramAuthController;
 use App\Http\Controllers\VolunteerInviteController;
@@ -26,6 +27,11 @@ Route::get('/', [Member\OnboardingController::class, 'welcome'])->name('home');
 Route::get('/yefasika-beal', [PublicYefasikaBealController::class, 'show'])->name('public.yefasika-beal');
 Route::post('/yefasika-beal/share', [PublicYefasikaBealController::class, 'store'])->name('public.yefasika-beal.store');
 Route::get('/yefasika-beal/{share}', [PublicYefasikaBealController::class, 'show'])->name('public.yefasika-beal.share');
+
+// Fasika Quiz API (public)
+Route::get('/yefasika-beal/quiz/questions', [PublicFasikaQuizController::class, 'questions'])->name('public.yefasika-beal.quiz.questions');
+Route::post('/yefasika-beal/quiz/answer', [PublicFasikaQuizController::class, 'answer'])->name('public.yefasika-beal.quiz.answer');
+Route::post('/yefasika-beal/quiz/complete', [PublicFasikaQuizController::class, 'complete'])->name('public.yefasika-beal.quiz.complete');
 
 // Standalone Resurrection.html animation (resources/views/public — not /resurrection)
 Route::get('/resurrection-scene', static function () {
@@ -484,6 +490,16 @@ Route::middleware(['auth', 'admin.audit'])->prefix('admin')->name('admin.')->gro
         Route::patch('/fasika-greetings/{share}', [Admin\FasikaGreetingController::class, 'update'])->name('fasika-greetings.update');
         Route::delete('/fasika-greetings/clear-all', [Admin\FasikaGreetingController::class, 'clearAll'])->name('fasika-greetings.clear-all');
         Route::delete('/fasika-greetings/{share}', [Admin\FasikaGreetingController::class, 'destroy'])->name('fasika-greetings.destroy');
+
+        // Fasika Quiz
+        Route::get('/fasika-quiz', [Admin\FasikaQuizController::class, 'index'])->name('fasika-quiz.index');
+        Route::get('/fasika-quiz/create', [Admin\FasikaQuizController::class, 'create'])->name('fasika-quiz.create');
+        Route::post('/fasika-quiz', [Admin\FasikaQuizController::class, 'store'])->name('fasika-quiz.store');
+        Route::get('/fasika-quiz/submissions', [Admin\FasikaQuizController::class, 'submissions'])->name('fasika-quiz.submissions');
+        Route::get('/fasika-quiz/{question}/edit', [Admin\FasikaQuizController::class, 'edit'])->name('fasika-quiz.edit');
+        Route::put('/fasika-quiz/{question}', [Admin\FasikaQuizController::class, 'update'])->name('fasika-quiz.update');
+        Route::patch('/fasika-quiz/{question}/toggle', [Admin\FasikaQuizController::class, 'toggle'])->name('fasika-quiz.toggle');
+        Route::delete('/fasika-quiz/{question}', [Admin\FasikaQuizController::class, 'destroy'])->name('fasika-quiz.destroy');
 
         // Content suggestions review
         Route::get('/suggestions', [Admin\ContentSuggestionController::class, 'index'])->name('suggestions.index');
